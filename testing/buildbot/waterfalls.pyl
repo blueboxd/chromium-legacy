@@ -4630,7 +4630,8 @@
           "win11_qualcomm_adreno_690_stable",
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
     },
@@ -5900,8 +5901,7 @@
           'mac_default_x64',
         ],
         'test_suites': {
-          # TODO(crbug.com/1409418): Reenable baremetal_tests.
-          'gtest_tests': 'webrtc_chromium_gtests',
+          'gtest_tests': 'webrtc_chromium_tests_without_baremetal_tests',
         },
       },
       'WebRTC Chromium Win Builder': {
@@ -6472,28 +6472,6 @@
         ],
         # no tests, stay compile only.
       },
-      'win-arm64-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'win-arm64-rel': {
-        'browser_config': 'release',
-        'os_type': 'win',
-        'additional_compile_targets': [
-          'chrome',
-          'chromedriver_group',
-        ],
-        'mixins': [
-          'chrome-win-arm64',
-          'isolate_profile_data',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_win10_gtests',
-          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_common_win_telemetry_tests',
-        },
-      },
       'win-chrome-reclient': {
         'additional_compile_targets': [
            # same build target as win-chrome even if it doesn't run the tests
@@ -6657,7 +6635,7 @@
         ],
         'test_suites': {
            'gtest_tests': 'optimization_guide_linux_gtests',
-           'isolated_scripts': 'model_validation_tests_full',
+           'isolated_scripts': 'optimization_guide_linux_script_tests',
         },
         'os_type': 'linux',
       },
@@ -6672,7 +6650,7 @@
         ],
         'test_suites': {
            'gtest_tests': 'optimization_guide_mac_gtests',
-           'isolated_scripts': 'model_validation_tests_full',
+           'isolated_scripts': 'optimization_guide_mac_script_tests',
         },
         'os_type': 'mac',
       },
@@ -6687,7 +6665,7 @@
         ],
         'test_suites': {
            'gtest_tests': 'optimization_guide_mac_gtests',
-           'isolated_scripts': 'model_validation_tests_full',
+           'isolated_scripts': 'optimization_guide_mac_script_tests',
         },
         'os_type': 'mac',
       },
@@ -6702,7 +6680,7 @@
         ],
         'test_suites': {
            'gtest_tests': 'optimization_guide_win_gtests',
-           'isolated_scripts': 'model_validation_tests_full',
+           'isolated_scripts': 'optimization_guide_win_script_tests',
         },
         'os_type': 'win',
       },
@@ -6718,7 +6696,7 @@
         ],
         'test_suites': {
            'gtest_tests': 'optimization_guide_win_gtests',
-           'isolated_scripts': 'model_validation_tests_full',
+           'isolated_scripts': 'optimization_guide_win_script_tests',
 
         },
         'os_type': 'win',
@@ -6823,11 +6801,13 @@
       },
       'win11-arm64-blink-rel': {
         'mixins': [
-            'win11',
             'arm64'
         ],
         'swarming': {
           'hard_timeout': 900,
+          'dimensions': {
+            'os': 'Windows-11',
+          },
         },
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',

@@ -6830,7 +6830,8 @@ class SplitViewOverviewSessionTest : public OverviewTestBase {
       return gfx::Rect();
     }
     return split_view_controller()
-        ->split_view_divider_->GetDividerBoundsInScreen(is_dragging);
+        ->split_view_divider()
+        ->GetDividerBoundsInScreen(is_dragging);
   }
 
   gfx::Rect GetWorkAreaInScreen(aura::Window* window) {
@@ -7818,7 +7819,18 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
 
 // Verify that when in overview mode, the selector items unsnappable indicator
 // shows up when expected.
-TEST_F(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
+// TODO(crbug.com/324024580): Re-enable this test. Causes build failures on
+// MSAN/ASAN on CrOS.
+#if BUILDFLAG(IS_CHROMEOS) && \
+    (defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
+#define MAYBE_OverviewUnsnappableIndicatorVisibility \
+  DISABLED_OverviewUnsnappableIndicatorVisibility
+#else
+#define MAYBE_OverviewUnsnappableIndicatorVisibility \
+  OverviewUnsnappableIndicatorVisibility
+#endif
+TEST_F(SplitViewOverviewSessionTest,
+       MAYBE_OverviewUnsnappableIndicatorVisibility) {
   // Create three windows; two normal and one unsnappable, so that when after
   // snapping |window1| to enter split view we can test the state of each normal
   // and unsnappable windows.
@@ -8267,8 +8279,18 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsWithMinimumSizeTest) {
 // Verify that if the split view divider is dragged all the way to the edge, the
 // window being dragged gets returned to the overview list, if overview mode is
 // still active.
+// TODO(crbug.com/324024580): Re-enable this test. Causes build failures on
+// MSAN/ASAN on CrOS.
+#if BUILDFLAG(IS_CHROMEOS) && \
+    (defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
+#define MAYBE_DividerDraggedToEdgeReturnsWindowToOverviewList \
+  DISABLED_DividerDraggedToEdgeReturnsWindowToOverviewList
+#else
+#define MAYBE_DividerDraggedToEdgeReturnsWindowToOverviewList \
+  DividerDraggedToEdgeReturnsWindowToOverviewList
+#endif
 TEST_F(SplitViewOverviewSessionTest,
-       DividerDraggedToEdgeReturnsWindowToOverviewList) {
+       MAYBE_DividerDraggedToEdgeReturnsWindowToOverviewList) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -8283,7 +8305,7 @@ TEST_F(SplitViewOverviewSessionTest,
             split_view_controller()->state());
   EXPECT_TRUE(InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
-  ASSERT_TRUE(split_view_controller()->split_view_divider());
+  ASSERT_TRUE(split_view_controller()->split_view_divider()->divider_widget());
   const std::vector<aura::Window*> window_list =
       GetWindowsListInOverviewGrids();
   EXPECT_EQ(2u, window_list.size());
@@ -8313,9 +8335,19 @@ TEST_F(SplitViewOverviewSessionTest,
 // all the way to the opposite edge, then the split view window is reinserted
 // into the overview grid at the correct position according to MRU order, and
 // the stacking order is also correct.
+// TODO(crbug.com/324024580): Re-enable this test. Causes build failures on
+// MSAN/ASAN on CrOS.
+#if BUILDFLAG(IS_CHROMEOS) && \
+    (defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
+#define MAYBE_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded \
+  DISABLED_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded
+#else
+#define MAYBE_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded \
+  SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded
+#endif
 TEST_F(
     SplitViewOverviewSessionTest,
-    SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded) {
+    MAYBE_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -8990,9 +9022,9 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_FALSE(GetOverviewController()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
-  // 5. Test if one window is snapped, the other window are showing in overview,
-  // activating an new window will not auto-snap the new window. Overview and
-  // splitview should be ended.
+  // 5. Test if one window is snapped, the other windows are showing in
+  // overview, activating an new window will not auto-snap the new window.
+  // Overview and splitview should be ended.
   ToggleOverview();
   overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
@@ -9653,25 +9685,23 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
   EXPECT_FALSE(GetDropTarget(1));
 }
 
-// Tests that Alt+[ and Alt+] do not start overview.
-TEST_F(SplitViewOverviewSessionInClamshellTest,
-       AltSquareBracketNotStartOverview) {
+// Tests that cycle snap do not start overview.
+TEST_F(SplitViewOverviewSessionInClamshellTest, CycleSnapNotStartOverview) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
   wm::ActivateWindow(window1.get());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(InOverviewSession());
-  // Alt+[
-  const WindowSnapWMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
+
+  const WindowSnapWMEvent cycle_snap_primary(WM_EVENT_CYCLE_SNAP_PRIMARY);
   WindowState* window1_state = WindowState::Get(window1.get());
-  window1_state->OnWMEvent(&alt_left_square_bracket);
+  window1_state->OnWMEvent(&cycle_snap_primary);
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window1_state->GetStateType());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(InOverviewSession());
-  // Alt+]
-  const WindowSnapWMEvent alt_right_square_bracket(
-      WM_EVENT_CYCLE_SNAP_SECONDARY);
-  window1_state->OnWMEvent(&alt_right_square_bracket);
+
+  const WindowSnapWMEvent cycle_snap_secondary(WM_EVENT_CYCLE_SNAP_SECONDARY);
+  window1_state->OnWMEvent(&cycle_snap_secondary);
   EXPECT_EQ(WindowStateType::kSecondarySnapped, window1_state->GetStateType());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(InOverviewSession());

@@ -64,24 +64,6 @@ using testing::Matcher;
 constexpr auto kDefaultTriggerSource =
     AutofillSuggestionTriggerSource::kFormControlElementClicked;
 
-Matcher<Suggestion> EqualsSuggestion(PopupItemId id) {
-  return Field(&Suggestion::popup_item_id, id);
-}
-
-Matcher<Suggestion> EqualsSuggestion(PopupItemId id,
-                                     const std::u16string& main_text) {
-  return AllOf(
-      Field(&Suggestion::popup_item_id, id),
-      Field(&Suggestion::main_text,
-            Suggestion::Text(main_text, Suggestion::Text::IsPrimary(true))));
-}
-
-Matcher<Suggestion> EqualsSuggestion(PopupItemId id,
-                                     const std::u16string& main_text,
-                                     Suggestion::Icon icon) {
-  return AllOf(EqualsSuggestion(id, main_text), Field(&Suggestion::icon, icon));
-}
-
 Matcher<Suggestion> EqualsFieldByFieldFillingSuggestion(
     PopupItemId id,
     const std::u16string& main_text,
@@ -1301,7 +1283,7 @@ TEST_F(AutofillChildrenSuggestionGeneratorTest,
               PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(ADDRESS_HOME_HOUSE_NUMBER, app_locale()),
               ADDRESS_HOME_HOUSE_NUMBER, Suggestion::Guid(profile().guid()),
-              {{Suggestion::Text(u"Building number")}}),
+              {{Suggestion::Text(u"House number")}}),
           EqualsFieldByFieldFillingSuggestion(
               PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(ADDRESS_HOME_STREET_NAME, app_locale()),
@@ -1578,7 +1560,7 @@ TEST_F(
                   PopupItemId::kAddressFieldByFieldFilling,
                   profile.GetInfo(ADDRESS_HOME_HOUSE_NUMBER, app_locale()),
                   ADDRESS_HOME_HOUSE_NUMBER, Suggestion::Guid(profile.guid()),
-                  {{Suggestion::Text(u"Building number")}})));
+                  {{Suggestion::Text(u"House number")}})));
 }
 
 TEST_F(

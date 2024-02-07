@@ -110,6 +110,7 @@ import org.chromium.chrome.browser.fonts.FontPreloader;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.hub.DefaultPaneOrderController;
+import org.chromium.chrome.browser.hub.HubColorScheme;
 import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.hub.HubLayoutDependencyHolder;
 import org.chromium.chrome.browser.hub.HubManager;
@@ -227,7 +228,7 @@ import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceDelegate;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
-import org.chromium.chrome.features.tasks.SingleTabSwitcherBuilder;
+import org.chromium.chrome.features.tasks.SingleTabModuleBuilder;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
@@ -262,6 +263,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleConsumer;
 
 /**
  * This is the main activity for ChromeMobile when not running in document mode. All the tabs are
@@ -310,7 +313,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private static final String TAG_MULTI_INSTANCE = "MultiInstance";
     private static final String SOURCE_ACTIVITY_REFERRER_OS = "android-app://android";
 
-    private static final long BACK_TO_BACK_CTA_CREATION_TIMESTAMP_DIFF_THRESHOLD_MS = 1000;
+    static final String HISTOGRAM_MISMATCHED_INDICES_ACTIVITY_CREATION_TIME_DELTA =
+            "Android.MultiWindowMode.MismatchedIndices.ActivityCreationTimeDelta";
 
     /**
      * Identifies a histogram to use in {@link #maybeDispatchExplicitMainViewIntent(Intent, int)}.
@@ -764,7 +768,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 rootViewSupplier,
                 mRootUiCoordinator.getScrimCoordinator(),
                 rootViewSupplier::get,
-                incognitoSupplier);
+                incognitoSupplier,
+                adaptOnToolbarAlphaChange());
     }
 
     private void setupCompositorContentPreNativeForPhone() {
@@ -927,6 +932,18 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         });
     }
 
+    private @Nullable BooleanSupplier getOverviewIncognitoSupplier() {
+        return HubFieldTrial.isHubEnabled() ? this::isHubCurrentlyShowingIncognito : null;
+    }
+
+    private boolean isHubCurrentlyShowingIncognito() {
+        if (!mHubManagerSupplier.hasValue()) {
+            return false;
+        }
+        Pane pane = mHubManagerSupplier.get().getPaneManager().getFocusedPaneSupplier().get();
+        return pane == null ? false : pane.getColorScheme() == HubColorScheme.INCOGNITO;
+    }
+
     private Pane createTabSwitcherPane(boolean isIncognito) {
         Pair<TabSwitcher, Pane> result =
                 TabManagementDelegateProvider.getDelegate()
@@ -944,7 +961,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                                 getModalDialogManager(),
                                 mRootUiCoordinator.getIncognitoReauthControllerSupplier(),
                                 mNewTabButtonClickListener,
-                                isIncognito);
+                                isIncognito,
+                                adaptOnToolbarAlphaChange());
         if (didFinishNativeInitialization()) {
             result.first.initWithNative();
         }
@@ -2163,7 +2181,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 IntentHandler.hasAnyIncognitoExtra(getIntent().getExtras()),
                 mBackPressManager,
                 getSavedInstanceState(),
-                mMultiInstanceManager);
+                mMultiInstanceManager,
+                getOverviewIncognitoSupplier());
     }
 
     @Override
@@ -2287,10 +2306,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (!StartSurfaceConfiguration.useMagicStack()) return;
 
         ModuleRegistry moduleRegistry = ModuleRegistry.getInstance();
-        SingleTabSwitcherBuilder singleTabSwitcherBuilder =
-                new SingleTabSwitcherBuilder(
+        SingleTabModuleBuilder singleTabModuleBuilder =
+                new SingleTabModuleBuilder(
                         this, getTabModelSelectorSupplier(), getTabContentManagerSupplier());
-        moduleRegistry.registerModule(ModuleType.SINGLE_TAB, singleTabSwitcherBuilder);
+        moduleRegistry.registerModule(ModuleType.SINGLE_TAB, singleTabModuleBuilder);
 
         if (ChromeFeatureList.sPriceChangeModule.isEnabled()) {
             PriceChangeModuleBuilder priceChangeModuleBuilder =
@@ -2979,7 +2998,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
             new QuickDeleteController(
                     this,
-                    new QuickDeleteDelegateImpl(mTabSwitcherSupplier),
+                    new QuickDeleteDelegateImpl(mTabModelProfileSupplier, mTabSwitcherSupplier),
                     getModalDialogManager(),
                     getSnackbarManager(),
                     getLayoutManager(),
@@ -3896,17 +3915,17 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // If the two activities launched within a short span, simply destroy the persistent store
         // instance of the activity at the requested index, assuming no changes have been made to
         // the tab state during this time.
-        // TODO (crbug.com/1520923): Add a histogram to track the time difference to possibly refine
-        // the threshold value, and also make this Finch configurable.
-        long onCreateTimeDelta =
-                Math.abs(
-                        tabbedActivityAtRequestedIndex.getOnCreateTimestampMs()
-                                - this.getOnCreateTimestampMs());
+        long onCreateTimeDeltaMs =
+                getOnCreateTimestampMs() - tabbedActivityAtRequestedIndex.getOnCreateTimestampMs();
+        RecordHistogram.recordTimesHistogram(
+                HISTOGRAM_MISMATCHED_INDICES_ACTIVITY_CREATION_TIME_DELTA, onCreateTimeDeltaMs);
         boolean shouldSaveState =
                 tabbedActivityAtRequestedIndex.getLifecycleDispatcher().getCurrentActivityState()
                         < ActivityState.STOPPED_WITH_NATIVE;
         if (shouldSaveState
-                && onCreateTimeDelta > BACK_TO_BACK_CTA_CREATION_TIMESTAMP_DIFF_THRESHOLD_MS) {
+                && onCreateTimeDeltaMs
+                        > MultiWindowUtils.BACK_TO_BACK_CTA_CREATION_TIMESTAMP_DIFF_THRESHOLD_MS
+                                .getValue()) {
             // Save state only if #onStopWithNative() that invokes this, has not run yet.
             tabModelOrchestrator.getTabPersistentStore().saveState();
         }
@@ -3976,6 +3995,17 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
      */
     private boolean skipSavingNonActiveNtps() {
         return StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(isTablet());
+    }
+
+    /**
+     * Creates an adapter between the toolbar's observer that takes a float and the format that the
+     * hub expects which is a double.
+     */
+    private DoubleConsumer adaptOnToolbarAlphaChange() {
+        return alpha ->
+                getToolbarManager()
+                        .getToolbarAlphaInOverviewObserver()
+                        .onOverviewAlphaChanged((float) alpha);
     }
 
     public void showStartSurfaceForTesting() {

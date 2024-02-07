@@ -99,7 +99,6 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_disk_cache_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/loader/url_loader_factory_utils.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/media/frameless_media_interface_proxy.h"
 #include "content/browser/media/media_internals.h"
@@ -192,7 +191,6 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "services/metrics/ukm_recorder_factory_impl.h"
-#include "services/network/public/cpp/url_loader_factory_builder.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -1062,8 +1060,9 @@ BASE_FEATURE(kCheckNoNewRefCountsWhenRphDeletingSoon,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Please keep in sync with "RenderProcessHostBlockedURLReason" in
-// tools/metrics/histograms/enums.xml. // These values are persisted to logs.
-// Entries should not be renumbered and numeric values should never be reused.
+// tools/metrics/histograms/metadata/browser/enums.xml. These values are
+// persisted to logs. Entries should not be renumbered and numeric values should
+// never be reused.
 enum class BlockedURLReason {
   kInvalidURL = 0,
   kFailedCanRequestURLCheck = 1,
@@ -1870,10 +1869,11 @@ void RenderProcessHostImpl::BindIndexedDB(
     return;
   }
 
+  auto [state_checker, token] =
+      IndexedDBClientStateCheckerFactory::InitializePendingRemote(rfh_id);
   storage_partition_impl_->GetIndexedDBControl().BindIndexedDB(
       storage::BucketLocator::ForDefaultBucket(storage_key),
-      IndexedDBClientStateCheckerFactory::InitializePendingRemote(rfh_id),
-      std::move(receiver));
+      std::move(state_checker), token, std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindBucketManagerHost(
@@ -2850,22 +2850,6 @@ ProcessLock RenderProcessHostImpl::GetProcessLock() const {
   return ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(GetID());
 }
 
-void RenderProcessHostImpl::CreateURLLoaderFactory(
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    network::mojom::URLLoaderFactoryParamsPtr params) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(params);
-  DCHECK_EQ(GetID(), static_cast<int>(params->process_id));
-
-  network::URLLoaderFactoryBuilder factory_builder;
-  if (url_loader_factory::GetTestingInterceptor()) {
-    url_loader_factory::GetTestingInterceptor().Run(GetID(), factory_builder);
-  }
-  std::move(factory_builder)
-      .Finish(std::move(receiver), GetStoragePartition()->GetNetworkContext(),
-              std::move(params));
-}
-
 bool RenderProcessHostImpl::MayReuseHost() {
   return GetContentClient()->browser()->MayReuseHost(this);
 }
@@ -3137,9 +3121,14 @@ void RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedSiteInstance(
 }
 
 // static
-RenderProcessHost* RenderProcessHost::GetSpareRenderProcessHostForTesting() {
+RenderProcessHost* RenderProcessHost::GetSpareRenderProcessHost() {
   return SpareRenderProcessHostManager::GetInstance()
       .spare_render_process_host();
+}
+
+// static
+RenderProcessHost* RenderProcessHost::GetSpareRenderProcessHostForTesting() {
+  return GetSpareRenderProcessHost();
 }
 
 // static
@@ -3877,6 +3866,10 @@ base::SafeRef<RenderProcessHost> RenderProcessHostImpl::GetSafeRef() const {
 
 bool RenderProcessHostImpl::IsInitializedAndNotDead() {
   return is_initialized_ && !is_dead_;
+}
+
+bool RenderProcessHostImpl::IsDeletingSoon() {
+  return deleting_soon_;
 }
 
 void RenderProcessHostImpl::SetBlocked(bool blocked) {

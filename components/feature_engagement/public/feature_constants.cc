@@ -43,9 +43,6 @@ BASE_FEATURE(kIPHComposeNewBadgeFeature,
 BASE_FEATURE(kIPHDesktopSharedHighlightingFeature,
              "IPH_DesktopSharedHighlighting",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHDesktopTabGroupsNewGroupFeature,
-             "IPH_DesktopTabGroupsNewGroup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHDesktopCustomizeChromeFeature,
              "IPH_DesktopCustomizeChrome",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -57,7 +54,7 @@ BASE_FEATURE(kIPHDesktopNewTabPageModulesCustomizeFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHDownloadEsbPromoFeature,
              "IPH_DownloadEsbPromo",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHExperimentalAIPromoFeature,
              "IPH_ExperimentalAIPromo",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -551,9 +548,6 @@ BASE_FEATURE(kIPHiOSHistoryOnOverflowMenuFeature,
 BASE_FEATURE(kIPHiOSShareToolbarItemFeature,
              "IPH_iOSShareToolbarItemFeature",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHiOSDefaultBrowserVideoPromoTriggerFeature,
-             "IPH_iOSDefaultBrowserVideoPromoTrigger",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHiOSPromoPostRestoreDefaultBrowserFeature,
              "IPH_iOSPromoPostRestoreDefaultBrowser",
              base::FEATURE_ENABLED_BY_DEFAULT);

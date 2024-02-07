@@ -651,6 +651,7 @@ ServiceWorkerContainerHost::CreateControllerServiceWorkerInfo() {
       controller()->fetch_handler_bypass_option();
   controller_info->sha256_script_checksum =
       controller()->sha256_script_checksum();
+  controller_info->need_router_evaluate = controller()->NeedRouterEvaluate();
 
   if (controller()->router_evaluator()) {
     controller_info->router_data = blink::mojom::ServiceWorkerRouterData::New();
@@ -1922,6 +1923,31 @@ ServiceWorkerContainerHost::GetRunningStatusCallbackReceiver() {
   auto receiver = remote_callback.InitWithNewPipeAndPassReceiver();
   running_status_observer_->AddCallback(std::move(remote_callback));
   return receiver;
+}
+
+std::optional<SubresourceLoaderParams>
+ServiceWorkerContainerHost::MaybeCreateSubresourceLoaderParams(
+    base::WeakPtr<ServiceWorkerContainerHost> container_host) {
+  // We didn't find a matching service worker for this request, and
+  // ServiceWorkerContainerHost::SetControllerRegistration() was not called.
+  if (!container_host || !container_host->controller()) {
+    return std::nullopt;
+  }
+
+  // Otherwise let's send the controller service worker information along
+  // with the navigation commit.
+  SubresourceLoaderParams params;
+  params.controller_service_worker_info =
+      container_host->CreateControllerServiceWorkerInfo();
+  if (base::WeakPtr<ServiceWorkerObjectHost> object_host =
+          container_host->GetOrCreateServiceWorkerObjectHost(
+              container_host->controller())) {
+    params.controller_service_worker_object_host = object_host;
+    params.controller_service_worker_info->object_info =
+        object_host->CreateIncompleteObjectInfo();
+  }
+
+  return std::optional<SubresourceLoaderParams>(std::move(params));
 }
 
 }  // namespace content

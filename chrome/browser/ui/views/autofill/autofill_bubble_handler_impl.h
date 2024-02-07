@@ -5,16 +5,22 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_BUBBLE_HANDLER_IMPL_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_BUBBLE_HANDLER_IMPL_H_
 
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
-#include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
+#include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
 
 class Browser;
+class PageActionIconView;
 class ToolbarButtonProvider;
 
 namespace content {
 class WebContents;
+}
+
+namespace views {
+class View;
 }
 
 namespace autofill {
@@ -24,8 +30,7 @@ class SaveCardBubbleController;
 class IbanBubbleController;
 enum class IbanBubbleType;
 
-class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
-                                  public AvatarToolbarButton::Observer {
+class AutofillBubbleHandlerImpl : public AutofillBubbleHandler {
  public:
   AutofillBubbleHandlerImpl(Browser* browser,
                             ToolbarButtonProvider* toolbar_button_provider);
@@ -75,24 +80,22 @@ class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
       MandatoryReauthBubbleController* controller,
       bool is_user_gesture,
       MandatoryReauthBubbleType bubble_type) override;
-
-  // AvatarToolbarButton::Observer:
-  void OnAvatarHighlightAnimationFinished() override;
+  AutofillBubbleBase* ShowSaveCardConfirmationBubble(
+      content::WebContents* web_contents,
+      SaveCardBubbleController* controller) override;
 
  private:
-  // Executes highlight animation on toolbar's avatar icon.
-  void ShowAvatarHighlightAnimation();
+  // Show the save card and virtual card enrollment confirmation bubble.
+  AutofillBubbleBase* ShowSaveCardAndVirtualCardEnrollConfirmationBubble(
+      views::View* anchor_view,
+      content::WebContents* web_contents,
+      base::OnceCallback<void(PaymentsBubbleClosedReason)>
+          controller_hide_callback,
+      PageActionIconView* icon_view);
 
   raw_ptr<Browser> browser_ = nullptr;
 
   raw_ptr<ToolbarButtonProvider> toolbar_button_provider_ = nullptr;
-
-  // Whether a save local card sign in promo bubble could pop up from the avatar
-  // button after the highlight animation finishes.
-  bool should_show_sign_in_promo_if_applicable_ = false;
-
-  base::ScopedObservation<AvatarToolbarButton, AvatarToolbarButton::Observer>
-      avatar_toolbar_button_observation_{this};
 };
 
 }  // namespace autofill

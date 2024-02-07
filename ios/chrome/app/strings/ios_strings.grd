@@ -1,4 +1,3 @@
-<?xml version='1.0' encoding='UTF-8'?>
 <grit base_dir="." latest_public_release="0" current_release="1" output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
   <!--
   This file contains definition of resources that will be translated for each
@@ -448,6 +447,11 @@
           =1 {Bookmark saved}
           other {{count} Bookmarks saved}}
       </message>
+      <message name="IDS_IOS_BOOKMARKS_SAVED" desc="This confirmation message is intended to help users understand that multiple bookmarks have been saved. The confirmation message appears at the bottom of the page after users bulk add bookmarks, telling them how many bookmarks they've added. The tone should be informative.">
+          {count, plural,
+          =1 {Bookmark saved}
+          other {Bookmarks saved}}
+      </message>
       <message name="IDS_IOS_BOOKMARKS_BULK_SAVED_ACCOUNT" desc="This confirmation message is intended to help users understand that multiple bookmarks have been saved in their account. The confirmation message appears at the bottom of the page after users bulk add bookmarks, telling them how many bookmarks they've added into their account. The tone should be informative.">
           {count, plural,
           =1 {Bookmark saved in your Google Account, {email}}
@@ -610,14 +614,8 @@
       <message name="IDS_IOS_BOOKMARK_NEW_MOVE_BUTTON_LABEL" desc="Accessibility label for a button that allows the user to move the position of one or many bookmarks. [Length: 30em.]">
         Move
       </message>
-      <message name="IDS_IOS_BOOKMARK_NEW_MULTIPLE_BOOKMARK_MOVE" desc="A description presented to the user that they just moved multiple bookmarks. [Length: 30em.] [iOS only]">
-        <ph name="NUMBER_OF_SELECTED_BOOKMARKS">$1<ex>2</ex></ph> items moved
-      </message>
       <message name="IDS_IOS_BOOKMARK_NEW_ONE_ITEM_LABEL" desc="Text that indicates that a user has selected one bookmark for editing. [Length: 30em.]">
         1 selected
-      </message>
-      <message name="IDS_IOS_BOOKMARK_NEW_SINGLE_BOOKMARK_MOVE" desc="A description presented to the user that they just moved 1 bookmark. [Length: 30em.] [iOS only]">
-        1 item moved
       </message>
       <message name="IDS_IOS_BOOKMARK_NEW_UNDO_BUTTON_TITLE" desc="Text shown for the undo button. [Length: 30em.] [iOS only]">
         Undo
@@ -630,20 +628,40 @@
           =1 {Bookmark saved to "{title}"}
           other {Bookmarks saved to "{title}"}}
       </message>
+      <message name="IDS_IOS_BOOKMARK_PAGE_BULK_SAVED_FOLDER" desc="This confirmation message is intended to help users understand that a bookmark has been saved in Chrome. These users are not signed in to a Google Account and are not syncing their data, so we do not specify where the bookmark is saved. The confirmation message appears at the bottom of the page after users choose to bookmark a page. The tone should be informative.">
+          {count, plural,
+          =1 {Bookmark saved to "{title}"}
+          other {{count} Bookmarks saved to "{title}"}}
+      </message>
       <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_FOLDER_TO_DEVICE" desc="This confirmation message is intended to help users understand that a bookmark has been saved in Chrome. These users are not signed in to a Google Account and are not syncing their data, so we do not specify where the bookmark is saved. The confirmation message appears at the bottom of the page after users choose to bookmark a page. The tone should be informative.">
           {count, plural,
-          =1 {Bookmark saved to "{title}". It is only saved to this device.}
-          other {Bookmarks saved to "{title}". It is only saved to this device.}}
+          =1 {Bookmark saved to "{title}". It is saved only to this device.}
+          other {Bookmarks saved to "{title}". They are only saved to this device.}}
+      </message>
+      <message name="IDS_IOS_BOOKMARK_PAGE_BULK_SAVED_FOLDER_TO_DEVICE" desc="This confirmation message is intended to help users understand that a bookmark has been saved in Chrome. These users are not signed in to a Google Account and are not syncing their data, so we do not specify where the bookmark is saved. The confirmation message appears at the bottom of the page after users choose to bookmark a page. The tone should be informative.">
+          {count, plural,
+          =1 {Bookmark saved to "{title}". It is saved only to this device.}
+          other {{count} Bookmarks saved to "{title}". They are saved only to this device.}}
       </message>
       <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_INTO_ACCOUNT" desc="This confirmation message is intended to help users understand that a bookmark has been saved in their Google Account. The confirmation message appears at the bottom of the page after users choose to bookmark a page. The tone should be informative.">
           {count, plural,
           =1 {Bookmark saved in your Google Account, {email}}
           other {Bookmarks saved in your Google Account, {email}}}
       </message>
+      <message name="IDS_IOS_BOOKMARK_PAGE_BULK_SAVED_INTO_ACCOUNT" desc="This confirmation message is intended to help users understand that a bookmark has been saved in their Google Account. The confirmation message appears at the bottom of the page after users choose to bookmark a page. The tone should be informative.">
+          {count, plural,
+          =1 {Bookmark saved in your Google Account, {email}}
+          other {{count} Bookmarks saved in your Google Account, {email}}}
+      </message>
       <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_INTO_ACCOUNT_FOLDER" desc="This confirmation message is intended to help users understand that a bookmark has been saved to a particular folder in their Google Account. The confirmation message appears at the bottom of the page after users choose to bookmark a page. The tone should be informative.">
          {count, plural,
          =1 {Bookmark saved to "{title}" in your account, {email}}
          other {Bookmarks saved to "{title}" in your account, {email}}}
+      </message>
+      <message name="IDS_IOS_BOOKMARK_PAGE_BULK_SAVED_INTO_ACCOUNT_FOLDER" desc="This confirmation message is intended to help users understand that a bookmark has been saved to a particular folder in their Google Account. The confirmation message appears at the bottom of the page after users choose to bookmark a page. The tone should be informative.">
+         {count, plural,
+         =1 {Bookmark saved to "{title}" in your account, {email}}
+         other {{count} Bookmarks saved to "{title}" in your account, {email}}}
       </message>
       <message name="IDS_IOS_BOOKMARK_SNACKBAR_EDIT_BOOKMARK" desc="This string is found on a button that takes the user to the Edit Bookmark screen when the user taps it. The button is on a confirmation message that users see when they save a bookmark to their device or in their Google Account. This text is a verb and is short for the longer phrase 'edit the bookmark.' The tone should be informative. Use Apple-style title case. [CHAR_LIMIT=15]">
         Edit
@@ -939,11 +957,17 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_CONTEXT_CLOSETAB" desc="The iOS context menu item for closing a tab. [iOS only]" meaning="Close the current tab [Title Case].">
         Close Tab
       </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_CLOSEGROUP" desc="The iOS context menu item for closing a tab group. Title case. [iOS only]">
+        Close Group
+      </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_COPY" desc="The iOS menu item for copying a link's URL into the pasteboard. Shorter than the desktop version [iOS only]">
         Copy Link URL
       </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_COPYIMAGE" desc="The name of the Copy Image command in the content area context menu.">
         Copy Image
+      </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_NEWTABINGROUP" desc="The iOS context menu item for adding a new tab in a tab group. [iOS only]">
+        New Tab in Group
       </message>
       <message name="IDS_IOS_CONTENT_NOTIFICATION_SNACKBAR_ACTION_MANAGE" desc="Text for the Chrome content notifications confirmation snackbar action.">
         Manage
@@ -975,11 +999,17 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_CONTEXT_PINTAB" desc="The iOS context menu item for pinning a tab.[iOS only]">
         Pin Tab
       </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_RENAMEGROUP" desc="The iOS context menu item for renaming a tab group. Title case. [iOS only]">
+        Rename Group
+      </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE" desc="The name of the Save Image As command in the content area context menu">
         Save in Photos
       </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_SELECTTABS" desc="The iOS context menu item for entering into the selection mode, where users can select tabs to perform bulk actions on them.[iOS only]">
         Select Tabs
+      </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_UNGROUP" desc="The iOS context menu item for ungrouping a tab group. Title case. [iOS only]">
+        Ungroup
       </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_UNPINTAB" desc="The iOS context menu item for unpinning a tab.[iOS only]">
         Unpin Tab
@@ -1003,7 +1033,7 @@ See your search engine’s instructions for deleting your search history, if app
         Yes, I'm in
       </message>
       <message name="IDS_IOS_CONTENT_NOTIFICATIONS_PROMO_SECONDARY_BUTTON" desc="Text for the Notifications promo secondary button.">
-        No Thanks
+        Don't get updates
       </message>
       <message name="IDS_IOS_CONTENT_NOTIFICATIONS_PROMO_TEXT" desc="Text for the Notifications promo.">
         Would you like notifications for news, sports, and more based on your interests?
@@ -2243,6 +2273,15 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_MAGIC_STACK_SEE_MORE" desc="The See More button in Magic Stack modules to show a detailed view. [Length: 10em]">
         See More
       </message>
+      <message name="IDS_IOS_MANAGE_STORAGE_ALERT_TITLE" desc="Title of an alert presented when the user tries to select a destination for an upload, without sufficient storage space in the destination. [iOS only]">
+        Your Storage is Full
+      </message>
+      <message name="IDS_IOS_MANAGE_STORAGE_ALERT_MESSAGE" desc="Message of an alert presented when the user tries to select a destination for an upload, without sufficient storage space in the destination. [iOS only]">
+        To download files, photos, and more you need more storage space.
+      </message>
+      <message name="IDS_IOS_MANAGE_STORAGE_ALERT_MANAGE_STORAGE_BUTTON" desc="Label of the primary action button in an alert presented when the user tries to select a destination for an upload, without sufficient storage space in the destination. The button opens a page where the user can manage their storage space. [iOS only] [Length: 12em]" meaning="Label of the primary action button in an alert presented when the user tries to select a destination for an upload, without sufficient storage space in the destination. The button opens a page where the user can manage their storage space. [iOS only] [Length: 12em]">
+        Manage Storage
+      </message>
       <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT_UNITY" desc="Label on the button to proceed with signout and clear all Chrome data.[Length: 30em].">
         Clear
       </message>
@@ -2437,6 +2476,21 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_NOTIFICATIONS_MANAGE_SETTINGS" desc="The label for a button that takes the user to the app's Notifications Settings page.">
         Manage
+      </message>
+      <message name="IDS_IOS_NOTIFICATIONS_OPT_IN_CONTENT_TOGGLE_MESSSAGE" desc="The label for the notification opt-in toggle message for content notifications.">
+        News and content based on your interests.
+      </message>
+      <message name="IDS_IOS_NOTIFICATIONS_OPT_IN_PRICE_TRACKING_TOGGLE_MESSAGE" desc="The label for the notification opt-in toggle message for price tracking notifications.">
+        Recieve price drop alerts for products you track.
+      </message>
+      <message name="IDS_IOS_NOTIFICATIONS_OPT_IN_PRICE_TRACKING_TOGGLE_TITLE" desc="The label for the notification opt-in toggle title for price tracking notifications.">
+        Price Tracking
+      </message>
+      <message name="IDS_IOS_NOTIFICATIONS_OPT_IN_TITLE" desc="The title of the screen that prompts to select which notifications to opt-in to.">
+        Choose the notifications you want to receive
+      </message>
+      <message name="IDS_IOS_NOTIFICATIONS_OPT_IN_ENABLE_BUTTON" desc="The text for the button in notifications opt-in screen that enables the selected notifications.">
+        Turn on Notifications
       </message>
       <message name="IDS_IOS_NTP_FEED_SIGNIN_COMPACT_PROMO_BODY" desc="The text on the body of the new tab page Feed Signin Promo (compact version), explaining that users will content based on users interests if they enable sync. [iOS only]">
         Sync to get content based on your interests.

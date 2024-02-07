@@ -192,6 +192,10 @@ const char kCrOSLegacyMediaFormatsDescription[] =
     "MPEG4 video streams.";
 #endif
 
+const char kCssGamutMappingName[] = "CSS Gamut Mapping";
+const char kCssGamutMappingDescription[] =
+    "Enable experimental CSS gamut mapping implementation.";
+
 const char kCustomizeChromeColorExtractionName[] =
     "Customize Chrome Color Extraction";
 const char kCustomizeChromeColorExtractionDescription[] =
@@ -291,6 +295,12 @@ const char kPreloadingOnPerformancePageName[] =
     "Preloading Settings on Performance Page";
 const char kPreloadingOnPerformancePageDescription[] =
     "Moves preloading settings to the performance page.";
+
+const char kPrerender2Name[] = "Prerendering";
+const char kPrerender2Description[] =
+    "If enabled, browser features and the speculation rules API can trigger "
+    "prerendering. If disabled, all prerendering APIs still exist, but a "
+    "prerender will never successfully take place.";
 
 const char kPrivacyIndicatorsName[] = "Enable Privacy Indicators";
 const char kPrivacyIndicatorsDescription[] =
@@ -1947,6 +1957,14 @@ const char kCastStreamingVp9Description[] =
     "Offers the VP9 video codec when negotiating Cast Streaming, and uses VP9 "
     "if selected for the session.";
 
+#if BUILDFLAG(IS_MAC)
+const char kCastStreamingMacHardwareH264Name[] =
+    "Enable hardware H264 video encoding on for Cast Streaming on macOS";
+const char kCastStreamingMacHardwareH264Description[] =
+    "Offers the H264 video codec when negotiating Cast Streaming, and uses "
+    "hardware-accelerated H264 encoding if selected for the session";
+#endif
+
 const char kCastEnableStreamingWithHiDPIName[] =
     "HiDPI tab capture support for Cast Streaming";
 const char kCastEnableStreamingWithHiDPIDescription[] =
@@ -2169,6 +2187,12 @@ const char kIpProtectionProxyOptOutDescription[] =
 const char kIpProtectionProxyOptOutChoiceDefault[] = "Default";
 const char kIpProtectionProxyOptOutChoiceOptOut[] = "Disabled";
 
+const char kAutomaticFullscreenContentSettingName[] =
+    "Automatic Fullscreen Content Setting";
+const char kAutomaticFullscreenContentSettingDescription[] =
+    "Enables a new Automatic Fullscreen content setting that lets allowlisted "
+    "origins use the HTML Fullscreen API without transient activation.";
+
 const char kJapaneseOSSettingsName[] = "Japanese OS Settings Page";
 const char kJapaneseOSSettingsDescription[] =
     "Enable OS Settings Page for Japanese input methods";
@@ -2285,6 +2309,13 @@ const char kMediaRouterCastAllowAllIPsDescription[] =
     "Have the Media Router connect to Cast devices on all IP addresses, not "
     "just RFC1918/RFC4193 private addresses.";
 
+const char kMinorModeRestrictionsForHistorySyncOptInName[] =
+    "Minor Mode Restrictions For History Sync Opt In";
+const char kMinorModeRestrictionsForHistorySyncOptInDescription[] =
+    "When enabled, Chrome will present opt in screens for turning on History "
+    "Sync depending on CanShowHistorySyncOptInsWithoutMinorModeRestrictions "
+    "capability value. Otherwise, the opt-in screens are unrestricted.";
+
 const char kMojoLinuxChannelSharedMemName[] =
     "Enable Mojo Shared Memory Channel";
 const char kMojoLinuxChannelSharedMemDescription[] =
@@ -2306,23 +2337,12 @@ const char kWebMachineLearningNeuralNetworkDescription[] =
     "Enables the Web Machine Learning Neural Network (WebNN) API. Spec at "
     "https://www.w3.org/TR/webnn/";
 
-#if !BUILDFLAG(IS_ANDROID)
-const char kEnableMantaServiceName[] = "Enable Manta Service";
-const char kEnableMantaServiceDescription[] =
-    "Enables the profile keyed Manta service at startup.";
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 const char kSystemProxyForSystemServicesName[] =
     "Enable system-proxy for selected system services";
 const char kSystemProxyForSystemServicesDescription[] =
     "Enabling this flag will allow ChromeOS system service which require "
     "network connectivity to use the system-proxy daemon for authentication to "
     "remote HTTP web proxies.";
-
-const char kNotificationInteractionHistoryName[] =
-    "Notification Interaction History";
-const char kNotificationInteractionHistoryDescription[] =
-    "Enable recording notification count and interaction.";
 
 const char kNotificationSchedulerName[] = "Notification scheduler";
 const char kNotificationSchedulerDescription[] =
@@ -2572,6 +2592,11 @@ const char kOmniboxOnClobberFocusTypeOnContentName[] =
 const char kOmniboxOnClobberFocusTypeOnContentDescription[] =
     "Send ON_CLOBBER focus type for zero-prefix requests with an empty input "
     "on Web/SRP.";
+
+const char kOmniboxLimitKeywordModeSuggestionsName[] =
+    "Omnibox Limit Keyword Mode Suggestions";
+const char kOmniboxLimitKeywordModeSuggestionsDescription[] =
+    "Limit scope of suggestions in keyword mode";
 
 const char kOmniboxShortcutBoostName[] = "Omnibox shortcut boosting";
 const char kOmniboxShortcutBoostDescription[] =
@@ -3322,10 +3347,6 @@ const char kSystemKeyboardLockDescription[] =
     "keyboard shortcuts and have the events routed directly to the website "
     "when in fullscreen mode.";
 
-const char kSystemSoundsName[] = "Power Sounds";
-const char kSystemSoundsDescription[] =
-    "Enable device charging and low battery warning sounds.";
-
 const char kStylusBatteryStatusName[] =
     "Show stylus battery stylus in the stylus tools menu";
 const char kStylusBatteryStatusDescription[] =
@@ -3915,6 +3936,11 @@ const char kAndroidHubDescription[] =
     "Replaces the Tab Switcher with a UI surface containing more types of "
     "data.";
 
+const char kAndroidTabGroupStableIdsName[] = "Android Tab Group Stable IDs";
+const char kAndroidTabGroupStableIdsDescription[] =
+    "Replaces the tab group ID system on Android with stable IDs. A logical "
+    "consequence is support for tab groups with a single tab.";
+
 const char kAnimatedImageDragShadowName[] =
     "Enable animated image drag shadow on Android.";
 const char kAnimatedImageDragShadowDescription[] =
@@ -4018,6 +4044,10 @@ const char kConvertTrackpadEventsToMouseName[] =
     "Convert trackpad events to mouse events";
 const char kConvertTrackpadEventsToMouseDescription[] =
     "Convert trackpad events to mouse events to improve gesture support";
+
+const char kDataSharingAndroidName[] = "Data Sharing for Android";
+const char kDataSharingAndroidDescription[] =
+    "Data sharing service in Android devices.";
 
 const char kDefaultViewportIsDeviceWidthName[] =
     "Default viewport width is device width";
@@ -4226,10 +4256,13 @@ const char kNotificationPermissionRationaleBottomSheetDescription[] =
     "Only works with builds targeting Android T+.";
 
 const char kOfflineAutoFetchName[] = "Offline Auto Fetch";
-const char kOfflineAutoFetchDescription[]= "Enables auto fetch of content when Chrome is online";
+const char kOfflineAutoFetchDescription[] =
+    "Enables auto fetch of content when Chrome is online";
 
-const char kOfflineContentOnNetErrorName[] = "Offline Content allowed on net errors";
-const char kOfflineContentOnNetErrorDescription[]=  "Enables use of Offline Content on network errors";
+const char kOfflineContentOnNetErrorName[] =
+    "Offline Content allowed on net errors";
+const char kOfflineContentOnNetErrorDescription[] =
+    "Enables use of Offline Content on network errors";
 
 const char kOmniboxShortcutsAndroidName[] = "Omnibox shortcuts on Android";
 const char kOmniboxShortcutsAndroidDescription[] =
@@ -4697,6 +4730,17 @@ const char kEnableAccessibilityLiveCaptionDescription[] =
     "Enables the live caption feature which generates captions for "
     "media playing in Chrome. Turn the feature on in "
     "chrome://settings/accessibility.";
+
+const char kEnableMantaServiceName[] = "Enable Manta Service";
+const char kEnableMantaServiceDescription[] =
+    "Enables the profile keyed Manta service at startup.";
+
+const char kForceSigninFlowInProfilePickerName[] =
+    "Force Signin Flows in Profile Picker";
+const char kForceSigninFlowInProfilePickerDescription[] =
+    "Migrates Force Signin flows from the old popup dialog on top of the "
+    "Profile Picker, to the regular sign in flow within the Profile Picker "
+    "with adaptation to the policy settings";
 
 const char kReadAnythingName[] = "Reading Mode";
 const char kReadAnythingDescription[] =
@@ -5372,10 +5416,6 @@ const char kSystemColorChooserName[] = "System Color Chooser";
 const char kSystemColorChooserDescription[] =
     "Enables a button that launches the macOS native color chooser.";
 
-const char kVideoToolboxAv1DecodingName[] = "VideoToolbox AV1 decoding support";
-const char kVideoToolboxAv1DecodingDescription[] =
-    "Controls support for accelerated AV1 decoding through VideoToolbox.";
-
 #endif
 
 // Windows and Mac -------------------------------------------------------------
@@ -5775,6 +5815,13 @@ const char kBluetoothUseLLPrivacyName[] = "Enable LL Privacy in BlueZ";
 const char kBluetoothUseLLPrivacyDescription[] =
     "Enable address resolution offloading to Bluetooth Controller if "
     "supported. Modifying this flag will cause Bluetooth Controller to reset.";
+
+const char kCampbellGlyphName[] = "Enable glyph for Campbell";
+const char kCampbellGlyphDescription[] = "Enables a Campbell glyph.";
+
+const char kCampbellKeyName[] = "Key to enable glyph for Campbell";
+const char kCampbellKeyDescription[] =
+    "Secret key to enable glyph for Campbell";
 
 const char kCaptureModeAudioMixingName[] =
     "Enable screen capture advanced audio settings";
@@ -6225,6 +6272,11 @@ const char kEnableKeyboardRewriterFixDescription[] =
 const char kEnableNeuralPalmAdaptiveHoldName[] = "Palm Rejection Adaptive Hold";
 const char kEnableNeuralPalmAdaptiveHoldDescription[] =
     "Enable adaptive hold in palm rejection.  Not compatible with all devices.";
+
+const char kEnableHeatmapPalmDetectionName[] = "Enable Heatmap Palm Detection";
+const char kEnableHeatmapPalmDetectionDescription[] =
+    "Experimental: Enable Heatmap Palm detection. Not compatible with all "
+    "devices.";
 
 const char kEnableNeuralStylusPalmRejectionName[] =
     "Enable Neural Palm Detection";
@@ -6968,6 +7020,10 @@ const char kPrintManagementSetupAssistanceName[] =
 const char kPrintManagementSetupAssistanceDescription[] =
     "Enable improved printer setup experience for the Print Management App.";
 
+const char kPrintPreviewCrosAppName[] = "Enable ChromeOS print preview";
+const char kPrintPreviewCrosAppDescription[] =
+    "Enables ChromeOS print preview app.";
+
 const char kProductivityLauncherName[] =
     "Productivity experiment: App Launcher";
 const char kProductivityLauncherDescription[] =
@@ -7052,12 +7108,6 @@ const char kShimlessRMASkuDescriptionName[] =
     "Enable SKU description in Shimless RMA";
 const char kShimlessRMASkuDescriptionDescription[] =
     "Enable device SKU description in the Shimless RMA flow";
-
-const char kShortcutCustomizationJellyName[] =
-    "Enable jelly colors for the Shortcut Customization App";
-const char kShortcutCustomizationJellyDescription[] =
-    "Enable jelly colors for the Shortcut Customization App. Requires "
-    "jelly-colors flag to be enabled.";
 
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =
@@ -7940,19 +7990,6 @@ const char
         "credentials binding (not secure). This is intented to be used for "
         "manual testing only.";
 #endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
-
-#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-const char kTheoraVideoCodecName[] = "Theora video codec support";
-const char kTheoraVideoCodecDescription[] =
-    "Controls support for the Theora video codec.";
-#endif
-
-const char kForceSigninFlowInProfilePickerName[] =
-    "Force Signin Flows in Profile Picker";
-const char kForceSigninFlowInProfilePickerDescription[] =
-    "Migrates Force Signin flows from the old popup dialog on top of the "
-    "Profile Picker, to the regular sign in flow within the Profile Picker "
-    "with adaptation to the policy settings";
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

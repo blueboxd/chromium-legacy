@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback_list.h"
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
@@ -23,6 +24,7 @@
 #include "base/memory/safety_checks.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -291,6 +293,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   ADVANCED_MEMORY_SAFETY_CHECKS();
 
  public:
+  using PassKey = base::NonCopyablePassKey<View>;
   using Views = std::vector<raw_ptr<View, VectorExperimental>>;
 
   // TODO(crbug.com/1289902): The |event| parameter is being removed. Do not add
@@ -811,7 +814,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // https://crbug.com/1521108. Neither of these methods should be called from
   // Layout(); see https://crbug.com/1121681.
   void DeprecatedLayoutImmediately();
-  virtual void Layout();
+  virtual void Layout(PassKey);
 
   bool needs_layout() const { return needs_layout_; }
 
@@ -1847,7 +1850,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     requires std::derived_from<Super, View> && std::derived_from<This, Super> &&
              (!std::same_as<Super, This>)
   void LayoutSuperclass(This* ptr) {
-    static_cast<Super*>(ptr)->Super::Layout();
+    CHECK(layout_allowed_);
+    static_cast<Super*>(ptr)->Super::Layout(PassKey());
   }
 
   // Input ---------------------------------------------------------------------
@@ -2326,6 +2330,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Whether the view needs to be laid out.
   bool needs_layout_ = true;
+
+  // Whether Layout() access is currently legal. This is used to prevent calls
+  // to LayoutSuperclass() outside the implementation of Layout().
+  bool layout_allowed_ = false;
+
+  // How many times this view has done layout since the last time it was
+  // painted. This is used to compute metrics around unnecessary layout calls.
+  int layouts_since_last_paint_ = 0;
 
   // The View's LayoutManager defines the sizing heuristics applied to child
   // Views. The default is absolute positioning according to bounds_.

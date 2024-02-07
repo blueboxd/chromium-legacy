@@ -14,10 +14,10 @@ const ReadMoreState = {
 
 import {afterNextRender, PolymerElement, html} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import '//resources/polymer/v3_0/paper-styles/color.js';
-import '//resources/cr_elements/chromeos/cros_color_overrides.css.js';
-import '//resources/cr_elements/cr_shared_style.css.js';
+import '//resources/ash/common/cr_elements/cros_color_overrides.css.js';
+import '//resources/ash/common/cr_elements/cr_shared_style.css.js';
 import '//resources/ash/common/cr_scrollable_behavior.js';
-import '//resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
+import '//resources/ash/common/cr_elements/cr_lazy_render/cr_lazy_render.js';
 
 import '../common_styles/oobe_common_styles.css.js';
 import '../common_styles/oobe_dialog_host_styles.css.js';
@@ -208,23 +208,9 @@ export class OobeAdaptiveDialog extends PolymerElement {
     el.scrollTop = el.scrollHeight;
   }
 
-  /**
-   * @private
-   * Focuses the element. As cr-input uses focusInput() instead of focus() due
-   * to bug, we have to handle this separately.
-   * TODO(crbug.com/882612): Replace this with focus() in show().
-   */
-  focusElement_(element) {
-    if (element.focusInput) {
-      element.focusInput();
-      return;
-    }
-    element.focus();
-  }
-
   /** @private */
   focusOnShow_() {
-    const focusedElements = this.getElementsByClassName('focus-on-show');
+    const focusedElements = this.querySelectorAll('.focus-on-show');
     let focused = false;
     for (let i = 0; i < focusedElements.length; ++i) {
       if (focusedElements[i].hidden) {
@@ -232,11 +218,11 @@ export class OobeAdaptiveDialog extends PolymerElement {
       }
 
       focused = true;
-      afterNextRender(this, () => this.focusElement_(focusedElements[i]));
+      afterNextRender(this, () => focusedElements[i].focus());
       break;
     }
     if (!focused && focusedElements.length > 0) {
-      afterNextRender(this, () => this.focusElement_(focusedElements[0]));
+      afterNextRender(this, () => focusedElements[0].focus());
     }
   }
 
@@ -262,10 +248,8 @@ export class OobeAdaptiveDialog extends PolymerElement {
     contentContainer.setAttribute('read-more-content', true);
     this.showReadMoreButton_ = true;
 
-    afterNextRender(this, () => {
-      const readMoreButton = this.shadowRoot.querySelector('#readMoreButton');
-      this.focusElement_(readMoreButton);
-    });
+    afterNextRender(
+        this, () => this.shadowRoot.querySelector('#readMoreButton').focus());
 
     // Once a tab reaches an element outside of the visible area, call
     // maybeUpgradeReadMoreState_ to apply changes.

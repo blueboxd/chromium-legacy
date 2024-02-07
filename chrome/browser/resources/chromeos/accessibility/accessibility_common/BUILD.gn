@@ -47,13 +47,9 @@ misc_sources = [
 ]
 
 js_modules = [
-  "dictation/parse/input_text_strategy.js",
-  "dictation/parse/parse_strategy.js",
-  "dictation/parse/pumpkin/pumpkin_constants.js",
   "dictation/parse/pumpkin_parse_strategy.js",
   "dictation/parse/sandboxed_pumpkin_tagger.js",
   "dictation/parse/simple_parse_strategy.js",
-  "dictation/parse/speech_parser.js",
 ]
 
 # TS files to build.
@@ -81,6 +77,10 @@ ts_modules = [
   "dictation/macros/smart_replace_phrase_macro.ts",
   "dictation/macros/smart_select_between_macro.ts",
   "dictation/macros/stop_listening_macro.ts",
+  "dictation/parse/input_text_strategy.ts",
+  "dictation/parse/parse_strategy.ts",
+  "dictation/parse/pumpkin/pumpkin_constants.ts",
+  "dictation/parse/speech_parser.ts",
   "facegaze/facegaze.ts",
   "facegaze/gesture_detector.ts",
   "facegaze/mouse_controller.ts",
@@ -92,6 +92,7 @@ if (include_mediapipe_task_vision_files_for_facegaze) {
 }
 
 ts_definitions = [
+  "dictation/parse/pumpkin/pumpkin_tagger_externs.d.ts",
   "../definitions/accessibility_features_mv2.d.ts",
   "../definitions/accessibility_private_mv2.d.ts",
   "../definitions/audio.d.ts",

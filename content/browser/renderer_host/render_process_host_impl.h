@@ -244,6 +244,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int GetID() const override;
   base::SafeRef<RenderProcessHost> GetSafeRef() const override;
   bool IsInitializedAndNotDead() override;
+  bool IsDeletingSoon() override;
   void SetBlocked(bool blocked) override;
   bool IsBlocked() override;
   base::CallbackListSubscription RegisterBlockStateChangedCallback(
@@ -302,9 +303,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void DisableRefCounts() override;
   bool AreRefCountsDisabled() override;
   mojom::Renderer* GetRendererInterface() override;
-  void CreateURLLoaderFactory(
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      network::mojom::URLLoaderFactoryParamsPtr params) override;
 
   bool MayReuseHost() override;
   bool IsUnused() override;
@@ -365,8 +363,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Return the set of previously stored data for a `frame_token`.
   // The routing ID and frame tokens were stored on the IO thread via the
-  // RenderMessageFilter::GenerateFrameRoutingID mojo call. Returns false if
-  // `frame_token` was not found in the token table.
+  // RenderMessageFilter::GenerateSingleFrameRoutingInfo mojo call. Returns
+  // false if `frame_token` was not found in the token table.
   bool TakeStoredDataForFrameToken(const blink::LocalFrameToken& frame_token,
                                    int32_t& new_routing_id,
                                    base::UnguessableToken& devtools_frame_token,

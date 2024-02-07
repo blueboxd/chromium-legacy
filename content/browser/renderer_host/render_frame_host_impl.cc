@@ -89,6 +89,7 @@
 #include "content/browser/loader/keep_alive_url_loader_service.h"
 #include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/loader/subresource_proxying_url_loader_service.h"
+#include "content/browser/loader/url_loader_factory_utils.h"
 #include "content/browser/log_console_message.h"
 #include "content/browser/media/media_devices_util.h"
 #include "content/browser/media/media_interface_proxy.h"
@@ -227,7 +228,6 @@
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/cpp/not_implemented_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/cpp/url_loader_factory_builder.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
@@ -9276,11 +9276,13 @@ void RenderFrameHostImpl::BeginNavigation(
                   initiator_process_id,
                   begin_params->initiator_frame_token.value())
             : nullptr;
-    // The initiator must have window-management permission, permission
-    // policy and `fullscreen` permission policy granted and the navigation must
-    // be from a user gesture, otherwise the fullscreen bit is dropped.
+    // The initiator needs window-management permission, window-management and
+    // fullscreen permission policies, and a user gesture or other allowance,
+    // otherwise the fullscreen bit is dropped.
     if (!initiator_render_frame_host ||
-        !validated_common_params->has_user_gesture ||
+        !(validated_common_params->has_user_gesture ||
+          !initiator_render_frame_host->delegate_
+               ->IsTransientActivationRequiredForHtmlFullscreen()) ||
         !IsWindowManagementGranted(initiator_render_frame_host) ||
         !initiator_render_frame_host->permissions_policy()->IsFeatureEnabled(
             blink::mojom::PermissionsPolicyFeature::kFullscreen) ||
@@ -10408,22 +10410,15 @@ void RenderFrameHostImpl::CommitNavigation(
     // See if this is for WebUI.
     const auto& webui_schemes = URLDataManagerBackend::GetWebUISchemes();
     if (base::Contains(webui_schemes, effective_scheme)) {
-      network::URLLoaderFactoryBuilder factory_builder;
-      GetContentClient()->browser()->WillCreateURLLoaderFactory(
-          browser_context, this, GetProcess()->GetID(),
-          ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          subresource_loader_factories_config.origin(),
-          /*navigation_id=*/std::nullopt,
-          subresource_loader_factories_config.ukm_source_id(), factory_builder,
-          /*header_client=*/nullptr,
-          /*bypass_redirect_checks=*/nullptr,
-          /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr,
-          /*navigation_response_task_runner=*/nullptr);
-
       mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_for_webui =
-          std::move(factory_builder)
-              .Finish<mojo::PendingRemote<network::mojom::URLLoaderFactory>>(
-                  CreateWebUIURLLoaderFactory(this, effective_scheme, {}));
+          url_loader_factory::CreatePendingRemote(
+              ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
+              url_loader_factory::TerminalParams::ForNonNetwork(
+                  CreateWebUIURLLoaderFactory(this, effective_scheme, {})),
+              url_loader_factory::ContentClientParams(
+                  browser_context, this, GetProcess()->GetID(),
+                  subresource_loader_factories_config.origin(),
+                  subresource_loader_factories_config.ukm_source_id()));
 
       // If the renderer has webui bindings, then don't give it access to
       // network loader for security reasons.
@@ -10527,14 +10522,17 @@ void RenderFrameHostImpl::CommitNavigation(
 
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_factory_proxy;
-      network::URLLoaderFactoryBuilder factory_builder;
-      WillCreateURLLoaderFactory(
-          subresource_loader_factories_config.origin(), factory_builder,
-          subresource_loader_factories_config.ukm_source_id());
-
-      std::move(factory_builder)
-          .Finish(pending_factory_proxy.InitWithNewPipeAndPassReceiver(),
-                  std::move(original_pending_factory));
+      url_loader_factory::CreateAndConnectToPendingReceiver(
+          pending_factory_proxy.InitWithNewPipeAndPassReceiver(),
+          ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
+          url_loader_factory::TerminalParams::ForNonNetwork(
+              std::move(original_pending_factory)),
+          url_loader_factory::ContentClientParams(
+              GetBrowserContext(), this, GetProcess()->GetID(),
+              subresource_loader_factories_config.origin(),
+              subresource_loader_factories_config.ukm_source_id()),
+          devtools_instrumentation::WillCreateURLLoaderFactoryParams::ForFrame(
+              this));
       subresource_loader_factories->pending_scheme_specific_factories().emplace(
           scheme, std::move(pending_factory_proxy));
     }
@@ -11526,43 +11524,24 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
   DCHECK(params->request_initiator_origin_lock.has_value());
-  const url::Origin& request_initiator =
+  const url::Origin request_initiator =
       params->request_initiator_origin_lock.value();
 
-  network::URLLoaderFactoryBuilder factory_builder;
   bool bypass_redirect_checks = false;
-  WillCreateURLLoaderFactory(request_initiator, factory_builder, ukm_source_id,
-                             &params->header_client, &bypass_redirect_checks,
-                             &params->disable_secure_dns,
-                             &params->factory_override);
-
-  std::move(factory_builder)
-      .Finish(std::move(default_factory_receiver), GetProcess(),
-              std::move(params));
-  return bypass_redirect_checks;
-}
-
-void RenderFrameHostImpl::WillCreateURLLoaderFactory(
-    const url::Origin& request_initiator,
-    network::URLLoaderFactoryBuilder& factory_builder,
-    ukm::SourceIdObj ukm_source_id,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-        header_client,
-    bool* bypass_redirect_checks,
-    bool* disable_secure_dns,
-    network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
-  GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      GetBrowserContext(), this, GetProcess()->GetID(),
+  url_loader_factory::CreateAndConnectToPendingReceiver(
+      std::move(default_factory_receiver),
       ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-      request_initiator, /*navigation_id=*/std::nullopt, ukm_source_id,
-      factory_builder, header_client, bypass_redirect_checks,
-      disable_secure_dns, factory_override, /*navigation_task_runner=*/nullptr);
-
-  // Keep DevTools proxy last, i.e. closest to the network.
-  devtools_instrumentation::WillCreateURLLoaderFactoryParams::ForFrame(this)
-      .Run(
-          /*is_navigation=*/false, /*is_download=*/false, factory_builder,
-          factory_override);
+      url_loader_factory::TerminalParams::ForNetworkContext(
+          GetProcess()->GetStoragePartition()->GetNetworkContext(),
+          std::move(params), url_loader_factory::HeaderClientOption::kAllow,
+          url_loader_factory::FactoryOverrideOption::kAllow,
+          url_loader_factory::DisableSecureDnsOption::kAllow),
+      url_loader_factory::ContentClientParams(
+          GetBrowserContext(), this, GetProcess()->GetID(), request_initiator,
+          ukm_source_id, &bypass_redirect_checks),
+      devtools_instrumentation::WillCreateURLLoaderFactoryParams::ForFrame(
+          this));
+  return bypass_redirect_checks;
 }
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {
@@ -12758,8 +12737,14 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
       process->FilterURL(false, &params->url);
   process->FilterURL(true, &params->referrer->url);
 
+  // Check whether the URL was blocked by FilterURL, or by similar logic in the
+  // renderer process. Exclude cases where the renderer may have actually
+  // navigated same-document to about:blank#blocked.
+  bool blocked_by_renderer =
+      params->url == GURL(kBlockedURL) && !GetLastCommittedURL().IsAboutBlank();
   if (is_same_document_navigation &&
-      url_filter_result == RenderProcessHost::FilterURLResult::kBlocked) {
+      (url_filter_result == RenderProcessHost::FilterURLResult::kBlocked ||
+       blocked_by_renderer)) {
     // For same-document navigations, keeping about:blank#blocked can lead to
     // some really strange results with navigating back/forward and session
     // restore. So if the URL was filtered, replace it with the current URL:
@@ -12770,9 +12755,10 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     // Note that this would be unsafe for cross-document navigations, which can
     // be cross-origin.
     //
-    // TODO(crbug.com/1464018): It would be nice to catch and block this in the
-    // renderer process, so the browser process could just treat this as a 'bad
-    // message received' situation.
+    // TODO(crbug.com/1464018): It would be nice to catch and block this earlier
+    // in the renderer process (causing the same-document navigation to fail),
+    // so the browser process could just treat this as a 'bad message received'
+    // situation.
     params->url = GetLastCommittedURL();
   }
 

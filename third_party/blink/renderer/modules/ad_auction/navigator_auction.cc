@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <optional>
 #include <utility>
 
 #include "base/check.h"
@@ -22,7 +23,6 @@
 #include "components/aggregation_service/features.h"
 #include "mojo/public/cpp/bindings/map_traits_wtf_hash_map.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
@@ -182,7 +182,7 @@ class NavigatorAuction::AuctionHandle final : public AbortSignal::Algorithm {
         mojom::blink::AuctionAdConfigAuctionIdPtr auction_id,
         const String& seller_name,
         const scoped_refptr<const SecurityOrigin>& seller_origin,
-        const absl::optional<Vector<scoped_refptr<const SecurityOrigin>>>&
+        const std::optional<Vector<scoped_refptr<const SecurityOrigin>>>&
             interest_group_buyers);
 
     ScriptValue CallImpl(ScriptState* script_state, ScriptValue value) override;
@@ -191,7 +191,7 @@ class NavigatorAuction::AuctionHandle final : public AbortSignal::Algorithm {
     const mojom::blink::AuctionAdConfigAuctionIdPtr auction_id_;
     const String seller_name_;
     const scoped_refptr<const SecurityOrigin> seller_origin_;
-    absl::optional<Vector<scoped_refptr<const SecurityOrigin>>>
+    std::optional<Vector<scoped_refptr<const SecurityOrigin>>>
         interest_group_buyers_;
   };
 
@@ -294,7 +294,7 @@ class NavigatorAuction::AuctionHandle final : public AbortSignal::Algorithm {
       base::TimeTicks start_time,
       bool is_server_auction,
       bool aborted_by_script,
-      const absl::optional<FencedFrame::RedactedFencedFrameConfig>&);
+      const std::optional<FencedFrame::RedactedFencedFrameConfig>&);
 
   bool MaybeResolveAuction();
 
@@ -308,9 +308,9 @@ class NavigatorAuction::AuctionHandle final : public AbortSignal::Algorithm {
   VectorOfPairs<ScriptPromise, ScriptFunction::Callable> queued_promises_;
   HeapMojoRemote<mojom::blink::AbortableAdAuction> abortable_ad_auction_;
 
-  absl::optional<bool> resolve_to_config_;
+  std::optional<bool> resolve_to_config_;
   Member<ScriptPromiseResolver> auction_resolver_;
-  absl::optional<FencedFrame::RedactedFencedFrameConfig> auction_config_;
+  std::optional<FencedFrame::RedactedFencedFrameConfig> auction_config_;
 };
 
 namespace {
@@ -406,15 +406,6 @@ String ErrorMissingRequired(const String& required_field_name) {
                         required_field_name.Utf8().c_str());
 }
 
-String WarningPermissionsPolicy(const String& feature, const String& api) {
-  return String::Format(
-      "In the future, Permissions Policy feature %s will not be enabled by "
-      "default in cross-origin iframes or same-origin iframes nested in "
-      "cross-origin iframes. Calling %s will be rejected with NotAllowedError "
-      "if it is not explicitly enabled",
-      feature.Utf8().c_str(), api.Utf8().c_str());
-}
-
 // Console warnings.
 
 void AddWarningMessageToConsole(const ExecutionContext& execution_context,
@@ -470,7 +461,7 @@ base::expected<uint64_t, String> CopyBigIntToUint64(const BigInt& bigint) {
   if (bigint.IsNegative()) {
     return base::unexpected("Negative BigInt cannot be converted to uint64");
   }
-  absl::optional<absl::uint128> value = bigint.ToUInt128();
+  std::optional<absl::uint128> value = bigint.ToUInt128();
   if (!value.has_value() || absl::Uint128High64(*value) != 0) {
     return base::unexpected("Too large BigInt; Must fit in 64 bits");
   }
@@ -507,17 +498,17 @@ scoped_refptr<const SecurityOrigin> ParseOrigin(const String& origin_string) {
 
 // TODO(crbug.com/1451034): Remove method when old expiration is removed.
 bool CopyLifetimeIdlToMojo(ExceptionState& exception_state,
-                           absl::optional<double> lifetime_seconds,
+                           std::optional<double> lifetime_seconds,
                            const AuctionAdInterestGroup& input,
                            mojom::blink::InterestGroup& output) {
-  absl::optional<base::TimeDelta> lifetime_old =
+  std::optional<base::TimeDelta> lifetime_old =
       lifetime_seconds
-          ? absl::optional<base::TimeDelta>(base::Seconds(*lifetime_seconds))
-          : absl::nullopt;
-  absl::optional<base::TimeDelta> lifetime_new =
-      input.hasLifetimeMs() ? absl::optional<base::TimeDelta>(
+          ? std::optional<base::TimeDelta>(base::Seconds(*lifetime_seconds))
+          : std::nullopt;
+  std::optional<base::TimeDelta> lifetime_new =
+      input.hasLifetimeMs() ? std::optional<base::TimeDelta>(
                                   base::Milliseconds(input.lifetimeMs()))
-                            : absl::nullopt;
+                            : std::nullopt;
   if (lifetime_old && !lifetime_new) {
     lifetime_new = lifetime_old;
   }
@@ -1451,13 +1442,13 @@ TryToBuildDirectFromSellerSignalsSubresource(
       subresource_url.ProtocolIs(url::kHttpsScheme) &&
       seller.IsSameOriginWith(SecurityOrigin::Create(subresource_url).get()));
   // NOTE: If subresource bundles are disabled, GetSubresourceBundleToken() will
-  // always return absl::nullopt.
-  absl::optional<base::UnguessableToken> token =
+  // always return std::nullopt.
+  std::optional<base::UnguessableToken> token =
       resource_fetcher.GetSubresourceBundleToken(subresource_url);
   if (!token) {
     return nullptr;
   }
-  absl::optional<KURL> bundle_url =
+  std::optional<KURL> bundle_url =
       resource_fetcher.GetSubresourceBundleSourceUrl(subresource_url);
   DCHECK(bundle_url->ProtocolIs(url::kHttpsScheme));
   DCHECK(seller.IsSameOriginWith(SecurityOrigin::Create(*bundle_url).get()));
@@ -1475,7 +1466,7 @@ ConvertDirectFromSellerSignalsFromV8ToMojo(
     const ResourceFetcher& resource_fetcher,
     const String& seller_name,
     const SecurityOrigin& seller_origin,
-    const absl::optional<Vector<scoped_refptr<const SecurityOrigin>>>&
+    const std::optional<Vector<scoped_refptr<const SecurityOrigin>>>&
         interest_group_buyers,
     v8::Local<v8::Value> value) {
   String prefix_string = NativeValueTraits<IDLUSVString>::NativeValue(
@@ -1657,7 +1648,7 @@ bool CopyAggregationCoordinatorOriginFromIdlToMojo(
 }
 
 // Returns nullopt + sets exception on failure, or returns a concrete value.
-absl::optional<HashMap<scoped_refptr<const SecurityOrigin>, String>>
+std::optional<HashMap<scoped_refptr<const SecurityOrigin>, String>>
 ConvertNonPromisePerBuyerSignalsFromV8ToMojo(const ScriptState& script_state,
                                              ExceptionState& exception_state,
                                              const String& seller_name,
@@ -1666,10 +1657,10 @@ ConvertNonPromisePerBuyerSignalsFromV8ToMojo(const ScriptState& script_state,
       NativeValueTraits<IDLRecord<IDLUSVString, IDLAny>>::NativeValue(
           script_state.GetIsolate(), value, exception_state);
   if (exception_state.HadException()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
-  absl::optional<HashMap<scoped_refptr<const SecurityOrigin>, String>>
+  std::optional<HashMap<scoped_refptr<const SecurityOrigin>, String>>
       per_buyer_signals;
 
   per_buyer_signals.emplace();
@@ -1680,14 +1671,14 @@ ConvertNonPromisePerBuyerSignalsFromV8ToMojo(const ScriptState& script_state,
       exception_state.ThrowTypeError(ErrorInvalidAuctionConfigSeller(
           seller_name, "perBuyerSignals buyer", per_buyer_signal.first,
           "must be a valid https origin."));
-      return absl::nullopt;
+      return std::nullopt;
     }
     String buyer_signals_str;
     if (!Jsonify(script_state, per_buyer_signal.second.V8Value(),
                  buyer_signals_str)) {
       exception_state.ThrowTypeError(
           ErrorInvalidAuctionConfigSellerJson(seller_name, "perBuyerSignals"));
-      return absl::nullopt;
+      return std::nullopt;
     }
     per_buyer_signals->insert(buyer, std::move(buyer_signals_str));
   }
@@ -1703,7 +1694,7 @@ void CopyPerBuyerSignalsFromIdlToMojo(
   if (!input.hasPerBuyerSignals()) {
     output.auction_ad_config_non_shared_params->per_buyer_signals =
         mojom::blink::AuctionAdConfigMaybePromisePerBuyerSignals::NewValue(
-            absl::nullopt);
+            std::nullopt);
     return;
   }
 
@@ -2085,7 +2076,7 @@ bool CopyAuctionReportBuyerDebugModeConfigFromIdlToMojo(
   const AuctionReportBuyerDebugModeConfig* debug_mode_config =
       input.auctionReportBuyerDebugModeConfig();
   bool enabled = debug_mode_config->enabled();
-  absl::optional<uint64_t> debug_key;
+  std::optional<uint64_t> debug_key;
   if (debug_mode_config->hasDebugKeyNonNull()) {
     ASSIGN_OR_RETURN(
         debug_key, CopyBigIntToUint64(debug_mode_config->debugKeyNonNull()),
@@ -2442,41 +2433,6 @@ bool ValidateAdsObject(ExceptionState& exception_state, const Ads* ads) {
   return true;
 }
 
-// Modified from
-// LocalFrame::CountUseIfFeatureWouldBeBlockedByPermissionsPolicy.
-//
-// Checks whether or not a policy-controlled feature would be blocked by our
-// restricted permissions policy EnableForSelf.
-// Under EnableForSelf policy, the features will not be available in
-// cross-origin document unless explicitly enabled.
-// Returns true if the frame is cross-origin relative to the top-level document,
-// or if it is same-origin with the top level, but is embedded in any way
-// through a cross-origin frame (A->B->A embedding).
-bool FeatureWouldBeBlockedByRestrictedPermissionsPolicy(Navigator& navigator) {
-  const Frame* frame = navigator.DomWindow()->GetFrame();
-
-  // Fenced Frames block all permissions, so we shouldn't end up here because
-  // the policy is checked before this method is called.
-  DCHECK(!frame->IsInFencedFrameTree());
-
-  // Get the origin of the top-level document.
-  const SecurityOrigin* top_origin =
-      frame->Tree().Top().GetSecurityContext()->GetSecurityOrigin();
-
-  // Walk up the frame tree looking for any cross-origin embeds. Even if this
-  // frame is same-origin with the top-level, if it is embedded by a cross-
-  // origin frame (like A->B->A) it would be blocked without a permissions
-  // policy.
-  while (!frame->IsMainFrame()) {
-    if (!frame->GetSecurityContext()->GetSecurityOrigin()->CanAccess(
-            top_origin)) {
-      return true;
-    }
-    frame = frame->Tree().Parent();
-  }
-  return false;
-}
-
 void RecordCommonFledgeUseCounters(Document* document) {
   if (!document) {
     return;
@@ -2665,7 +2621,7 @@ ScriptPromise JoinAdInterestGroupInternal(
     ScriptState* script_state,
     Navigator& navigator,
     AuctionAdInterestGroup* group,
-    absl::optional<double> duration_seconds,
+    std::optional<double> duration_seconds,
     ExceptionState& exception_state) {
   if (!navigator.DomWindow()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
@@ -2685,13 +2641,6 @@ ScriptPromise JoinAdInterestGroupInternal(
         DOMExceptionCode::kNotAllowedError,
         "Feature join-ad-interest-group is not enabled by Permissions Policy");
     return ScriptPromise();
-  }
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kAdInterestGroupAPIRestrictedPolicyByDefault) &&
-      FeatureWouldBeBlockedByRestrictedPermissionsPolicy(navigator)) {
-    AddWarningMessageToConsole(
-        *context, WarningPermissionsPolicy("join-ad-interest-group",
-                                           "joinAdInterestGroup"));
   }
 
   return NavigatorAuction::From(ExecutionContext::From(script_state), navigator)
@@ -2749,7 +2698,7 @@ ScriptValue NavigatorAuction::AuctionHandle::JsonResolved::CallImpl(
     v8::Local<v8::Value> v8_value = value.V8Value();
     if (v8_value->IsUndefined() || v8_value->IsNull()) {
       // `maybe_json` left as the null string here; that's the blink equivalent
-      // of absl::nullopt for a string? in mojo.
+      // of std::nullopt for a string? in mojo.
       maybe_json_ok = true;
     } else {
       maybe_json_ok = Jsonify(*script_state, value.V8Value(), maybe_json);
@@ -2785,7 +2734,7 @@ ScriptValue NavigatorAuction::AuctionHandle::PerBuyerSignalsResolved::CallImpl(
   ExceptionState exception_state(script_state->GetIsolate(),
                                  ExceptionContextType::kOperationInvoke,
                                  "NavigatorAuction", "runAdAuction");
-  absl::optional<WTF::HashMap<scoped_refptr<const SecurityOrigin>, String>>
+  std::optional<WTF::HashMap<scoped_refptr<const SecurityOrigin>, String>>
       per_buyer_signals;
   if (!value.IsEmpty()) {
     v8::Local<v8::Value> v8_value = value.V8Value();
@@ -2888,7 +2837,7 @@ NavigatorAuction::AuctionHandle::DirectFromSellerSignalsResolved::
         mojom::blink::AuctionAdConfigAuctionIdPtr auction_id,
         const String& seller_name,
         const scoped_refptr<const SecurityOrigin>& seller_origin,
-        const absl::optional<Vector<scoped_refptr<const SecurityOrigin>>>&
+        const std::optional<Vector<scoped_refptr<const SecurityOrigin>>>&
             interest_group_buyers)
     : AuctionHandleFunction(auction_handle),
       auction_id_(std::move(auction_id)),
@@ -3094,7 +3043,7 @@ const char NavigatorAuction::kSupplementName[] = "NavigatorAuction";
 ScriptPromise NavigatorAuction::joinAdInterestGroup(
     ScriptState* script_state,
     AuctionAdInterestGroup* mutable_group,
-    absl::optional<double> lifetime_seconds,
+    std::optional<double> lifetime_seconds,
     ExceptionState& exception_state) {
   const ExecutionContext* context = ExecutionContext::From(script_state);
 
@@ -3213,7 +3162,7 @@ ScriptPromise NavigatorAuction::joinAdInterestGroup(
     AuctionAdInterestGroup* group,
     ExceptionState& exception_state) {
   return JoinAdInterestGroupInternal(script_state, navigator, group,
-                                     /*duration_seconds=*/absl::nullopt,
+                                     /*duration_seconds=*/std::nullopt,
                                      exception_state);
 }
 
@@ -3308,13 +3257,6 @@ ScriptPromise NavigatorAuction::leaveAdInterestGroup(
         "Feature join-ad-interest-group is not enabled by Permissions Policy");
     return ScriptPromise();
   }
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kAdInterestGroupAPIRestrictedPolicyByDefault) &&
-      FeatureWouldBeBlockedByRestrictedPermissionsPolicy(navigator)) {
-    AddWarningMessageToConsole(
-        *context, WarningPermissionsPolicy("join-ad-interest-group",
-                                           "leaveAdInterestGroup"));
-  }
 
   return From(context, navigator)
       .leaveAdInterestGroup(script_state, group_key, exception_state);
@@ -3408,14 +3350,6 @@ ScriptPromise NavigatorAuction::clearOriginJoinedAdInterestGroups(
         "Feature join-ad-interest-group is not enabled by Permissions Policy");
     return ScriptPromise();
   }
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kAdInterestGroupAPIRestrictedPolicyByDefault) &&
-      FeatureWouldBeBlockedByRestrictedPermissionsPolicy(navigator)) {
-    AddWarningMessageToConsole(
-        *context,
-        WarningPermissionsPolicy("join-ad-interest-group",
-                                 "clearOriginJoinedAdInterestGroups"));
-  }
 
   return From(context, navigator)
       .clearOriginJoinedAdInterestGroups(
@@ -3443,13 +3377,6 @@ void NavigatorAuction::updateAdInterestGroups(ScriptState* script_state,
         DOMExceptionCode::kNotAllowedError,
         "Feature join-ad-interest-group is not enabled by Permissions Policy");
     return;
-  }
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kAdInterestGroupAPIRestrictedPolicyByDefault) &&
-      FeatureWouldBeBlockedByRestrictedPermissionsPolicy(navigator)) {
-    AddWarningMessageToConsole(
-        *context, WarningPermissionsPolicy("join-ad-interest-group",
-                                           "updateAdInterestGroups"));
   }
 
   return From(context, navigator).updateAdInterestGroups();
@@ -3564,12 +3491,6 @@ ScriptPromise NavigatorAuction::runAdAuction(ScriptState* script_state,
         "Feature run-ad-auction is not enabled by Permissions Policy");
     return ScriptPromise();
   }
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kAdInterestGroupAPIRestrictedPolicyByDefault) &&
-      FeatureWouldBeBlockedByRestrictedPermissionsPolicy(navigator)) {
-    AddWarningMessageToConsole(
-        *context, WarningPermissionsPolicy("run-ad-auction", "runAdAuction"));
-  }
 
   return From(ExecutionContext::From(script_state), navigator)
       .runAdAuction(script_state, config, exception_state, start_time);
@@ -3650,7 +3571,7 @@ ScriptPromise NavigatorAuction::deprecatedURNToURL(
       uuid_url_string = urn_or_config->GetAsUSVString();
       break;
     case V8UnionFencedFrameConfigOrUSVString::ContentType::kFencedFrameConfig:
-      absl::optional<KURL> uuid_url_opt =
+      std::optional<KURL> uuid_url_opt =
           urn_or_config->GetAsFencedFrameConfig()->urn_uuid(
               base::PassKey<NavigatorAuction>());
       if (!uuid_url_opt.has_value()) {
@@ -3715,7 +3636,7 @@ ScriptPromise NavigatorAuction::deprecatedReplaceInURN(
       uuid_url_string = urn_or_config->GetAsUSVString();
       break;
     case V8UnionFencedFrameConfigOrUSVString::ContentType::kFencedFrameConfig:
-      absl::optional<KURL> uuid_url_opt =
+      std::optional<KURL> uuid_url_opt =
           urn_or_config->GetAsFencedFrameConfig()->urn_uuid(
               base::PassKey<NavigatorAuction>());
       if (!uuid_url_opt.has_value()) {
@@ -3859,7 +3780,7 @@ ScriptPromise NavigatorAuction::finalizeAd(ScriptState* script_state,
 
 void NavigatorAuction::FinalizeAdComplete(
     ScriptPromiseResolver* resolver,
-    const absl::optional<KURL>& creative_url) {
+    const std::optional<KURL>& creative_url) {
   if (creative_url) {
     resolver->Resolve(creative_url);
   } else {
@@ -3951,7 +3872,7 @@ void NavigatorAuction::AuctionHandle::AuctionComplete(
     base::TimeTicks start_time,
     bool is_server_auction,
     bool aborted_by_script,
-    const absl::optional<FencedFrame::RedactedFencedFrameConfig>&
+    const std::optional<FencedFrame::RedactedFencedFrameConfig>&
         result_config) {
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed()) {
@@ -4013,7 +3934,7 @@ bool NavigatorAuction::AuctionHandle::MaybeResolveAuction() {
 
 void NavigatorAuction::GetURLFromURNComplete(
     ScriptPromiseResolver* resolver,
-    const absl::optional<KURL>& decoded_url) {
+    const std::optional<KURL>& decoded_url) {
   if (decoded_url) {
     resolver->Resolve(*decoded_url);
   } else {
@@ -4176,7 +4097,7 @@ void NavigatorAuction::GetInterestGroupAdAuctionDataComplete(
     base::TimeTicks start_time,
     ScriptPromiseResolver* resolver,
     mojo_base::BigBuffer data,
-    const absl::optional<base::Uuid>& request_id,
+    const std::optional<base::Uuid>& request_id,
     const WTF::String& error_message) {
   if (!error_message.empty()) {
     CHECK(!request_id);
@@ -4219,13 +4140,6 @@ ScriptPromise NavigatorAuction::getInterestGroupAdAuctionData(
         DOMExceptionCode::kNotAllowedError,
         "Feature run-ad-auction is not enabled by Permissions Policy");
     return ScriptPromise();
-  }
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kAdInterestGroupAPIRestrictedPolicyByDefault) &&
-      FeatureWouldBeBlockedByRestrictedPermissionsPolicy(navigator)) {
-    AddWarningMessageToConsole(
-        *context, WarningPermissionsPolicy("run-ad-auction",
-                                           "getInterestGroupAdAuctionData"));
   }
 
   return From(ExecutionContext::From(script_state), navigator)

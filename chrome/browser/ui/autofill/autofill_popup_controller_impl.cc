@@ -31,8 +31,8 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/ui/popup_hiding_reasons.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
-#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -494,8 +494,7 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index,
       suggestion, AutofillPopupDelegate::SuggestionPosition{
                       .row = index, .sub_popup_level = GetPopupLevel()});
 #if BUILDFLAG(IS_ANDROID)
-  if ((suggestion.popup_item_id == PopupItemId::kPasswordEntry ||
-       suggestion.popup_item_id == PopupItemId::kUsernameEntry) &&
+  if ((suggestion.popup_item_id == PopupItemId::kPasswordEntry) &&
       base::FeatureList::IsEnabled(
           password_manager::features::
               kUnifiedPasswordManagerLocalPasswordsMigrationWarning)) {

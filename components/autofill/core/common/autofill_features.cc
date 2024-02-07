@@ -101,6 +101,18 @@ BASE_FEATURE(kAutofillDisableShadowHeuristics,
              "AutofillDisableShadowHeuristics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Kill switch for feature which when:
+//   (1) The last interacted element is a field without a containing <form>
+//   AND
+//   (2) An element that the user has edited has been removed from the page
+// changes the submitted form detection logic to use the provisionally saved
+// form instead of using any remaining fields on the page (Example: The page
+// might still have an <input> search bar).
+// TODO(crbug.com/1523655): Remove kill switch.
+BASE_FEATURE(kAutofillPreferProvisionalFormWhenFormlessFormIsRemoved,
+             "AutofillPreferProvisionalFormWhenFormlessFormIsRemoved",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // When enabled, autofill will use the new ranking algorithm for address profile
 // autofill suggestions.
 BASE_FEATURE(kAutofillEnableRankingFormulaAddressProfiles,
@@ -333,10 +345,6 @@ BASE_FEATURE(kAutofillConvergeToExtremeLengthStreetAddress,
 
 const base::FeatureParam<bool> kAutofillConvergeToLonger{
     &kAutofillConvergeToExtremeLengthStreetAddress, "converge_to_longer", true};
-
-BASE_FEATURE(kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete,
-             "AutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, some local heuristic predictions will take precedence over the
 // autocomplete attribute and server predictions, when determining a field's

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
@@ -20,7 +21,9 @@ class Label;
 
 namespace ash {
 
-class PickerItemView;
+class PickerEmojiItemView;
+class PickerSymbolItemView;
+class PickerEmoticonItemView;
 class PickerImageItemView;
 
 // View for a Picker section with a title and related items.
@@ -28,16 +31,21 @@ class ASH_EXPORT PickerSectionView : public views::View {
   METADATA_HEADER(PickerSectionView, views::View)
 
  public:
-  explicit PickerSectionView(const std::u16string& title_text);
+  explicit PickerSectionView(int section_width,
+                             const std::u16string& title_text);
   PickerSectionView(const PickerSectionView&) = delete;
   PickerSectionView& operator=(const PickerSectionView&) = delete;
   ~PickerSectionView() override;
 
-  // Sets the maximum width available for laying out section items.
-  void SetMaximumWidth(int maximum_width);
+  // Adds a list item. These are displayed in a vertical list, each item
+  // spanning the width of the section.
+  void AddListItem(std::unique_ptr<views::View> list_item);
 
-  // Adds an item to the section.
-  void AddItem(std::unique_ptr<PickerItemView> item_view);
+  // Adds a emoji, symbol or emoticon. These are treated collectively as small
+  // grid items and are displayed in rows.
+  void AddEmojiItem(std::unique_ptr<PickerEmojiItemView> emoji_item);
+  void AddSymbolItem(std::unique_ptr<PickerSymbolItemView> symbol_item);
+  void AddEmoticonItem(std::unique_ptr<PickerEmoticonItemView> emoticon_item);
 
   // Adds an image item to the section. These are displayed in a grid with two
   // columns.
@@ -45,8 +53,8 @@ class ASH_EXPORT PickerSectionView : public views::View {
 
   const views::Label* title_for_testing() const { return title_; }
 
-  const views::View* small_grid_items_container_for_testing() const {
-    return small_grid_items_container_;
+  const views::View* small_items_grid_for_testing() const {
+    return small_items_grid_;
   }
 
   const views::View* image_grid_for_testing() const { return image_grid_; }
@@ -56,24 +64,18 @@ class ASH_EXPORT PickerSectionView : public views::View {
   }
 
  private:
-  // Adds a small grid item. These are displayed in rows. If there may be more
-  // than one row, `maximum_width_` should be set before adding small grid items
-  // to ensure the rows are laid out correctly.
-  void AddSmallGridItem(std::unique_ptr<PickerItemView> small_grid_item);
+  // Adds a small grid item. These are displayed in rows.
+  void AddSmallGridItem(std::unique_ptr<views::View> small_grid_item);
 
-  // Adds a list item. These are displayed in a vertical list, each item
-  // spanning the width of the section.
-  void AddListItem(std::unique_ptr<PickerItemView> list_item);
-
-  // Maximum width available for laying out section items. If not set, we assume
-  // the available width is unbounded during layout, so small grid items will be
-  // laid out in a single row.
-  std::optional<int> maximum_width_;
+  // Width available for laying out section items. This is needed to determine
+  // row and column widths for grid items in the section.
+  int section_width_ = 0;
 
   raw_ptr<views::Label> title_ = nullptr;
 
-  raw_ptr<views::View> small_grid_items_container_ = nullptr;
   raw_ptr<views::View> list_items_container_ = nullptr;
+
+  raw_ptr<views::View> small_items_grid_ = nullptr;
 
   raw_ptr<views::View> image_grid_ = nullptr;
 

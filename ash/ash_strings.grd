@@ -278,19 +278,16 @@ Style notes:
         See all apps
       </message>
       <message name="IDS_SHELF_PREVIOUS_DESK_BUTTON_TITLE" desc="The title used for the previous desk button within the desk button on the shelf.">
-        Previous Desk: <ph name="PREVIOUS_DESK_NAME">$1<ex>Desk 1</ex></ph>, use Search+Space or keyboard shortcut: Shift+Search+<ph name="PREVIOUS_DESK_INDEX">$2<ex>1</ex></ph> to activate.
+        Previous desk: <ph name="DESK_NAME">$1<ex>Desk 1</ex></ph>. Desk <ph name="DESK_INDEX">$2<ex>1</ex></ph> of <ph name="DESK_COUNT">$3<ex>3</ex></ph>.
       </message>
-      <message name="IDS_SHELF_PREVIOUS_DESK_BUTTON_TITLE_16_DESKS" desc="The title used for the previous desk button within the desk button on the shelf when that desk is beyond the 8th desk.">
-        Previous Desk: <ph name="PREVIOUS_DESK_NAME">$1<ex>Desk 12</ex></ph>, use Search+Space to activate.
+      <message name="IDS_SHELF_DESK_BUTTON_TITLE_NO_PROFILE_AVATAR" desc="The title used for the desk button on the shelf with no profile avatar.">
+        Current desk: <ph name="DESK_NAME">$1<ex>Desk 2</ex></ph>. Desk <ph name="DESK_INDEX">$2<ex>2</ex></ph> of <ph name="DESK_COUNT">$3<ex>3</ex></ph>.
       </message>
-      <message name="IDS_SHELF_DESK_BUTTON_TITLE" desc="The title used for the desk button on the shelf.">
-        Current Desk: <ph name="CURRENT_DESK_NAME">$1<ex>Desk 2</ex></ph>, use Search+Space to open all desks menu.
+      <message name="IDS_SHELF_DESK_BUTTON_TITLE_WITH_PROFILE_AVATAR" desc="The title used for the desk button on the shelf with profile avatar.">
+        Current desk: <ph name="DESK_NAME">$1<ex>Desk 2</ex></ph>. <ph name="PROFILE_NAME">$2<ex>Profile name</ex></ph> <ph name="EMAIL">$3<ex>test@gmail.com</ex></ph>. Desk <ph name="DESK_INDEX">$4<ex>2</ex></ph> of <ph name="DESK_COUNT">$5<ex>3</ex></ph>.
       </message>
       <message name="IDS_SHELF_NEXT_DESK_BUTTON_TITLE" desc="The title used for the next desk button within the desk button on the shelf.">
-        Next Desk: <ph name="NEXT_DESK_NAME">$1<ex>Desk 3</ex></ph>, use Search+Space or keyboard shortcut: Shift+Search+<ph name="NEXT_DESK_INDEX">$2<ex>3</ex></ph> to activate.
-      </message>
-      <message name="IDS_SHELF_NEXT_DESK_BUTTON_TITLE_16_DESKS" desc="The title used for the next desk button within the desk button on the shelf when that desk is beyond the 8th desk.">
-        Next Desk: <ph name="NEXT_DESK_NAME">$1<ex>Desk 14</ex></ph>, use Search+Space to activate.
+        Next desk: <ph name="DESK_NAME">$1<ex>Desk 3</ex></ph>. Desk <ph name="DESK_INDEX">$2<ex>3</ex></ph> of <ph name="DESK_COUNT">$3<ex>3</ex></ph>.
       </message>
 
 
@@ -843,7 +840,7 @@ Style notes:
         Show Focus session settings. Duration set to <ph name="FOCUS_DURATION">$1<ex>25 minutes</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_ACTIVE" translateable="false" desc="The accessible name for the focus mode feature tile in the quick settings menu when focus mode is active.">
-        Show Focus session settings. <ph name="FOCUS_DURATION">$1<ex>7 minutes</ex></ph> left for the current Focus session
+        Show Focus session settings. <ph name="REMAINING_TIME">$1<ex>7 minutes</ex></ph> left for the current Focus session
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_INITIAL" translateable="false" desc="The accessible name for the focus mode feature tile in the quick settings menu when focus mode has never been used before.">
         Show Focus session settings
@@ -852,13 +849,13 @@ Style notes:
         Toggle Focus session. Duration set to <ph name="FOCUS_DURATION">$1<ex>25 minutes</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_BUTTON_ACTIVE" translateable="false" desc="The accessible name for the toggle button in the focus mode feature tile in the quick settings menu when focus mode is active.">
-        Toggle Focus session. <ph name="FOCUS_DURATION">$1<ex>7 minutes</ex></ph> left for the current Focus session
+        Toggle Focus session. <ph name="REMAINING_TIME">$1<ex>7 minutes</ex></ph> left for the current Focus session
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_START_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the toggle button in the focus mode toggle row in the focus mode detailed view when focus mode is not active.">
         Start Focus session
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the toggle button in the focus mode toggle row in the focus mode detailed view for when focus mode is active.">
-        Finish Focus session. <ph name="FOCUS_DURATION">$1<ex>24 minutes</ex></ph> left
+        Finish Focus session. <ph name="REMAINING_TIME">$1<ex>24 minutes</ex></ph> left
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_SELECTED_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the task textfield in the focus mode detailed view.">
         Focusing on <ph name="TASK_NAME">$1<ex>Plan for trip to Paris</ex></ph> Press enter to edit task
@@ -875,11 +872,14 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB_ACCESSIBLE_NAME_DISABLED" translateable="false" desc="The accessible name for the do not disturb switch when disabled in the focus mode detailed view.">
         Enable Do not disturb while in Focus. Do not disturb is disabled
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the focus mode tray icon.">
+        Focusing, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph> left
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_TASK_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the tray bubble contextual panel when there is a selected task.">
-        Focus session, <ph name="FOCUS_DURATION">$1<ex>24 minutes 35 seconds</ex></ph>, focusing on <ph name="TASK_NAME">$2<ex>Plan for trip to Paris</ex></ph>
+        Focus session, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph>, focusing on <ph name="TASK_NAME">$2<ex>Plan for trip to Paris</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the tray bubble contextual panel when there is no selected task.">
-        Focus session, <ph name="FOCUS_DURATION">$1<ex>24 minutes 35 seconds</ex></ph>
+        Focus session, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_ENDING_MOMENT_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the tray bubble contextual panel when in the ending moment.">
         Time's up! Great job!
@@ -2459,6 +2459,15 @@ Style notes:
       </message>
       <message name="IDS_ASH_OVERVIEW_CLOSABLE_DESK_MINIVIEW_A11Y_EXTRA_TIP" desc="The accessibility text read by screen readers for a closeable desk mini view when the close all feature is enabled.">
           Press Ctrl + W to combine with <ph name="DESK_NAME">$1<ex>Desk 1</ex></ph>. Press Ctrl + Shift + W to close desk and windows.
+      </message>
+       <message name="IDS_ASH_OVERVIEW_SETTINGS_BUTTON_LABEL" desc="The accessible name for the Overview Settings button during faster splitscreen setup.">
+        Windows and desks settings
+      </message>
+      <message name="IDS_ASH_OVERVIEW_FASTER_SPLITSCREEN_TOAST" desc="The text for the Faster Splitscreen toast during faster splitscreen setup.">
+        Choose a window for this side
+      </message>
+      <message name="IDS_ASH_OVERVIEW_FASTER_SPLITSCREEN_TOAST_SKIP" desc="The text for the Faster Splitscreen toast skip button.">
+        Dismiss
       </message>
       <message name="IDS_ASH_OVERVIEW_WINDOW_CLOSING_A11Y_ALERT" desc="The accessibility alert read by screen readers to alert the user that a window in overview mode is closing.">
         Window <ph name="WINDOW_TITILE">$1<ex>1</ex></ph> closed.
@@ -5073,6 +5082,14 @@ Some features are limited to increase battery life.
         Need help?
       </message>
 
+      <!-- Mahi -->
+      <message name="IDS_ASH_MAHI_DISCLAIMER_LABEL_TEXT" translateable="false" desc="Text for the disclaimer label in the Mahi panel">
+        Disclaimer: this is only used for experimental.
+      </message>
+      <message name="IDS_ASH_MAHI_LEARN_MORE_LINK_LABEL_TEXT" desc="Text for the learn more link that user can navigate to learn more about the project information">
+        Learn more
+      </message>
+
       <!-- Multi-profiles intro dialog -->
       <message name="IDS_ASH_MULTIPROFILES_INTRO_HEADLINE" desc="Describes which feature multi-profiles intro dialog presents.">
         Multiple sign-in
@@ -6916,8 +6933,35 @@ New install
 
       <!-- Picker -->
       <!-- TODO: b/309706053 - Finalize these strings and then mark them as these as translateable -->
-      <message name="IDS_PICKER_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI.">
+      <message name="IDS_PICKER_EMOJIS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show emoji results.">
+        Emojis
+      </message>
+      <message name="IDS_PICKER_SYMBOLS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show symbol results.">
+        Symbols
+      </message>
+      <message name="IDS_PICKER_EMOTICONS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show emoticon results.">
+        Emoticons
+      </message>
+      <message name="IDS_PICKER_GIFS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show gif results.">
+        Gifs
+      </message>
+      <message name="IDS_PICKER_ZERO_STATE_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI.">
         Search to insert
+      </message>
+      <message name="IDS_PICKER_EMOJIS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the emojis category is selected.">
+        Search Emojis
+      </message>
+      <message name="IDS_PICKER_SYMBOLS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the symbols category is selected.">
+        Search Symbols
+      </message>
+      <message name="IDS_PICKER_EMOTICONS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the emoticons category is selected.">
+        Search Emoticons
+      </message>
+      <message name="IDS_PICKER_GIFS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the gifs category is selected.">
+        Search Gifs
+      </message>
+      <message name="IDS_PICKER_EXPRESSIONS_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains expression categories, i.e. emojis, symbols, emoticons and gifs.">
+        Expressions
       </message>
 
       <!-- WM -->

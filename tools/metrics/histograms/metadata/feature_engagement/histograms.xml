@@ -138,8 +138,6 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_DesktopPwaInstall" summary="desktop PWA install icon"/>
   <variant name="IPH_DesktopPWAsLinkCapturingLaunch"
       summary="PWA launch due to link capturing being enabled"/>
-  <variant name="IPH_DesktopTabGroupsNewGroup"
-      summary="creating a new tab group"/>
   <variant name="IPH_DownloadEsbPromo" summary="download ESB promo"/>
   <variant name="IPH_DownloadHome" summary="download home"/>
   <variant name="IPH_DownloadInfobarDownloadContinuing"
@@ -215,8 +213,8 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_iOSDefaultBrowserSettingsBadge"
       summary="default browser badge promo on the settings menu row"/>
   <variant name="IPH_iOSDefaultBrowserVideoPromoTrigger"
-      summary="notifying that the conditions to show the default browser
-               video promo have been met."/>
+      summary="(obsolete) notifying that the conditions to show the default
+               browser video promo have been met."/>
   <variant name="IPH_iOSDockingPromoFeature"
       summary="Showing the Docking Promo on iOS"/>
   <variant name="IPH_iOSDockingPromoRemindMeLaterFeature"
@@ -562,7 +560,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.DismissalReason.iOS"
-    enum="InProductHelpDismissalReason" expires_after="2024-06-02">
+    enum="InProductHelpDismissalReason" expires_after="2024-08-04">
   <owner>lpromero@google.com</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -606,7 +604,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.SnoozeAction" enum="InProductHelpSnoozeAction"
-    expires_after="2024-06-02">
+    expires_after="2024-08-04">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>

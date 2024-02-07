@@ -40,6 +40,7 @@ class PasswordStoreAndroidLocalBackend : public PasswordStoreBackend,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override;
   void Shutdown(base::OnceClosure shutdown_completed) override;
+  bool IsAbleToSavePasswords() override;
   void GetAllLoginsAsync(LoginsOrErrorReply callback) override;
   void GetAllLoginsWithAffiliationAndBrandingAsync(
       LoginsOrErrorReply callback) override;
@@ -83,6 +84,8 @@ class PasswordStoreAndroidLocalBackend : public PasswordStoreBackend,
       AndroidBackendAPIErrorCode error) override;
   void OnCallToGMSCoreSucceeded() override;
   std::string GetAccountToRetryOperation() override;
+  PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType
+  GetStoreType() override;
 
   base::WeakPtrFactory<PasswordStoreAndroidLocalBackend> weak_ptr_factory_{
       this};

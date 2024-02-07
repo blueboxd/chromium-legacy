@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/profile_based_browsing_history_driver.h"
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption.mojom.h"
@@ -72,6 +73,13 @@ class TabResumptionPageHandler
   mojo::Receiver<ntp::tab_resumption::mojom::PageHandler> page_handler_;
 
   const float visibility_threshold_;
+
+  // The category IDs that a tab must not contain for it to be included.
+  // If `categories_blocklist`is empty, the returned tabs will not be filtered.
+  base::flat_set<std::string> categories_blocklist_;
+
+  // Amount of hours in the past that tabs are able to be shown.
+  const int time_limit_;
 
   base::WeakPtrFactory<TabResumptionPageHandler> weak_ptr_factory_{this};
 };

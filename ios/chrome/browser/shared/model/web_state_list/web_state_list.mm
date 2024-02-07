@@ -33,6 +33,21 @@ bool IsClosingFlagSet(int flagset, WebStateList::ClosingFlags flag) {
 
 }  // namespace
 
+WebStateList::InsertionParams
+WebStateList::InsertionParams::ForDeprecationMigration(int insertion_flags,
+                                                       int desired_index,
+                                                       WebStateOpener opener) {
+  InsertionParams params = InsertionParams::Automatic();
+  if (IsInsertionFlagSet(insertion_flags, INSERT_FORCE_INDEX)) {
+    params = InsertionParams::AtIndex(desired_index);
+  }
+  params.WithOpener(opener)
+      .InheritOpener(IsInsertionFlagSet(insertion_flags, INSERT_INHERIT_OPENER))
+      .Activate(IsInsertionFlagSet(insertion_flags, INSERT_ACTIVATE))
+      .Pinned(IsInsertionFlagSet(insertion_flags, INSERT_PINNED));
+  return params;
+}
+
 WebStateList::ScopedBatchOperation::ScopedBatchOperation(
     WebStateList* web_state_list)
     : web_state_list_(web_state_list) {
@@ -315,7 +330,7 @@ int WebStateList::SetWebStatePinnedAt(int index, bool pinned) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(ContainsIndex(index));
   auto lock = LockForMutation();
-  return SetWebStatePinnedImpl(index, pinned);
+  return SetWebStatePinnedAtImpl(index, pinned);
 }
 
 bool WebStateList::IsWebStatePinnedAt(int index) const {
@@ -324,14 +339,21 @@ bool WebStateList::IsWebStatePinnedAt(int index) const {
   return index < pinned_tabs_count_;
 }
 
+int WebStateList::InsertWebState(std::unique_ptr<web::WebState> web_state,
+                                 InsertionParams params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto lock = LockForMutation();
+  return InsertWebStateImpl(std::move(web_state), params);
+}
+
 int WebStateList::InsertWebState(int index,
                                  std::unique_ptr<web::WebState> web_state,
                                  int insertion_flags,
                                  WebStateOpener opener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto lock = LockForMutation();
-  return InsertWebStateImpl(index, std::move(web_state), insertion_flags,
-                            opener);
+  InsertionParams params =
+      InsertionParams::ForDeprecationMigration(insertion_flags, index, opener);
+  return InsertWebState(std::move(web_state), params);
 }
 
 void WebStateList::MoveWebStateAt(int from_index, int to_index) {
@@ -390,18 +412,16 @@ base::AutoReset<bool> WebStateList::LockForMutation() {
   return base::AutoReset<bool>(&locked_, /*locked=*/true);
 }
 
-int WebStateList::InsertWebStateImpl(int index,
-                                     std::unique_ptr<web::WebState> web_state,
-                                     int insertion_flags,
-                                     WebStateOpener opener) {
+int WebStateList::InsertWebStateImpl(std::unique_ptr<web::WebState> web_state,
+                                     InsertionParams params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(locked_);
   DCHECK(web_state);
-  const bool activating = IsInsertionFlagSet(insertion_flags, INSERT_ACTIVATE);
-  const bool forced = IsInsertionFlagSet(insertion_flags, INSERT_FORCE_INDEX);
-  const bool inheriting =
-      IsInsertionFlagSet(insertion_flags, INSERT_INHERIT_OPENER);
-  const bool pinned = IsInsertionFlagSet(insertion_flags, INSERT_PINNED);
+  WebStateOpener opener = params.opener;
+  const bool inheriting = params.inherit_opener;
+  const bool activating = params.activate;
+  const bool pinned = params.pinned;
+  int index = params.desired_index;
 
   if (inheriting) {
     for (const auto& wrapper : web_state_wrappers_) {
@@ -417,7 +437,7 @@ int WebStateList::InsertWebStateImpl(int index,
 
   const OrderControllerSourceFromWebStateList source(*this);
   const OrderController order_controller(source);
-  if (forced && index != WebStateList::kInvalidIndex) {
+  if (index != WebStateList::kInvalidIndex) {
     index = order_controller.DetermineInsertionIndex(
         OrderController::InsertionParams::ForceIndex(index, range));
   } else if (opener.opener) {
@@ -600,9 +620,6 @@ std::unique_ptr<web::WebState> WebStateList::DetachWebStateAtImpl(
   OrderController order_controller(source);
   active_index_ =
       order_controller.DetermineNewActiveIndex(active_index_, {index});
-  if (is_active_web_state_detached) {
-    OnActiveWebStateChanged();
-  }
 
   ClearOpenersReferencing(index);
   std::unique_ptr<web::WebState> detached_web_state =
@@ -611,6 +628,10 @@ std::unique_ptr<web::WebState> WebStateList::DetachWebStateAtImpl(
   if (index < pinned_tabs_count_) {
     CHECK_GT(pinned_tabs_count_, 0);
     --pinned_tabs_count_;
+  }
+
+  if (is_active_web_state_detached) {
+    OnActiveWebStateChanged();
   }
 
   // Check that the active element (if there is one) is valid.
@@ -709,34 +730,9 @@ void WebStateList::ActivateWebStateAtImpl(int index) {
   }
 }
 
-void WebStateList::AddObserver(WebStateListObserver* observer) {
+int WebStateList::SetWebStatePinnedAtImpl(int index, bool pinned) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observers_.AddObserver(observer);
-}
-
-void WebStateList::RemoveObserver(WebStateListObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observers_.RemoveObserver(observer);
-}
-
-WebStateList::ScopedBatchOperation WebStateList::StartBatchOperation() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!batch_operation_in_progress_);
-  return ScopedBatchOperation(this);
-}
-
-void WebStateList::ClearOpenersReferencing(int index) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
-  for (auto& web_state_wrapper : web_state_wrappers_) {
-    if (web_state_wrapper->opener().opener == old_web_state) {
-      web_state_wrapper->SetOpener(WebStateOpener());
-    }
-  }
-}
-
-int WebStateList::SetWebStatePinnedImpl(int index, bool pinned) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(locked_);
   if (pinned == IsWebStatePinnedAt(index)) {
     // The pinned state is not changed, nothing to do.
     return index;
@@ -761,6 +757,32 @@ int WebStateList::SetWebStatePinnedImpl(int index, bool pinned) {
   MoveWebStateAtImpl(index, new_index, /*pinned_state_change=*/true);
 
   return new_index;
+}
+
+void WebStateList::AddObserver(WebStateListObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observers_.AddObserver(observer);
+}
+
+void WebStateList::RemoveObserver(WebStateListObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observers_.RemoveObserver(observer);
+}
+
+WebStateList::ScopedBatchOperation WebStateList::StartBatchOperation() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!batch_operation_in_progress_);
+  return ScopedBatchOperation(this);
+}
+
+void WebStateList::ClearOpenersReferencing(int index) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
+  for (auto& web_state_wrapper : web_state_wrappers_) {
+    if (web_state_wrapper->opener().opener == old_web_state) {
+      web_state_wrapper->SetOpener(WebStateOpener());
+    }
+  }
 }
 
 int WebStateList::ConstrainMoveIndex(int index, bool pinned) const {

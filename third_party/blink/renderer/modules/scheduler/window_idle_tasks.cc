@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/modules/scheduler/window_idle_tasks.h"
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include <optional>
+
 #include "third_party/blink/public/common/scheduler/task_attribution_id.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_options.h"
@@ -37,7 +38,7 @@ class V8IdleTask : public IdleTask {
     ScriptState* script_state = callback_->CallbackRelevantScriptState();
     auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
     if (tracker && script_state->World().IsMainWorld()) {
-      parent_task_ = tracker->RunningTask(script_state);
+      parent_task_ = tracker->RunningTask(script_state->GetIsolate());
     }
   }
 

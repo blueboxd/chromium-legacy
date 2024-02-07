@@ -655,13 +655,13 @@ NSString* GroupGridCellAccessibilityIdentifier(NSUInteger index) {
   UICollectionViewCell* collectionViewCell =
       [self.collectionView cellForItemAtIndexPath:indexPath];
   if ([collectionViewCell isKindOfClass:[GroupGridCell class]]) {
-    // TODO(crbug.com/1501837): Change the scenario to handle the context menu
-    // for group cells.
     return [self.menuProvider
-        contextMenuConfigurationForTabCell:ObjCCastStrict<GroupGridCell>(
-                                               collectionViewCell)
-                              menuScenario:kMenuScenarioHistogramTabGridEntry];
+        contextMenuConfigurationForTabGroupCell:ObjCCastStrict<GroupGridCell>(
+                                                    collectionViewCell)
+                                   menuScenario:
+                                       kMenuScenarioHistogramTabGroupGridEntry];
   }
+
   GridCell* cell = ObjCCastStrict<GridCell>(collectionViewCell);
 
   MenuScenarioHistogram scenario;
@@ -828,7 +828,11 @@ NSString* GroupGridCellAccessibilityIdentifier(NSUInteger index) {
   CHECK(itemIdentifier.type == GridItemType::Tab);
   if (_mode != TabGridModeSelection) {
     _draggedItem = itemIdentifier.tabSwitcherItem;
-    return @[ [self.dragDropHandler dragItemForItem:_draggedItem] ];
+    UIDragItem* dragItem = [self.dragDropHandler dragItemForItem:_draggedItem];
+    if (!dragItem) {
+      return @[];
+    }
+    return @[ dragItem ];
   }
 
   // Make sure that the long pressed cell is selected before initiating a drag

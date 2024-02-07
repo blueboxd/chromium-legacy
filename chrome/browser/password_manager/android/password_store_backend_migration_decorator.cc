@@ -8,9 +8,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/password_manager/android/built_in_backend_to_android_backend_migrator.h"
-#include "chrome/browser/password_manager/android/password_manager_android_util.h"
 #include "chrome/browser/password_manager/android/password_store_proxy_backend.h"
 #include "components/password_manager/core/browser/password_store/password_store.h"
+#include "components/password_manager/core/browser/password_store/split_stores_and_local_upm.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -98,7 +98,7 @@ void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
 
   // TODO(crbug.com/1445497): Re-evaluate migration code for local passwords.
   bool upm_for_local_active =
-      password_manager_android_util::UsesSplitStoresAndUPMForLocal(prefs_);
+      password_manager::UsesSplitStoresAndUPMForLocal(prefs_);
 
   if (password_sync_configured_setting_ != password_sync_applied_setting_ &&
       !upm_for_local_active) {
@@ -208,6 +208,16 @@ void PasswordStoreBackendMigrationDecorator::Shutdown(
           },
           std::move(active_backend_))
           .Then(std::move(shutdown_completed)));
+}
+
+bool PasswordStoreBackendMigrationDecorator::IsAbleToSavePasswords() {
+  // Suppress saving while the migration of local passwords is ongoing, to avoid
+  // the migration "forgetting" any new passwords. In fact the same concern
+  // applies to all migration types, but it's scary to change behavior now.
+  return active_backend_->IsAbleToSavePasswords() &&
+         !(migrator_ && migrator_->migration_in_progress_type() ==
+                            BuiltInBackendToAndroidBackendMigrator::
+                                MigrationType::kForLocalUsers);
 }
 
 void PasswordStoreBackendMigrationDecorator::GetAllLoginsAsync(

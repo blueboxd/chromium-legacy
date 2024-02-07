@@ -13,6 +13,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/memory/raw_ptr.h"
+#include "base/scoped_multi_source_observation.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -20,6 +21,7 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/layout/proposed_layout.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -29,7 +31,8 @@ class View;
 // Base class for layout managers that can do layout calculation separately
 // from layout application. Derived classes must implement
 // CalculateProposedLayout(). Used in interpolating and animating layouts.
-class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
+class VIEWS_EXPORT LayoutManagerBase : public LayoutManager,
+                                       public ViewObserver {
  public:
   LayoutManagerBase(const LayoutManagerBase&) = delete;
   LayoutManagerBase& operator=(const LayoutManagerBase&) = delete;
@@ -43,13 +46,6 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // result had already been calculated, a cached value may be returned.
   ProposedLayout GetProposedLayout(const gfx::Size& host_size) const;
 
-  // Excludes a specific view from the layout when doing layout calculations.
-  // Useful when a child view is meant to be displayed but has its size and
-  // position managed elsewhere in code. By default, all child views are
-  // included in the layout unless they are hidden.
-  void SetChildViewIgnoredByLayout(View* child_view, bool ignored);
-  bool IsChildViewIgnoredByLayout(const View* child_view) const;
-
   // LayoutManager:
   gfx::Size GetPreferredSize(const View* host) const override;
   gfx::Size GetPreferredSize(const View* host,
@@ -59,6 +55,11 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   SizeBounds GetAvailableSize(const View* host,
                               const View* view) const override;
   void Layout(View* host) final;
+
+  // ViewObserver:
+  void OnViewPropertyChanged(View* observed_view,
+                             const void* key,
+                             int64_t old_value) final;
 
   // Returns whether the specified child view can be visible. To be able to be
   // visible, |child| must be a child of the host view, and must have been
@@ -156,10 +157,10 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // all cached data.
   virtual void OnLayoutChanged();
 
-  // Adds an owned layout. Owned layouts receive the same events (Installed(),
-  // ViewAdded(), InvalidateLayout(), etc.) as the primary layout. Subclasses of
-  // LayoutManagerBase that need to compose or transform the output of one or
-  // more embedded layouts should use the |owned_layouts| system.
+  // Adds an owned layout. The primary layout propagates events (installation,
+  // view addition, etc.) to all owned layouts. Subclasses of LayoutManagerBase
+  // that need to compose or transform the output of one or more embedded
+  // layouts should use the |owned_layouts| system.
   template <class T>
   T* AddOwnedLayout(std::unique_ptr<T> owned_layout) {
     T* layout = owned_layout.get();
@@ -210,6 +211,14 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   void PropagateInvalidateLayout();
 
   raw_ptr<View> host_view_ = nullptr;
+
+  // Monitors child views so we will be notified if their "ignored by layout"
+  // state changes. This should only ever be observing anything for the root
+  // layout manager, which in turn will propagate changes to owned layout
+  // managers as needed.
+  base::ScopedMultiSourceObservation<View, ViewObserver> view_observations_{
+      this};
+
   std::map<const View*, ChildInfo> child_infos_;
   std::vector<std::unique_ptr<LayoutManagerBase>> owned_layouts_;
   raw_ptr<LayoutManagerBase> parent_layout_ = nullptr;
@@ -267,7 +276,7 @@ class VIEWS_EXPORT ManualLayoutUtil {
   //
   // Example:
   // ```
-  //  MyView::Layout() {
+  //  MyView::Layout(PassKey) {
   //    // Only include `foo_button_` in the layout if the feature is enabled;
   //    // otherwise hide it.
   //    ManualLayoutUtil layout_util(flex_layout_.get());

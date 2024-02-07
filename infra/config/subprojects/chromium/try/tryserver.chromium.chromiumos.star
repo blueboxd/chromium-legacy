@@ -149,6 +149,7 @@ try_.orchestrator_builder(
     compilator = "chromeos-amd64-generic-rel-gtest-and-tast-compilator",
     contact_team_email = "chromeos-sw-engprod@google.com",
     main_list_view = "try",
+    siso_enabled = True,
     tryjob = try_.job(
         omit_from_luci_cv = True,
     ),
@@ -187,6 +188,7 @@ try_.compilator_builder(
     ],
     contact_team_email = "chromeos-sw-engprod@google.com",
     main_list_view = "try",
+    siso_enabled = True,
 )
 
 # TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
@@ -234,6 +236,10 @@ try_.builder(
         ],
     ),
     builderless = not settings.is_main,
+    experiments = {
+        # crbug/940930
+        "chromium.enable_cleandead": 50,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -381,6 +387,10 @@ try_.builder(
         ],
     ),
     builderless = not settings.is_main,
+    experiments = {
+        # crbug/940930
+        "chromium.enable_cleandead": 50,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -439,6 +449,10 @@ try_.builder(
         ],
     ),
     builderless = not settings.is_main,
+    experiments = {
+        # crbug/940930
+        "chromium.enable_cleandead": 50,
+    },
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     siso_enabled = True,
@@ -572,6 +586,8 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        # crbug/940930
+        "chromium.enable_cleandead": 50,
     },
     main_list_view = "try",
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools

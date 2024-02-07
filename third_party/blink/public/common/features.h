@@ -113,6 +113,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAndroidExtendedKeyboardShortcuts);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAudioWorkletThreadRealtimePriority);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kAutofillIncludeShadowDomInUnassociatedListedElements);
+
 BLINK_COMMON_EXPORT
 BASE_DECLARE_FEATURE(kAutofillSendUnidentifiedKeyAfterFill);
 
@@ -346,6 +349,12 @@ enum class AsyncScriptExperimentalSchedulingTarget {
 BLINK_COMMON_EXPORT extern const base::FeatureParam<
     AsyncScriptExperimentalSchedulingTarget>
     kDelayAsyncScriptExecutionTargetParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kDelayAsyncScriptExecutionOptOutLowFetchPriorityHintParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kDelayAsyncScriptExecutionOptOutAutoFetchPriorityHintParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kDelayAsyncScriptExecutionOptOutHighFetchPriorityHintParam;
 
 // If enabled, the ResourceLoadScheculer will take the current network state
 // into consideration, when it plans to delay a low-priority throttleable
@@ -399,6 +408,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDispatchBeforeUnloadOnFreeze);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDisplayLocking);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDrawingBufferWithoutGpuMemoryBuffer);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDropInputEventsBeforeFirstPaint);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDroppedTouchSequenceIncludesTouchEnd);
@@ -420,6 +431,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int> kDeprecateUnloadBucket;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kDeprecateUnloadAllowlist;
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEnableMojoJSProtectedMemory);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kExcludeLowEntropyImagesFromLCP);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
@@ -474,7 +487,7 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
 // URLs.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kFledgeBiddingAndAuctionKeyConfig;
-// Configures FLEDGE to consider k-anononymity. If both
+// Configures FLEDGE to consider k-anonymity. If both
 // kFledgeConsiderKAnonymity and kFledgeEnforceKAnonymity are on it will be
 // enforced; if only kFledgeConsiderKAnonymity is on it will be simulated.
 //
@@ -505,8 +518,12 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // putting an ad tech in a restricted cooldown period.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kFledgeDebugReportSamplingRestrictedCooldownRandomMax;
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeDebugReportFilterAfterSampling);
+// Sets the time when to enable filtering debug reports. It's the time delta
+// since windows epoch. Lockout and cooldown collected before this time will be
+// ignored. This avoids locking out ad techs who used forDebuggingOnly API
+// before filtering was enabled. Set to zero to disable filtering debug reports.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kFledgeEnableFilteringDebugReportStartingFrom;
 
 // If enabled, the limit on number of component ads will be taken from
 // `kFledgeCustomMaxAuctionAdComponentsValue`
@@ -826,6 +843,12 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<
 BLINK_COMMON_EXPORT extern const base::FeatureParam<
     AsyncScriptExperimentalSchedulingTarget>
     kLowPriorityAsyncScriptExecutionTargetParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionOptOutLowFetchPriorityHintParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionOptOutAutoFetchPriorityHintParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionOptOutHighFetchPriorityHintParam;
 
 // If enabled, async scripts will be loaded with a lower fetch priority.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowPriorityScriptLoading);
@@ -1169,6 +1192,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kScopeMemoryCachePerContext);
 // paused instead of all pages.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPausePagesPerBrowsingContextGroup);
 
+// Whether the HUD display is shown for paused pages.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kShowHudDisplayForPausedPages);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kScriptStreaming);
 
 // If enabled, parser-blocking scripts are loaded asynchronously. The target
@@ -1284,6 +1310,15 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // TODO(crbug.com/1218540): Merge this flag with `kSharedStorageAPI` once
 // shipped.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPIM118);
+
+// Additional Shared Storage API features shipped in M123.
+// TODO(crbug.com/1218540): Merge this flag with `kSharedStorageAPI` once
+// shipped.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPIM123);
+
+// Enables WAL (write-ahead-logging) mode for the Shared Storage API SQLite
+// database backend.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPIEnableWALForDatabase);
 
 // TODO(accessibility): This flag is set to accommodate JAWS on Windows so they
 // can adjust to us not simulating click events on a focus action. It is in the
@@ -1516,6 +1551,8 @@ IsAllowPageWithIDBConnectionAndTransactionInBFCacheEnabled();
 BLINK_COMMON_EXPORT bool IsAllowURNsInIframeEnabled();
 
 BLINK_COMMON_EXPORT bool DisplayWarningDeprecateURNIframesUseFencedFrames();
+
+BLINK_COMMON_EXPORT bool IsEnableMojoJSProtectedMemoryEnabled();
 
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();
 

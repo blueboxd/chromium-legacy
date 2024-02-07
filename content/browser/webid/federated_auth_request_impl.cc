@@ -421,6 +421,10 @@ std::optional<std::string> GetIframeOriginForDisplay(
   return iframe_for_display;
 }
 
+bool IsFrameActive(RenderFrameHost* frame) {
+  return frame && frame->IsActive();
+}
+
 bool IsFrameVisible(RenderFrameHost* frame) {
   return frame && frame->IsActive() &&
          frame->GetVisibilityState() == content::PageVisibilityState::kVisible;
@@ -1051,9 +1055,11 @@ void FederatedAuthRequestImpl::RequestToken(
     // At this point either all IDPs are signed out or mediation:silent was used
     // and there are no returning accounts. For now reject with a generic error.
     // TODO(crbug.com/1307709): Handle FedCmMetrics properly for multiple IDPs.
+    bool should_delay_callback =
+        mediation_requirement_ == MediationRequirement::kSilent ? false : true;
     CompleteRequestWithError(
         FederatedAuthRequestResult::kError, TokenStatus::kNotSignedInWithIdp,
-        /*token_error=*/std::nullopt, /*should_delay_callback=*/false);
+        /*token_error=*/std::nullopt, should_delay_callback);
     return;
   }
   CHECK(!unique_idps.empty());
@@ -1583,8 +1589,7 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
   // The RenderFrameHost may be alive but not visible in the following
   // situations:
   // Situation #1: User switched tabs
-  // Situation #2: User navigated the page. The RenderFrameHost is still
-  //   alive thanks to the BFCache.
+  // Situation #2: User navigated the page with bfcache
   //
   // - If this fetch is as a result of an IdP sign-in status change, the FedCM
   // dialog is either visible or temporarily hidden. Update the contents of
@@ -1593,11 +1598,11 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
   // if the RenderFrameHost is hidden because the user does not seem interested
   // in the contents of the current page.
   if (!fetch_data_.for_idp_signin) {
-    bool is_visible = IsFrameVisible(render_frame_host().GetMainFrame());
-    fedcm_metrics_->RecordWebContentsVisibilityUponReadyToShowDialog(
-        is_visible);
+    bool is_active = IsFrameActive(render_frame_host().GetMainFrame());
+    fedcm_metrics_->RecordWebContentsStatusUponReadyToShowDialog(
+        IsFrameVisible(render_frame_host().GetMainFrame()), is_active);
 
-    if (!is_visible) {
+    if (!is_active) {
       CompleteRequestWithError(
           FederatedAuthRequestResult::kErrorRpPageNotVisible,
           TokenStatus::kRpPageNotVisible,
@@ -1606,9 +1611,9 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
       return;
     }
 
-    show_accounts_dialog_time_ = base::TimeTicks::Now();
-    fedcm_metrics_->RecordShowAccountsDialogTime(show_accounts_dialog_time_ -
-                                                 start_time_);
+    ready_to_display_accounts_dialog_time_ = base::TimeTicks::Now();
+    fedcm_metrics_->RecordShowAccountsDialogTime(
+        ready_to_display_accounts_dialog_time_ - start_time_);
   }
 
   fetch_data_ = FetchData();
@@ -1655,6 +1660,8 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
                      weak_ptr_factory_.GetWeakPtr(),
                      /*can_append_hints=*/false),
       base::BindOnce(&FederatedAuthRequestImpl::OnDialogDismissed,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&FederatedAuthRequestImpl::OnAccountsDisplayed,
                      weak_ptr_factory_.GetWeakPtr()));
   devtools_instrumentation::DidShowFedCmDialog(render_frame_host());
 
@@ -1670,6 +1677,10 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
   // Although not useful for catching malicious IDPs, it should only be a very
   // small percentage of the samples recorded.
   fedcm_metrics_->RecordAccountsDialogShown();
+}
+
+void FederatedAuthRequestImpl::OnAccountsDisplayed() {
+  accounts_dialog_display_time_ = base::TimeTicks::Now();
 }
 
 void FederatedAuthRequestImpl::HandleAccountsFetchFailure(
@@ -1694,7 +1705,7 @@ void FederatedAuthRequestImpl::HandleAccountsFetchFailure(
     return;
   }
 
-  if (!IsFrameVisible(render_frame_host().GetMainFrame())) {
+  if (!IsFrameActive(render_frame_host().GetMainFrame())) {
     CompleteRequestWithError(FederatedAuthRequestResult::kErrorRpPageNotVisible,
                              TokenStatus::kRpPageNotVisible,
                              /*token_error=*/std::nullopt,
@@ -2012,7 +2023,7 @@ void FederatedAuthRequestImpl::OnAccountSelected(const GURL& idp_config_url,
   account_id_ = account_id;
   select_account_time_ = base::TimeTicks::Now();
   fedcm_metrics_->RecordContinueOnDialogTime(select_account_time_ -
-                                             show_accounts_dialog_time_);
+                                             accounts_dialog_display_time_);
 
   network_manager_->SendTokenRequest(
       idp_info.endpoints.token, account_id_,
@@ -2117,7 +2128,7 @@ void FederatedAuthRequestImpl::OnDialogDismissed(
   if (should_embargo) {
     base::TimeTicks dismiss_dialog_time = base::TimeTicks::Now();
     fedcm_metrics_->RecordCancelOnDialogTime(dismiss_dialog_time -
-                                             show_accounts_dialog_time_);
+                                             accounts_dialog_display_time_);
   }
   fedcm_metrics_->RecordCancelReason(dismiss_reason);
 
@@ -2262,7 +2273,8 @@ void FederatedAuthRequestImpl::OnTokenResponseReceived(
   base::TimeDelta fetch_time = token_response_time_ - select_account_time_;
   if (should_complete_request_immediately_ ||
       identity_selection_type_ == kAutoButton ||
-      fetch_time >= kTokenRequestDelay) {
+      fetch_time >= kTokenRequestDelay ||
+      rp_mode_ == blink::mojom::RpMode::kButton) {
     std::move(complete_request_callback).Run();
     return;
   }
@@ -2348,7 +2360,9 @@ void FederatedAuthRequestImpl::CompleteTokenRequest(
 
       fedcm_metrics_->RecordTokenResponseAndTurnaroundTime(
           token_response_time_ - select_account_time_,
-          token_response_time_ - start_time_);
+          token_response_time_ - start_time_ -
+              (accounts_dialog_display_time_ -
+               ready_to_display_accounts_dialog_time_));
 
       if (IsFedCmMetricsEndpointEnabled()) {
         for (const auto& metrics_endpoint_kv : metrics_endpoints_) {
@@ -2359,10 +2373,13 @@ void FederatedAuthRequestImpl::CompleteTokenRequest(
 
           if (metrics_endpoint_kv.first == idp_config_url) {
             network_manager_->SendSuccessfulTokenRequestMetrics(
-                metrics_endpoint, show_accounts_dialog_time_ - start_time_,
-                select_account_time_ - show_accounts_dialog_time_,
+                metrics_endpoint,
+                ready_to_display_accounts_dialog_time_ - start_time_,
+                select_account_time_ - accounts_dialog_display_time_,
                 token_response_time_ - select_account_time_,
-                token_response_time_ - start_time_);
+                token_response_time_ - start_time_ -
+                    (accounts_dialog_display_time_ -
+                     ready_to_display_accounts_dialog_time_));
           } else {
             // Send kUserFailure so that IDP cannot tell difference between user
             // selecting a different IDP and user dismissing dialog without
@@ -2509,7 +2526,8 @@ void FederatedAuthRequestImpl::CleanUp() {
   provider_fetcher_.reset();
   account_id_ = std::string();
   start_time_ = base::TimeTicks();
-  show_accounts_dialog_time_ = base::TimeTicks();
+  ready_to_display_accounts_dialog_time_ = base::TimeTicks();
+  accounts_dialog_display_time_ = base::TimeTicks();
   select_account_time_ = base::TimeTicks();
   token_response_time_ = base::TimeTicks();
   accounts_dialog_shown_time_ = std::nullopt;
@@ -2671,6 +2689,10 @@ bool FederatedAuthRequestImpl::OnResolve(GURL idp_config_url,
                                          const std::string& token) {
   // Close the pop-up window post user permission.
   OnClose();
+
+  permission_delegate_->GrantSharingPermission(
+      origin(), GetEmbeddingOrigin(), url::Origin::Create(idp_config_url),
+      account_id_);
 
   CompleteRequest(FederatedAuthRequestResult::kSuccess, TokenStatus::kSuccess,
                   /*token_error=*/std::nullopt, idp_config_url, token,

@@ -4407,6 +4407,35 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "ondevice_stability_tests",
+    tests = {
+        "ondevice_stability_tests": targets.legacy_test_config(
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
+            linux_args = [
+                "--chromedriver",
+                "chromedriver",
+                "--binary",
+                "chrome",
+            ],
+            mac_args = [
+                "--chromedriver",
+                "chromedriver",
+                "--binary",
+                "Google Chrome.app/Contents/MacOS/Google Chrome",
+            ],
+            win_args = [
+                "--chromedriver",
+                "chromedriver.exe",
+                "--binary",
+                "Chrome.exe",
+            ],
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "optimization_guide_android_gtests",
     tests = {
         "optimization_guide_components_unittests": targets.legacy_test_config(),
@@ -4931,6 +4960,21 @@ targets.legacy_basic_suite(
                     "pool": "WebRTC-chromium",
                 },
             ),
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
+    name = "webrtc_chromium_without_baremetal_gtests",
+    tests = {
+        # Run capture unittests on bots that don't have real webcams.
+        "capture_unittests": targets.legacy_test_config(
+            args = [
+                "--enable-logging",
+                "--v=1",
+                "--test-launcher-jobs=1",
+                "--test-launcher-print-test-stdio=always",
+            ],
         ),
     },
 )

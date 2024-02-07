@@ -48,6 +48,7 @@ crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_node
 crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_nodes/max_node_count.py [ Failure ]
 crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_nodes/ownership.py [ Failure ]
 crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_nodes/start_nodes.py [ Failure ]
+crbug.com/1499775 external/wpt/webdriver/tests/bidi/input/perform_actions/pointer_mouse_multiclick.py [ Failure ]
 
 # Gardener 2023-12-19
 crbug.com/1512897 external/wpt/webdriver/tests/bidi/network/combined/network_events.py [ Failure ]
@@ -295,8 +296,6 @@ crbug.com/1499775 external/wpt/css/filter-effects/backdrop-filter-plus-filter.ht
 crbug.com/1499775 external/wpt/css/filter-effects/backdrop-filter-reference-filter.html [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/css/css-page/page-name-fixed-pos-001-print.html [ Failure Pass ]
-crbug.com/1499775 external/wpt/css/printing/monolithic-overflow-024-print.html [ Failure ]  # Reftest image failure
-crbug.com/1499775 external/wpt/css/printing/monolithic-overflow-025-print.html [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/css/printing/page-margin-001-print.html [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/css/printing/page-margin-002-print.html [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/css/printing/page-margin-003-print.html [ Failure ]  # Reftest image failure

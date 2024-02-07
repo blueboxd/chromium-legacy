@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <tuple>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -38,6 +37,7 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/loader/url_loader_factory_utils.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -185,7 +185,7 @@ std::unique_ptr<Network::Cookie> BuildCookie(
                           : cookie.ExpiryDate().InSecondsFSinceUnixEpoch())
           .SetSize(cookie.Name().length() + cookie.Value().length())
           .SetHttpOnly(cookie.IsHttpOnly())
-          .SetSecure(cookie.IsSecure())
+          .SetSecure(cookie.SecureAttribute())
           .SetSession(!cookie.IsPersistent())
           .SetPriority(BuildCookiePriority(cookie.Priority()))
           .SetSameParty(false)
@@ -257,7 +257,7 @@ class CookieRetrieverNetworkService
       }
       std::string key = base::StringPrintf(
           "%s::%s::%s::%d::%s", cookie.Name().c_str(), cookie.Domain().c_str(),
-          cookie.Path().c_str(), cookie.IsSecure(),
+          cookie.Path().c_str(), cookie.SecureAttribute(),
           serialized_partition_key.c_str());
       all_cookies_.emplace(std::move(key), cookie);
     }
@@ -450,7 +450,7 @@ MakeCookieFromProtocolValues(const std::string& name,
     }
     net::CookieSourceScheme cookie_source_scheme =
         absl::get<net::CookieSourceScheme>(cookie_source_scheme_or_error);
-    if (cookie->IsSecure() &&
+    if (cookie->SecureAttribute() &&
         cookie_source_scheme == net::CookieSourceScheme::kNonSecure) {
       return Response::InvalidParams(
           "Secure attribute cannot be set for a cookie with an insecure source "
@@ -981,8 +981,8 @@ Network::CookieExemptionReason GetProtocolCookieExemptionReason(
       return Network::CookieExemptionReasonEnum::StorageAccess;
     case net::CookieInclusionStatus::ExemptionReason::kTopLevelStorageAccess:
       return Network::CookieExemptionReasonEnum::TopLevelStorageAccess;
-    case net::CookieInclusionStatus::ExemptionReason::kBrowserHeuristics:
-      return Network::CookieExemptionReasonEnum::BrowserHeuristics;
+    case net::CookieInclusionStatus::ExemptionReason::kCorsOptIn:
+      return Network::CookieExemptionReasonEnum::CorsOptIn;
   }
 }
 
@@ -2591,6 +2591,21 @@ void NetworkHandler::FetchKeepAliveRequestWillBeSent(
           .SetMixedContentType(Security::MixedContentTypeEnum::Blockable)
           .Build();
 
+  if (request.request_body) {
+    request_info->SetHasPostData(true);
+    std::string post_data;
+    auto data_entries =
+        std::make_unique<protocol::Array<protocol::Network::PostDataEntry>>();
+    if (GetPostData(*request.request_body, data_entries.get(), &post_data)) {
+      if (!post_data.empty()) {
+        request_info->SetPostData(post_data);
+      }
+      if (data_entries->size()) {
+        request_info->SetPostDataEntries(std::move(data_entries));
+      }
+    }
+  }
+
   frontend_->RequestWillBeSent(
       request_id, request_id, url, std::move(request_info), current_ticks,
       current_wall_time, std::move(initiator), redirect_emitted_extra_info,
@@ -3258,10 +3273,11 @@ CreateNetworkFactoryForDevTools(
   params->is_corb_enabled = false;
 
   if (scheme == url::kHttpScheme || scheme == url::kHttpsScheme) {
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> remote;
-    host->CreateURLLoaderFactory(remote.InitWithNewPipeAndPassReceiver(),
-                                 std::move(params));
-    return remote;
+    return url_loader_factory::CreatePendingRemote(
+        ContentBrowserClient::URLLoaderFactoryType::kDevTools,
+        url_loader_factory::TerminalParams::ForNetworkContext(
+            host->GetStoragePartition()->GetNetworkContext(),
+            std::move(params)));
   }
 
   if (scheme != url::kFileScheme) {

@@ -137,10 +137,13 @@ class DocumentScanAPIHandler : public BrowserContextKeyedAPI {
   // configured via `SetOptions`.  Additionally, `options` are used to specify
   // scanner-framework options.  Explicit approval is obtained through a Chrome
   // dialog or by adding the extension ID to the list of trusted document scan
-  // extensions.  The result of the denial or the backend call will be passed to
-  // `callback`.
+  // extensions.  `user_gesture` indicates whether the scan was initiated by a
+  // user action and should be passed as the result of
+  // `ExtensionFunction::user_gesture()`. The result of the denial or the
+  // backend call will be passed to `callback`.
   void StartScan(gfx::NativeWindow native_window,
                  scoped_refptr<const Extension> extension,
+                 bool user_gesture,
                  const std::string& scanner_handle,
                  api::document_scan::StartScanOptions options,
                  StartScanCallback callback);
@@ -188,11 +191,16 @@ class DocumentScanAPIHandler : public BrowserContextKeyedAPI {
     // up scanner in `active_scanner_ids`).
     std::map<std::string, std::string> scanner_handles;
 
-    // Active job handles.
-    std::set<std::string> active_job_handles;
+    // Map from active job handles back to the originating scanner handle.
+    std::map<std::string, std::string> active_job_handles;
 
-    // A set of scanner handles the user has approved for scanning.
-    std::set<std::string> approved_scanners;
+    // A set of scanner IDs the user has approved for scanning.  These can be
+    // used to start new scan jobs from actions triggered by a user gesture.
+    std::set<std::string> approved_scanner_ids;
+
+    // A set of scanner handles the user has approved for scanning.  These can
+    // be used to start new scan jobs until the handles are closed.
+    std::set<std::string> approved_scanner_handles;
   };
 
   // BrowserContextKeyedAPI:
@@ -228,7 +236,8 @@ class DocumentScanAPIHandler : public BrowserContextKeyedAPI {
   void OnGetOptionGroupsResponse(
       GetOptionGroupsCallback callback,
       crosapi::mojom::GetOptionGroupsResponsePtr response);
-  void OnCloseScannerResponse(CloseScannerCallback callback,
+  void OnCloseScannerResponse(const ExtensionId& extension_id,
+                              CloseScannerCallback callback,
                               crosapi::mojom::CloseScannerResponsePtr response);
   void OnSetOptionsResponse(SetOptionsCallback callback,
                             crosapi::mojom::SetOptionsResponsePtr response);

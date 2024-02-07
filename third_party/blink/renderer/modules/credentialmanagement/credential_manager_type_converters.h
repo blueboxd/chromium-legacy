@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGEMENT_CREDENTIAL_MANAGER_TYPE_CONVERTERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGEMENT_CREDENTIAL_MANAGER_TYPE_CONVERTERS_H_
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include <optional>
 
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/blink/public/mojom/credentialmanagement/credential_manager.mojom-blink.h"
@@ -25,6 +25,7 @@ class AuthenticationExtensionsPRFValues;
 class AuthenticatorSelectionCriteria;
 class CableAuthenticationData;
 class Credential;
+class DigitalCredentialProvider;
 class IdentityCredentialDisconnectOptions;
 class IdentityProviderConfig;
 class IdentityProviderRequestOptions;
@@ -91,10 +92,9 @@ struct TypeConverter<blink::mojom::blink::PublicKeyCredentialType, String> {
 };
 
 template <>
-struct TypeConverter<
-    absl::optional<blink::mojom::blink::AuthenticatorTransport>,
-    String> {
-  static absl::optional<blink::mojom::blink::AuthenticatorTransport> Convert(
+struct TypeConverter<std::optional<blink::mojom::blink::AuthenticatorTransport>,
+                     String> {
+  static std::optional<blink::mojom::blink::AuthenticatorTransport> Convert(
       const String&);
 };
 
@@ -104,42 +104,41 @@ struct TypeConverter<String, blink::mojom::blink::AuthenticatorTransport> {
 };
 
 template <>
-struct TypeConverter<
-    absl::optional<blink::mojom::blink::ResidentKeyRequirement>,
-    String> {
-  static absl::optional<blink::mojom::blink::ResidentKeyRequirement> Convert(
+struct TypeConverter<std::optional<blink::mojom::blink::ResidentKeyRequirement>,
+                     String> {
+  static std::optional<blink::mojom::blink::ResidentKeyRequirement> Convert(
       const String&);
 };
 
 template <>
 struct TypeConverter<
-    absl::optional<blink::mojom::blink::UserVerificationRequirement>,
+    std::optional<blink::mojom::blink::UserVerificationRequirement>,
     String> {
-  static absl::optional<blink::mojom::blink::UserVerificationRequirement>
+  static std::optional<blink::mojom::blink::UserVerificationRequirement>
   Convert(const String&);
 };
 
 template <>
 struct TypeConverter<
-    absl::optional<blink::mojom::blink::AttestationConveyancePreference>,
+    std::optional<blink::mojom::blink::AttestationConveyancePreference>,
     String> {
-  static absl::optional<blink::mojom::blink::AttestationConveyancePreference>
+  static std::optional<blink::mojom::blink::AttestationConveyancePreference>
   Convert(const String&);
 };
 
 template <>
 struct TypeConverter<
-    absl::optional<blink::mojom::blink::AuthenticatorAttachment>,
-    absl::optional<String>> {
-  static absl::optional<blink::mojom::blink::AuthenticatorAttachment> Convert(
-      const absl::optional<String>&);
+    std::optional<blink::mojom::blink::AuthenticatorAttachment>,
+    std::optional<String>> {
+  static std::optional<blink::mojom::blink::AuthenticatorAttachment> Convert(
+      const std::optional<String>&);
 };
 
 template <>
 struct TypeConverter<blink::mojom::blink::LargeBlobSupport,
-                     absl::optional<String>> {
+                     std::optional<String>> {
   static blink::mojom::blink::LargeBlobSupport Convert(
-      const absl::optional<String>&);
+      const std::optional<String>&);
 };
 
 template <>
@@ -236,6 +235,13 @@ struct TypeConverter<blink::mojom::blink::IdentityProviderPtr,
 };
 
 template <>
+struct TypeConverter<blink::mojom::blink::DigitalCredentialProviderPtr,
+                     blink::DigitalCredentialProvider> {
+  static blink::mojom::blink::DigitalCredentialProviderPtr Convert(
+      const blink::DigitalCredentialProvider&);
+};
+
+template <>
 struct MODULES_EXPORT
     TypeConverter<blink::mojom::blink::RpContext,
                   blink::V8IdentityCredentialRequestOptionsContext> {
@@ -260,9 +266,9 @@ struct TypeConverter<blink::mojom::blink::IdentityUserInfoPtr,
 
 template <>
 struct TypeConverter<
-    absl::optional<blink::mojom::blink::SupplementalPubKeysRequestPtr>,
+    std::optional<blink::mojom::blink::SupplementalPubKeysRequestPtr>,
     blink::AuthenticationExtensionsSupplementalPubKeysInputs> {
-  static absl::optional<blink::mojom::blink::SupplementalPubKeysRequestPtr>
+  static std::optional<blink::mojom::blink::SupplementalPubKeysRequestPtr>
   Convert(const blink::AuthenticationExtensionsSupplementalPubKeysInputs&);
 };
 

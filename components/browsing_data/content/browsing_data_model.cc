@@ -347,9 +347,10 @@ template <>
 void StorageRemoverHelper::Visitor::operator()<net::CanonicalCookie>(
     const net::CanonicalCookie& cookie) {
   if (types.Has(BrowsingDataModel::StorageType::kCookie)) {
-    if (helper->delegate_ && helper->delegate_->IsCookieDeletionDisabled(
-                                 net::cookie_util::CookieOriginToURL(
-                                     cookie.Domain(), cookie.IsSecure()))) {
+    if (helper->delegate_ &&
+        helper->delegate_->IsCookieDeletionDisabled(
+            net::cookie_util::CookieOriginToURL(cookie.Domain(),
+                                                cookie.SecureAttribute()))) {
       // TODO(crbug.com/1500256): Expand test coverage for this block.
       return;
     }
@@ -783,7 +784,9 @@ void BrowsingDataModel::AddBrowsingData(const DataKey& data_key,
   auto& entry = browsing_data_entries_[data_owner][data_key];
 
   entry.storage_size += storage_size;
-  entry.cookie_count += cookie_count;
+  // Per canonical cookie the count should always be 1, otherwise this count is
+  // irrelevant.
+  entry.cookie_count = cookie_count;
   entry.storage_types.Put(storage_type);
 }
 
@@ -850,22 +853,16 @@ void BrowsingDataModel::RemoveUnpartitionedBrowsingData(
   }
 }
 
-bool BrowsingDataModel::IsBlockedByThirdPartyCookieBlocking(
-    const DataKey& data_key,
-    StorageType type) const {
-  if (GetThirdPartyPartitioningSite(data_key).has_value()) {
-    return false;
-  }
-
+bool BrowsingDataModel::IsStorageTypeCookieLike(
+    StorageType storage_type) const {
   if (delegate_) {
-    auto delegate_response =
-        delegate_->IsBlockedByThirdPartyCookieBlocking(data_key, type);
+    auto delegate_response = delegate_->IsStorageTypeCookieLike(storage_type);
     if (delegate_response.has_value()) {
       return delegate_response.value();
     }
   }
 
-  switch (type) {
+  switch (storage_type) {
     case BrowsingDataModel::StorageType::kTrustTokens:
     case BrowsingDataModel::StorageType::kInterestGroup:
     case BrowsingDataModel::StorageType::kAttributionReporting:
@@ -882,6 +879,24 @@ bool BrowsingDataModel::IsBlockedByThirdPartyCookieBlocking(
     case BrowsingDataModel::StorageType::kExtendedDelegateRange:
       NOTREACHED_NORETURN();
   }
+}
+
+bool BrowsingDataModel::IsBlockedByThirdPartyCookieBlocking(
+    const DataKey& data_key,
+    StorageType storage_type) const {
+  if (GetThirdPartyPartitioningSite(data_key).has_value()) {
+    return false;
+  }
+
+  if (delegate_) {
+    auto delegate_response =
+        delegate_->IsBlockedByThirdPartyCookieBlocking(data_key, storage_type);
+    if (delegate_response.has_value()) {
+      return delegate_response.value();
+    }
+  }
+
+  return IsStorageTypeCookieLike(storage_type);
 }
 
 void BrowsingDataModel::PopulateFromDisk(base::OnceClosure finished_callback) {

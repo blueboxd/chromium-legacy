@@ -31,16 +31,6 @@
 
 namespace updater {
 
-namespace {
-
-enum class TestEnum {
-  kEnumValue1 = 0L,
-  kEnumValue2 = 5L,
-  kEnumValue3,
-};
-
-}  // namespace
-
 TEST(Util, AppArgsAndAP) {
   base::test::ScopedCommandLine original_command_line;
   {
@@ -119,10 +109,15 @@ TEST(Util, GetCrxDiffCacheDirectory) {
 }
 
 TEST(Util, StreamEnumValue) {
+  enum class TestEnum {
+    kValue1 = 0L,
+    kValue2 = 5L,
+    kValue3,
+  };
+
   std::stringstream output;
-  output << "First: " << TestEnum::kEnumValue1
-         << ", second: " << TestEnum::kEnumValue2
-         << ", third: " << TestEnum::kEnumValue3;
+  output << "First: " << TestEnum::kValue1 << ", second: " << TestEnum::kValue2
+         << ", third: " << TestEnum::kValue3;
   EXPECT_EQ(output.str(), "First: 0, second: 5, third: 6");
 }
 
@@ -137,6 +132,50 @@ TEST(Util, DeleteExcept) {
   test::SetupMockUpdater(except_executable);
   EXPECT_TRUE(DeleteExcept(except_executable));
   test::ExpectOnlyMockUpdater(except_executable);
+}
+
+TEST(Util, CeilingDivide) {
+  EXPECT_EQ(CeilingDivide(0, 1), 0);
+  EXPECT_EQ(CeilingDivide(1, 2), 1);
+  EXPECT_EQ(CeilingDivide(1, 1), 1);
+  EXPECT_EQ(CeilingDivide(3, 2), 2);
+  EXPECT_EQ(CeilingDivide(5, 3), 2);
+  EXPECT_EQ(CeilingDivide(4, 2), 2);
+
+  EXPECT_EQ(CeilingDivide(-1, 2), 0);
+  EXPECT_EQ(CeilingDivide(-1, 1), -1);
+  EXPECT_EQ(CeilingDivide(-3, 2), -1);
+  EXPECT_EQ(CeilingDivide(-5, 3), -1);
+  EXPECT_EQ(CeilingDivide(-2, 1), -2);
+  EXPECT_EQ(CeilingDivide(-4, 2), -2);
+
+  EXPECT_EQ(CeilingDivide(1, -2), 0);
+  EXPECT_EQ(CeilingDivide(1, -1), -1);
+  EXPECT_EQ(CeilingDivide(3, -2), -1);
+  EXPECT_EQ(CeilingDivide(5, -3), -1);
+  EXPECT_EQ(CeilingDivide(2, -1), -2);
+  EXPECT_EQ(CeilingDivide(4, -2), -2);
+
+  EXPECT_EQ(CeilingDivide(-0, -1), 0);
+  EXPECT_EQ(CeilingDivide(-1, -2), 1);
+  EXPECT_EQ(CeilingDivide(-1, -1), 1);
+  EXPECT_EQ(CeilingDivide(-3, -2), 2);
+  EXPECT_EQ(CeilingDivide(-5, -3), 2);
+  EXPECT_EQ(CeilingDivide(-4, -2), 2);
+}
+
+TEST(Util, OptionalBaseInsertion) {
+  // Tests insertion in a gTest expectation.
+  std::optional<base::FilePath> file_path;
+  EXPECT_TRUE(true) << file_path;
+
+  std::stringstream os;
+  os << file_path << std::endl;
+  EXPECT_EQ(os.str(), "std::nullopt\n");
+  os.str("");
+  file_path = std::make_optional<base::FilePath>(FILE_PATH_LITERAL("test"));
+  os << file_path << std::endl;
+  EXPECT_EQ(os.str(), "test\n");
 }
 
 }  // namespace updater

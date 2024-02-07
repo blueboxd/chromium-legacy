@@ -2051,97 +2051,6 @@ TEST_F(PersonalDataManagerTest, OnAcceptedLocalCreditCardSaveWithVerifiedData) {
   EXPECT_EQ(u"B. Small", results[0]->GetRawInfo(CREDIT_CARD_NAME_FULL));
 }
 
-TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
-  // Check that there are no available types with no profiles stored.
-  FieldTypeSet non_empty_types;
-  personal_data_->GetNonEmptyTypes(&non_empty_types);
-  EXPECT_EQ(0U, non_empty_types.size());
-
-  // Test with one profile stored.
-  AutofillProfile profile0(i18n_model_definition::kLegacyHierarchyCountryCode);
-  test::SetProfileInfo(&profile0, "Marion", nullptr, "Morrison",
-                       "johnwayne@me.xyz", nullptr, "123 Zoo St.", nullptr,
-                       "Hollywood", "CA", "91601", "US", "14155678910");
-
-  AddProfileToPersonalDataManager(profile0);
-
-  // Make sure everything is set up correctly.
-  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
-
-  std::vector<FieldType> expected_types{NAME_FIRST,
-                                        NAME_LAST,
-                                        NAME_FULL,
-                                        EMAIL_ADDRESS,
-                                        ADDRESS_HOME_ADDRESS,
-                                        ADDRESS_HOME_STREET_LOCATION,
-                                        ADDRESS_HOME_LINE1,
-                                        ADDRESS_HOME_STREET_ADDRESS,
-                                        ADDRESS_HOME_CITY,
-                                        ADDRESS_HOME_STATE,
-                                        ADDRESS_HOME_ZIP,
-                                        ADDRESS_HOME_COUNTRY,
-                                        PHONE_HOME_NUMBER,
-                                        PHONE_HOME_NUMBER_PREFIX,
-                                        PHONE_HOME_NUMBER_SUFFIX,
-                                        PHONE_HOME_COUNTRY_CODE,
-                                        PHONE_HOME_CITY_CODE,
-                                        PHONE_HOME_CITY_AND_NUMBER,
-                                        PHONE_HOME_WHOLE_NUMBER};
-  // For structured names and addresses, there are more non-empty types.
-  expected_types.push_back(NAME_LAST_SECOND);
-  expected_types.insert(expected_types.end(),
-                        {ADDRESS_HOME_STREET_NAME, ADDRESS_HOME_HOUSE_NUMBER});
-
-  personal_data_->GetNonEmptyTypes(&non_empty_types);
-  EXPECT_THAT(non_empty_types,
-              testing::UnorderedElementsAreArray(expected_types));
-
-  // Test with multiple profiles stored.
-  AutofillProfile profile1(i18n_model_definition::kLegacyHierarchyCountryCode);
-  test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
-                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", nullptr,
-                       "Orlando", "FL", "32801", "US", "16502937549");
-
-  AutofillProfile profile2(i18n_model_definition::kLegacyHierarchyCountryCode);
-  test::SetProfileInfo(&profile2, "Josephine", "Alicia", "Saenz",
-                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
-                       "Orlando", "FL", "32801", "US", "16502937549");
-
-  AddProfileToPersonalDataManager(profile1);
-  AddProfileToPersonalDataManager(profile2);
-
-  EXPECT_EQ(3U, personal_data_->GetProfiles().size());
-
-  expected_types.insert(
-      expected_types.end(),
-      {NAME_MIDDLE, NAME_MIDDLE_INITIAL, ADDRESS_HOME_LINE2, COMPANY_NAME});
-
-  personal_data_->GetNonEmptyTypes(&non_empty_types);
-  EXPECT_THAT(non_empty_types,
-              testing::UnorderedElementsAreArray(expected_types));
-
-  // Test with credit card information also stored.
-  CreditCard credit_card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
-                         test::kEmptyOrigin);
-  test::SetCreditCardInfo(&credit_card, "John Dillinger",
-                          "4234567890123456" /* Visa */, "01", "2999", "");
-  personal_data_->AddCreditCard(credit_card);
-
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
-
-  expected_types.insert(
-      expected_types.end(),
-      {CREDIT_CARD_NAME_FULL, CREDIT_CARD_NAME_FIRST, CREDIT_CARD_NAME_LAST,
-       CREDIT_CARD_NUMBER, CREDIT_CARD_TYPE, CREDIT_CARD_EXP_MONTH,
-       CREDIT_CARD_EXP_2_DIGIT_YEAR, CREDIT_CARD_EXP_4_DIGIT_YEAR,
-       CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR});
-
-  personal_data_->GetNonEmptyTypes(&non_empty_types);
-  EXPECT_THAT(non_empty_types,
-              testing::UnorderedElementsAreArray(expected_types));
-}
-
 // Tests that GetAutofillOffers returns all available offers.
 TEST_F(PersonalDataManagerTest, GetAutofillOffers) {
   // Add two card-linked offers and one promo code offer.
@@ -2156,23 +2065,17 @@ TEST_F(PersonalDataManagerTest, GetAutofillOffers) {
 // Tests that GetAutofillOffers does not return any offers if
 // |IsAutofillWalletImportEnabled()| returns |false|.
 TEST_F(PersonalDataManagerTest, GetAutofillOffers_WalletImportDisabled) {
-  syncer::TestSyncService sync_service;
-  personal_data_->SetSyncServiceForTest(&sync_service);
-
   // Add a card-linked offer and a promo code offer.
   AddOfferDataForTest(test::GetCardLinkedOfferData1());
   AddOfferDataForTest(test::GetPromoCodeOfferData());
 
   ASSERT_EQ(2U, personal_data_->GetAutofillOffers().size());
 
-  sync_service.GetUserSettings()->SetSelectedTypes(
+  sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false, syncer::UserSelectableTypeSet());
 
   // Should return neither of them as the wallet import pref is disabled.
   EXPECT_EQ(0U, personal_data_->GetAutofillOffers().size());
-
-  // Unregister the Sync observer.
-  personal_data_->OnSyncShutdown(&sync_service);
 }
 
 // Tests that GetAutofillOffers does not return any offers if
@@ -2216,9 +2119,6 @@ TEST_F(PersonalDataManagerTest, GetActiveAutofillPromoCodeOffersForOrigin) {
 // promo code offers if |IsAutofillWalletImportEnabled()| returns |false|.
 TEST_F(PersonalDataManagerTest,
        GetActiveAutofillPromoCodeOffersForOrigin_WalletImportDisabled) {
-  syncer::TestSyncService sync_service;
-  personal_data_->SetSyncServiceForTest(&sync_service);
-
   // Add an active promo code offer.
   AddOfferDataForTest(test::GetPromoCodeOfferData(
       /*origin=*/GURL("http://www.example.com")));
@@ -2228,7 +2128,7 @@ TEST_F(PersonalDataManagerTest,
                         GURL("http://www.example.com"))
                     .size());
 
-  sync_service.GetUserSettings()->SetSelectedTypes(
+  sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false, syncer::UserSelectableTypeSet());
 
   // Should not return the offer as the wallet import pref is disabled.
@@ -2236,9 +2136,6 @@ TEST_F(PersonalDataManagerTest,
                     ->GetActiveAutofillPromoCodeOffersForOrigin(
                         GURL("http://www.example.com"))
                     .size());
-
-  // Unregister the Sync observer.
-  personal_data_->OnSyncShutdown(&sync_service);
 }
 
 // Tests that GetActiveAutofillPromoCodeOffersForOrigin does not return any
@@ -3250,35 +3147,6 @@ TEST_F(PersonalDataManagerTest, GetCreditCards_NoSyncService) {
   EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 }
 
-// Test that setting a sync service in auth error returns only local credit
-// cards.
-TEST_F(PersonalDataManagerTest, GetCreditCards_NotActiveSyncService) {
-  base::HistogramTester histogram_tester;
-  SetUpThreeCardTypes();
-
-  // Set a sync service in auth error.
-  syncer::TestSyncService sync_service;
-  sync_service.SetPersistentAuthError();
-  personal_data_->SetSyncServiceForTest(&sync_service);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-
-  // Remove the auth error to be able to get the server cards.
-  sync_service.ClearAuthError();
-
-  // Check that cards were masked and other were untouched.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  std::vector<CreditCard*> server_cards =
-      personal_data_->GetServerCreditCards();
-  EXPECT_EQ(2U, server_cards.size());
-  for (CreditCard* card : server_cards)
-    EXPECT_TRUE(card->record_type() ==
-                CreditCard::RecordType::kMaskedServerCard);
-
-  // Call OnSyncShutdown to ensure removing observer added by
-  // SetSyncServiceForTest.
-  personal_data_->OnSyncShutdown(&sync_service);
-}
-
 // Sync Transport mode is only for Win, Mac, and Linux.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS)
@@ -4071,17 +3939,12 @@ TEST_F(PersonalDataManagerTest, RemoveObserverInOnPersonalDataChanged) {
 }
 
 TEST_F(PersonalDataManagerTest, IsEligibleForAddressAccountStorage) {
+  // All data types are running by default.
+  EXPECT_TRUE(personal_data_->IsEligibleForAddressAccountStorage());
+
   // No Sync, no account storage.
   personal_data_->SetSyncServiceForTest(nullptr);
   EXPECT_FALSE(personal_data_->IsEligibleForAddressAccountStorage());
-
-  // Fake the Sync service. All data types are running by default.
-  syncer::TestSyncService sync_service;
-  personal_data_->SetSyncServiceForTest(&sync_service);
-  EXPECT_TRUE(personal_data_->IsEligibleForAddressAccountStorage());
-
-  // Unregister the Sync observer.
-  personal_data_->OnSyncShutdown(&sync_service);
 }
 
 TEST_F(PersonalDataManagerTest, IsCountryEligibleForAccountStorage) {

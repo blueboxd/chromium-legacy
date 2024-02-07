@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_button_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -342,6 +343,9 @@ void HTMLElement::CollectStyleForPresentationAttribute(
           style, CSSPropertyID::kWebkitUserDrag, CSSValueID::kNone);
     }
   } else if (name == html_names::kDirAttr) {
+    // This chunk of code interacts with the html.css stylesheet rule labelled
+    // with `rendering.html#bidi-rendering`. Make sure any changes here are
+    // congruent with changes made there.
     if (EqualIgnoringASCIICase(value, "auto")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kUnicodeBidi,
@@ -354,9 +358,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
         AddPropertyToPresentationAttributeStyle(
             style, CSSPropertyID::kDirection, "ltr");
       }
-      if (!HasTagName(html_names::kBdiTag) &&
-          !HasTagName(html_names::kBdoTag) &&
-          !HasTagName(html_names::kOutputTag)) {
+      if (!HasTagName(html_names::kBdoTag)) {
         AddPropertyToPresentationAttributeStyle(
             style, CSSPropertyID::kUnicodeBidi, CSSValueID::kIsolate);
       }
@@ -1153,6 +1155,13 @@ void HTMLElement::UpdatePopoverAttribute(const AtomicString& value) {
       return;
     }
   }
+  if (auto* listbox = DynamicTo<HTMLDataListElement>(this)) {
+    if (listbox->ParentSelect()) {
+      CHECK(RuntimeEnabledFeatures::StylableSelectEnabled());
+      // Select datalist listboxes manage their own popover state.
+      return;
+    }
+  }
 
   PopoverValueType type = GetPopoverTypeFromAttributeValue(value);
   if (type == PopoverValueType::kManual &&
@@ -1264,7 +1273,9 @@ bool HTMLElement::IsPopoverReady(PopoverTriggerAction action,
 
   auto* listbox = DynamicTo<HTMLListboxElement>(this);
   bool is_selectlist_listbox = listbox && listbox->OwnerSelectList();
-  if (!HasPopoverAttribute() && !is_selectlist_listbox) {
+  auto* datalist = DynamicTo<HTMLDataListElement>(this);
+  bool is_select_listbox = datalist && datalist->ParentSelect();
+  if (!HasPopoverAttribute() && !is_selectlist_listbox && !is_select_listbox) {
     maybe_throw_exception(DOMExceptionCode::kNotSupportedError,
                           "Not supported on elements that do not have a valid "
                           "value for the 'popover' attribute.");
@@ -2581,7 +2592,7 @@ HTMLElement::ElementIfAutoDirectionalityFormAssociatedOrNull(
 bool HTMLElement::CalculateAndAdjustAutoDirectionality() {
   bool is_deferred = false;
   TextDirection text_direction;
-  absl::optional<TextDirection> resolve_result =
+  std::optional<TextDirection> resolve_result =
       ResolveAutoDirectionality(is_deferred);
   if (resolve_result) {
     text_direction = *resolve_result;
@@ -3026,7 +3037,7 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
       ClearDirAutoInheritsFromParent();
     }
 
-    absl::optional<TextDirection> text_direction;
+    std::optional<TextDirection> text_direction;
     if (EqualIgnoringASCIICase(params.new_value, "ltr")) {
       text_direction = TextDirection::kLtr;
     } else if (EqualIgnoringASCIICase(params.new_value, "rtl")) {

@@ -458,6 +458,23 @@ bool StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
          data.ReadFormData(&out->form_data);
 }
 
+// static
+bool StructTraits<autofill::mojom::PasswordSuggestionRequestDataView,
+                  autofill::PasswordSuggestionRequest>::
+    Read(autofill::mojom::PasswordSuggestionRequestDataView data,
+         autofill::PasswordSuggestionRequest* out) {
+  out->username_field_index = data.username_field_index();
+  out->password_field_index = data.password_field_index();
+  out->show_webauthn_credentials = data.show_webauthn_credentials();
+
+  return data.ReadElementId(&out->element_id) &&
+         data.ReadFormData(&out->form_data) &&
+         data.ReadTriggerSource(&out->trigger_source) &&
+         data.ReadTextDirection(&out->text_direction) &&
+         data.ReadTypedUsername(&out->typed_username) &&
+         data.ReadBounds(&out->bounds);
+}
+
 bool StructTraits<
     autofill::mojom::ParsingResultDataView,
     autofill::ParsingResult>::Read(autofill::mojom::ParsingResultDataView data,

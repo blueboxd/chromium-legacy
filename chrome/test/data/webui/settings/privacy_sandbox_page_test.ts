@@ -763,13 +763,13 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
       '#currentTopicsHeading',
       '#currentTopicsDescription',
       '#currentTopicsDescriptionEmpty',
-      '#currentTopicsDescriptionEmptyTopText',
-      '#currentTopicsDescriptionEmptyBottomText',
+      '#currentTopicsDescriptionEmptyTextHeading',
+      '#currentTopicsDescriptionEmptyTextV2',
       '#currentTopicsDescriptionDisabled',
       '#blockedTopicsRow',
       '#blockedTopicsDescriptionV2',
-      '#blockedTopicsDescriptionEmptyTopText',
-      '#blockedTopicsDescriptionEmptyBottomText',
+      '#blockedTopicsDescriptionEmptyTextHeading',
+      '#blockedTopicsDescriptionEmptyTextV2',
       '#blockedTopicsList',
       '#manageTopicsSection',
     ];
@@ -808,16 +808,16 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
     // Non V2 blocked topics description should not be visible
     assertFalse(isChildVisible(page, '#blockedTopicsDescription'));
     // The blocked topic list is NOT empty after re-enabling the toggle
-    assertFalse(isChildVisible(page, '#blockedTopicsDescriptionEmptyTopText'));
     assertFalse(
-        isChildVisible(page, '#blockedTopicsDescriptionEmptyBottomText'));
+        isChildVisible(page, '#blockedTopicsDescriptionEmptyTextHeading'));
+    assertFalse(isChildVisible(page, '#blockedTopicsDescriptionEmptyTextV2'));
     // Assert V2 Layout for ids to be shown.
     const idsToBeShown = [
       '#currentTopicsSection',
       '#currentTopicsHeading',
       '#currentTopicsDescription',
-      '#currentTopicsDescriptionEmptyTopText',
-      '#currentTopicsDescriptionEmptyBottomText',
+      '#currentTopicsDescriptionEmptyTextHeading',
+      '#currentTopicsDescriptionEmptyTextV2',
       '#blockedTopicsRow',
       '#blockedTopicsDescriptionV2',
       '#blockedTopicsList',
@@ -835,9 +835,9 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
         loadTimeData.getString('topicsPageToggleSubLabelV2'),
         page.$.topicsToggle.subLabel);
     assertFalse(isChildVisible(page, '#currentTopicsDescriptionEmpty'));
-    assertFalse(isChildVisible(page, '#currentTopicsDescriptionEmptyTopText'));
     assertFalse(
-        isChildVisible(page, '#currentTopicsDescriptionEmptyBottomText'));
+        isChildVisible(page, '#currentTopicsDescriptionEmptyTextHeading'));
+    assertFalse(isChildVisible(page, '#currentTopicsDescriptionEmptyTextV2'));
     assertFalse(isChildVisible(page, '#currentTopicsDescriptionDisabled'));
     const blockedTopicsRow =
         page.shadowRoot!.querySelector<HTMLElement>('#blockedTopicsRow');
@@ -849,9 +849,9 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
     // Non V2 blocked topics description should not be visible
     assertFalse(isChildVisible(page, '#blockedTopicsDescription'));
     // Blocked topics list is not empty
-    assertFalse(isChildVisible(page, '#blockedTopicsDescriptionEmptyTopText'));
     assertFalse(
-        isChildVisible(page, '#blockedTopicsDescriptionEmptyBottomText'));
+        isChildVisible(page, '#blockedTopicsDescriptionEmptyTextHeading'));
+    assertFalse(isChildVisible(page, '#blockedTopicsDescriptionEmptyTextV2'));
     // Assert V2 Layout for ids to be shown.
     const idsToBeShown = [
       '#currentTopicsSection',
@@ -887,14 +887,14 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
       '#currentTopicsHeading',
       '#currentTopicsDescription',
       '#currentTopicsDescriptionEmpty',
-      '#currentTopicsDescriptionEmptyTopText',
-      '#currentTopicsDescriptionEmptyBottomText',
+      '#currentTopicsDescriptionEmptyTextHeading',
+      '#currentTopicsDescriptionEmptyTextV2',
       '#currentTopicsDescriptionDisabled',
       '#blockedTopicsRow',
       '#blockedTopicsDescription',
       '#blockedTopicsDescriptionV2',
-      '#blockedTopicsDescriptionEmptyTopText',
-      '#blockedTopicsDescriptionEmptyBottomText',
+      '#blockedTopicsDescriptionEmptyTextHeading',
+      '#blockedTopicsDescriptionEmptyTextV2',
       '#blockedTopicsList',
       '#manageTopicsSection',
     ];
@@ -933,9 +933,9 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
         currentTopicsSection.querySelectorAll('privacy-sandbox-interest-item');
     assertEquals(3, currentTopics.length);
     assertFalse(isVisible(currentTopicsSection.querySelector(
-        '#currentTopicsDescriptionEmptyTopText')));
+        '#currentTopicsDescriptionEmptyTextHeading')));
     assertFalse(isVisible(currentTopicsSection.querySelector(
-        '#currentTopicsDescriptionEmptyBottomText')));
+        '#currentTopicsDescriptionEmptyTextV2')));
     // TODO(b/322845275) - When testing privacy-sandbox-interest-item, add tests
     // to assert that the DOM is actually displaying correctly.
     assertEquals(
@@ -1041,9 +1041,9 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
     metricsBrowserProxy.resetResolver('recordAction');
     await testPrivacySandboxBrowserProxy.whenCalled('setTopicAllowed');
     assertTrue(isVisible(currentTopicsSection.querySelector(
-        '#currentTopicsDescriptionEmptyTopText')));
+        '#currentTopicsDescriptionEmptyTextHeading')));
     assertTrue(isVisible(currentTopicsSection.querySelector(
-        '#currentTopicsDescriptionEmptyBottomText')));
+        '#currentTopicsDescriptionEmptyTextV2')));
 
     // Check that the focus is not lost after blocking the last item.
     await waitAfterNextRender(page);
@@ -1115,9 +1115,9 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
     await waitAfterNextRender(page);
     assertEquals(blockedTopicsRow, page.shadowRoot!.activeElement);
     // Check that blocked topics empty text appears
-    assertTrue(isChildVisible(page, '#blockedTopicsDescriptionEmptyTopText'));
     assertTrue(
-        isChildVisible(page, '#blockedTopicsDescriptionEmptyBottomText'));
+        isChildVisible(page, '#blockedTopicsDescriptionEmptyTextHeading'));
+    assertTrue(isChildVisible(page, '#blockedTopicsDescriptionEmptyTextV2'));
   });
 
   test('topicsManaged', async function() {
@@ -1173,17 +1173,32 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
         routes.PRIVACY_SANDBOX_MANAGE_TOPICS,
         Router.getInstance().getCurrentRoute());
   });
+
+  test('navigateToManageTopicsPrefDisabled', async function() {
+    page.setPrefValue('privacy_sandbox.m1.topics_enabled', false);
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    const manageTopicsPage = document.createElement(
+        'settings-privacy-sandbox-manage-topics-subpage');
+    manageTopicsPage.prefs = settingsPrefs.prefs!;
+    Router.getInstance().navigateTo(routes.PRIVACY_SANDBOX_MANAGE_TOPICS);
+    document.body.appendChild(manageTopicsPage);
+    assertEquals(
+        Router.getInstance().getCurrentRoute(), routes.PRIVACY_SANDBOX_TOPICS);
+  });
 });
 
 suite('ManageTopics', function() {
   let page: SettingsPrivacySandboxManageTopicsSubpageElement;
   let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
+  let settingsPrefs: SettingsPrefsElement;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isPrivacySandboxRestricted: false,
       isProactiveTopicsBlockingEnabled: true,
     });
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
   });
 
   setup(async function() {
@@ -1192,8 +1207,11 @@ suite('ManageTopics', function() {
     testPrivacySandboxBrowserProxy.setFirstLevelTopicsState(
         getFirstLevelTopicsState());
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    document.body.appendChild(settingsPrefs);
     page = document.createElement(
         'settings-privacy-sandbox-manage-topics-subpage');
+    page.prefs = settingsPrefs.prefs!;
+    page.set('prefs.privacy_sandbox.m1.topics_enabled', {value: true});
     Router.getInstance().navigateTo(routes.PRIVACY_SANDBOX_MANAGE_TOPICS);
     document.body.appendChild(page);
     await testPrivacySandboxBrowserProxy.whenCalled('getFirstLevelTopics');
@@ -1246,18 +1264,20 @@ suite('ManageTopics', function() {
         '#explanationText a[href]');
     assertEquals(
         links.length, 1, 'Explanation text should have one Learn more link');
-    links.forEach(
-        link => assertEquals(
-            link.getAttribute('aria-description'),
-            loadTimeData.getString('opensInNewTab'),
-            'the link should indicate that it will be opened in a new tab'));
-    const hrefs = Array.from(links).map(link => link.href);
-    const expectedLinks = ['https://support.google.com/chrome?p=ad_privacy'];
-    assertDeepEquals(expectedLinks, hrefs);
+    assertEquals(
+        links[0]!.getAttribute('aria-description'),
+        loadTimeData.getString('opensInNewTab'),
+        'the link should indicate that it will be opened in a new tab');
+    assertEquals(
+        links[0]!.getAttribute('aria-label'),
+        'Learn more about managing your ad privacy in Chrome.');
+    assertEquals(
+        'https://support.google.com/chrome?p=ad_privacy', links[0]!.href);
   });
 
   test('ManageTopicsPageTestLabelsAndSubLabels', async function() {
-    const firstLevelTopics = page.shadowRoot!.querySelectorAll('.topic-toggle');
+    const firstLevelTopics =
+        page.shadowRoot!.querySelectorAll('.topic-toggle-row');
     assertEquals(2, firstLevelTopics.length);
     const labels = Array.from(page.shadowRoot!.querySelectorAll('.label'))
                        .map(label => label.textContent);
@@ -1287,14 +1307,14 @@ suite('ManageTopics', function() {
       displayString: 'test-topic-3',
       description: '',
     }]);
+    // Unblocking topic 1, toggle should now be checked meaning it's unblocked.
     const toggles = page.shadowRoot!.querySelectorAll('cr-toggle');
     assertEquals(2, toggles.length);
     toggles[0]!.click();
     assertTrue(toggles[0]!.checked);
     // Attempting to block topic 1, causes a dialog to open due to
-    // getChildTopicsCurrentlyAssigned returning a non empty
-    // list of child topics that would be blocked
-    // if they choose to continue.
+    // getChildTopicsCurrentlyAssigned returning a non empty list of
+    // child topics that would be blocked if they chose to continue.
     toggles[0]!.click();
     await flushTasks();
 
@@ -1337,6 +1357,67 @@ suite('ManageTopics', function() {
     await flushTasks();
     assertFalse(toggles[1]!.checked);
   });
+
+  test('ManageTopicsPageClickOnToggleRow', async function() {
+    testPrivacySandboxBrowserProxy.setChildTopics([{
+      topicId: 3,
+      taxonomyVersion: 1,
+      displayString: 'test-topic-3',
+      description: '',
+    }]);
+    // Unblocking topic 1, toggle should now be checked meaning it's unblocked.
+    const topicToggleRows =
+        page.shadowRoot!.querySelectorAll<HTMLElement>('.topic-toggle-row');
+    const toggles = page.shadowRoot!.querySelectorAll('cr-toggle');
+    assertEquals(2, topicToggleRows.length);
+    assertEquals(2, toggles.length);
+    topicToggleRows[0]!.click();
+    assertTrue(toggles[0]!.checked);
+
+    // Attempting to block topic 1, causes a dialog to open due to
+    // getChildTopicsCurrentlyAssigned returning a non empty list of child
+    // topics that would be blocked if they choose to continue.
+    topicToggleRows[0]!.click();
+    await flushTasks();
+
+    let blockTopicDialog =
+        page.shadowRoot!.querySelector<SettingsSimpleConfirmationDialogElement>(
+            '#blockTopicDialog');
+    assertTrue(!!blockTopicDialog);
+    await (whenAttributeIs(blockTopicDialog.$.dialog, 'open', ''));
+
+    blockTopicDialog.$.cancel.click();
+    await eventToPromise('close', blockTopicDialog);
+    await flushTasks();
+
+    // After closing the dialog and choosing to not block it, the toggle is
+    // turned back ON.
+    assertTrue(toggles[0]!.checked);
+
+    // Attempt to block topic 1 again
+    topicToggleRows[0]!.click();
+    await flushTasks();
+    blockTopicDialog =
+        page.shadowRoot!.querySelector<SettingsSimpleConfirmationDialogElement>(
+            '#blockTopicDialog');
+    assertTrue(!!blockTopicDialog);
+    await (whenAttributeIs(blockTopicDialog.$.dialog, 'open', ''));
+
+    blockTopicDialog.$.confirm.click();
+    await eventToPromise('close', blockTopicDialog);
+    await flushTasks();
+
+    // The block button blocks the topic and changes the toggle to be turned
+    // OFF.
+    assertFalse(toggles[0]!.checked);
+
+    testPrivacySandboxBrowserProxy.setChildTopics([]);
+    // Toggle 2 (topic 4) has no child topics that are currently assigned which
+    // is why the dialog does not appear and the toggle is turned OFF.
+    topicToggleRows[1]!.click();
+    await flushTasks();
+    assertFalse(toggles[1]!.checked);
+  });
 });
 
 suite('ManageTopicsAndAdTopicsPageState', function() {
@@ -1364,6 +1445,7 @@ suite('ManageTopicsAndAdTopicsPageState', function() {
     adTopicsPage =
         document.createElement('settings-privacy-sandbox-topics-subpage');
     adTopicsPage.prefs = settingsPrefs.prefs;
+    adTopicsPage.set('prefs.privacy_sandbox.m1.topics_enabled', {value: true});
     Router.getInstance().navigateTo(routes.PRIVACY_SANDBOX_TOPICS);
     document.body.appendChild(adTopicsPage);
     await testPrivacySandboxBrowserProxy.whenCalled('getTopicsState');
@@ -1483,6 +1565,7 @@ suite('ManageTopicsAndAdTopicsPageState', function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     const manageTopicsPage = document.createElement(
         'settings-privacy-sandbox-manage-topics-subpage');
+    manageTopicsPage.prefs = settingsPrefs.prefs!;
     Router.getInstance().navigateTo(routes.PRIVACY_SANDBOX_MANAGE_TOPICS);
     document.body.appendChild(manageTopicsPage);
     await testPrivacySandboxBrowserProxy.whenCalled('getFirstLevelTopics');

@@ -62,13 +62,7 @@ bool IsDeviceBlocked(const char* field, const std::string& block_list) {
 // Used to limit GL version to 2.0 for skia raster and compositing.
 BASE_FEATURE(kUseGles2ForOopR,
              "UseGles2ForOopR",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || \
-    BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
 // Use android SurfaceControl API for managing display compositor's buffer queue
@@ -176,12 +170,6 @@ BASE_FEATURE(kCanvasOopWithoutGpuTileRaster,
 BASE_FEATURE(kEnablePerContextGLTextureCache,
              "EnablePerContextGLTextureCache",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Detect front buffering condition and set buffer usage as such.
-// This is a killswitch to be removed once launched.
-BASE_FEATURE(kOzoneFrontBufferUsage,
-             "OzoneFrontBufferUsage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_OZONE)
 
 // Enables the use of MSAA in skia on Ice Lake and later intel architectures.
@@ -229,13 +217,6 @@ BASE_FEATURE(kAdjustGpuProcessPriority,
 // order to avoid race in GpuInfo. crbug.com/1506660.
 BASE_FEATURE(kGenGpuDiskCacheKeyPrefixInGpuService,
              "GenGpuDiskCacheKeyPrefixInGpuService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Causes us to use the SharedImageManager, removing support for the old
-// mailbox system. Any consumers of the GPU process using the old mailbox
-// system will experience undefined results.
-BASE_FEATURE(kSharedImageManager,
-             "SharedImageManager",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls the decode acceleration of JPEG images (as opposed to camera
@@ -395,11 +376,6 @@ BASE_FEATURE(kSkiaGraphiteDawnUseD3D12,
              "SkiaGraphiteDawnUseD3D12",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-
-// Enable GrShaderCache to use with Vulkan backend.
-BASE_FEATURE(kEnableGrShaderCacheForVulkan,
-             "EnableGrShaderCacheForVulkan",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable report only mode on the GPU watchdog instead of pausing the watchdog
 // thread during GPU startup.

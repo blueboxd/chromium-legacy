@@ -81,15 +81,6 @@ bool IsAllowedPath(const std::vector<base::FilePath>& allowed_paths,
   return false;
 }
 
-storage::BucketInfo ToBucketInfoForTesting(
-    const storage::BucketLocator& bucket_locator) {
-  storage::BucketInfo bucket_info;
-  bucket_info.id = bucket_locator.id;
-  bucket_info.storage_key = bucket_locator.storage_key;
-  bucket_info.name = storage::kDefaultBucketName;
-  return bucket_info;
-}
-
 }  // namespace
 
 IndexedDBContextImpl::IndexedDBContextImpl(
@@ -179,10 +170,12 @@ void IndexedDBContextImpl::BindIndexedDB(
     const storage::BucketLocator& bucket_locator,
     mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker_remote,
+    const base::UnguessableToken& client_token,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  auto on_got_bucket = base::BindOnce(
-      &IndexedDBContextImpl::BindIndexedDBImpl, weak_factory_.GetWeakPtr(),
-      std::move(client_state_checker_remote), std::move(receiver));
+  auto on_got_bucket = base::BindOnce(&IndexedDBContextImpl::BindIndexedDBImpl,
+                                      weak_factory_.GetWeakPtr(),
+                                      std::move(client_state_checker_remote),
+                                      client_token, std::move(receiver));
 
   if (bucket_locator.is_default) {
     // If it's for a default bucket, `bucket_locator` will be a placeholder
@@ -200,6 +193,7 @@ void IndexedDBContextImpl::BindIndexedDB(
 void IndexedDBContextImpl::BindIndexedDBImpl(
     mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker_remote,
+    const base::UnguessableToken& client_token,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
     storage::QuotaErrorOr<storage::BucketInfo> bucket_info) {
   std::optional<storage::BucketInfo> bucket;
@@ -207,7 +201,7 @@ void IndexedDBContextImpl::BindIndexedDBImpl(
     bucket = bucket_info.value();
   }
   GetIDBFactory()->AddReceiver(bucket, std::move(client_state_checker_remote),
-                               std::move(receiver));
+                               client_token, std::move(receiver));
 }
 
 // Note - this is being kept async (instead of having a 'sync' version) to allow
@@ -517,68 +511,19 @@ void IndexedDBContextImpl::ResetCachesForTesting(base::OnceClosure callback) {
   std::move(callback).Run();
 }
 
-void IndexedDBContextImpl::ForceSchemaDowngradeForTesting(
-    const storage::BucketLocator& bucket_locator,
-    ForceSchemaDowngradeForTestingCallback callback) {
-  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-
-  if (is_incognito() || !LookUpBucket(bucket_locator.id)) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  if (indexeddb_factory_.get()) {
-    indexeddb_factory_->ForceSchemaDowngrade(bucket_locator);
-    std::move(callback).Run(true);
-    return;
-  }
-  ForceClose(
-      bucket_locator.id,
-      storage::mojom::ForceCloseReason::FORCE_SCHEMA_DOWNGRADE_INTERNALS_PAGE,
-      base::DoNothing());
-  std::move(callback).Run(false);
-}
-
-void IndexedDBContextImpl::HasV2SchemaCorruptionForTesting(
-    const storage::BucketLocator& bucket_locator,
-    HasV2SchemaCorruptionForTestingCallback callback) {
-  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-
-  if (is_incognito() || !LookUpBucket(bucket_locator.id)) {
-    std::move(callback).Run(
-        storage::mojom::V2SchemaCorruptionStatus::CORRUPTION_UNKNOWN);
-    return;
-  }
-
-  if (indexeddb_factory_.get()) {
-    std::move(callback).Run(
-        static_cast<storage::mojom::V2SchemaCorruptionStatus>(
-            indexeddb_factory_->HasV2SchemaCorruption(bucket_locator)));
-    return;
-  }
-  return std::move(callback).Run(
-      storage::mojom::V2SchemaCorruptionStatus::CORRUPTION_UNKNOWN);
-}
-
 void IndexedDBContextImpl::WriteToIndexedDBForTesting(
     const storage::BucketLocator& bucket_locator,
     const std::string& key,
     const std::string& value,
     base::OnceClosure callback) {
-  IndexedDBBucketContextHandle handle;
-  leveldb::Status s;
-  std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
-      GetIDBFactory()->GetOrCreateBucketContext(
-          ToBucketInfoForTesting(bucket_locator), GetDataPath(bucket_locator),
-          /*create_if_missing=*/true);
-  CHECK(s.ok()) << s.ToString();
-  CHECK(handle.IsHeld());
+  IndexedDBBucketContext* bucket_context =
+      GetIDBFactory()->GetBucketContextForTesting(  // IN-TEST
+          bucket_locator.id);
 
-  TransactionalLevelDBDatabase* db = handle->backing_store()->db();
+  TransactionalLevelDBDatabase* db = bucket_context->backing_store()->db();
   std::string value_copy = value;
-  s = db->Put(key, &value_copy);
+  leveldb::Status s = db->Put(key, &value_copy);
   CHECK(s.ok()) << s.ToString();
-  handle.Release();
   GetIDBFactory()->ForceClose(bucket_locator.id, true);
   std::move(callback).Run();
 }
@@ -593,16 +538,11 @@ void IndexedDBContextImpl::GetNextBlobNumberForTesting(
     const storage::BucketLocator& bucket_locator,
     int64_t database_id,
     GetNextBlobNumberForTestingCallback callback) {
-  IndexedDBBucketContextHandle handle;
-  leveldb::Status s;
-  std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
-      GetIDBFactory()->GetOrCreateBucketContext(
-          ToBucketInfoForTesting(bucket_locator), GetDataPath(bucket_locator),
-          /*create_if_missing=*/true);
-  CHECK(s.ok()) << s.ToString();
-  CHECK(handle.IsHeld());
+  IndexedDBBucketContext* bucket_context =
+      GetIDBFactory()->GetBucketContextForTesting(  // IN-TEST
+          bucket_locator.id);
 
-  TransactionalLevelDBDatabase* db = handle->backing_store()->db();
+  TransactionalLevelDBDatabase* db = bucket_context->backing_store()->db();
 
   const std::string key_gen_key = DatabaseMetaDataKey::Encode(
       database_id, DatabaseMetaDataKey::BLOB_KEY_GENERATOR_CURRENT_NUMBER);
@@ -624,16 +564,11 @@ void IndexedDBContextImpl::GetPathForBlobForTesting(
     int64_t database_id,
     int64_t blob_number,
     GetPathForBlobForTestingCallback callback) {
-  IndexedDBBucketContextHandle handle;
-  leveldb::Status s;
-  std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
-      GetIDBFactory()->GetOrCreateBucketContext(
-          ToBucketInfoForTesting(bucket_locator), GetDataPath(bucket_locator),
-          /*create_if_missing=*/true);
-  CHECK(s.ok()) << s.ToString();
-  CHECK(handle.IsHeld());
+  IndexedDBBucketContext* bucket_context =
+      GetIDBFactory()->GetBucketContextForTesting(  // IN-TEST
+          bucket_locator.id);
 
-  IndexedDBBackingStore* backing_store = handle->backing_store();
+  IndexedDBBackingStore* backing_store = bucket_context->backing_store();
   base::FilePath path =
       backing_store->GetBlobFileName(database_id, blob_number);
   std::move(callback).Run(path);
@@ -804,6 +739,7 @@ void IndexedDBContextImpl::FactoryOpened(
 void IndexedDBContextImpl::WritingTransactionComplete(
     const storage::BucketLocator& bucket_locator,
     bool flushed) {
+  bucket_set_.insert(bucket_locator);
   NotifyOfBucketModification(bucket_locator);
   if (!flushed) {
     // A negative value indicates "not cached, and LevelDB file write is

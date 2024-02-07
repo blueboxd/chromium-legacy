@@ -291,10 +291,6 @@ public final class ProductionSupportedFlagList {
                 AutofillFeatures.AUTOFILL_USE_DE_ADDRESS_MODEL,
                 "When enabled, Autofill uses a custom address model for Germany."),
         Flag.baseFeature(
-                AutofillFeatures.AUTOFILL_STREET_NAME_OR_HOUSE_NUMBER_PRECEDENCE_OVER_AUTOCOMPLETE,
-                "When enabled, Autofill prioritizes local heuristics over some server "
-                        + "classifications."),
-        Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_ENABLE_ZIP_ONLY_ADDRESS_FORMS,
                 "When enabled, Autofill supports forms consisting of only zip code fields."),
         Flag.baseFeature(
@@ -504,11 +500,11 @@ public final class ProductionSupportedFlagList {
                 "If enabled, reads and decodes navigation body data off the main thread."),
         Flag.baseFeature(BlinkFeatures.SPARSE_OBJECT_PAINT_PROPERTIES),
         Flag.baseFeature(BlinkFeatures.HIT_TEST_OPAQUENESS),
+        Flag.baseFeature(CcFeatures.USE_RECORDED_BOUNDS_FOR_TILING),
         Flag.baseFeature(BlinkFeatures.DYNAMIC_SCROLL_CULL_RECT_EXPANSION),
         Flag.baseFeature(BlinkFeatures.INTERSECTION_OPTIMIZATION),
         Flag.baseFeature(BlinkFeatures.EXPAND_COMPOSITED_CULL_RECT),
         Flag.baseFeature(BlinkFeatures.SCROLLBAR_COLOR),
-        Flag.baseFeature(BlinkFeatures.ONE_PASS_RASTER_INVALIDATION),
         Flag.baseFeature(
                 ContentFeatures.SURFACE_SYNC_FULLSCREEN_KILLSWITCH,
                 "Disable to turn off the new SurfaceSync Fullscreen path."),
@@ -676,6 +672,7 @@ public final class ProductionSupportedFlagList {
                 "Enable attribution reporting to cross the app/web barrier by letting "
                         + "the WebView use OS-level attribution."),
         Flag.baseFeature(BaseFeatures.THREAD_POOL_CAP2, "Sets a fixed thread pool cap"),
+        Flag.baseFeature("ThreadGroupSemaphore"),
         Flag.baseFeature(
                 BlinkFeatures.BEFOREUNLOAD_EVENT_CANCEL_BY_PREVENT_DEFAULT,
                 "Enables showing the cancel dialog by calling preventDefault() "
@@ -833,10 +830,6 @@ public final class ProductionSupportedFlagList {
                 "When enabled, the network service will send TransferSizeUpdatedIPC IPC only when"
                         + " DevTools is attached or the request is for an ad request."),
         Flag.baseFeature(
-                BaseFeatures.USE_NEW_JOB_IMPLEMENTATION,
-                "Uses a thread pool job implementation which leverages atomics to minimize lock"
-                        + " contention."),
-        Flag.baseFeature(
                 AwFeatures.WEBVIEW_BACK_FORWARD_CACHE,
                 "Controls if back/forward cache is enabled."),
         Flag.baseFeature(
@@ -891,6 +884,9 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 MediaFeatures.LIBAOM_USE_CHROME_THREADS,
                 "Attaches libaom threads to the chromium thread system."),
+        Flag.baseFeature(
+                BlinkFeatures.BACK_FORWARD_CACHE_SEND_NOT_RESTORED_REASONS,
+                "Expose NotRestoredReasons via PerformanceNavigationTiming API."),
         // Add new commandline switches and features above. The final entry should have a
         // trailing comma for cleaner diffs.
     };

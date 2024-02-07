@@ -702,6 +702,7 @@ _CONFIG = [
             'ui::AXMode',
             'ui::AXNodeData',
             'ui::AXRelativeBounds',
+            'ui::AXTreeChecks',
             'ui::AXTreeData',
             'ui::AXTreeSerializer',
             'ui::AXTreeSource',
@@ -750,6 +751,10 @@ _CONFIG = [
             'base::apple::ScopedCFTypeRef',
             'base::mac::MacOSVersion',
             'base::mac::MacOSMajorVersion',
+
+            # Protected memory
+            'base::ProtectedMemory',
+            'base::AutoWritableMemory',
         ],
         'disallowed': [
             ('base::Bind(|Once|Repeating)',
@@ -2016,6 +2021,16 @@ _CONFIG = [
         ],
         'allowed': [
             'blink_mojom::.+',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/ml/webnn/ml_graph_tflite_converter.cc',
+            'third_party/blink/renderer/modules/ml/webnn/ml_graph_test_model_loader.cc',
+        ],
+        'allowed': [
+            'flatbuffers::.+',
+            'tflite::.+',
         ]
     },
     {

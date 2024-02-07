@@ -14,8 +14,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
-#include "chrome/browser/ash/login/users/avatar/mock_user_image_manager.h"
-#include "chrome/browser/ash/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
@@ -31,7 +29,6 @@
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
@@ -207,26 +204,6 @@ FakeChromeUserManager::GetMultiProfileUserController() {
   return multi_profile_user_controller_;
 }
 
-UserImageManager* FakeChromeUserManager::GetUserImageManager(
-    const AccountId& account_id) {
-  UserImageManagerMap::iterator user_image_manager_it =
-      user_image_managers_.find(account_id);
-  if (user_image_manager_it != user_image_managers_.end()) {
-    return user_image_manager_it->second.get();
-  }
-  if (mock_user_image_manager_enabled_) {
-    auto mgr =
-        std::make_unique<::testing::NiceMock<MockUserImageManager>>(account_id);
-    MockUserImageManager* mgr_raw = mgr.get();
-    user_image_managers_[account_id] = std::move(mgr);
-    return mgr_raw;
-  }
-  auto mgr = std::make_unique<UserImageManagerImpl>(account_id, this);
-  UserImageManagerImpl* mgr_raw = mgr.get();
-  user_image_managers_[account_id] = std::move(mgr);
-  return mgr_raw;
-}
-
 void FakeChromeUserManager::SwitchActiveUser(const AccountId& account_id) {
   active_account_id_ = account_id;
   active_user_ = nullptr;
@@ -288,10 +265,6 @@ user_manager::UserList FakeChromeUserManager::GetUsersAllowedForMultiProfile()
   return result;
 }
 
-void FakeChromeUserManager::SetOwnerId(const AccountId& account_id) {
-  UserManagerBase::SetOwnerId(account_id);
-}
-
 void FakeChromeUserManager::AsyncRemoveCryptohome(
     const AccountId& account_id) const {
   NOTIMPLEMENTED();
@@ -301,16 +274,6 @@ bool FakeChromeUserManager::IsDeprecatedSupervisedAccountId(
     const AccountId& account_id) const {
   return gaia::ExtractDomainName(account_id.GetUserEmail()) ==
          user_manager::kSupervisedUserDomain;
-}
-
-const gfx::ImageSkia& FakeChromeUserManager::GetResourceImageSkiaNamed(
-    int id) const {
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
-}
-
-std::u16string FakeChromeUserManager::GetResourceStringUTF16(
-    int string_id) const {
-  return std::u16string();
 }
 
 void FakeChromeUserManager::ScheduleResolveLocale(
@@ -332,10 +295,6 @@ void FakeChromeUserManager::Initialize() {
 
 void FakeChromeUserManager::Shutdown() {
   ChromeUserManager::Shutdown();
-
-  for (auto& user_image_manager : user_image_managers_) {
-    user_image_manager.second->Shutdown();
-  }
 }
 
 const user_manager::UserList& FakeChromeUserManager::GetUsers() const {
@@ -460,11 +419,6 @@ void FakeChromeUserManager::SaveUserDisplayName(
   }
 }
 
-std::u16string FakeChromeUserManager::GetUserDisplayName(
-    const AccountId& account_id) const {
-  return std::u16string();
-}
-
 void FakeChromeUserManager::SaveUserDisplayEmail(
     const AccountId& account_id,
     const std::string& display_email) {
@@ -482,10 +436,6 @@ void FakeChromeUserManager::SaveUserType(const user_manager::User* user) {
 
 std::optional<std::string> FakeChromeUserManager::GetOwnerEmail() {
   return GetLocalState() ? UserManagerBase::GetOwnerEmail() : std::nullopt;
-}
-
-bool FakeChromeUserManager::IsCurrentUserOwner() const {
-  return active_user_ && GetOwnerAccountId() == active_user_->GetAccountId();
 }
 
 bool FakeChromeUserManager::IsCurrentUserNonCryptohomeDataEphemeral() const {

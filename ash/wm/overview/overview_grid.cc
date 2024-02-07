@@ -17,11 +17,15 @@
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/saved_desk_delegate.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
+#include "ash/style/icon_button.h"
+#include "ash/style/system_toast_style.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/default_desk_button.h"
@@ -95,6 +99,7 @@
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/animation/animation_builder.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -116,6 +121,10 @@ constexpr int kSaveDeskAsTemplateOverviewItemSpacingDp = 45;
 // Distance from the bottom of the last overview item to the top of the faster
 // splitscreen toast widget.
 constexpr int kFasterSplitScreenToastSpacingDp = 40;
+
+// Distance from the right of the faster splitscreen toast to the left of the
+// settings button.
+constexpr int kSettingsButtonSpacingDp = 8;
 
 // Windows are not allowed to get taller than this.
 constexpr int kMaxHeight = 512;
@@ -1291,10 +1300,9 @@ void OverviewGrid::CalculateWindowListAnimationStates(
         split_view_controller->GetDefaultSnappedWindow()->GetBoundsInScreen());
     occluded_region.op(snapped_window_bounds, SkRegion::kUnion_Op);
 
-    auto* divider = split_view_controller->split_view_divider();
-    if (divider) {
-      aura::Window* divider_window =
-          divider->divider_widget()->GetNativeWindow();
+    if (auto* divider_widget =
+            split_view_controller->split_view_divider()->divider_widget()) {
+      aura::Window* divider_window = divider_widget->GetNativeWindow();
       SkIRect divider_bounds =
           gfx::RectToSkIRect(divider_window->GetBoundsInScreen());
       occluded_region.op(divider_bounds, SkRegion::kUnion_Op);
@@ -2025,19 +2033,17 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items,
   // 2. In faster split screen setup, the `no_windows_widget_` show to indicate
   // either no windows available to pair or select a window to complete the
   // window layout.
-  // TODO(b/307812315): Consider separating the widgets i.e. one
-  // `no_windows_widget_` and one `faster_splitscreen_widget_`.
-  const bool in_faster_split_screen_setup_session =
-      window_util::IsInFasterSplitScreenSetupSession(root_window_);
-  if (!in_faster_split_screen_setup_session &&
-      (!no_items || IsShowingSavedDeskLibrary())) {
-    no_windows_widget_.reset();
+  // TODO(b/323199185): Move this to its own function.
+  if (window_util::IsInFasterSplitScreenSetupSession(root_window_)) {
+    UpdateFasterSplitViewWidget();
     return;
   }
 
-  if (overview_session_->enter_exit_overview_type() ==
-      OverviewEnterExitType::kPine) {
+  if (!no_items || IsShowingSavedDeskLibrary() ||
+      overview_session_->enter_exit_overview_type() ==
+          OverviewEnterExitType::kPine) {
     no_windows_widget_.reset();
+    faster_splitview_widget_.reset();
     return;
   }
 
@@ -2049,12 +2055,7 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items,
     params.vertical_padding = kNoItemsIndicatorVerticalPaddingDp;
     params.rounding_dp = kNoItemsIndicatorRoundingDp;
     params.preferred_height = kNoItemsIndicatorHeightDp;
-    if (in_faster_split_screen_setup_session) {
-      params.message =
-          no_items ? kFasterSplitScreenToastNoWindows : kFasterSplitScreenToast;
-    } else {
-      params.message = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
-    }
+    params.message = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
 
     params.parent =
         root_window_->GetChildById(desks_util::GetActiveDeskContainerId());
@@ -2084,25 +2085,6 @@ void OverviewGrid::RefreshNoWindowsWidgetBounds(bool animate) {
 
   const gfx::Rect grid_bounds(GetGridEffectiveBounds());
   no_windows_widget_->SetBoundsCenteredIn(grid_bounds, animate);
-
-  if (window_util::IsInFasterSplitScreenSetupSession(root_window_)) {
-    // If there are no windows, set it in the center of the grid.
-    if (item_list_.empty()) {
-      return;
-    }
-    // Position the widget under the bottom of the last overview item, but
-    // centered horizontally.
-    const gfx::RectF last_overview_item_bounds =
-        item_list_.back()->target_bounds();
-    const int center_x =
-        no_windows_widget_->GetBoundsCenteredIn(grid_bounds).x();
-    const gfx::Point available_origin(
-        center_x,
-        last_overview_item_bounds.bottom() + kFasterSplitScreenToastSpacingDp);
-    no_windows_widget_->SetBounds(
-        gfx::Rect(available_origin,
-                  no_windows_widget_->GetContentsView()->GetPreferredSize()));
-  }
 }
 
 void OverviewGrid::RefreshGridBounds(bool animate) {
@@ -2914,6 +2896,88 @@ void OverviewGrid::CreateAndShowPine(const gfx::ImageSkia& pine_image) {
   pine_widget_ = PineContentsView::Create(root_window_, pine_image);
   pine_widget_->ShowInactive();
   OverviewController::Get()->OnPineWidgetShown();
+}
+
+void OverviewGrid::OnSkipButtonPressed() {
+  // Destroys `this`.
+  // TODO(sophiewen): Consider adding another exit point metric.
+  OverviewController::Get()->EndOverview(OverviewEndAction::kKeyEscapeOrBack);
+}
+
+void OverviewGrid::OnSettingsButtonPressed() {
+  // Opens the OS Settings page, which causes a window activation change and
+  // `EndOverview()` and destroys `this`.
+  Shell::Get()->shell_delegate()->OpenMultitaskingSettings();
+}
+
+void OverviewGrid::UpdateFasterSplitViewWidget() {
+  if (!window_util::IsInFasterSplitScreenSetupSession(root_window_)) {
+    // If we weren't started by faster splitview, don't show the widget.
+    faster_splitview_widget_.reset();
+    return;
+  }
+
+  if (!faster_splitview_widget_) {
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.parent = desks_util::GetActiveDeskContainerForRoot(root_window_);
+    params.name = "FasterSplitViewWidget";
+    params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
+    params.init_properties_container.SetProperty(kOverviewUiKey, true);
+    faster_splitview_widget_ =
+        std::make_unique<views::Widget>(std::move(params));
+    auto* box_layout_view = faster_splitview_widget_->SetContentsView(
+        std::make_unique<views::BoxLayoutView>());
+    box_layout_view->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
+    box_layout_view->SetBetweenChildSpacing(kSettingsButtonSpacingDp);
+
+    box_layout_view->AddChildView(std::make_unique<SystemToastStyle>(
+        base::BindRepeating(&OverviewGrid::OnSkipButtonPressed,
+                            weak_ptr_factory_.GetWeakPtr()),
+        l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_FASTER_SPLITSCREEN_TOAST),
+        l10n_util::GetStringUTF16(
+            IDS_ASH_OVERVIEW_FASTER_SPLITSCREEN_TOAST_SKIP)));
+
+    auto* settings_button =
+        box_layout_view->AddChildView(std::make_unique<IconButton>(
+            base::BindRepeating(&OverviewGrid::OnSettingsButtonPressed,
+                                weak_ptr_factory_.GetWeakPtr()),
+            IconButton::Type::kLarge, &kOverviewSettingsIcon,
+            IDS_ASH_OVERVIEW_SETTINGS_BUTTON_LABEL));
+
+    // TODO(b/323199185): Consider refactoring this from `SystemToastStyle`.
+    const int toast_height = settings_button->GetPreferredSize().height();
+    const float toast_corner_radius = toast_height / 2.0f;
+    settings_button->SetBorder(std::make_unique<views::HighlightBorder>(
+        toast_corner_radius,
+        views::HighlightBorder::Type::kHighlightBorderOnShadow));
+    settings_button->SetBackgroundColor(kColorAshShieldAndBase80);
+
+    faster_splitview_widget_->Show();
+  }
+
+  // TODO(b/323199185): UX needs to decide where to position this.
+
+  gfx::Rect centered_bounds(GetGridEffectiveBounds());
+  const gfx::Size preferred_size =
+      faster_splitview_widget_->GetContentsView()->GetPreferredSize();
+  centered_bounds.ClampToCenteredSize(preferred_size);
+
+  // If there are no windows, set it in the center of the grid.
+  if (item_list_.empty()) {
+    faster_splitview_widget_->SetBounds(centered_bounds);
+    return;
+  }
+
+  // Position the widget under the bottom of the last overview item, but
+  // centered horizontally.
+  const gfx::RectF last_overview_item_bounds =
+      item_list_.back()->target_bounds();
+  centered_bounds.set_y(last_overview_item_bounds.bottom() +
+                        kFasterSplitScreenToastSpacingDp);
+  faster_splitview_widget_->SetBounds(centered_bounds);
+
+  // TODO(b/323409897): Add a11y focus traversal and Chromevox support.
 }
 
 }  // namespace ash

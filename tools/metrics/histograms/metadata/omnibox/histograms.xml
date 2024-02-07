@@ -638,12 +638,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.DocumentSuggest.Requests"
-    enum="OmniboxDocumentSuggestRequests" expires_after="2024-06-30">
+    enum="DocumentSuggestRequestEvent" expires_after="2024-06-30">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
-    Counts the number of document suggest requests the omnibox sent, were
-    invalidated, and were completed successfully.
+    Counts the number of requests DocumentProvider sent, were invalidated, and
+    were completed successfully.
   </summary>
 </histogram>
 
@@ -1218,7 +1218,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.NumberOfVisibleCharacters" units="characters"
-    expires_after="2024-06-02">
+    expires_after="2024-08-04">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -1472,7 +1472,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.Search.CtrlEnter.ResolvedAsUrl" enum="Boolean"
-    expires_after="2024-06-02">
+    expires_after="2024-08-04">
   <owner>ender@google.com</owner>
   <owner>chrome-search@google.com</owner>
   <summary>
@@ -1486,7 +1486,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.Search.CtrlEnter.Used" enum="BooleanUsage"
-    expires_after="2024-06-02">
+    expires_after="2024-08-04">
   <owner>ender@google.com</owner>
   <owner>chrome-search@google.com</owner>
   <summary>
@@ -1602,8 +1602,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SearchSuggest.Requests"
+    enum="SearchSuggestRequestEvent" expires_after="2024-06-30">
+  <owner>mpearson@chromium.org</owner>
+  <owner>jdonnelly@chromium.org</owner>
+  <owner>cch@chromium.org</owner>
+  <summary>
+    Counts the number of requests SearchProvider sent, were invalidated, and
+    were completed successfully.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SetText.Duration" units="ms"
-    expires_after="2024-06-01">
+    expires_after="2024-08-04">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -1613,7 +1624,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SetText.TextLength" units="characters"
-    expires_after="2024-06-01">
+    expires_after="2024-08-04">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -1623,7 +1634,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.setText.TruncatedTooMuch" enum="Boolean"
-    expires_after="2024-06-01">
+    expires_after="2024-08-04">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -2173,14 +2184,14 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.SuggestRequests" enum="OmniboxSuggestRequests"
-    expires_after="2024-06-30">
-  <owner>mpearson@chromium.org</owner>
-  <owner>jdonnelly@chromium.org</owner>
-  <owner>cch@chromium.org</owner>
+<histogram name="Omnibox.SuggestRequestsSent" enum="SuggestRequestType"
+    expires_after="2025-01-31">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
   <summary>
-    Counts about the number of suggest requests the omnibox sent, invalidated,
-    and replies received.
+    Counts the number and type of requests sent by the omnibox to the Suggest
+    backends. These requests are emitted as the user types or in zero-suggest
+    context (user has focused or cleared the omnibox but has not typed in yet).
   </summary>
 </histogram>
 
@@ -2214,7 +2225,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestTiles.SelectedTileIndex" units="position"
-    expires_after="2024-06-01">
+    expires_after="2024-08-04">
   <owner>ender@google.com</owner>
   <owner>mahmadi@chromium.org</owner>
   <summary>
@@ -2245,7 +2256,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestTiles.TileTypeCount.{SuggestTileType}"
-    units="count" expires_after="2024-06-01">
+    units="count" expires_after="2024-08-04">
   <owner>ender@google.com</owner>
   <owner>mahmadi@chromium.org</owner>
   <summary>
@@ -2473,7 +2484,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ZeroSuggestProvider.{ResultType}.{RequestType}"
-    enum="ZeroSuggestProviderEvent" expires_after="2024-06-30">
+    enum="ZeroSuggestRequestEvent" expires_after="2024-06-30">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>

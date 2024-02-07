@@ -522,14 +522,14 @@ xnn_status DefineStaticXnnValue(xnn_subgraph_t subgraph,
 // XNNPACK requires input and static data buffers to have `XNN_EXTRA_BYTES`
 // bytes at the end. This method allocates a buffer with `XNN_EXTRA_BYTES` bytes
 // and copies the content of array buffer into the new buffer.
-absl::optional<DataBuffer> MakeBufferWithExtraBytes(
+std::optional<DataBuffer> MakeBufferWithExtraBytes(
     const DOMArrayBufferView* array_buffer_view) {
   CHECK(!array_buffer_view->IsDetached());
   // Allocate an initialized buffer with `XNN_EXTRA_BYTES` extra bytes.
   auto buffer_size =
       base::MakeCheckedNum(array_buffer_view->byteLength()) + XNN_EXTRA_BYTES;
   if (!buffer_size.IsValid()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   auto buffer = DataBuffer::WithSize(buffer_size.ValueOrDie());
   memcpy(buffer.data(), array_buffer_view->BaseAddress(),
@@ -1096,37 +1096,13 @@ xnn_status DefineXnnNodeForGemm(xnn_subgraph_t subgraph,
 
   const MLGemmOptions* options =
       static_cast<const MLGemmOptions*>(gemm->Options());
-  if (options->hasC()) {
-    // XNNPACK fully connected Node only supports 1-D bias tensor (operand c of
-    // WebNN gemm operator) with [output_channels] dimensions.
-    const auto* bias = options->c();
-    const auto output_channels = gemm->Outputs()[0]->Dimensions()[1];
-    if (bias->Dimensions().size() != 1u ||
-        bias->Dimensions()[0] != output_channels) {
-      // TODO(crbug.com/1273291): Support the bias with other dimensions by
-      // element-wise addition operator.
-      error_message = String::Format("The dimensions of bias must be [%u].",
-                                     output_channels);
-      return xnn_status_unsupported_parameter;
-    }
-  }
-  if (options->alpha() != 1.0f) {
-    // TODO(crbug.com/1273291): Support alpha by using element-wise
-    // multiplication operator.
-    error_message = "gemm doesn't support alpha option.";
+  const auto output_channels = gemm->Outputs()[0]->Dimensions()[1];
+  const auto validation_result = ValidateGemmOptions(options, output_channels);
+  if (!validation_result.has_value()) {
+    error_message = validation_result.error();
     return xnn_status_unsupported_parameter;
   }
-  if (options->beta() != 1.0f) {
-    // TODO(crbug.com/1273291): Support beta by using element-wise
-    // multiplication operator.
-    error_message = "gemm doesn't support beta option.";
-    return xnn_status_unsupported_parameter;
-  }
-  if (options->aTranspose()) {
-    // TODO(crbug.com/1273291): Support aTranspose by using transpose operator.
-    error_message = "gemm doesn't support aTranspose option.";
-    return xnn_status_unsupported_parameter;
-  }
+
   uint32_t flags = 0;
   if (!options->bTranspose()) {
     // When bTranspose option is false, the filter tensor (operand b of WebNN
@@ -1155,6 +1131,49 @@ xnn_status DefineXnnNodeForHardSwish(
   const uint32_t flags = 0;
   XNN_CHECK_STATUS_AND_SET_ERROR_MESSAGE(
       xnn_define_hardswish(subgraph, input_id, output_id, flags));
+  return xnn_status_success;
+}
+
+xnn_status DefineXnnNodeForMatmul(xnn_subgraph_t subgraph,
+                                  const MLOperator* matmul,
+                                  const OperandValueIdMap& operand_value_id_map,
+                                  String& error_message) {
+  // Set up the Value ID of input1, input2 and output tensors for XNNPACK
+  // Batch Matrix Multiply Node.
+  const uint32_t input1_id =
+      GetOperatorInputValueId(matmul, operand_value_id_map, 0);
+  const uint32_t input2_id =
+      GetOperatorInputValueId(matmul, operand_value_id_map, 1);
+  const uint32_t output_id =
+      GetOperatorOutputValueId(matmul, operand_value_id_map);
+
+  const auto* input1 = matmul->Inputs()[0].Get();
+  CHECK(input1);
+  const auto input1_rank = input1->Dimensions().size();
+  const auto* input2 = matmul->Inputs()[1].Get();
+  CHECK(input2);
+  const auto input2_rank = input1->Dimensions().size();
+
+  if (input1_rank != input2_rank) {
+    error_message = "The rank of two inputs must be the same.";
+    return xnn_status_unsupported_parameter;
+  }
+
+  if (input1_rank < 3) {
+    error_message = "The rank of the input must be equal to or greater than 3.";
+    return xnn_status_unsupported_parameter;
+  }
+
+  for (wtf_size_t i = 0; i < input1_rank - 2; i++) {
+    if (input1->Dimensions()[i] != input2->Dimensions()[i]) {
+      error_message = "XNNPACK can't support broadcasting for matrix multiply.";
+      return xnn_status_unsupported_parameter;
+    }
+  }
+
+  uint32_t flags = 0;
+  XNN_CHECK_STATUS_AND_SET_ERROR_MESSAGE(xnn_define_batch_matrix_multiply(
+      subgraph, input1_id, input2_id, output_id, flags));
   return xnn_status_success;
 }
 
@@ -1682,16 +1701,8 @@ xnn_status DefineXnnNodeForTranspose(
   const auto* input = transpose->Inputs()[0].Get();
   CHECK(input);
   const auto input_rank = input->Dimensions().size();
-  // According to WebNN spec:
-  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-transpose,
-  // When permutation is not specified, it’s set to [N-1, ..., 0], where N is
-  // the rank of the input tensor.
-  Vector<uint32_t> default_permutation(input_rank);
-  for (wtf_size_t i = 0; i < input_rank - 1; i++) {
-    default_permutation[i] = input_rank - 1 - i;
-  }
   const Vector<uint32_t> permutation =
-      options->getPermutationOr(std::move(default_permutation));
+      options->getPermutationOr(CreateDefaultPermutation(input_rank));
 
   // The current WebNN spec defines the value of permutation as signed
   // integer: https://www.w3.org/TR/webnn/#dom-mltransposeoptions-permutation
@@ -1812,6 +1823,10 @@ xnn_status DefineXnnNode(xnn_subgraph_t subgraph,
       break;
     case MLOperator::OperatorKind::kHardSwish:
       XNN_CHECK_STATUS(DefineXnnNodeForHardSwish(
+          subgraph, ml_operator, operand_value_id_map, error_message));
+      break;
+    case MLOperator::OperatorKind::kMatmul:
+      XNN_CHECK_STATUS(DefineXnnNodeForMatmul(
           subgraph, ml_operator, operand_value_id_map, error_message));
       break;
     case MLOperator::OperatorKind::kPad:
@@ -2343,7 +2358,7 @@ xnn_status MLGraphXnnpack::CreateXnnSubgraph(
   return xnn_status_success;
 }
 
-absl::optional<std::pair<XnnExternalValuesPtr, Vector<DataBuffer>>>
+std::optional<std::pair<XnnExternalValuesPtr, Vector<DataBuffer>>>
 MLGraphXnnpack::CreateExternalValues(
     const MLNamedArrayBufferViews& inputs,
     const MLNamedArrayBufferViews& outputs) const {
@@ -2354,7 +2369,7 @@ MLGraphXnnpack::CreateExternalValues(
   for (const auto& [name, array_buffer_view] : inputs) {
     auto buffer = MakeBufferWithExtraBytes(array_buffer_view.Get());
     if (!buffer) {
-      return absl::nullopt;
+      return std::nullopt;
     }
     external_values->emplace_back(
         xnn_external_value{.id = input_external_value_id_map_.at(name),

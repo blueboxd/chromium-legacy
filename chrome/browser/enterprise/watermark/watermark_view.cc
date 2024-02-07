@@ -26,6 +26,12 @@ WatermarkView::WatermarkView(std::string text) : text_(std::move(text)) {
 WatermarkView::~WatermarkView() = default;
 
 void WatermarkView::OnPaint(gfx::Canvas* canvas) {
+  // Trying to render an empty string in Skia will fail. A string is required
+  // to create the command buffer for the renderer.
+  if (text_.empty()) {
+    return;
+  }
+
   // Get ptr to Skia canvas
   cc::PaintCanvas* sk_canvas = canvas->sk_canvas();
 
@@ -62,7 +68,7 @@ void WatermarkView::OnPaint(gfx::Canvas* canvas) {
   sk_canvas->drawTextBlob(blob, x, y, flags);
 }
 
-BEGIN_METADATA(WatermarkView, views::View)
+BEGIN_METADATA(WatermarkView)
 END_METADATA
 
 }  // namespace enterprise_watermark

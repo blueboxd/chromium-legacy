@@ -41,6 +41,7 @@
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/security_alert_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
@@ -92,7 +93,7 @@ const CGFloat kIPHVerticalOffset = -5;
 @property(nonatomic, strong)
     ManualFillAllPasswordCoordinator* allPasswordCoordinator;
 
-// Coordinator in charge of the keyboar autofill branding.
+// Coordinator in charge of the keyboard autofill branding.
 @property(nonatomic, strong) BrandingCoordinator* brandingCoordinator;
 
 // The Mediator for the input accessory view controller.
@@ -152,10 +153,12 @@ const CGFloat kIPHVerticalOffset = -5;
           initWithWebStateList:browser->GetWebStateList()
           securityAlertHandler:securityAlertHandler
         reauthenticationModule:_reauthenticationModule];
-    _formInputAccessoryTapRecognizer = [[UITapGestureRecognizer alloc]
-        initWithTarget:self
-                action:@selector(tapInsideRecognized:)];
-    _formInputAccessoryTapRecognizer.cancelsTouchesInView = NO;
+    if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+      _formInputAccessoryTapRecognizer = [[UITapGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(tapInsideRecognized:)];
+      _formInputAccessoryTapRecognizer.cancelsTouchesInView = NO;
+    }
   }
   return self;
 }
@@ -199,8 +202,10 @@ const CGFloat kIPHVerticalOffset = -5;
       reauthenticationModule:self.reauthenticationModule];
   self.formInputAccessoryViewController.formSuggestionClient =
       self.formInputAccessoryMediator;
-  [self.formInputAccessoryViewController.view
-      addGestureRecognizer:self.formInputAccessoryTapRecognizer];
+  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+    [self.formInputAccessoryViewController.view
+        addGestureRecognizer:self.formInputAccessoryTapRecognizer];
+  }
 
   self.layoutGuide =
       [layoutGuideCenter makeLayoutGuideNamed:kAutofillFirstSuggestionGuide];
@@ -231,12 +236,7 @@ const CGFloat kIPHVerticalOffset = -5;
 
 - (void)reset {
   [self stopChildren];
-
-  [self.formInputAccessoryMediator enableSuggestions];
-  [self.formInputAccessoryViewController reset];
-
-  self.formInputViewController = nil;
-  [GetFirstResponder() reloadInputViews];
+  [self resetInputViews];
 }
 
 #pragma mark - Presenting Children
@@ -386,9 +386,24 @@ const CGFloat kIPHVerticalOffset = -5;
   [self.formInputAccessoryMediator disableSuggestions];
 }
 
+- (void)formInputAccessoryViewController:
+            (FormInputAccessoryViewController*)formInputAccessoryViewController
+            didTapFormInputAccessoryView:(UIView*)formInputAccessoryView {
+  if (base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+    [self dismissBubble];
+  } else {
+    // This method can't be reached when `kEnableStartupImprovements` is not
+    // enabled. It will call `[self tapInsideRecognized:]` to dismiss the bubble
+    // instead;
+    NOTREACHED();
+  }
+}
+
 - (void)formInputAccessoryViewControllerReset:
     (FormInputAccessoryViewController*)formInputAccessoryViewController {
-  [self reset];
+  CHECK_EQ(self.formInputAccessoryViewController,
+           formInputAccessoryViewController);
+  [self resetInputViews];
 }
 
 #pragma mark - FallbackCoordinatorDelegate
@@ -434,6 +449,13 @@ const CGFloat kIPHVerticalOffset = -5;
       PasswordTabHelper::FromWebState(active_web_state)
           ->GetPasswordGenerationProvider();
   [generationProvider triggerPasswordGeneration];
+}
+
+#pragma mark - ManualFillAllPasswordCoordinatorDelegate
+
+- (void)manualFillAllPasswordCoordinatorWantsToBeDismissed:
+    (ManualFillAllPasswordCoordinator*)coordinator {
+  [self stopManualFillAllPasswordCoordinator];
 }
 
 #pragma mark - CardCoordinatorDelegate
@@ -499,8 +521,15 @@ const CGFloat kIPHVerticalOffset = -5;
 #pragma mark - Actions
 
 - (void)tapInsideRecognized:(id)sender {
-  [self.bubblePresenter dismissAnimated:YES];
-  self.bubblePresenter = nil;
+  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+    [self dismissBubble];
+  } else {
+    // This method can't be reached when `kEnableStartupImprovements` is
+    // enabled. It will call `[self
+    // formInputAccessoryViewController:didTapFormInputAccessoryView:]` to
+    // dismiss the bubble instead;
+    NOTREACHED();
+  }
 }
 
 #pragma mark - Private
@@ -665,11 +694,19 @@ const CGFloat kIPHVerticalOffset = -5;
                                     anchorPoint:anchorPoint];
 }
 
-#pragma mark - ManualFillAllPasswordCoordinatorDelegate
+- (void)dismissBubble {
+  [self.bubblePresenter dismissAnimated:YES];
+  self.bubblePresenter = nil;
+}
 
-- (void)manualFillAllPasswordCoordinatorWantsToBeDismissed:
-    (ManualFillAllPasswordCoordinator*)coordinator {
-  [self stopManualFillAllPasswordCoordinator];
+// Resets `formInputAccessoryViewController` and `formInputViewController` to
+// their initial state.
+- (void)resetInputViews {
+  [self.formInputAccessoryMediator enableSuggestions];
+  [self.formInputAccessoryViewController reset];
+
+  self.formInputViewController = nil;
+  [GetFirstResponder() reloadInputViews];
 }
 
 @end

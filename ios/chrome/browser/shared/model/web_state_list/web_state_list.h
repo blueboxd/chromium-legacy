@@ -9,15 +9,15 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#import "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #include "url/gurl.h"
 
 class WebStateListDelegate;
 class WebStateListObserver;
-struct WebStateOpener;
 
 namespace web {
 class WebState;
@@ -33,7 +33,56 @@ class WebState;
 // The WebStateList takes ownership of the WebStates that it manages.
 class WebStateList {
  public:
-  // Constants used when inserting WebStates.
+  // Parameters used when inserting WebStates.
+  struct InsertionParams {
+    WebStateOpener opener;
+    bool inherit_opener = false;
+    bool activate = false;
+    bool pinned = false;
+    int desired_index = kInvalidIndex;
+
+    // Lets the WebStateList decide where to insert the WebState.
+    static InsertionParams Automatic() { return {}; }
+
+    // Provides the WebStateList with a desired index where to insert the
+    // WebState.
+    static InsertionParams AtIndex(int desired_index) {
+      return {.desired_index = desired_index};
+    }
+
+    // Sets the potential opener.
+    InsertionParams& WithOpener(WebStateOpener an_opener) {
+      this->opener = an_opener;
+      return *this;
+    }
+
+    // Whether the WebState inherits its opener.
+    InsertionParams& InheritOpener(bool inherits_opener = true) {
+      this->inherit_opener = inherits_opener;
+      return *this;
+    }
+
+    // Whether the WebState becomes the active WebState on insertion.
+    InsertionParams& Activate(bool activates = true) {
+      this->activate = activates;
+      return *this;
+    }
+
+    // Whether the WebState is added to the pinned WebStates.
+    InsertionParams& Pinned(bool pin = true) {
+      this->pinned = pin;
+      return *this;
+    }
+
+    // To simplify migrating off of the deprecated `InsertWebState` member
+    // function, convert a set of insertion parameters to real InsertionParams.
+    static InsertionParams ForDeprecationMigration(
+        int insertion_flags,
+        int desired_index = kInvalidIndex,
+        WebStateOpener opener = WebStateOpener());
+  };
+
+  // Deprecated. Use InsertionParams.
   enum InsertionFlags {
     // Used to indicate that nothing special should happen to the newly
     // inserted WebState.
@@ -102,6 +151,41 @@ class WebStateList {
 
     // The WebStateList on which the batch operation is in progress.
     raw_ptr<WebStateList> web_state_list_ = nullptr;
+  };
+
+  // Represents a range in the WebStateList. Typically used for locating tab
+  // groups.
+  class Range {
+   public:
+    // Initializes the range with a start and count.
+    constexpr Range(int start, int count) : start_(start), count_(count) {
+      DCHECK_GE(count_, 0);
+    }
+
+    // Returns a range that is invalid, which is {kInvalidIndex, 0}.
+    static constexpr Range InvalidRange() { return Range(kInvalidIndex, 0); }
+
+    // Checks if the range is valid through comparison to InvalidRange(). If
+    // this is not valid, you must not call functions on this object.
+    constexpr bool IsValid() const { return *this != InvalidRange(); }
+
+    // Getters.
+    constexpr int start() const { return start_; }
+    constexpr int count() const { return count_; }
+
+    // End is the first index not in the range.
+    constexpr int end() const { return start_ + count_; }
+    // Whether the index is inside the range.
+    constexpr bool contains(int index) const {
+      return start_ <= index && index < start_ + count_;
+    }
+
+    constexpr bool operator==(const Range& other) const = default;
+    constexpr bool operator!=(const Range& other) const = default;
+
+   private:
+    const int start_;
+    const int count_;
   };
 
   explicit WebStateList(WebStateListDelegate* delegate);
@@ -180,9 +264,12 @@ class WebStateList {
   bool IsWebStatePinnedAt(int index) const;
 
   // Inserts the specified WebState at the best position in the WebStateList
-  // given the specified opener, recommended index, insertion flags, ... The
-  // `insertion_flags` is a bitwise combination of InsertionFlags values.
+  // given `params`.
   // Returns the effective insertion index.
+  int InsertWebState(std::unique_ptr<web::WebState> web_state,
+                     InsertionParams params = InsertionParams::Automatic());
+
+  // Deprecated. Use the variant with InsertionParams.
   int InsertWebState(int index,
                      std::unique_ptr<web::WebState> web_state,
                      int insertion_flags,
@@ -238,19 +325,16 @@ class WebStateList {
 
   // Locks the WebStateList for mutation. This methods checks that the list is
   // not currently mutated (as the class is not re-entrant it would lead to
-  // corruption of the internal state and ultimately to indefined behaviour).
+  // corruption of the internal state and ultimately to undefined behavior).
   base::AutoReset<bool> LockForMutation();
 
   // Inserts the specified WebState at the best position in the WebStateList
-  // given the specified opener, recommended index, insertion flags, ... The
-  // `insertion_flags` is a bitwise combination of InsertionFlags values.
+  // given `params`.
   // Returns the effective insertion index.
   //
   // Assumes that the WebStateList is locked.
-  int InsertWebStateImpl(int index,
-                         std::unique_ptr<web::WebState> web_state,
-                         int insertion_flags,
-                         WebStateOpener opener);
+  int InsertWebStateImpl(std::unique_ptr<web::WebState> web_state,
+                         InsertionParams params);
 
   // Moves the WebState at the specified index to another index.
   //
@@ -292,14 +376,16 @@ class WebStateList {
   // Assumes that the WebStateList is locked.
   void ActivateWebStateAtImpl(int index);
 
+  // Changes the pinned state of the WebState at `index`. Returns the index the
+  // WebState is now at (it may have been moved to maintain contiguity of pinned
+  // WebStates at the beginning of the list).
+  //
+  // Assumes that the WebStateList is locked.
+  int SetWebStatePinnedAtImpl(int index, bool pinned);
+
   // Sets the opener of any WebState that reference the WebState at the
   // specified index to null.
   void ClearOpenersReferencing(int index);
-
-  // Changes the pinned state of the WebState at `index`, moving the tab to the
-  // end of the pinned/unpinned section in the process if necessary. Returns
-  // the new index of the WebState.
-  int SetWebStatePinnedImpl(int index, bool pinned);
 
   // Verifies that WebState's insertion `index` is within the proper index
   // range. `pinned` WebStates `index` should be within the pinned WebStates

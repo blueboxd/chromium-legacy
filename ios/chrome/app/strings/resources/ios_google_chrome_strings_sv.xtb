@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1021782183249308751">Håll nere Chrome-ikonen och tryck på Ändra hemskärmen</translation>
 <translation id="1066101356081285416">Chrome identifierar spårningsnummer på webbplatser du besöker och visar uppdateringar om försändelser på sidan Ny flik. Paketets spårningsnummer och webbplatsens namn skickas till Google för att tillhandahålla den här funktionen och förbättra shoppingfunktioner för alla. Du kan uppdatera detta när du vill i <ph name="BEGIN_LINK" />inställningarna för spårning av försändelser<ph name="END_LINK" />.</translation>
 <translation id="1085696779717592361">Använd Chrome som standard</translation>
 <translation id="1105362920864247682">Rensa webbinformation i Chrome.</translation>
@@ -74,6 +75,7 @@ Tänk på detta:
 <translation id="2689064829982324496"><ph name="BEGIN_LINK" />Logga ut från Chrome<ph name="END_LINK" /> om du vill logga ut från Google-kontot på alla webbplatser.</translation>
 <translation id="2695886661449553974">Chrome kunde inte söka efter uppdateringar. Försök igen senare.</translation>
 <translation id="2702250627063295552">Lägg till ett objekt från läslistan i Chrome</translation>
+<translation id="2703746758996815929">Om du vill få användbara tips om Chrome kan du aktivera aviseringar i iOS-inställningarna.</translation>
 <translation id="2736805085127235148">Chrome-aviseringar är i nuläget inaktiverade i enhetsinställningarna.</translation>
 <translation id="2767464022270041271">Inga sparade lösenord. Google Lösenordshantering kan bara kontrollera dina lösenord om du sparar dem.</translation>
 <translation id="2789947168960170215">Om du har glömt lösenfrasen eller vill ändra den här inställningen <ph name="BEGIN_LINK" />rensar du Chrome-datan i kontot<ph name="END_LINK" />.</translation>
@@ -96,6 +98,7 @@ Din krypterade data kan endast läsas av en person som har din lösenfras. Löse
 <translation id="3345341804167540816">Använd Chrome överallt</translation>
 <translation id="3360031466389132716">{THRESHOLD,plural, =1{Detta händer när Chrome inte har använts på {THRESHOLD} minut}other{Detta händer när Chrome inte används på {THRESHOLD} minuter}}</translation>
 <translation id="3399930248910934354">Öppna inställningarna för Chrome</translation>
+<translation id="344736123700721678">Kom åt Chrome snabbare från hemskärmens Dock</translation>
 <translation id="3472587960215700950">Google Maps används i Chrome för att ge dig vägbeskrivningar och lokal information om identifierade adresser.</translation>
 <translation id="3503014945441706099">Få Förbättrad säker webbsökning även för den här Chromium-profilen</translation>
 <translation id="3522659714780527202">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter där du använder Chrome</translation>
@@ -220,6 +223,7 @@ Du hittar fler inställningar som använder data för att förbättra Chrome-upp
 <translation id="7175129790242719365">Tips för Chrome: Logga in i Chrome</translation>
 <translation id="7187993566681480880">Skyddar dig i Chrome och kan användas för förbättrad säkerhet i andra Google-appar där du är inloggad.</translation>
 <translation id="7200524487407690471">Chrome kör automatiskt en säkerhetskontroll varje dag för att skydda dig från dataintrång, osäkra webbplatser med mera. Du hittar mer information om säkerhetskontrollen i inställningarna.</translation>
+<translation id="7203324561587388418">Håll koll på innehåll och användbara tips om Chrome.</translation>
 <translation id="72119412072970160">Du kan använda lösenorden som sparats med Google Lösenordshantering i andra iPad-appar.</translation>
 <translation id="723787869754590019">Använd Chrome för autofyll</translation>
 <translation id="7254380941803999489">Ställ in Chrome som standardwebbläsare</translation>
@@ -294,6 +298,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 Om du vill ändra den här inställningen <ph name="BEGIN_LINK" />rensar du Chrome-datan i kontot<ph name="END_LINK" />.</translation>
 <translation id="8857676124663337448">Google Lösenordshantering kunde inte kontrollera alla lösenord. Försök igen i morgon.</translation>
 <translation id="8865415417596392024">Chrome-data i ditt konto</translation>
+<translation id="8874688701962049679">Tips om hur du får ut mesta möjliga av Chrome.</translation>
 <translation id="8891935667620843985">Du kan öppna länkar i Chrome automatiskt genom att ställa in den som standardwebbläsare.</translation>
 <translation id="8897749957032330183">Lösenorden sparas med Google Lösenordshantering på den här enheten.</translation>
 <translation id="8949681853939555434">Ställ in Chrome som standardwebbläsare</translation>

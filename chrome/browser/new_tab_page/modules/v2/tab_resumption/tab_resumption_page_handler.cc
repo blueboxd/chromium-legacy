@@ -35,6 +35,14 @@
 using history::BrowsingHistoryService;
 using history::HistoryService;
 
+const size_t kCategoryBlockListCount = 18;
+constexpr std::array<std::string_view, kCategoryBlockListCount>
+    kCategoryBlockList{"/g/11b76fyj2r", "/m/09lkz",  "/m/012mj",  "/m/01rbb",
+                       "/m/02px0wr",    "/m/028hh",  "/m/034qg",  "/m/034dj",
+                       "/m/0jxxt",      "/m/015fwp", "/m/04shl0", "/m/01h6rj",
+                       "/m/05qt0",      "/m/06gqm",  "/m/09l0j_", "/m/01pxgq",
+                       "/m/0chbx",      "/m/02c66t"};
+
 namespace {
 // Maximum number of sessions we're going to display on the NTP
 const size_t kMaxSessionsToShow = 10;
@@ -74,8 +82,9 @@ history::mojom::TabPtr SessionTabToMojom(const ::sessions::SessionTab& tab,
   tab_mojom->url = GURL(*dictionary.FindString("url"));
   tab_mojom->title = *dictionary.FindString("title");
 
-  tab_mojom->relative_time =
+  tab_mojom->relative_time_text =
       base::UTF16ToUTF8(FormatRelativeTime(tab.timestamp));
+  tab_mojom->relative_time = base::Time::Now() - tab.timestamp;
 
   return tab_mojom;
 }
@@ -122,7 +131,14 @@ TabResumptionPageHandler::TabResumptionPageHandler(
           static_cast<float>(base::GetFieldTrialParamByFeatureAsDouble(
               ntp_features::kNtpTabResumptionModule,
               ntp_features::kNtpTabResumptionModuleVisibilityThresholdDataParam,
-              /*Default value for visibility threshold*/ 0.5))) {
+              /*Default value for visibility threshold*/ 0.5))),
+      categories_blocklist_(GetTabResumptionCategories(
+          ntp_features::kNtpTabResumptionModuleCategoriesBlocklistParam,
+          {kCategoryBlockList.begin(), kCategoryBlockListCount})),
+      time_limit_(base::GetFieldTrialParamByFeatureAsInt(
+          ntp_features::kNtpTabResumptionModuleTimeLimit,
+          ntp_features::kNtpTabResumptionModuleTimeLimitParam,
+          /*Default value for time limit*/ 24)) {
   DCHECK(profile_);
   DCHECK(web_contents_);
 }
@@ -135,8 +151,10 @@ void TabResumptionPageHandler::OnQueryURLsComplete(
     std::vector<history::QueryURLResult> results) {
   history::VisitVector visit_rows;
   for (auto result : results) {
-    for (auto visit : result.visits) {
-      visit_rows.push_back(visit);
+    if ((base::Time::Now() - result.row.last_visit()).InHours() < time_limit_) {
+      for (auto visit : result.visits) {
+        visit_rows.push_back(visit);
+      }
     }
   }
   auto* history_service = HistoryServiceFactory::GetForProfile(
@@ -161,6 +179,9 @@ void TabResumptionPageHandler::OnAnnotatedVisits(
         annotated_visit.content_annotations.model_annotations.visibility_score;
     /* If score is -1, it has not been evaluated for visibility */
     if (visibility_score < visibility_threshold_ && visibility_score >= 0) {
+      continue;
+    }
+    if (IsVisitInCategories(annotated_visit, categories_blocklist_)) {
       continue;
     }
     for (size_t i = 0; i < tabs.size(); i++) {

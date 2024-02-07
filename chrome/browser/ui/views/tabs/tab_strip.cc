@@ -1903,7 +1903,7 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
   return preferred_size;
 }
 
-void TabStrip::Layout() {
+void TabStrip::Layout(PassKey) {
   if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
     // With tab scrolling, the TabStrip is the contents view of a ScrollView and
     // as such is expected to set its own bounds during layout.
@@ -2012,14 +2012,7 @@ void TabStrip::NewTabButtonPressed(const ui::Event& event) {
       return;
     }
   }
-  const int tab_count = GetTabCount();
   controller_->CreateNewTab();
-
-  if (GetTabCount() != tab_count + 1) {
-    UMA_HISTOGRAM_ENUMERATION("TabStrip.Failures.Action",
-                              TabFailureContext::kNewTabOpen,
-                              TabFailureContext::kMaxValue);
-  }
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {

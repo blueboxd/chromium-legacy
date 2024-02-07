@@ -1159,8 +1159,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
     // When queueing the operation, see if it overwrites any already pending
     // ones for the same row.
     auto key = cc.StrictlyUniqueKey();
-    auto iter_and_result =
-        pending_.insert(std::make_pair(key, PendingOperationsForKey()));
+    auto iter_and_result = pending_.emplace(key, PendingOperationsForKey());
     PendingOperationsForKey& ops_for_key = iter_and_result.first->second;
     if (!iter_and_result.second) {
       // Insert failed -> already have ops.
@@ -1280,7 +1279,7 @@ void SQLitePersistentCookieStore::Backend::DoCommit() {
           }
           add_statement.BindString(6, po->cc().Path());
           add_statement.BindTime(7, po->cc().ExpiryDate());
-          add_statement.BindBool(8, po->cc().IsSecure());
+          add_statement.BindBool(8, po->cc().SecureAttribute());
           add_statement.BindBool(9, po->cc().IsHttpOnly());
           add_statement.BindTime(10, po->cc().LastAccessDate());
           add_statement.BindBool(11, po->cc().IsPersistent());

@@ -25,7 +25,10 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
+#include "cc/base/features.h"
 #include "cc/layers/texture_layer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -145,7 +148,8 @@ void Canvas2DLayerBridge::Hibernate() {
   // case because flushRecording should only fail it it fails to allocate
   // a surface, and we have an early exit at the top of this function for when
   // 'this' does not already have a surface.
-  DCHECK(!resource_host_->ResourceProvider()->Recorder().HasRecordedDrawOps());
+  DCHECK(
+      !resource_host_->ResourceProvider()->Recorder().HasReleasableDrawOps());
   SkPaint copy_paint;
   copy_paint.setBlendMode(SkBlendMode::kSrc);
   scoped_refptr<StaticBitmapImage> snapshot =
@@ -154,8 +158,14 @@ void Canvas2DLayerBridge::Hibernate() {
     logger_->ReportHibernationEvent(kHibernationAbortedDueSnapshotFailure);
     return;
   }
+  sk_sp<SkImage> sw_image =
+      snapshot->PaintImageForCurrentFrame().GetSwSkImage();
+  if (!sw_image) {
+    logger_->ReportHibernationEvent(kHibernationAbortedDueSnapshotFailure);
+    return;
+  }
   hibernation_handler_.SaveForHibernation(
-      snapshot->PaintImageForCurrentFrame().GetSwSkImage(),
+      std::move(sw_image),
       resource_host_->ResourceProvider()->ReleaseRecorder());
 
   ResetResourceProvider();
@@ -281,16 +291,6 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider() {
   return resource_provider;
 }
 
-cc::PaintCanvas* Canvas2DLayerBridge::GetPaintCanvas() {
-  DCHECK(resource_host_);
-  // We avoid only using GetOrCreateResourceProvider() here to skip the
-  // IsValid/ContextLost checks since this is in hot code paths. The context
-  // does not need to be valid here since only the recording canvas is used.
-  if (!ResourceProvider() && !GetOrCreateResourceProvider())
-    return nullptr;
-  return &ResourceProvider()->Canvas();
-}
-
 void Canvas2DLayerBridge::PageVisibilityChanged() {
   bool page_is_visible = resource_host_->IsPageVisible();
   if (ResourceProvider())
@@ -325,13 +325,33 @@ void Canvas2DLayerBridge::PageVisibilityChanged() {
         FROM_HERE,
         WTF::BindOnce(&HibernateWrapper, weak_ptr_factory_.GetWeakPtr()));
   }
+
+  // The impl tree may have dropped the transferable resource for this canvas
+  // while it wasn't visible. Make sure that it gets pushed there again, now
+  // that we've visible. See TextureLayerImpl::SetInInvisibleLayerTree() for
+  // details.
+  //
+  // This is done all the time, but it is especially important when canvas
+  // hibernation is disabled. In this case, when the impl-side active tree
+  // releases the TextureLayer's transferable resource, it will not be freed
+  // since the texture has not been cleared above (there is a remaining
+  // reference held from the TextureLayer). Then the next time the page becomes
+  // visible, the TextureLayer will note the resource hasn't changed (in
+  // Update()), and will not add the layer to the list of those that need to
+  // push properties. But since the impl-side tree no longer holds the resource,
+  // we need TreeSynchronizer to always consider this layer.
+  //
+  // This makes sure that we do push properties. It is a not needed when canvas
+  // hibernation is enabled (since the resource will have changed, it will be
+  // pushed), but we do it anyway, since these interactions are subtle.
+  if (page_is_visible && base::FeatureList::IsEnabled(
+                             ::features::kClearCanvasResourcesInBackground)) {
+    resource_host_->SetNeedsPushProperties();
+  }
+
   if (page_is_visible && (IsHibernating() || lose_context_in_background_)) {
     GetOrCreateResourceProvider();  // Rude awakening
   }
-}
-
-void Canvas2DLayerBridge::DrawFullImage(const cc::PaintImage& image) {
-  GetPaintCanvas()->drawImage(image, 0, 0);
 }
 
 bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
@@ -348,7 +368,19 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
   if (x <= 0 && y <= 0 &&
       x + orig_info.width() >= resource_host_->Size().width() &&
       y + orig_info.height() >= resource_host_->Size().height()) {
-    provider->Recorder().SkipQueuedDrawCommands();
+    MemoryManagedPaintRecorder& recorder = provider->Recorder();
+    if (recorder.HasSideRecording()) {
+      // Even with opened layers, WritePixels would write to the main canvas
+      // surface under the layers. We can therefore clear the paint ops recorded
+      // before the first `beginLayer`, but the layers themselves must be kept
+      // untouched. Note that this operation makes little sense and is actually
+      // disabled in `putImageData` by raising an exception if layers are
+      // opened. Still, it's preferable to handle this scenario here because the
+      // alternative would be to crash or leave the canvas in an invalid state.
+      recorder.ReleaseMainRecording();
+    } else {
+      recorder.RestartRecording();
+    }
   } else {
     FlushRecording(FlushReason::kWritePixels);
     if (!GetOrCreateResourceProvider())
@@ -361,7 +393,7 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
 void Canvas2DLayerBridge::FlushRecording(FlushReason reason) {
   CHECK(resource_host_);
   CanvasResourceProvider* provider = GetOrCreateResourceProvider();
-  if (!provider || !provider->Recorder().HasRecordedDrawOps()) {
+  if (!provider || !provider->Recorder().HasReleasableDrawOps()) {
     return;
   }
 

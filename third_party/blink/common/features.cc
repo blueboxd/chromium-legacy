@@ -153,6 +153,12 @@ BASE_FEATURE(kAudioWorkletThreadRealtimePriority,
              "AudioWorkletThreadRealtimePriority",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// When enabled, extraction of unassociated listed elements includes elements
+// inside Shadow DOM.
+BASE_FEATURE(kAutofillIncludeShadowDomInUnassociatedListedElements,
+             "AutofillIncludeShadowDomInUnassociatedListedElements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If disabled (default for many years), autofilling triggers KeyDown and
 // KeyUp events that do not send any key codes. If enabled, these events
 // contain the "Unidentified" key.
@@ -695,9 +701,22 @@ const base::FeatureParam<AsyncScriptExperimentalSchedulingTarget>::Option
 };
 const base::FeatureParam<AsyncScriptExperimentalSchedulingTarget>
     kDelayAsyncScriptExecutionTargetParam{
-        &kDelayAsyncScriptExecution, "delay_async_script_execution_target",
+        &kDelayAsyncScriptExecution, "delay_async_exec_target",
         AsyncScriptExperimentalSchedulingTarget::kBoth,
         &async_script_experimental_scheduling_targets};
+
+const base::FeatureParam<bool>
+    kDelayAsyncScriptExecutionOptOutLowFetchPriorityHintParam{
+        &kDelayAsyncScriptExecution,
+        "delay_async_exec_opt_out_low_fetch_priority_hint", false};
+const base::FeatureParam<bool>
+    kDelayAsyncScriptExecutionOptOutAutoFetchPriorityHintParam{
+        &kDelayAsyncScriptExecution,
+        "delay_async_exec_opt_out_auto_fetch_priority_hint", false};
+const base::FeatureParam<bool>
+    kDelayAsyncScriptExecutionOptOutHighFetchPriorityHintParam{
+        &kDelayAsyncScriptExecution,
+        "delay_async_exec_opt_out_high_fetch_priority_hint", false};
 
 BASE_FEATURE(kDelayLowPriorityRequestsAccordingToNetworkState,
              "DelayLowPriorityRequestsAccordingToNetworkState",
@@ -743,6 +762,12 @@ BASE_FEATURE(kDispatchBeforeUnloadOnFreeze,
 BASE_FEATURE(kDisplayLocking,
              "DisplayLocking",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Kill switch for not WebGL DrawingBuffer using SharedImage without
+// GpuMemoryBuffer (overlay or low latency canvas).
+BASE_FEATURE(kDrawingBufferWithoutGpuMemoryBuffer,
+             "DrawingBufferWithoutGpuMemoryBuffer",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Drop input events before user sees first paint https://crbug.com/1255485
 BASE_FEATURE(kDropInputEventsBeforeFirstPaint,
@@ -798,6 +823,12 @@ BASE_FEATURE(kDeprecateUnloadByAllowList,
 // the all hosts are allowed.
 const base::FeatureParam<std::string> kDeprecateUnloadAllowlist{
     &kDeprecateUnloadByAllowList, "allowlist", ""};
+
+// Enables using a base::ProtectedMemory<bool> value to provide extra protection
+// against MojoJS bindings being enabled via a data-only attack.
+BASE_FEATURE(kEnableMojoJSProtectedMemory,
+             "EnableMojoJSProtectedMemory",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether LCP calculations should exclude low-entropy images. If
 // enabled, then the associated parameter sets the cutoff, expressed as the
@@ -952,10 +983,11 @@ const base::FeatureParam<int>
     kFledgeDebugReportSamplingRestrictedCooldownRandomMax{
         &kFledgeSampleDebugReports,
         "fledge_debug_report_sampling_restricted_cooldown_random_max", 10};
-
-BASE_FEATURE(kFledgeDebugReportFilterAfterSampling,
-             "FledgeDebugReportFilterAfterSampling",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<base::TimeDelta>
+    kFledgeEnableFilteringDebugReportStartingFrom{
+        &kFledgeSampleDebugReports,
+        "fledge_enable_filtering_debug_report_starting_from",
+        base::Milliseconds(0)};
 
 BASE_FEATURE(kFledgeCustomMaxAuctionAdComponents,
              "FledgeCustomMaxAuctionAdComponents",
@@ -1195,7 +1227,7 @@ const base::FeatureParam<LcppResourceLoadPriority>
 
 const base::FeatureParam<bool>
     kLCPCriticalPathPredictorEnableElementLocatorPerformanceImprovements{
-        &kLCPCriticalPathPredictor, "lcpp_enable_perf_improvements", false};
+        &kLCPCriticalPathPredictor, "lcpp_enable_perf_improvements", true};
 
 const base::FeatureParam<bool>
     kLCPCriticalPathPredictorImageLoadPriorityEnabledForHTMLImageElement{
@@ -1385,10 +1417,28 @@ const base::FeatureParam<AsyncScriptPrioritisationType>
 // specified target.
 const base::FeatureParam<AsyncScriptExperimentalSchedulingTarget>
     kLowPriorityAsyncScriptExecutionTargetParam{
-        &kLowPriorityAsyncScriptExecution,
-        "low_priority_async_script_execution_target",
+        &kLowPriorityAsyncScriptExecution, "low_pri_async_exec_target",
         AsyncScriptExperimentalSchedulingTarget::kBoth,
         &async_script_experimental_scheduling_targets};
+
+// kLowPriorityAsyncScriptExecution will be opted-out when FetchPriorityHint is
+// low.
+const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionOptOutLowFetchPriorityHintParam{
+        &kLowPriorityAsyncScriptExecution,
+        "low_pri_async_exec__opt_out_low_fetch_priority_hint", false};
+// kLowPriorityAsyncScriptExecution will be opted-out when FetchPriorityHint is
+// auto.
+const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionOptOutAutoFetchPriorityHintParam{
+        &kLowPriorityAsyncScriptExecution,
+        "low_pri_async_exec_opt_out_auto_fetch_priority_hint", false};
+// kLowPriorityAsyncScriptExecution will be opted-out when FetchPriorityHint is
+// high.
+const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionOptOutHighFetchPriorityHintParam{
+        &kLowPriorityAsyncScriptExecution,
+        "low_pri_async_exec_opt_out_high_fetch_priority_hint", false};
 
 BASE_FEATURE(kLowPriorityScriptLoading,
              "LowPriorityScriptLoading",
@@ -1824,6 +1874,10 @@ BASE_FEATURE(kPausePagesPerBrowsingContextGroup,
              "PausePagesPerBrowsingContextGroup",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kShowHudDisplayForPausedPages,
+             "ShowHudDisplayForPausedPages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls script streaming.
 BASE_FEATURE(kScriptStreaming,
              "ScriptStreaming",
@@ -1939,6 +1993,14 @@ BASE_FEATURE(kSharedStorageWorkletSharedBackingThreadImplementation,
 BASE_FEATURE(kSharedStorageAPIM118,
              "SharedStorageAPIM118",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSharedStorageAPIM123,
+             "SharedStorageAPIM123",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSharedStorageAPIEnableWALForDatabase,
+             "SharedStorageAPIEnableWALForDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSimulateClickOnAXFocus,
              "SimulateClickOnAXFocus",
@@ -2375,6 +2437,11 @@ bool DisplayWarningDeprecateURNIframesUseFencedFrames() {
 bool IsAllowBFCacheWhenClosedMediaStreamTrackEnabled() {
   return base::FeatureList::IsEnabled(
       blink::features::kAllowBFCacheWhenClosedMediaStreamTrack);
+}
+
+bool IsEnableMojoJSProtectedMemoryEnabled() {
+  return base::FeatureList::IsEnabled(
+      blink::features::kEnableMojoJSProtectedMemory);
 }
 
 bool IsFencedFramesEnabled() {

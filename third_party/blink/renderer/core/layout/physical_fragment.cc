@@ -98,7 +98,15 @@ class FragmentTreeDumper {
       : builder_(builder), target_fragment_(target), flags_(flags) {}
 
   void Append(const PhysicalFragment* fragment,
+              std::optional<PhysicalOffset> fragment_offset,
+              unsigned indent = 2) {
+    Vector<String> attributes;
+    Append(fragment, fragment_offset, attributes, indent);
+  }
+
+  void Append(const PhysicalFragment* fragment,
               absl::optional<PhysicalOffset> fragment_offset,
+              Vector<String>& attributes,
               unsigned indent = 2) {
     AppendIndentation(indent, fragment);
 
@@ -114,17 +122,14 @@ class FragmentTreeDumper {
         String box_type = StringForBoxType(*fragment);
         has_content = true;
         if (!box_type.empty()) {
-          builder_->Append(" (");
-          builder_->Append(box_type);
-          builder_->Append(")");
+          attributes.push_back(box_type);
         }
         if (flags_ & PhysicalFragment::DumpSelfPainting &&
             box->HasSelfPaintingLayer()) {
-          if (box_type.empty())
-            builder_->Append(" ");
-          builder_->Append("(self paint)");
+          attributes.push_back("self paint");
         }
       }
+      AppendAttributes(attributes);
       has_content = AppendOffsetAndSize(fragment, fragment_offset, has_content);
 
       if (flags_ & PhysicalFragment::DumpNodeName && layout_object) {
@@ -181,6 +186,18 @@ class FragmentTreeDumper {
     builder_->Append("\n");
   }
 
+  void AppendAttributes(const Vector<String>& attributes) {
+    if (!attributes.empty()) {
+      String separator = " (";
+      for (const String& attribute : attributes) {
+        builder_->Append(separator);
+        builder_->Append(attribute);
+        separator = ")(";
+      }
+      builder_->Append(")");
+    }
+  }
+
   void AppendLegacySubtree(const LayoutObject& layout_object, unsigned indent) {
     for (const LayoutObject* descendant = &layout_object; descendant;) {
       if (!IsNGRootWithFragments(*descendant)) {
@@ -202,7 +219,7 @@ class FragmentTreeDumper {
         builder_->Append("(Fragment not found when searching the subtree)\n");
         builder_->Append("(Dumping detached fragment tree now:)\n");
       }
-      Append(target_fragment_, absl::nullopt);
+      Append(target_fragment_, std::nullopt);
     }
   }
 
@@ -216,7 +233,7 @@ class FragmentTreeDumper {
     }
     const LayoutBox& box_descendant = To<LayoutBox>(layout_object);
     DCHECK_EQ(box_descendant.PhysicalFragmentCount(), 1u);
-    Append(box_descendant.GetPhysicalFragment(0), absl::nullopt, indent + 4);
+    Append(box_descendant.GetPhysicalFragment(0), std::nullopt, indent + 4);
   }
 
  private:
@@ -225,7 +242,11 @@ class FragmentTreeDumper {
       const InlineCursorPosition& current = cursor->Current();
       const PhysicalFragment* box = current.BoxFragment();
       if (box && !box->IsInlineBox()) {
-        Append(box, current.OffsetInContainerFragment(), indent);
+        Vector<String> attributes;
+        if (current->IsHiddenForPaint()) {
+          attributes.push_back("hidden");
+        }
+        Append(box, current.OffsetInContainerFragment(), attributes, indent);
         continue;
       }
 
@@ -261,7 +282,7 @@ class FragmentTreeDumper {
   }
 
   bool AppendOffsetAndSize(const PhysicalFragment* fragment,
-                           absl::optional<PhysicalOffset> fragment_offset,
+                           std::optional<PhysicalOffset> fragment_offset,
                            bool has_content) {
     if (flags_ & PhysicalFragment::DumpOffset) {
       if (has_content)
@@ -732,7 +753,7 @@ String PhysicalFragment::ToString() const {
 String PhysicalFragment::DumpFragmentTree(
     DumpFlags flags,
     const PhysicalFragment* target,
-    absl::optional<PhysicalOffset> fragment_offset,
+    std::optional<PhysicalOffset> fragment_offset,
     unsigned indent) const {
   StringBuilder string_builder;
   if (flags & DumpHeaderText)

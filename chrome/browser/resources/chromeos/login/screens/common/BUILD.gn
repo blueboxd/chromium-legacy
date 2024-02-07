@@ -22,33 +22,11 @@ js_type_check("closure_compile_local") {
                         root_build_dir),
         "js_module_root=./gen/chrome/browser/resources/gaia_auth_host",
       ]
-  deps = [
-    ":error_message",
-    ":offline_ad_login",
-    ":signin_fatal_error",
-  ]
+  deps = [ ":signin_fatal_error" ]
 }
 
 ###############################
 # Closure compiler libraries below
-
-js_library("offline_ad_login") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/offline_ad_login.js" ]
-  deps = [
-    "../../components:oobe_a11y_option",
-    "../../components:oobe_select",
-    "../../components/behaviors:login_screen_behavior",
-    "../../components/behaviors:oobe_dialog_host_behavior",
-    "../../components/behaviors:oobe_i18n_behavior",
-    "../../components/dialogs:oobe_adaptive_dialog",
-    "//ash/webui/common/resources:load_time_data.m",
-  ]
-  externs_list = [
-    "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js",
-    "//ui/webui/resources/cr_elements/cr_toggle/cr_toggle_externs.js",
-  ]
-  extra_deps = [ ":web_components" ]
-}
 
 # Template used by the `tools/oobe/generate_screen_template.py` script.
 
@@ -63,20 +41,6 @@ js_library("signin_fatal_error") {
     "../../components/behaviors:oobe_i18n_behavior",
     "../../components/dialogs:oobe_adaptive_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-  extra_deps = [ ":web_components" ]
-}
-
-js_library("error_message") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/error_message.js" ]
-  deps = [
-    "../../:cr_ui",
-    "../../components:display_manager_types",
-    "../../components/behaviors:login_screen_behavior",
-    "../../components/behaviors:oobe_dialog_host_behavior",
-    "../../components/behaviors:oobe_i18n_behavior",
-    "../../components/dialogs:oobe_adaptive_dialog",
-    "//ash/webui/common/resources:parse_html_subset",
   ]
   extra_deps = [ ":web_components" ]
 }

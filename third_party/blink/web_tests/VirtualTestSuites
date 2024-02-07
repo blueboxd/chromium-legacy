@@ -171,6 +171,16 @@
     "expires": "Apr 1, 2024"
   },
   {
+    "prefix": "attribution-reporting-in-browser-migration",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["http/tests/inspector-protocol/attribution-reporting"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=KeepAliveInBrowserMigration,kAttributionReportingInBrowserMigration,AttributionReportingCrossAppWeb,PrivacySandboxAdsAPIsOverride",
+             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "owners": ["anthonygarant@chromium.org"],
+    "expires": "May 30, 2024"
+  },
+  {
     "prefix": "attribution-reporting-debug-mode",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/attribution-reporting"],
@@ -390,7 +400,8 @@
     "exclusive_tests": "ALL",
     "args": ["--enable-blink-features=CompositeClipPathAnimation",
              "--enable-threaded-compositing"],
-    "expires": "Jul 1, 2023"
+    "owners": ["clchambers@microsoft.com", "gerchiko@microsoft.com"],
+    "expires": "Jan 1, 2025"
   },
   {
     "prefix": "main-thread-clip-path-animation",
@@ -404,7 +415,8 @@
     "exclusive_tests": "ALL",
     "args": ["--disable-blink-features=CompositeClipPathAnimation",
               "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "never"
+    "owners": ["clchambers@microsoft.com", "gerchiko@microsoft.com"],
+    "expires": "Jan 1, 2025"
   },
   {
     "prefix": "fractional-scroll-offsets",
@@ -1768,7 +1780,7 @@
       "external/wpt/shared-storage",
       "http/tests/inspector-protocol/shared-storage"
     ],
-    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode,SharedStorageAPIM118,FencedFramesEnforceFocus",
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode,SharedStorageAPIM118,SharedStorageAPIM123,FencedFramesEnforceFocus",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "Jul 31, 2024"
   },
@@ -2464,6 +2476,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/storage-access-api",
+      "external/wpt/workers/same-site-cookies",
       "wpt_internal/storage-access-api"
     ],
     "args": ["--disable-blink-features=StorageAccessAPIBeyondCookies"],
@@ -2619,10 +2632,18 @@
   },
   {
     "prefix": "stylable-select-disabled",
-    "platforms": ["Linux"],
+    "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/html/semantics/forms/the-select-element/select-parsing.tentative.html",
-      "fast/forms/select/button-or-datalist-in-select-usecounter.html"
+      "fast/forms/select",
+      "fast/forms/color-scheme/select",
+      "external/wpt/html/semantics/forms/the-selectlist-element",
+      "external/wpt/css/css-writing-modes/forms/select-appearance-native-vertical.optional.html",
+      "external/wpt/css/css-writing-modes/forms/select-appearance-native-horizontal.optional.html",
+      "external/wpt/css/css-writing-modes/forms/select-appearance-none-horizontal.optional.html",
+      "external/wpt/css/css-writing-modes/forms/select-appearance-none-vertical-lr.optional.html",
+      "external/wpt/css/css-writing-modes/forms/select-appearance-none-vertical-rl.optional.html",
+      "external/wpt/css/css-writing-modes/forms/select-appearance-native-computed-style.html"
     ],
     "args": ["--disable-features=StylableSelect"],
     "expires": "Oct 1, 2024",
@@ -2638,8 +2659,7 @@
     "expires": "Dec 1, 2024",
     "owners": ["jarhar@chromium.org", "dom-dev@chromium.org"],
     "bases": [
-      "external/wpt/custom-elements/state",
-      "external/wpt/custom-state-pseudo-class"
+      "external/wpt/custom-elements/state"
     ]
   },
   {
@@ -2650,8 +2670,7 @@
     "expires": "Dec 1, 2024",
     "owners": ["jarhar@chromium.org", "dom-dev@chromium.org"],
     "bases": [
-      "external/wpt/custom-elements/state",
-      "external/wpt/custom-state-pseudo-class"
+      "external/wpt/custom-elements/state"
     ]
   }
 ]

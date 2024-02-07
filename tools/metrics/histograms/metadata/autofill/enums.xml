@@ -3025,12 +3025,6 @@ Called by update_autofill_enums.py.-->
   <int value="1" label="Empty on page load"/>
 </enum>
 
-<enum name="AutofillProfileAction">
-  <int value="0" label="Existing profile used"/>
-  <int value="1" label="Existing profile updated"/>
-  <int value="2" label="New profile created"/>
-</enum>
-
 <enum name="AutofillProfileTokenQualityObservationType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Accepted"/>
@@ -3173,6 +3167,22 @@ Called by update_autofill_enums.py.-->
              form submitted"/>
   <int value="19"
       label="No suggestions were shown, form was autofilled (ERROR)"/>
+  <int value="20"
+      label="No suggestions were shown, form was autofilled - AWG (ERROR)"/>
+  <int value="21"
+      label="No suggestions were shown, form was autofilled - Samsung (ERROR)"/>
+  <int value="22"
+      label="No suggestions were shown, form was autofilled - Last pass
+             (ERROR)"/>
+  <int value="23"
+      label="No suggestions were shown, form was autofilled - Dashlane
+             (ERROR)"/>
+  <int value="24"
+      label="No suggestions were shown, form was autofilled - 1Password
+             (ERROR)"/>
+  <int value="25"
+      label="No suggestions were shown, form was autofilled - Bitwarden
+             (ERROR)"/>
 </enum>
 
 <enum name="AutofillSettingsVisibleTypes">

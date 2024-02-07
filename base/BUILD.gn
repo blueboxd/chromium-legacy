@@ -784,9 +784,6 @@ component("base") {
     "task/thread_pool/environment_config.h",
     "task/thread_pool/job_task_source.cc",
     "task/thread_pool/job_task_source.h",
-    "task/thread_pool/job_task_source_interface.h",
-    "task/thread_pool/job_task_source_old.cc",
-    "task/thread_pool/job_task_source_old.h",
     "task/thread_pool/pooled_parallel_task_runner.cc",
     "task/thread_pool/pooled_parallel_task_runner.h",
     "task/thread_pool/pooled_sequenced_task_runner.cc",
@@ -1228,6 +1225,8 @@ component("base") {
       "android/thread_instruction_count.h",
       "android/timezone_utils.cc",
       "android/timezone_utils.h",
+      "android/token_android.cc",
+      "android/token_android.h",
       "android/unguessable_token_android.cc",
       "android/unguessable_token_android.h",
       "debug/stack_trace_android.cc",
@@ -3540,6 +3539,9 @@ test("base_unittests") {
     "//third_party/icu",
     "//third_party/modp_b64",
   ]
+  if (is_clang) {
+    deps += [ ":base_unsafe_buffers_unittest_sources" ]
+  }
 
   data_deps = [
     "//base/test:immediate_crash_test_helper",
@@ -3752,6 +3754,7 @@ test("base_unittests") {
       "android/radio_utils_unittest.cc",
       "android/scoped_java_ref_unittest.cc",
       "android/sys_utils_unittest.cc",
+      "android/token_android_unittest.cc",
       "android/unguessable_token_android_unittest.cc",
       "os_compat_android_unittest.cc",
     ]
@@ -4135,7 +4138,21 @@ test("base_unittests") {
 
   if (enable_nocompile_tests) {
     deps += [ ":base_nocompile_tests" ]
+    if (is_clang) {
+      deps += [ ":base_unsafe_buffers_nocompile_tests" ]
+    }
   }
+}
+
+source_set("base_unsafe_buffers_unittest_sources") {
+  testonly = true
+  visibility = [ ":*" ]
+  configs += [ "//build/config/compiler:unsafe_buffer_warning" ]
+  sources = [ "unsafe_buffers_unittest.cc" ]
+  deps = [
+    "//base",
+    "//testing/gtest",
+  ]
 }
 
 # Test that CFG is enabled in Rust code.
@@ -4201,6 +4218,12 @@ if (enable_nocompile_tests) {
     ]
     deps = [ ":base" ]
   }
+
+  nocompile_source_set("base_unsafe_buffers_nocompile_tests") {
+    configs = [ "//build/config/compiler:unsafe_buffer_warning" ]
+    sources = [ "unsafe_buffers_nocompile.nc" ]
+    deps = [ ":base" ]
+  }
 }
 
 if (is_android || is_robolectric) {
@@ -4236,6 +4259,7 @@ if (is_android || is_robolectric) {
       "android/java/src/org/chromium/base/SysUtils.java",
       "android/java/src/org/chromium/base/ThreadUtils.java",
       "android/java/src/org/chromium/base/TimezoneUtils.java",
+      "android/java/src/org/chromium/base/Token.java",
       "android/java/src/org/chromium/base/TraceEvent.java",
       "android/java/src/org/chromium/base/UnguessableToken.java",
       "android/java/src/org/chromium/base/jank_tracker/JankMetricUMARecorder.java",
@@ -4397,6 +4421,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/ThreadUtils.java",
       "android/java/src/org/chromium/base/TimeUtils.java",
       "android/java/src/org/chromium/base/TimezoneUtils.java",
+      "android/java/src/org/chromium/base/Token.java",
       "android/java/src/org/chromium/base/TraceEvent.java",
       "android/java/src/org/chromium/base/UnguessableToken.java",
       "android/java/src/org/chromium/base/UnownedUserData.java",
@@ -4590,6 +4615,7 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/ObserverListTest.java",
       "android/javatests/src/org/chromium/base/PackageUtilsTest.java",
       "android/javatests/src/org/chromium/base/StrictModeContextTest.java",
+      "android/javatests/src/org/chromium/base/TokenTest.java",
       "android/javatests/src/org/chromium/base/UserDataHostTest.java",
       "android/javatests/src/org/chromium/base/jank_tracker/JankTrackerTest.java",
       "android/javatests/src/org/chromium/base/library_loader/EarlyNativeTest.java",
@@ -4672,7 +4698,6 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/LoadNative.java",
       "test/android/javatests/src/org/chromium/base/test/MockitoErrorHandler.java",
       "test/android/javatests/src/org/chromium/base/test/ResetCachedFlagValuesTestHook.java",
-      "test/android/javatests/src/org/chromium/base/test/ResettersForTestingTestRule.java",
       "test/android/javatests/src/org/chromium/base/test/ScreenshotOnFailureStatement.java",
       "test/android/javatests/src/org/chromium/base/test/TestListInstrumentationRunListener.java",
       "test/android/javatests/src/org/chromium/base/test/TestTraceEvent.java",
@@ -4795,6 +4820,7 @@ if (is_android) {
       "test/android/junit/src/org/chromium/base/task/test/PausedExecutorTestRule.java",
       "test/android/junit/src/org/chromium/base/task/test/ShadowPostTask.java",
       "test/android/junit/src/org/chromium/base/test/BaseRobolectricAndroidConfigurer.java",
+      "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestListener.java",
       "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestRule.java",
       "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestRunner.java",
       "test/android/junit/src/org/chromium/base/test/ShadowBuildInfo.java",
@@ -4842,6 +4868,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/PromiseTest.java",
       "android/junit/src/org/chromium/base/ResettersForTestingTest.java",
       "android/junit/src/org/chromium/base/TimeUtilsTest.java",
+      "android/junit/src/org/chromium/base/TokenUnitTest.java",
       "android/junit/src/org/chromium/base/TraceEventTest.java",
       "android/junit/src/org/chromium/base/UnownedUserDataHostTest.java",
       "android/junit/src/org/chromium/base/UnownedUserDataKeyTest.java",

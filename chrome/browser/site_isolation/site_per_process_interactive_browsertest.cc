@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -85,12 +85,8 @@ size_t GetNumberOfRenderWidgetHosts() {
 // Waits and polls the current number of RenderWidgetHosts and stops when the
 // number reaches |target_count|.
 void WaitForRenderWidgetHostCount(size_t target_count) {
-  while (GetNumberOfRenderWidgetHosts() != target_count) {
-    base::RunLoop run_loop;
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  EXPECT_TRUE(base::test::RunUntil(
+      [&]() { return GetNumberOfRenderWidgetHosts() == target_count; }));
 }
 
 }  // namespace
@@ -1116,10 +1112,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(child, GetScreenSize());
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(), {.tab_fullscreen = true});
     EXPECT_TRUE(ExecJs(child, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer.Wait();
+    waiter.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -1148,10 +1144,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(child, original_child_size);
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(),
+                                           {.tab_fullscreen = false});
     EXPECT_TRUE(ExecJs(child, "exitFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer.Wait();
+    waiter.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -1211,10 +1208,10 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   std::set<std::string> expected_events = {"main_frame", "child", "grandchild"};
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver fullscreen_observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(), {.tab_fullscreen = true});
     EXPECT_TRUE(ExecJs(grandchild, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    fullscreen_observer.Wait();
+    waiter.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -1238,7 +1235,8 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   AddResizeListener(grandchild, original_grandchild_size);
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver fullscreen_observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(),
+                                           {.tab_fullscreen = false});
     switch (exit_method) {
       case FullscreenExitMethod::JS_CALL:
         EXPECT_TRUE(ExecJs(grandchild, "exitFullscreen()"));
@@ -1251,7 +1249,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
         NOTREACHED();
     }
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    fullscreen_observer.Wait();
+    waiter.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -1368,10 +1366,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // browser finishes the fullscreen transition.
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver fullscreen_observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(), {.tab_fullscreen = true});
     EXPECT_TRUE(ExecJs(c_middle, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    fullscreen_observer.Wait();
+    waiter.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -1405,11 +1403,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(c_middle, c_middle_original_size);
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver fullscreen_observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(),
+                                           {.tab_fullscreen = false});
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
                                                 false, false, false, false));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    fullscreen_observer.Wait();
+    waiter.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -1506,9 +1505,9 @@ class SitePerProcessInteractivePDFTest
     return absl::get<raw_ptr<pdf::TestPdfViewerStreamManager>>(manager_);
   }
 
-  void WaitUntilPdfLoaded() {
+  void WaitUntilPdfLoaded(content::RenderFrameHost* embedder_host) {
     if (UseOopif()) {
-      GetTestPdfViewerStreamManager()->DeprecatedWaitUntilPdfLoaded();
+      GetTestPdfViewerStreamManager()->WaitUntilPdfLoaded(embedder_host);
     } else {
       auto* guest_view =
           GetTestGuestViewManager()->WaitForSingleGuestViewCreated();
@@ -1568,11 +1567,14 @@ IN_PROC_BROWSER_TEST_P(
 
   // Ensure the page finishes loading without crashing.
   EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
+  content::RenderFrameHost* iframe_host =
+      ChildFrameAt(active_web_contents->GetPrimaryMainFrame(), 0);
+  ASSERT_TRUE(iframe_host);
+  content::RenderFrameHost* embedder_host = ChildFrameAt(iframe_host, 0);
+  ASSERT_TRUE(embedder_host);
+  WaitUntilPdfLoaded(embedder_host);
 
-  WaitUntilPdfLoaded();
-
-  content::RenderWidgetHostView* child_view =
-      ChildFrameAt(active_web_contents->GetPrimaryMainFrame(), 0)->GetView();
+  content::RenderWidgetHostView* child_view = iframe_host->GetView();
 
   ContextMenuWaiter menu_waiter;
 
@@ -1624,6 +1626,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInteractivePDFTest,
   content::RenderFrameHost* main_frame =
       embedder_web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* child_text_area = ChildFrameAt(main_frame, 0);
+  content::RenderFrameHost* iframe_pdf = ChildFrameAt(main_frame, 1);
+  ASSERT_TRUE(iframe_pdf);
   ASSERT_TRUE(content::ExecJs(child_text_area, "window.focus();"));
   bool starts_focused =
       content::EvalJs(
@@ -1651,7 +1655,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInteractivePDFTest,
                       embedder_web_contents->GetRenderWidgetHostView()
                           ->GetRenderWidgetHost())
                << ", iframe_text = " << child_text_area
-               << ", iframe_pdf = " << ChildFrameAt(main_frame, 1);
+               << ", iframe_pdf = " << iframe_pdf;
   }
   ASSERT_TRUE(starts_focused);
 
@@ -1661,7 +1665,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInteractivePDFTest,
       content::JsReplace("document.getElementById('iframe2').src = $1;",
                          pdf_url.spec())));
 
-  WaitUntilPdfLoaded();
+  WaitUntilPdfLoaded(iframe_pdf);
 
   // Make sure the text area still has focus.
   ASSERT_TRUE(
@@ -1730,15 +1734,12 @@ void WaitForFramePositionUpdated(content::RenderFrameHost* render_frame_host,
                                  const gfx::Point& sample_point,
                                  const gfx::Point& transformed_point,
                                  float bound) {
-  while ((transformed_point -
-          render_frame_host->GetView()->TransformPointToRootCoordSpace(
-              sample_point))
-             .Length() > bound) {
-    base::RunLoop run_loop;
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  EXPECT_TRUE(base::test::RunUntil([&]() {
+    return (transformed_point -
+            render_frame_host->GetView()->TransformPointToRootCoordSpace(
+                sample_point))
+               .Length() <= bound;
+  }));
 }
 
 // This test verifies that when clicking outside the bounds of a date picker

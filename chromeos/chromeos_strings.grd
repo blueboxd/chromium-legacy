@@ -373,6 +373,11 @@
         Experiment
       </message>
 
+      <!-- Mahi -->
+      <message name="IDS_MAHI_EXPERIMENT_BADGE_ACCESSIBLE_NAME" desc="Accessible name of the badge to indicate that it is an experimental feature." translateable="false">
+        Experimental feature
+      </message>
+
       <!-- Multitask Menu -->
       <message name="IDS_MULTITASK_MENU_HALF_BUTTON_NAME" desc="Title of the half button on the multitask menu." meaning="Splits the associated window into half snapped state.">
         Split
@@ -3142,6 +3147,68 @@
           You can only create wallpapers with AI for personal and non-commercial use. When you get wallpaper help, text is sent to Google AI servers to generate wallpaper suggestions, subject to <ph name="BEGIN_LINK_GOOGLE_PRIVACY_POLICY">&lt;a target="_blank" href="https://policies.google.com/privacy"&gt;</ph>Google's Privacy Policy<ph name="END_LINK_GOOGLE_PRIVACY_POLICY">&lt;/a&gt;</ph>. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="https://support.google.com/chromebook?p=copyeditor"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
         </message>
 
+        <!-- Sea Pen Templates -->
+        <message name="IDS_SEA_PEN_TEMPLATE_TITLE_FLOWER" desc="Title of the image generation template IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          Airbrushed
+        </message>
+        <message name="IDS_SEA_PEN_TEMPLATE_FLOWER" desc="Template used to generate an image of a flower. Users can select the variables from a drop-down menu.">
+          A radiant <ph name="FLOWER_COLOR">$1<ex>pink</ex></ph> <ph name="FLOWER_TYPE">$2<ex>garden rose</ex></ph> in bloom
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_ROSE" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          garden rose
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_CALLA_LILY" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          calla lily
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_WINDFLOWER" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          windflower
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_TULIP" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          tulip
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_LILY_OF_THE_VALLEY" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          lily of the valley
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_BIRD_OF_PARADISE" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          bird of paradise
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_ORCHID" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          orchid
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_RANUNCULUS" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          ranunculus
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_DAISY" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          daisy
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_TYPE_HYDRANGEA" desc="Option to fill in the FLOWER_TYPE placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          hydrangea
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_COLOR_PINK" desc="Option to fill in the FLOWER_COLOR placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          pink
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_COLOR_PURPLE" desc="Option to fill in the FLOWER_COLOR placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          light purple
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_COLOR_BLUE" desc="Option to fill in the FLOWER_COLOR placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          light blue
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_COLOR_WHITE" desc="Option to fill in the FLOWER_COLOR placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          white
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_COLOR_CORAL" desc="Option to fill in the FLOWER_COLOR placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          coral
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_COLOR_YELLOW" desc="Option to fill in the FLOWER_COLOR placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          pastel yellow
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_COLOR_GREEN" desc="Option to fill in the FLOWER_COLOR placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          light green
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_FLOWER_COLOR_RED" desc="Option to fill in the FLOWER_COLOR placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
+          dark red
+        </message>
+
         <!-- Traffic Counters UI -->
         <message name="IDS_TRAFFIC_COUNTERS_UNKNOWN" desc="Traffic counters related to an unknown source">
           Unknown
@@ -4022,6 +4089,9 @@
         <message name="IDS_FIRMWARE_CONFIRMATION_DISCLAIMER_TEXT" desc="Information text to users that the chosen update comes from the device manufacturer and hasn't been verified by Google." translateable="false">
           This update is provided by the external device manufacturer and hasn't been verified by Google.
         </message>
+        <message name="IDS_FIRMWARE_CONFIRMATION_DISCLAIMER_ICON_ARIA_LABEL" desc="The alt-text read by the screen reader when the warning disclaimer is selected." translateable="false">
+          Warning
+        </message>
         <message name="IDS_FIRMWARE_REQUEST_ID_REMOVE_REPLUG" desc="Request shown to the user during an update, requesting that the device USB cable be unplugged and reinserted." translateable="false">
           The update will continue when the device USB cable has been unplugged and then re-inserted.
         </message>
@@ -4294,7 +4364,7 @@
           Shortcut is being used for "<ph name="CONFLICT_ACCEL_NAME">$1<ex>BRIGHTNESS_UP</ex></ph>". Press a new shortcut.
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SHORTCUT_WITH_CONFILICT_STATUS_MESSAGE" desc="The status message that displays when user clicks button to override an accelerator">
-          Shortcut is being used for "<ph name="CONFLICT_ACCEL_NAME">$1<ex>BRIGHTNESS_UP</ex></ph>". Press a new shortcut. To replace the original shortcut, press this shortcut again.
+          Shortcut is being used for "<ph name="CONFLICT_ACCEL_NAME">$1<ex>BRIGHTNESS_UP</ex></ph>". Press a new shortcut. To replace the existing shortcut, press this shortcut again.
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_MAX_ACCELERATORS_REACHED_HINT" desc="The hint message that displays when there are five accelerators in the dialog">
           You can only customize 5 shortcuts. Delete a shortcut to add a new one.
@@ -4329,6 +4399,12 @@
             desc="The status message that displays when user press a key combination
             that includes a reserved key.">
           Shortcut not available. Press a new shortcut without <ph name="key">$1<ex>CapsLock</ex></ph>.
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_NON_STANDARD_KEY_WITH_SEARCH_MODIFIER"
+            desc="The status message that displays when user press a key combination
+            that includes a non-standard 101 key and the search modifier."
+            translateable="false">
+          <ph name="key">$1<ex>Volume Up</ex></ph> is not available with the <ph name="meta_key">$2<ex>search</ex></ph> key. Press a new shortcut.
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_NON_SEARCH_SHORTCUT_WARNING"
             desc="The status (warning) message that displays when user attempts to input a shortcut that does not include the search/launcher key.">
@@ -4841,6 +4917,9 @@
         <message name="IDS_INPUT_OVERLAY_EDITING_DONE_BUTTON_LABEL" desc="The title of buttons in the Game Controls menu indicating to save and close either the main or editor menu." translateable="false">
           Done
         </message>
+        <message name="IDS_INPUT_OVERLAY_BUTTON_OPTIONS_ACTION_EDIT_BUTTON_A11Y_LABEL" desc="Action edit button a11y label for button options menu. Spoken by screen readers when the list item button gets focus but not visually rendered." translateable="false">
+          Tap on the button to focus on the label
+        </message>
         <message name="IDS_INPUT_OVERLAY_EDITING_LIST_FIRST_CONTROL_LABEL" desc="The label to the left of the '+' button in the row below the title in the Game Controls editor menu without having created any buttons." translateable="false">
           Assign first control
         </message>
@@ -4861,6 +4940,18 @@
         </message>
         <message name="IDS_INPUT_OVERLAY_EDITING_LIST_DONE_BUTTON_A11Y_LABEL" desc="Done button a11y label. Spoken by screen readers when the list item button gets focus but not visually rendered." translateable="false">
           Done editing
+        </message>
+        <message name="IDS_INPUT_OVERLAY_EDITING_LIST_ITEM_BUTTON_A11Y_TEMPLATE" desc="List item button a11y label for editing list when including one single edit label. Spoken by screen readers when the list item button gets focus but not visually rendered." translateable="false">
+          Selected key is <ph name="KEYS">$1<ex>w</ex></ph>. Tap on the button to edit the control
+        </message>
+        <message name="IDS_INPUT_OVERLAY_EDITING_LIST_ITEM_BUTTON_A11Y_PLURAL_TEMPLATE" desc="List item button a11y label for editing list when including more than one edit label. Spoken by screen readers when list item button gets focus but not visually rendered." translateable="false">
+          Selected key are <ph name="KEYS">$1<ex>w, a, s, d</ex></ph>. Tap on the button to edit the control
+        </message>
+        <message name="IDS_INPUT_OVERLAY_SHORTCUT_EDIT_A11Y_LABEL_TEMPLATE" desc="Edit button a11y label for delete-edit shortcut menu. Spoken by screen readers when the list item button gets focus but not visually rendered." translateable="false">
+          Edit <ph name="ACTION_NAME">$1<ex>Button w</ex></ph>
+        </message>
+        <message name="IDS_INPUT_OVERLAY_SHORTCUT_DELETE_A11Y_LABEL_TEMPLATE" desc="Delete button a11y label for delete-edit shortcut menu. Spoken by screen readers when the list item button gets focus but not visually rendered." translateable="false">
+          Delete <ph name="ACTION_NAME">$1<ex>Button w</ex></ph>
         </message>
         <!-- End of Arc Input Overlay -->
       </if>

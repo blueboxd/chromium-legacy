@@ -354,7 +354,7 @@ public class WebsitePermissionsFetcherTest {
         CallbackHelper helper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    BrowsingDataBridge.getInstance()
+                    BrowsingDataBridge.getForProfile(Profile.getLastUsedRegularProfile())
                             .clearBrowsingData(
                                     helper::notifyCalled,
                                     new int[] {BrowsingDataType.SITE_SETTINGS},
@@ -576,7 +576,6 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT)
     public void testFetchAllPreferencesForSingleOrigin() {
         WebsitePermissionsFetcher fetcher =
                 new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
@@ -600,13 +599,6 @@ public class WebsitePermissionsFetcherTest {
         websitePreferenceBridge.addPermissionInfo(
                 new PermissionInfo(
                         ContentSettingsType.GEOLOCATION,
-                        ORIGIN,
-                        SITE_WILDCARD,
-                        /* isEmbargoed= */ false,
-                        SessionModel.DURABLE));
-        websitePreferenceBridge.addPermissionInfo(
-                new PermissionInfo(
-                        ContentSettingsType.MIDI,
                         ORIGIN,
                         SITE_WILDCARD,
                         /* isEmbargoed= */ false,
@@ -679,7 +671,7 @@ public class WebsitePermissionsFetcherTest {
         // If the ContentSettingsType.NUM_TYPES value changes *and* a new value has been exposed on
         // Android, then please update this code block to include a test for your new type.
         // Otherwise, just update count in the assert.
-        assertEquals(100, ContentSettingsType.NUM_TYPES);
+        assertEquals(101, ContentSettingsType.NUM_TYPES);
         websitePreferenceBridge.addContentSettingException(
                 new ContentSettingException(
                         ContentSettingsType.COOKIES,
@@ -815,7 +807,6 @@ public class WebsitePermissionsFetcherTest {
                     Assert.assertNotNull(site.getPermissionInfo(ContentSettingsType.GEOLOCATION));
                     Assert.assertNotNull(
                             site.getPermissionInfo(ContentSettingsType.IDLE_DETECTION));
-                    Assert.assertNotNull(site.getPermissionInfo(ContentSettingsType.MIDI));
                     Assert.assertNotNull(site.getPermissionInfo(ContentSettingsType.MIDI_SYSEX));
                     Assert.assertNotNull(
                             site.getPermissionInfo(ContentSettingsType.PROTECTED_MEDIA_IDENTIFIER));

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "chrome/browser/ip_protection/ip_protection_config_http.h"
 
+#include <string_view>
+
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -19,6 +21,12 @@
 #include "services/network/public/mojom/url_response_head.mojom-shared.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+constexpr std::string_view kGoogApiKeyHeader = "X-Goog-Api-Key";
+
+}  // namespace
 
 class IpProtectionConfigHttpTest : public testing::Test {
  protected:
@@ -177,8 +185,6 @@ TEST_F(IpProtectionConfigHttpTest, DoRequestHttpFailureStatus) {
 
 TEST_F(IpProtectionConfigHttpTest, GetProxyConfigSuccess) {
   ip_protection::GetProxyConfigResponse response_proto;
-  response_proto.add_first_hop_hostnames("host1");
-  response_proto.add_first_hop_hostnames("host2");
 
   ip_protection::GetProxyConfigResponse_ProxyChain* proxyChain =
       response_proto.add_proxy_chain();
@@ -186,10 +192,20 @@ TEST_F(IpProtectionConfigHttpTest, GetProxyConfigSuccess) {
   proxyChain->set_proxy_b("proxyB");
   std::string response_str = response_proto.SerializeAsString();
 
-  auto head = network::mojom::URLResponseHead::New();
-  test_url_loader_factory_.AddResponse(
-      token_server_get_proxy_config_url_, std::move(head), response_str,
-      network::URLLoaderCompletionStatus(net::OK));
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        ASSERT_TRUE(request.url.is_valid());
+        ASSERT_EQ(request.url, token_server_get_proxy_config_url_);
+
+        EXPECT_FALSE(
+            request.headers.HasHeader(net::HttpRequestHeaders::kAuthorization));
+        EXPECT_TRUE(request.headers.HasHeader(kGoogApiKeyHeader));
+
+        auto head = network::mojom::URLResponseHead::New();
+        test_url_loader_factory_.AddResponse(
+            token_server_get_proxy_config_url_, std::move(head), response_str,
+            network::URLLoaderCompletionStatus(net::OK));
+      }));
 
   base::test::TestFuture<absl::StatusOr<ip_protection::GetProxyConfigResponse>>
       result_future;
@@ -200,17 +216,12 @@ TEST_F(IpProtectionConfigHttpTest, GetProxyConfigSuccess) {
       result_future.Get();
 
   ASSERT_TRUE(result.ok());
-  EXPECT_EQ(2, result->first_hop_hostnames_size());
-  EXPECT_EQ("host1", result->first_hop_hostnames(0));
-  EXPECT_EQ("host2", result->first_hop_hostnames(1));
   EXPECT_EQ("proxyA", result->proxy_chain().at(0).proxy_a());
   EXPECT_EQ("proxyB", result->proxy_chain().at(0).proxy_b());
 }
 
 TEST_F(IpProtectionConfigHttpTest, GetProxyConfigSuccessWithOAuthToken) {
   ip_protection::GetProxyConfigResponse response_proto;
-  response_proto.add_first_hop_hostnames("host1");
-  response_proto.add_first_hop_hostnames("host2");
   std::string oauth_token = "token";
 
   ip_protection::GetProxyConfigResponse_ProxyChain* proxyChain =
@@ -219,10 +230,20 @@ TEST_F(IpProtectionConfigHttpTest, GetProxyConfigSuccessWithOAuthToken) {
   proxyChain->set_proxy_b("proxyB");
   std::string response_str = response_proto.SerializeAsString();
 
-  auto head = network::mojom::URLResponseHead::New();
-  test_url_loader_factory_.AddResponse(
-      token_server_get_proxy_config_url_, std::move(head), response_str,
-      network::URLLoaderCompletionStatus(net::OK));
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        ASSERT_TRUE(request.url.is_valid());
+        ASSERT_EQ(request.url, token_server_get_proxy_config_url_);
+
+        EXPECT_TRUE(
+            request.headers.HasHeader(net::HttpRequestHeaders::kAuthorization));
+        EXPECT_FALSE(request.headers.HasHeader(kGoogApiKeyHeader));
+
+        auto head = network::mojom::URLResponseHead::New();
+        test_url_loader_factory_.AddResponse(
+            token_server_get_proxy_config_url_, std::move(head), response_str,
+            network::URLLoaderCompletionStatus(net::OK));
+      }));
 
   base::test::TestFuture<absl::StatusOr<ip_protection::GetProxyConfigResponse>>
       result_future;
@@ -233,9 +254,6 @@ TEST_F(IpProtectionConfigHttpTest, GetProxyConfigSuccessWithOAuthToken) {
       result_future.Get();
 
   ASSERT_TRUE(result.ok());
-  EXPECT_EQ(2, result->first_hop_hostnames_size());
-  EXPECT_EQ("host1", result->first_hop_hostnames(0));
-  EXPECT_EQ("host2", result->first_hop_hostnames(1));
   EXPECT_EQ("proxyA", result->proxy_chain().at(0).proxy_a());
   EXPECT_EQ("proxyB", result->proxy_chain().at(0).proxy_b());
 }
@@ -258,7 +276,6 @@ TEST_F(IpProtectionConfigHttpTest, GetProxyConfigEmpty) {
       result_future.Get();
 
   ASSERT_TRUE(result.ok());
-  EXPECT_EQ(0, result->first_hop_hostnames_size());
   EXPECT_EQ(0, result->proxy_chain_size());
 }
 

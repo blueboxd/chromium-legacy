@@ -19174,6 +19174,11 @@ INSTANTIATE_TEST_SUITE_P(
     AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
     ::testing::Bool());
 
+// Enable kBiddingAndScoringDebugReportingAPI, and kFledgeSampleDebugReports.
+// kFledgeEnableFilteringDebugReportStartingFrom is set to non-zero to enable
+// filtering debug reports, but set to a very short time delta (100 ms since
+// windows epoch) to guarantee lockout and cooldowns are after it and are not
+// ignored.
 class AuctionRunnerSampleDebugReportsEnabledTest : public AuctionRunnerTest {
  public:
   AuctionRunnerSampleDebugReportsEnabledTest() {
@@ -19184,9 +19189,8 @@ class AuctionRunnerSampleDebugReportsEnabledTest : public AuctionRunnerTest {
         {{blink::features::kBiddingAndScoringDebugReportingAPI, {}},
          {blink::features::kFledgeSampleDebugReports,
           {{"fledge_debug_report_sampling_random_max", "1"},
-           {"fledge_debug_report_sampling_restricted_cooldown_random_max",
-            "1"}}},
-         {blink::features::kFledgeDebugReportFilterAfterSampling, {}}},
+           {"fledge_debug_report_sampling_restricted_cooldown_random_max", "1"},
+           {"fledge_enable_filtering_debug_report_starting_from", "100ms"}}}},
         {});
   }
 
@@ -19268,7 +19272,8 @@ TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
   EXPECT_EQ(0u, result_.debug_loss_report_urls.size());
-  // All debug win reports are dropped, due to the browser is under lockout.
+  // All debug win reports are dropped even though buyer and seller are not in
+  // cooldown, because the browser is under lockout.
   EXPECT_EQ(0u, result_.debug_win_report_urls.size());
 }
 
@@ -19281,8 +19286,8 @@ TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
       {{blink::features::kBiddingAndScoringDebugReportingAPI, {}},
        {blink::features::kFledgeSampleDebugReports,
         {{"fledge_debug_report_sampling_random_max", "0"},
-         {"fledge_debug_report_sampling_restricted_cooldown_random_max", "1"}}},
-       {blink::features::kFledgeDebugReportFilterAfterSampling, {}}},
+         {"fledge_debug_report_sampling_restricted_cooldown_random_max", "1"},
+         {"fledge_enable_filtering_debug_report_starting_from", "100ms"}}}},
       {});
   auction_worklet::AddJavascriptResponse(
       &url_loader_factory_, kBidder1Url,
@@ -19293,7 +19298,7 @@ TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
 
   std::vector<StorageInterestGroup> bidders;
   bidders.emplace_back(MakeInterestGroup(
-      kBidder1, kBidder1Name, kBidder1Url,
+      kBidder1, kBidderNameDebugReportShortCooldown, kBidder1Url,
       /*trusted_bidding_signals_url=*/std::nullopt,
       /*trusted_bidding_signals_keys=*/{}, GURL("https://ad1.com")));
 
@@ -19301,10 +19306,9 @@ TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
   EXPECT_EQ(0u, result_.debug_loss_report_urls.size());
-  // Only have debug win reports from bidder, since seller is under cooldown.
-  EXPECT_THAT(
-      result_.debug_win_report_urls,
-      testing::UnorderedElementsAre("https://bidder-debug-win-reporting.com/"));
+  // All debug win reports are dropped, because both buyer and seller are under
+  // cooldown.
+  EXPECT_THAT(result_.debug_win_report_urls, testing::UnorderedElementsAre());
 }
 
 // Sellers are under cooldown, and the bidder is not. Tests both
@@ -19423,8 +19427,8 @@ TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
       {{blink::features::kBiddingAndScoringDebugReportingAPI, {}},
        {blink::features::kFledgeSampleDebugReports,
         {{"fledge_debug_report_sampling_random_max", "0"},
-         {"fledge_debug_report_sampling_restricted_cooldown_random_max", "1"}}},
-       {blink::features::kFledgeDebugReportFilterAfterSampling, {}}},
+         {"fledge_debug_report_sampling_restricted_cooldown_random_max", "1"},
+         {"fledge_enable_filtering_debug_report_starting_from", "100ms"}}}},
       {});
   auction_worklet::AddJavascriptResponse(
       &url_loader_factory_, kBidder1Url,
@@ -19466,19 +19470,139 @@ TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
                     result_.debug_loss_report_urls.size());
 }
 
-// Similar to `DropDebugReportsIfInCooldownOrLockout()`, but with flag
-// kFledgeDebugReportFilterAfterSampling disabled.
+// Similar to `CooldownOrLockoutShouldBeUpdatedDuringAuction()`, except cooldown
+// and lockout lengths are set to zero. Should not set cooldowns or lockout in
+// this case.
 TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
-       InCooldownOrLockoutWhenDoFilterDisabled) {
+       NoCooldownOrLockoutWhenLengthIsZero) {
   base::test::ScopedFeatureList feature_list;
+  // Give it 100% chance to allow a debug report if not under cooldown or
+  // lockout. Set all cooldown and lockout lengths to zero.
   feature_list.InitWithFeaturesAndParameters(
       {{blink::features::kBiddingAndScoringDebugReportingAPI, {}},
        {blink::features::kFledgeSampleDebugReports,
-        {{"fledge_debug_report_sampling_random_max", "1"},
-         {"fledge_debug_report_sampling_restricted_cooldown_random_max",
-          "1"}}}},
-      /*disabled_features=*/{
-          blink::features::kFledgeDebugReportFilterAfterSampling});
+        {{"fledge_debug_report_sampling_random_max", "0"},
+         {"fledge_debug_report_sampling_restricted_cooldown_random_max", "1"},
+         {"fledge_debug_report_lockout", "0ms"},
+         {"fledge_debug_report_restricted_cooldown", "0ms"},
+         {"fledge_debug_report_short_cooldown", "0ms"},
+         {"fledge_enable_filtering_debug_report_starting_from", "100ms"}}}},
+      {});
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kBidder1Url,
+      MakeBidScript(kSeller, "1", "https://ad1.com/", /*num_ad_components=*/0,
+                    kBidder1, kBidder1Name,
+                    /*has_signals=*/false, "k1", "a",
+                    /*report_post_auction_signals=*/false,
+                    kBidder1DebugLossReportUrl, kBidder1DebugWinReportUrl));
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kBidder2Url,
+      MakeBidScript(kSeller, "2", "https://ad2.com/", /*num_ad_components=*/0,
+                    kBidder2, kBidder2Name,
+                    /*has_signals=*/false, "l2", "b",
+                    /*report_post_auction_signals=*/false,
+                    kBidder2DebugLossReportUrl, kBidder2DebugWinReportUrl));
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kSellerUrl,
+      MakeAuctionScript(/*report_post_auction_signals=*/false, kSellerUrl,
+                        kSellerDebugLossReportBaseUrl,
+                        kSellerDebugWinReportBaseUrl));
+
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(kBidder1, kBidder1Name, kBidder1Url,
+                                         std::nullopt, {"k1", "k2"},
+                                         GURL("https://ad1.com")));
+  bidders.emplace_back(MakeInterestGroup(kBidder2, kBidder2Name, kBidder2Url,
+                                         std::nullopt, {"l1", "l2"},
+                                         GURL("https://ad2.com")));
+
+  RunAuctionAndWait(kSellerUrl, std::move(bidders));
+  EXPECT_THAT(result_.errors, testing::ElementsAre());
+
+  // Bidder 2 won the auction.
+  EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
+  // All debug reports should be allowed to be sent, since cooldown and lockout
+  // lengths are all zero thus no colldown/lockout are set after sampling.
+  EXPECT_EQ(4u, result_.debug_win_report_urls.size() +
+                    result_.debug_loss_report_urls.size());
+}
+
+// When kFledgeEnableFilteringDebugReportStartingFrom is set to a future time,
+// later than lockout's collect time and current auction's run time, no debug
+// reports should be dropped.
+TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
+       EnableFilteringInFutureTime) {
+  base::test::ScopedFeatureList feature_list;
+  // Give it 100% chance to allow a debug report if not under cooldown or
+  // lockout.
+  feature_list.InitWithFeaturesAndParameters(
+      {{blink::features::kBiddingAndScoringDebugReportingAPI, {}},
+       {blink::features::kFledgeSampleDebugReports,
+        {{"fledge_debug_report_sampling_random_max", "0"},
+         {"fledge_debug_report_sampling_restricted_cooldown_random_max", "1"},
+         {"fledge_enable_filtering_debug_report_starting_from",
+          base::StrCat({base::NumberToString(base::Time::Max()
+                                                 .ToDeltaSinceWindowsEpoch()
+                                                 .InMilliseconds()),
+                        "ms"})}}}},
+      {});
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kBidder1Url,
+      MakeBidScriptWithForDebuggingOnlyInCooldownOrLockout());
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kSellerUrlDebugReportLockout,
+      MakeAuctionScriptWithForDebuggingOnlyInCooldownOrLockout());
+
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, kBidderNameDebugReportShortCooldown, kBidder1Url,
+      /*trusted_bidding_signals_url=*/std::nullopt,
+      /*trusted_bidding_signals_keys=*/{}, GURL("https://ad1.com")));
+
+  RunAuctionAndWait(kSellerUrlDebugReportLockout, std::move(bidders));
+  EXPECT_THAT(result_.errors, testing::ElementsAre());
+  EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
+
+  // Check that browserSignals.forDebuggingOnlyInCooldownOrLockout are
+  // false since lockout and cooldowns are before the filtering enable time
+  // and are ignored.
+  EXPECT_THAT(result_.report_urls,
+              testing::UnorderedElementsAre(
+                  "https://buyer-reporting.com/"
+                  "?forDebuggingOnlyInCooldownOrLockout=false",
+                  "https://seller-reporting.com/"
+                  "?forDebuggingOnlyInCooldownOrLockout=false"));
+  EXPECT_EQ(0u, result_.debug_loss_report_urls.size());
+  // The first sampled debug report should be allowed to be sent since lockout
+  // and cooldowns are before kFledgeEnableFilteringDebugReportStartingFrom so
+  // should be ignored. The next debug report should be allowed as well since
+  // the new lockout is also before
+  // kFledgeEnableFilteringDebugReportStartingFrom so should be ignored as well.
+  EXPECT_EQ(2u, result_.debug_win_report_urls.size() +
+                    result_.debug_loss_report_urls.size());
+}
+
+// Similar to `AuctionRunnerSampleDebugReportsEnabledTest`, but disabling
+// filtering debug reports by setting
+// kFledgeEnableFilteringDebugReportStartingFrom to 0 ms.
+class AuctionRunnerFilterDebugReportsDisabledTest : public AuctionRunnerTest {
+ public:
+  AuctionRunnerFilterDebugReportsDisabledTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kBiddingAndScoringDebugReportingAPI, {}},
+         {blink::features::kFledgeSampleDebugReports,
+          {{"fledge_debug_report_sampling_random_max", "1"},
+           {"fledge_debug_report_sampling_restricted_cooldown_random_max", "1"},
+           {"fledge_enable_filtering_debug_report_starting_from", "0ms"}}}},
+        {});
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(AuctionRunnerFilterDebugReportsDisabledTest,
+       NoDebugReportsDroppedWhenDoFilterDisabled) {
   auction_worklet::AddJavascriptResponse(
       &url_loader_factory_, kBidder1Url,
       MakeBidScriptWithForDebuggingOnlyInCooldownOrLockout());
@@ -19497,21 +19621,22 @@ TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
   EXPECT_EQ(0u, result_.debug_loss_report_urls.size());
   // No debug reports are dropped although under lockout or cooldown, when
-  // flag kFledgeDebugReportFilterAfterSampling is disabled.
+  // filtering debug reports is disabled.
   EXPECT_EQ(2u, result_.debug_win_report_urls.size());
 }
 
-TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
-       SampleDebugReportsDoFilterDisabled) {
+TEST_F(AuctionRunnerFilterDebugReportsDisabledTest,
+       SampleDebugReportsWhenDoFilterDisabled) {
   base::test::ScopedFeatureList feature_list;
+  // Give it 100% chance to allow a debug report if not under cooldown or
+  // lockout, so that it will be locked out after the first debug report.
   feature_list.InitWithFeaturesAndParameters(
       {{blink::features::kBiddingAndScoringDebugReportingAPI, {}},
        {blink::features::kFledgeSampleDebugReports,
         {{"fledge_debug_report_sampling_random_max", "0"},
-         {"fledge_debug_report_sampling_restricted_cooldown_random_max",
-          "0"}}}},
-      /*disabled_features=*/{
-          blink::features::kFledgeDebugReportFilterAfterSampling});
+         {"fledge_debug_report_sampling_restricted_cooldown_random_max", "1"},
+         {"fledge_enable_filtering_debug_report_starting_from", "0ms"}}}},
+      {});
   auction_worklet::AddJavascriptResponse(
       &url_loader_factory_, kBidder1Url,
       MakeBidScript(kSeller, "1", "https://ad1.com/", /*num_ad_components=*/0,
@@ -19533,8 +19658,7 @@ TEST_F(AuctionRunnerSampleDebugReportsEnabledTest,
   RunAuctionAndWait(kSellerUrl, std::move(bidders));
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
-  // No debug reports are dropped, since kFledgeDebugReportFilterAfterSampling
-  // is disabled.
+  // No debug reports are dropped, since filtering debug reports is disabled.
   EXPECT_THAT(result_.debug_win_report_urls,
               testing::UnorderedElementsAre(
                   kBidder1DebugWinReportUrl,

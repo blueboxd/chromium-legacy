@@ -23,6 +23,9 @@ class FlexLayoutView;
 }
 
 namespace ash {
+
+class TimestampView;
+
 class ASH_EXPORT ConversationNotificationView
     : public message_center::MessageView {
  public:
@@ -56,18 +59,29 @@ class ASH_EXPORT ConversationNotificationView
       const message_center::Notification& notification) override;
   message_center::NotificationControlButtonsView* GetControlButtonsView()
       const override;
+  void ToggleInlineSettings(const ui::Event& event) override;
 
  private:
+  friend class ConversationNotificationViewTest;
+
   std::unique_ptr<views::FlexLayoutView> CreateMainContainer(
       const message_center::Notification& notification);
-  std::unique_ptr<views::FlexLayoutView> CreateNotificationControlButtonsView();
+  std::unique_ptr<views::FlexLayoutView> CreateRightControlsContainer();
+  std::unique_ptr<views::FlexLayoutView> CreateTextContainer(
+      const message_center::Notification& notification);
+  std::unique_ptr<views::FlexLayoutView> CreateTitleRow(
+      const message_center::Notification& notification);
 
   // Whether this notification is expanded or not.
   bool expanded_ = true;
 
-  raw_ptr<views::View> conversations_container_;
-  raw_ptr<views::View> collapsed_preview_container_;
-  raw_ptr<message_center::NotificationControlButtonsView> control_buttons_view_;
+  raw_ptr<views::View> conversations_container_ = nullptr;
+  raw_ptr<views::View> collapsed_preview_container_ = nullptr;
+  raw_ptr<message_center::NotificationControlButtonsView>
+      control_buttons_view_ = nullptr;
+  raw_ptr<views::View> inline_settings_view_ = nullptr;
+  raw_ptr<views::View> right_controls_container_ = nullptr;
+  raw_ptr<TimestampView> timestamp_ = nullptr;
 };
 }  // namespace ash
 

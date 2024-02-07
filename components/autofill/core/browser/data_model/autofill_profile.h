@@ -179,11 +179,6 @@ class AutofillProfile : public AutofillDataModel {
   bool MergeDataFrom(const AutofillProfile& profile,
                      const std::string& app_locale);
 
-  // Saves info from |profile| into |this|, provided |this| and |profile| do not
-  // have any direct conflicts (i.e. data is present but different).
-  void SaveAdditionalInfo(const AutofillProfile& profile,
-                          const std::string& app_locale);
-
   // Creates a differentiating label for each of the |profiles|.
   // Labels consist of the minimal differentiating combination of:
   // 1. Full name.
@@ -255,7 +250,7 @@ class AutofillProfile : public AutofillDataModel {
   // Returns true if the profile contains any structured data. This can be any
   // name type but the full name, or for addresses, the street name or house
   // number.
-  bool HasStructuredData();
+  bool HasStructuredData() const;
 
   // Returns a constant reference to the |name_| field.
   const NameInfo& GetNameInfo() const { return name_; }

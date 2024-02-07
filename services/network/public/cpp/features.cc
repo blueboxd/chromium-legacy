@@ -140,7 +140,7 @@ BASE_FEATURE(kMdnsResponderGeneratedNameListing,
 // Implementing ORB in Chromium is tracked in https://crbug.com/1178928
 BASE_FEATURE(kOpaqueResponseBlockingV02,
              "OpaqueResponseBlockingV02",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Treat ORB blocked responses to script-initiated fetches as errors too.
 // Complements ORB v0.2, which exempts script-initiated fetches.
@@ -403,7 +403,7 @@ const base::FeatureParam<CompressionDictionaryTransportBackendVersion>
     kCompressionDictionaryTransportBackendVersion{
         &kCompressionDictionaryTransportBackend,
         "CompressionDictionaryTransportBackendVersion",
-        CompressionDictionaryTransportBackendVersion::kV1,
+        CompressionDictionaryTransportBackendVersion::kV2,
         &kCompressionDictionaryTransportBackendVersionOptions};
 
 // When both this feature and the kCompressionDictionaryTransportBackend feature

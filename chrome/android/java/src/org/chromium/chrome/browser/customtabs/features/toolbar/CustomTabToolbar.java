@@ -61,6 +61,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
+import org.chromium.chrome.browser.customtabs.CustomTabFeatureOverridesManager;
 import org.chromium.chrome.browser.customtabs.features.branding.ToolbarBrandingDelegate;
 import org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.CustomTabMinimizeDelegate;
 import org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedFeatureUtils;
@@ -144,6 +145,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     private @Nullable CustomTabCaptureStateToken mLastCustomTabCaptureStateToken;
     private ObserverList<Callback<Integer>> mContainerVisibilityChangeObserverList =
             new ObserverList<>();
+    private @Nullable CustomTabFeatureOverridesManager mFeatureOverridesManager;
 
     // Whether the maximization button should be shown when it can. Set to {@code true}
     // while the side sheet is running with the maximize button option on.
@@ -232,7 +234,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         mMenuButton = findViewById(R.id.menu_button_wrapper);
 
         mLocationBar.onFinishInflate(this);
-        maybeInitMinimizeButton();
+
+        if (!ChromeFeatureList.sCctIntentFeatureOverrides.isEnabled()) {
+            maybeInitMinimizeButton();
+        }
 
         // Set hover tooltip texts for toolbar buttons.
         super.setTooltipTextForToolbarButtons();
@@ -357,6 +362,12 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         setMaximizeButtonVisibility();
     }
 
+    public void setFeatureOverridesManager(CustomTabFeatureOverridesManager manager) {
+        mFeatureOverridesManager = manager;
+
+        maybeInitMinimizeButton();
+    }
+
     /**
      * Sets the {@link CustomTabMinimizeDelegate} to allow the toolbar to minimize the tab.
      *
@@ -437,7 +448,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
     @VisibleForTesting
     void maybeInitMinimizeButton() {
-        if (!MinimizedFeatureUtils.isMinimizedCustomTabAvailable(getContext())) return;
+        if (!MinimizedFeatureUtils.isMinimizedCustomTabAvailable(
+                getContext(), mFeatureOverridesManager)) {
+            return;
+        }
 
         ViewStub minimizeButtonStub = findViewById(R.id.minimize_button_stub);
         minimizeButtonStub.inflate();
@@ -628,7 +642,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             closeMinButton.removeView(minButton);
         }
 
-        if (MinimizedFeatureUtils.isMinimizedCustomTabAvailable(getContext())
+        if (MinimizedFeatureUtils.isMinimizedCustomTabAvailable(
+                        getContext(), mFeatureOverridesManager)
                 && minButton != null) {
             closeMinButton.addView(minButton);
         }
@@ -656,7 +671,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
         FrameLayout.LayoutParams actionButtonsLayoutParams =
                 (FrameLayout.LayoutParams) mCustomActionButtons.getLayoutParams();
-        if (MinimizedFeatureUtils.isMinimizedCustomTabAvailable(getContext())) {
+        if (MinimizedFeatureUtils.isMinimizedCustomTabAvailable(
+                getContext(), mFeatureOverridesManager)) {
             actionButtonsLayoutParams.setMarginEnd(
                     mMinimizeButton == null || mMinimizeButton.getVisibility() == View.GONE
                             ? buttonWidth
@@ -1643,18 +1659,28 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                     mState = STATE_DOMAIN_AND_TITLE;
                 }
                 mAnimDelegate.prepareTitleAnim(mUrlBar, mTitleBar);
+                setUrlBarVisuals(Gravity.BOTTOM, 0, R.dimen.custom_tabs_url_text_size);
             } else {
                 mState = STATE_DOMAIN_ONLY;
                 mTitleBar.setVisibility(View.GONE);
 
-                // URL bar height should be as big as the touch target size. Update its minHeight
-                // and center it vertically.
-                var params = (FrameLayout.LayoutParams) mUrlBar.getLayoutParams();
-                params.gravity = Gravity.CENTER_VERTICAL;
-                mUrlBar.setLayoutParams(params);
-                mUrlBar.setMinimumHeight(mTouchTargetSize);
+                // URL bar height should be as big as the touch target size when shown alone.
+                // Update its minHeight and center it vertically.
+                setUrlBarVisuals(
+                        Gravity.CENTER_VERTICAL,
+                        mTouchTargetSize,
+                        R.dimen.custom_tabs_title_text_size);
             }
             mLocationBarModel.notifyTitleChanged();
+        }
+
+        private void setUrlBarVisuals(int gravity, int minHeight, int sizeId) {
+            var params = (FrameLayout.LayoutParams) mUrlBar.getLayoutParams();
+            params.gravity = gravity;
+            mUrlBar.setLayoutParams(params);
+            mUrlBar.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(sizeId));
+            mUrlBar.setMinimumHeight(minHeight);
+            mTitleUrlContainer.setMinimumHeight(0);
         }
 
         @Override

@@ -115,10 +115,7 @@ TabSlider::TabSlider(size_t max_tab_num, const InitParams& params)
 
   Init();
 
-  // Explicitly mark this view as ignored because
-  // `views::kViewIgnoredByLayoutKey` is not supported by `views::TableLayout`.
-  static_cast<views::TableLayout*>(GetLayoutManager())
-      ->SetChildViewIgnoredByLayout(selector_view_, /*ignored=*/true);
+  selector_view_->SetProperty(views::kViewIgnoredByLayoutKey, true);
 
   enabled_changed_subscription_ = AddEnabledChangedCallback(base::BindRepeating(
       &TabSlider::OnEnabledStateChanged, base::Unretained(this)));
@@ -149,7 +146,7 @@ void TabSlider::OnButtonSelected(TabSliderButton* button) {
   selector_view_->MoveToSelectedButton(button);
 }
 
-void TabSlider::Layout() {
+void TabSlider::Layout(PassKey) {
   LayoutSuperclass<views::View>(this);
 
   // Synchronize the selector bounds with selected button's bounds.

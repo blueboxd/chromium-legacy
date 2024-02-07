@@ -159,7 +159,6 @@
 <translation id="1586324912145647027">Перейти к рабочим столам (от 1 до 8)</translation>
 <translation id="158838227375272121">Сайт "Google Класс"</translation>
 <translation id="1589090746204042747">Получать доступ к данным о ваших действиях во время этого сеанса.</translation>
-<translation id="1592682369233288537">Следующий рабочий стол: <ph name="NEXT_DESK_NAME" />. Чтобы его активировать, нажмите Поиск + Пробел.</translation>
 <translation id="1602874809115667351"><ph name="LAUNCHER_KEY_NAME" /> + Стрелка вниз</translation>
 <translation id="1604857178818051494">Приостановить воспроизведение</translation>
 <translation id="1607312127821884567">Не настраивать просмотр приложений с телефона</translation>
@@ -607,9 +606,11 @@
 <translation id="3526440770046466733">Открыть ссылку в новой вкладке, но не переходить на нее</translation>
 <translation id="353086728817903341">Подключенных устройств: <ph name="NUM_DEVICES" /></translation>
 <translation id="3533126039236445965">Приложения на панели запуска</translation>
+<translation id="3537350467437346467">Вы открывали</translation>
 <translation id="3539957339480430241">Точка доступа устройства "<ph name="DEVICE_NAME" />"</translation>
 <translation id="3540893133818942399">Не настраивать просмотр недавних фотографий и медиафайлов с телефона</translation>
 <translation id="3542066395059568317">Следуйте рекомендациям, чтобы продолжить работу с того места, на котором вы остановились. Нажмите на них правой кнопкой мыши, чтобы удалить.</translation>
+<translation id="3547318469722231257">Вы изменили файл</translation>
 <translation id="3552189655002856821">Wi-Fi отключен</translation>
 <translation id="3554215588514239132">Показать или скрыть панель инструментов разработчика</translation>
 <translation id="3554637740840164787">Объект "<ph name="ITEM_TITLE" />" закреплен</translation>
@@ -701,6 +702,7 @@
 <translation id="385300504083504382">В начало</translation>
 <translation id="3859364108019690">Ошибка трансляции приложений</translation>
 <translation id="3861651314799684201">Нажмите Ввод, чтобы записать видео со всего экрана</translation>
+<translation id="3882323608730650973">Файл был изменен</translation>
 <translation id="3886872229787704059">Открыто сегодня</translation>
 <translation id="3891340733213178823">Чтобы выйти, дважды нажмите Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (голосовое сопровождение)</translation>
@@ -869,7 +871,6 @@
 <translation id="4491109536499578614">Изображение</translation>
 <translation id="450584155212756404">Версия для разработчиков</translation>
 <translation id="4513946894732546136">Отзыв</translation>
-<translation id="4516212064498225455">Текущий рабочий стол: <ph name="CURRENT_DESK_NAME" />. Чтобы открыть меню всех рабочих столов, нажмите Поиск + Пробел.</translation>
 <translation id="4518404433291145981">Чтобы разблокировать Chromebook, сначала разблокируйте телефон.</translation>
 <translation id="4527045527269911712">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth.</translation>
 <translation id="4533343294786968049">Включен режим, продлевающий срок службы батареи. Она полностью зарядится к <ph name="FULLY_CHARGE_TIME" />.</translation>
@@ -894,6 +895,7 @@
 <translation id="4582666543382004902">Сейчас используется Wi-Fi. Чтобы снова запустить точку доступа, отключите Wi-Fi.</translation>
 <translation id="4585337515783392668">Остановить трансляцию на неизвестное устройство</translation>
 <translation id="4596144739579517758">Тёмная тема отключена</translation>
+<translation id="4596442969149038771">Пользователь <ph name="USER" /> поделился файлом</translation>
 <translation id="4611292653554630842">Войти</translation>
 <translation id="462160925400706389">Подключено устройство "<ph name="NAME" />"</translation>
 <translation id="4623167406982293031">Подтвердите, что это ваш аккаунт.</translation>
@@ -1049,7 +1051,6 @@
 <translation id="5207949376430453814">Выделять курсор при вводе текста</translation>
 <translation id="5208059991603368177">Включено</translation>
 <translation id="5216991270656129561">Выкл. до <ph name="TIME" /></translation>
-<translation id="5217646019792206018">Следующий рабочий стол: <ph name="NEXT_DESK_NAME" />. Чтобы активировать его, нажмите Поиск + Пробел или Shift + Поиск + <ph name="NEXT_DESK_INDEX" />.</translation>
 <translation id="5218064144558110424">Отметить как невыполненную</translation>
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="5229343007215035173">Включить/отключить экран конфиденциальности</translation>
@@ -1337,6 +1338,7 @@
 <translation id="6298183524022479114">Настройте его в приложении.</translation>
 <translation id="6309219492973062892">Выбрать значок 1–8 на панели запуска</translation>
 <translation id="6315170314923504164">Микрофон</translation>
+<translation id="6319058840130157106">Переключаться назад между правым нижним углом, панелью запуска, адресной строкой, панелью закладок, открытым сайтом и страницей со скачанными файлами</translation>
 <translation id="6324916366299863871">Изменить ярлык</translation>
 <translation id="6330012934079202188">Показаны окна со всех рабочих столов. Чтобы показать окна текущего рабочего стола, нажмите на стрелку вверх.</translation>
 <translation id="6338485349199627913">Сеансом "<ph name="DISPLAY_NAME" />" управляет <ph name="MANAGER" /></translation>
@@ -1815,6 +1817,7 @@
 <translation id="8314772463905284467">Включен режим Caps Lock</translation>
 <translation id="8315514906653279104">Включение…</translation>
 <translation id="8331351032546853669">Ожидание скачивания</translation>
+<translation id="8339706171276328417"><ph name="ACTION_DESCRIPTION" /> · <ph name="TIME" /></translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8345019317483336363">Выбрано окно "<ph name="WINDOW_TITLE" />"</translation>
 <translation id="8349826889576450703">Launcher</translation>
@@ -1863,7 +1866,6 @@
 <translation id="8517041960877371778">Не удается зарядить устройство <ph name="DEVICE_TYPE" />, пока оно включено.</translation>
 <translation id="852060496139946719">{NUM_APPS,plural, =1{Входом микрофона управляет приложение "<ph name="APP_NAME" />"}one{Входом микрофона управляет # приложение}few{Входом микрофона управляют # приложения}many{Входом микрофона управляют # приложений}other{Входом микрофона управляют # приложения}}</translation>
 <translation id="8535393432370007982">Отменить упорядочивание по цвету</translation>
-<translation id="853768060447955562">Предыдущий рабочий стол: <ph name="PREVIOUS_DESK_NAME" />. Чтобы активировать его, нажмите Поиск + Пробел или Shift + Поиск + <ph name="PREVIOUS_DESK_INDEX" />.</translation>
 <translation id="8541078764854166027">Автомасштабир.</translation>
 <translation id="8542053257095774575">Нет сохраненных шаблонов или рабочих столов.</translation>
 <translation id="8546059259582788728">Действие "Сортировать" отменено</translation>
@@ -1921,6 +1923,7 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, установленное приложение, заблокировано</translation>
 <translation id="8785070478575117577">Подключиться к сети "<ph name="NETWORK_NAME" />"</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" />.</translation>
+<translation id="8790632710469941716">Переключаться вперед между правым нижним углом, панелью запуска, адресной строкой, панелью закладок, открытым сайтом и страницей со скачанными файлами</translation>
 <translation id="8792626944327216835">микрофон</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">Папка <ph name="FOLDER_NAME" />.</translation>
@@ -2027,13 +2030,13 @@
 <translation id="925832987464884575">Отключить предпросмотр</translation>
 <translation id="937214777182567951">Согласно требованиям <ph name="MANAGER" /> вам нужно немедленно обновить устройство <ph name="DEVICE_TYPE" />.</translation>
 <translation id="938963181863597773">Что у меня запланировано?</translation>
-<translation id="943067377221312471">Предыдущий рабочий стол: <ph name="PREVIOUS_DESK_NAME" />. Чтобы активировать его, нажмите Поиск + Пробел.</translation>
 <translation id="945383118875625837">Перетащить ссылку на панель закладок</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
 <translation id="951991426597076286">Отклонить</translation>
 <translation id="953431725143473984">Выключить устройство?</translation>
 <translation id="954052413789300507">Недостаточно свободного места для скачивания файла <ph name="FILENAME" />. Освободите пространство.</translation>
 <translation id="954520015070501466">30 минут</translation>
+<translation id="954786879461589145">Пользователь <ph name="USER" /> изменил файл</translation>
 <translation id="974545358917229949">Показано результатов поиска по запросу "<ph name="QUERY" />": <ph name="RESULT_COUNT" /></translation>
 <translation id="981011780479609956">Срок сдачи не указан</translation>
 <translation id="98120814841227350">Перейти к концу документа</translation>

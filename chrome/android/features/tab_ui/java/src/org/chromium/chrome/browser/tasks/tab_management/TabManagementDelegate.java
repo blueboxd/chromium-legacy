@@ -41,6 +41,8 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
+import java.util.function.DoubleConsumer;
 
 /** Interface to get access to components concerning tab management. */
 public interface TabManagementDelegate {
@@ -180,6 +182,7 @@ public interface TabManagementDelegate {
      * @param incognitoReauthControllerSupplier The incognito reauth controller supplier.
      * @param newTabButtonOnClickListener The listener for clicking the new tab button.
      * @param isIncognito Whether this is an incognito pane.
+     * @param onToolbarAlphaChange Observer to notify when alpha changes during animations.
      */
     Pair<TabSwitcher, Pane> createTabSwitcherPane(
             @NonNull Activity activity,
@@ -195,5 +198,31 @@ public interface TabManagementDelegate {
             @NonNull ModalDialogManager modalDialogManager,
             @Nullable OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @NonNull OnClickListener newTabButtonOnClickListener,
-            boolean isIncognito);
+            boolean isIncognito,
+            @NonNull DoubleConsumer onToolbarAlphaChange);
+
+    /**
+     * Create a {@link TabGroupCreationDialog} when creating a new tab group.
+     *
+     * @param activity The {@link Activity} that hosts this dialog.
+     * @param modalDialogManager The modal dialog manager for the activity.
+     * @param tabModelSelectorSupplier The supplier for the {@link TabModelSelector}.
+     */
+    TabGroupCreationDialog createTabGroupCreationDialogDelegate(
+            @NonNull Activity activity,
+            @NonNull ModalDialogManager modalDialogManager,
+            @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier);
+
+    /**
+     * Create a {@link ColorPicker} when creating a custom color picker component.
+     *
+     * @param activity The current Android's context.
+     * @param colors The list of colors used for this color picker component.
+     * @param delegate The {@link ColorPickerDelegate} holding information regarding the UI layout
+     *     to inflate.
+     */
+    ColorPicker createColorPickerCoordinator(
+            @NonNull Context context,
+            @NonNull List<Integer> colors,
+            @NonNull ColorPickerDelegate delegate);
 }

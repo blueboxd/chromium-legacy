@@ -16,6 +16,11 @@ namespace switches {
 BASE_FEATURE(kSeedAccountsRevamp,
              "SeedAccountsRevamp",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Feature to apply enterprise policies on signin regardless of sync status.
+BASE_FEATURE(kEnterprisePolicyOnSignin,
+             "EnterprisePolicyOnSignin",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Clears the token service before using it. This allows simulating the
@@ -81,18 +86,6 @@ BASE_FEATURE(kRestoreSignedInAccountAndSettingsFromBackup,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-// Enables a new version of the sync confirmation UI.
-BASE_FEATURE(kTangibleSync,
-             "TangibleSync",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             // Fully rolled out on desktop: crbug.com/1430054
-             base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-
-);
-
 #if BUILDFLAG(IS_ANDROID)
 // Enables the search engine choice feature for existing users.
 // TODO(b/316859558): Not used for shipping purposes, remove this feature.
@@ -102,6 +95,18 @@ BASE_FEATURE(kSearchEngineChoice,
 #endif
 
 BASE_FEATURE(kUnoDesktop, "UnoDesktop", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kExplicitBrowserSigninUIOnDesktop,
+             "ExplicitBrowserSigninUIOnDesktop",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsExplicitBrowserSigninUIOnDesktopEnabled(
+    ExplicitBrowserSigninPhase phase) {
+  if (phase == ExplicitBrowserSigninPhase::kFull) {
+    return base::FeatureList::IsEnabled(kExplicitBrowserSigninUIOnDesktop);
+  }
+  return base::FeatureList::IsEnabled(kExplicitBrowserSigninUIOnDesktop) ||
+         base::FeatureList::IsEnabled(kUnoDesktop);
+}
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || \
     BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)

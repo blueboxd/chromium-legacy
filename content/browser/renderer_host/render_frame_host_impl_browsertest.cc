@@ -31,6 +31,7 @@
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_future.h"
@@ -1748,12 +1749,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   // callback from the second frame. Wait for that beforeunload completion
   // callback. After it's received, there will be one ACK remaining for the
   // frame that's currently showing the dialog.
-  while (main_frame->beforeunload_pending_replies_.size() > 1) {
-    base::RunLoop run_loop;
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  EXPECT_TRUE(base::test::RunUntil(
+      [&]() { return main_frame->beforeunload_pending_replies_.size() <= 1; }));
 
   // Ensure that the beforeunload timer hasn't been restarted, since the first
   // beforeunload dialog is still up at this point.
@@ -7894,16 +7891,9 @@ viz::SurfaceId GetFirstSurfaceIdAfterNavigation(RenderWidgetHostView* view) {
 // visual glitches.
 //
 // TODO(https://crbug.com/1472026): Investigate and re-enable.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition \
-  DISABLED_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition
-#else
-#define MAYBE_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition \
-  NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition
-#endif
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition,
-    MAYBE_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition) {
+    DISABLED_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition) {
   // "red_jank_second_pageshow.html" janks the renderer on the second pageshow
   // event.
   const GURL url_red(embedded_test_server()->GetURL(

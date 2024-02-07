@@ -30,6 +30,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -81,7 +82,7 @@ gfx::Size DeskButton::CalculatePreferredSize() const {
   return {width, height};
 }
 
-void DeskButton::Layout() {
+void DeskButton::Layout(PassKey) {
   if (!desk_button_container_) {
     return;
   }
@@ -168,7 +169,7 @@ void DeskButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void DeskButton::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED &&
       event->IsOnlyRightMouseButton()) {
-    MaybeShowContextMenuForEvent(event);
+    desk_button_container_->MaybeShowContextMenu(this, event);
     return;
   }
 
@@ -178,7 +179,7 @@ void DeskButton::OnMouseEvent(ui::MouseEvent* event) {
 void DeskButton::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_LONG_PRESS ||
       event->type() == ui::ET_GESTURE_LONG_TAP) {
-    MaybeShowContextMenuForEvent(event);
+    desk_button_container_->MaybeShowContextMenu(this, event);
     return;
   }
 
@@ -192,14 +193,6 @@ void DeskButton::StateChanged(ButtonState old_state) {
   }
 
   UpdateShelfAutoHideDisabler(disable_shelf_auto_hide_hover_, !GetHovered());
-}
-
-views::View* DeskButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
-  // We override this function so that the tooltip manager ignores disabled desk
-  // switch buttons when creating tooltips.
-  views::View* tooltip_handler = Button::GetTooltipHandlerForPoint(point);
-  return tooltip_handler && tooltip_handler->GetEnabled() ? tooltip_handler
-                                                          : this;
 }
 
 void DeskButton::AboutToRequestFocusFromTabTraversal(bool reverse) {
@@ -224,7 +217,7 @@ void DeskButton::Init(DeskButtonContainer* desk_button_container) {
       this, gfx::Insets(kDeskButtonFocusRingHaloInset),
       kDeskButtonCornerRadius);
 
-  if (features::IsDeskButtonEnabled()) {
+  if (chromeos::features::IsDeskProfilesEnabled()) {
     AddChildView(views::Builder<views::ImageView>()
                      .CopyAddressTo(&desk_avatar_view_)
                      .SetPaintToLayer()
@@ -245,10 +238,8 @@ void DeskButton::Init(DeskButtonContainer* desk_button_container) {
   TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosButton2,
                                         *desk_name_label_);
 
-  UpdateLocaleSpecificSettings();
-
-  // Use shelf view as the context menu controller so that right click on the
-  // desk button shows the same context menu.
+  // Use shelf view as the context menu controller so that it shows the same
+  // context menu.
   set_context_menu_controller(
       desk_button_container_->shelf()->hotseat_widget()->GetShelfView());
 }
@@ -281,8 +272,8 @@ std::u16string DeskButton::GetTitle() const {
 }
 
 void DeskButton::UpdateUi(const Desk* active_desk) {
-  desk_name_label_->SetText(GetDeskNameLabelText(active_desk));
   UpdateAvatar(active_desk);
+  UpdateLocaleSpecificSettings();
 }
 
 void DeskButton::UpdateAvatar(const Desk* active_desk) {
@@ -297,6 +288,7 @@ void DeskButton::UpdateAvatar(const Desk* active_desk) {
       if (auto* summary =
               desk_profiles_delegate->GetProfilesSnapshotByProfileId(
                   active_desk->lacros_profile_id())) {
+        profile_ = *summary;
         desk_avatar_image_ = gfx::ImageSkiaOperations::CreateResizedImage(
             summary->icon, skia::ImageOperations::RESIZE_BEST,
             kDeskButtonAvatarSize);
@@ -313,9 +305,23 @@ void DeskButton::UpdateAvatar(const Desk* active_desk) {
 }
 
 void DeskButton::UpdateLocaleSpecificSettings() {
-  const Desk* active_desk = DesksController::Get()->active_desk();
-  SetAccessibleName(l10n_util::GetStringFUTF16(IDS_SHELF_DESK_BUTTON_TITLE,
-                                               active_desk->name()));
+  // Update the accessible name.
+  DesksController* desk_controller = DesksController::Get();
+  const Desk* active_desk = desk_controller->active_desk();
+  if (desk_avatar_view_ && desk_avatar_view_->GetVisible()) {
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_SHELF_DESK_BUTTON_TITLE_WITH_PROFILE_AVATAR, active_desk->name(),
+        profile_.name, profile_.email,
+        base::NumberToString16(desk_controller->GetDeskIndex(active_desk) + 1),
+        base::NumberToString16(desk_controller->GetNumberOfDesks())));
+  } else {
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_SHELF_DESK_BUTTON_TITLE_NO_PROFILE_AVATAR, active_desk->name(),
+        base::NumberToString16(desk_controller->GetDeskIndex(active_desk) + 1),
+        base::NumberToString16(desk_controller->GetNumberOfDesks())));
+  }
+
+  // Update the button text since the default desk name can be locale specific.
   desk_name_label_->SetText(GetDeskNameLabelText(active_desk));
 }
 
@@ -358,23 +364,6 @@ std::u16string DeskButton::GetDeskNameLabelText(const Desk* active_desk) const {
   }
 
   return active_desk->name();
-}
-
-void DeskButton::MaybeShowContextMenuForEvent(ui::LocatedEvent* event) {
-  if (!is_activated_) {
-    ui::MenuSourceType source_type = ui::MenuSourceType::MENU_SOURCE_MOUSE;
-    if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
-      source_type = ui::MenuSourceType::MENU_SOURCE_LONG_PRESS;
-    } else if (event->type() == ui::ET_GESTURE_LONG_TAP) {
-      source_type = ui::MenuSourceType::MENU_SOURCE_LONG_TAP;
-    }
-    gfx::Point location_in_screen(event->location());
-    View::ConvertPointToScreen(this, &location_in_screen);
-    ShowContextMenu(location_in_screen, source_type);
-  }
-
-  event->SetHandled();
-  event->StopPropagation();
 }
 
 void DeskButton::UpdateShelfAutoHideDisabler(

@@ -559,8 +559,8 @@ class FormDataImporterTest : public testing::Test {
     // Init the `form_data_importer()` with `personal_data_manager_`.
     autofill_client_->set_test_form_data_importer(
         std::make_unique<FormDataImporter>(
-            autofill_client_.get(),
-            personal_data_manager_.get(), kLocale));
+            autofill_client_.get(), personal_data_manager_.get(),
+            /*history_service=*/nullptr, kLocale));
 
     auto virtual_card_enrollment_manager =
         std::make_unique<MockVirtualCardEnrollmentManager>(
@@ -3877,7 +3877,7 @@ TEST_F(FormDataImporterTest, MultiStepImport_DeleteOnBrowsingHistoryCleared) {
       ConstructSplitDefaultProfileFormStructure(/*part=*/1);
   ExtractAddressProfilesAndVerifyExpectation(*form_structure, {});
 
-  personal_data_manager_->OnURLsDeleted(
+  form_data_importer().OnURLsDeleted(
       /*history_service=*/nullptr,
       history::DeletionInfo::ForUrls(
           {history::URLRow(form_structure->source_url())},
@@ -4100,8 +4100,8 @@ TEST_F(FormDataImporterTest,
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultCreditCardFormStructure();
   form_data_importer()
-      .SetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted(
-          CreditCard::RecordType::kVirtualCard);
+      .SetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted(
+          NonInteractivePaymentMethodType::kVirtualCard);
   test_api(form_data_importer())
       .set_credit_card_import_type(
           FormDataImporter::CreditCardImportType::kVirtualCard);
@@ -4133,8 +4133,8 @@ TEST_F(FormDataImporterTest,
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultCreditCardFormStructure();
   form_data_importer()
-      .SetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted(
-          CreditCard::RecordType::kLocalCard);
+      .SetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted(
+          NonInteractivePaymentMethodType::kLocalCard);
   test_api(form_data_importer())
       .set_credit_card_import_type(
           FormDataImporter::CreditCardImportType::kVirtualCard);
@@ -4160,7 +4160,7 @@ TEST_F(FormDataImporterTest,
   // Ensure that we reset the record type at the end of the flow.
   EXPECT_FALSE(
       form_data_importer()
-          .GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted()
+          .GetPaymentMethodTypeIfNonInteractiveAuthenticationFlowCompleted()
           .has_value());
 }
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)

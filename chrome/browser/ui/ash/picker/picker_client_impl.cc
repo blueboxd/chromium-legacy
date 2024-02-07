@@ -7,29 +7,30 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "ash/picker/picker_controller.h"
+#include "ash/public/cpp/picker/picker_search_result.h"
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "chrome/browser/ash/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ash/app_list/search/search_engine.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_web_view_impl.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "url/gurl.h"
 #include "url/url_constants.h"
 
-namespace {
-
-scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() {
-  auto* const active_user = user_manager::UserManager::Get()->GetActiveUser();
-  auto* const profile = Profile::FromBrowserContext(
-      ash::BrowserContextHelper::Get()->GetBrowserContextByUser(active_user));
-  return profile->GetURLLoaderFactory();
+namespace ash {
+enum class AppListSearchResultType;
 }
+
+namespace {
 
 void OnGifDownloaded(PickerClientImpl::DownloadGifToStringCallback callback,
                      std::unique_ptr<network::SimpleURLLoader> simple_loader,
@@ -42,14 +43,38 @@ void OnGifDownloaded(PickerClientImpl::DownloadGifToStringCallback callback,
   std::move(callback).Run(std::string());
 }
 
+void OnCrosSearchResultsUpdated(
+    PickerClientImpl::CrosSearchResultsCallback callback,
+    ash::AppListSearchResultType result_type,
+    std::vector<std::unique_ptr<ChromeSearchResult>> results) {
+  std::vector<ash::PickerSearchResult> picker_results;
+
+  picker_results.reserve(results.size());
+  for (std::unique_ptr<ChromeSearchResult>& result : results) {
+    // TODO: b/316936687 - Handle results for each provider.
+    picker_results.push_back(ash::PickerSearchResult::Text(result->title()));
+  }
+
+  callback.Run(result_type, std::move(picker_results));
+}
+
 }  // namespace
 
 PickerClientImpl::PickerClientImpl(ash::PickerController* controller)
     : controller_(controller) {
   controller_->SetClient(this);
+
+  auto* user_manager = user_manager::UserManager::Get();
+  // As `PickerClientImpl` is initialised in
+  // `ChromeBrowserMainExtraPartsAsh::PostProfileInit`, the user manager does
+  // not notify us of the first user "change".
+  ActiveUserChanged(user_manager->GetActiveUser());
+  user_manager->AddSessionStateObserver(this);
 }
 
 PickerClientImpl::~PickerClientImpl() {
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+
   controller_->SetClient(nullptr);
 }
 
@@ -59,15 +84,10 @@ std::unique_ptr<ash::AshWebView> PickerClientImpl::CreateWebView(
 }
 
 void PickerClientImpl::DownloadGifToString(
-    const GURL& url,
+    const ash::ValidGifUrl& url,
     DownloadGifToStringCallback callback) {
-  // For now, only allow gifs from tenor.
-  // TODO: b/316936723 - Once we know what gifs the picker might show, consider
-  // making the method parameters more specific to allowed gif sources.
-  CHECK(url.DomainIs("media.tenor.com") && url.SchemeIs(url::kHttpsScheme));
-
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = url;
+  resource_request->url = url.ToGURL();
   resource_request->method = "GET";
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
@@ -106,8 +126,44 @@ void PickerClientImpl::DownloadGifToString(
   auto loader = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  kTrafficAnnotation);
   auto* loader_ptr = loader.get();
+  CHECK(profile_);
   loader_ptr->DownloadToString(
-      GetURLLoaderFactory().get(),
+      profile_->GetURLLoaderFactory().get(),
       base::BindOnce(&OnGifDownloaded, std::move(callback), std::move(loader)),
       network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
+}
+
+void PickerClientImpl::StartCrosSearch(const std::u16string& query,
+                                       CrosSearchResultsCallback callback) {
+  CHECK(search_engine_);
+  search_engine_->StartSearch(
+      query, app_list::SearchOptions(),
+      base::BindRepeating(&OnCrosSearchResultsUpdated, std::move(callback)));
+}
+
+void PickerClientImpl::ActiveUserChanged(user_manager::User* active_user) {
+  if (!active_user) {
+    SetProfile(nullptr);
+    return;
+  }
+
+  active_user->AddProfileCreatedObserver(
+      base::BindOnce(&PickerClientImpl::SetProfileByUser,
+                     weak_factory_.GetWeakPtr(), active_user));
+}
+
+void PickerClientImpl::SetProfileByUser(const user_manager::User* user) {
+  Profile* profile = Profile::FromBrowserContext(
+      ash::BrowserContextHelper::Get()->GetBrowserContextByUser(user));
+  SetProfile(profile);
+}
+
+void PickerClientImpl::SetProfile(Profile* profile) {
+  if (profile_ == profile) {
+    return;
+  }
+
+  profile_ = profile;
+
+  search_engine_ = std::make_unique<app_list::SearchEngine>(profile_);
 }

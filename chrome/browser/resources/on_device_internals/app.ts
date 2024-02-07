@@ -10,12 +10,13 @@ import '//resources/cr_elements/cr_textarea/cr_textarea.js';
 import '//resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import '//resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 
-import {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.js';
+import type {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
 import {BrowserProxy} from './browser_proxy.js';
-import {LoadModelResult, OnDeviceModelRemote, PerformanceClass, ResponseChunk, ResponseSummary, SessionRemote, StreamingResponderCallbackRouter} from './on_device_model.mojom-webui.js';
+import type {ResponseChunk, ResponseSummary} from './on_device_model.mojom-webui.js';
+import {LoadModelResult, OnDeviceModelRemote, PerformanceClass, SessionRemote, StreamingResponderCallbackRouter} from './on_device_model.mojom-webui.js';
 
 interface Response {
   text: string;
@@ -51,15 +52,6 @@ function getPerformanceClassText(performanceClass: PerformanceClass): string {
     default:
       return 'Error';
   }
-}
-
-function shouldRetractResponse(scores: number[]|undefined): boolean {
-  if (!scores) {
-    return false;
-  }
-
-  // As a proof-of-concept retract anything scoring highly on drugs or politics.
-  return scores[11] >= 0.5 || scores[13] >= 0.5;
 }
 
 class OnDeviceInternalsAppElement extends PolymerElement {
@@ -242,15 +234,9 @@ class OnDeviceInternalsAppElement extends PolymerElement {
           this.set(
               'currentResponse_.response',
               (this.currentResponse_?.response + chunk.text).trimStart());
-          if (shouldRetractResponse(chunk.tsScores)) {
-            this.set('currentResponse_.responseClass', 'response retracted');
-          }
         });
-    const onCompleteId = this.responseRouter_.onComplete.addListener(
-        (summary: ResponseSummary) => {
-          if (shouldRetractResponse(summary.tsScores)) {
-            this.set('currentResponse_.responseClass', 'response retracted');
-          }
+    const onCompleteId =
+        this.responseRouter_.onComplete.addListener((_: ResponseSummary) => {
           this.addResponse_();
           this.responseRouter_.removeListener(onResponseId);
           this.responseRouter_.removeListener(onCompleteId);

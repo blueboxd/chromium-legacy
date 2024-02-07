@@ -26,6 +26,7 @@ Dyma rai pethau y gallwch eu gwneud i roi cychwyn arni.</translation>
 <translation id="1087110696012418426">Prynhawn Da <ph name="GIVEN_NAME" />,</translation>
 <translation id="1088231044944504242">Chwilio eich <ph name="CATEGORY" />, eich ffeiliau, eich apiau a rhagor. Defnyddiwch y bysellau saeth i lywio'ch apiau.</translation>
 <translation id="1093645050124056515">ctrl + alt + saeth i lawr</translation>
+<translation id="1094756674036064790">Diffodd Bluetooth?</translation>
 <translation id="109942774857561566">Rydw i wedi diflasu</translation>
 <translation id="1104084341931202936">Dangos y gosodiadau hygyrchedd</translation>
 <translation id="1104621072296271835">Mae'ch dyfeisiau'n gweithio hyd yn oed yn well gyda'i gilydd</translation>
@@ -159,7 +160,6 @@ Dyma rai pethau y gallwch eu gwneud i roi cychwyn arni.</translation>
 <translation id="1586324912145647027">Ewch i ddesg 1 i 8</translation>
 <translation id="158838227375272121">Gwefan Google Classroom</translation>
 <translation id="1589090746204042747">Gael mynediad at eich holl weithgarwch yn y sesiwn hon</translation>
-<translation id="1592682369233288537">Desg Nesaf: <ph name="NEXT_DESK_NAME" />, defnyddiwch Search+Space i'w gweithredu.</translation>
 <translation id="1602874809115667351"><ph name="LAUNCHER_KEY_NAME" /> + saeth i lawr</translation>
 <translation id="1604857178818051494">Seibio'r cyfryngau</translation>
 <translation id="1607312127821884567">Diystyru gosod gweld apiau eich ffôn</translation>
@@ -607,9 +607,11 @@ Dyma rai pethau y gallwch eu gwneud i roi cychwyn arni.</translation>
 <translation id="3526440770046466733">Agor y ddolen yn y tab newydd ac aros yn y tab presennol</translation>
 <translation id="353086728817903341">Wedi'i gysylltu â <ph name="NUM_DEVICES" /> o ddyfeisiau</translation>
 <translation id="3533126039236445965">Apiau yn y silff</translation>
+<translation id="3537350467437346467">Rydych wedi gweld</translation>
 <translation id="3539957339480430241">Poethfan <ph name="DEVICE_NAME" /></translation>
 <translation id="3540893133818942399">Diystyru gosod gweld lluniau a chyfryngau diweddar eich ffôn</translation>
 <translation id="3542066395059568317">Byddwch yn gweld argymhellion fel eich bod yn gallu parhau lle y gwnaethoch adael. Gallwch dde-glicio i dynnu argymhellion.</translation>
+<translation id="3547318469722231257">Rydych wedi addasu</translation>
 <translation id="3552189655002856821">Mae Wi-Fi wedi'i ddiffodd</translation>
 <translation id="3554215588514239132">Dangos neu guddio'r panel Offer Datblygwr</translation>
 <translation id="3554637740840164787">Cafodd <ph name="ITEM_TITLE" /> ei binio</translation>
@@ -658,6 +660,7 @@ Cysylltwch eich dyfais â phŵer.</translation>
 <translation id="3660860940251915011">Toglo gwelededd uchel <ph name="FEATURE_NAME" /></translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Defnyddiwr a Reolir</translation>
 <translation id="3666266999138159418">Sweipiwch i guddio eich ffenestr arnofio</translation>
+<translation id="3673898235958558034">Pan fyddwch yn diffodd Bluetooth, bydd '<ph name="DEVICE_NAME_1" />' a '<ph name="DEVICE_NAME_2" />' yn datgysylltu o'ch Chromebook.</translation>
 <translation id="367531336287639526">Dewis yr eicon cyntaf i'r chwith o'r bar cyfeiriad</translation>
 <translation id="3677931086890821290">Mae hyn yn caniatáu i bob ap a gwefan sydd â chaniatâd lleoliad a ChromeOS ddefnyddio lleoliad Wi-Fi a rhwydweithiau symudol.</translation>
 <translation id="3679827876008292680">Mynd i'r tab olaf yn y ffenestr</translation>
@@ -701,6 +704,7 @@ Cysylltwch eich dyfais â phŵer.</translation>
 <translation id="385300504083504382">Y dechrau</translation>
 <translation id="3859364108019690">Methu â ffrydio apiau</translation>
 <translation id="3861651314799684201">Pwyswch Enter i recordio'r sgrîn lawn</translation>
+<translation id="3882323608730650973">Addaswyd</translation>
 <translation id="3886872229787704059">Agorwyd heddiw</translation>
 <translation id="3891340733213178823">Pwyswch Ctrl+Shift+Q ddwywaith i allgofnodi.</translation>
 <translation id="3893630138897523026">ChromeVox (adborth ar lafar)</translation>
@@ -869,7 +873,6 @@ Mae rhai nodweddion wedi'u cyfyngu i gynyddu oes y batri.</translation>
 <translation id="4491109536499578614">Llun</translation>
 <translation id="450584155212756404">Sianel Datblygwr</translation>
 <translation id="4513946894732546136">Adborth</translation>
-<translation id="4516212064498225455">Desg Bresennol: <ph name="CURRENT_DESK_NAME" />, defnyddiwch Search+Space i agor y ddewislen pob desg.</translation>
 <translation id="4518404433291145981">I ddatgloi eich Chromebook, datglowch eich ffôn yn gyntaf</translation>
 <translation id="4527045527269911712">Hoffai'r ddyfais Bluetooth "<ph name="DEVICE_NAME" />" gael caniatâd i baru.</translation>
 <translation id="4533343294786968049">Yn ymestyn oes eich batri. Bydd y batri yn gwefru'n llawn erbyn <ph name="FULLY_CHARGE_TIME" />.</translation>
@@ -894,6 +897,7 @@ Mae rhai nodweddion wedi'u cyfyngu i gynyddu oes y batri.</translation>
 <translation id="4582666543382004902">Mae'r boethfan wedi'i diffodd er mwyn defnyddio WiFi. I ddefnyddio'r boethfan, diffoddwch y WiFi.</translation>
 <translation id="4585337515783392668">Stopio castio ar dderbynnydd anhysbys</translation>
 <translation id="4596144739579517758">Mae'r thema dywyll wedi'i diffodd</translation>
+<translation id="4596442969149038771">Mae <ph name="USER" /> wedi rhannu</translation>
 <translation id="4611292653554630842">Mewngofnodi</translation>
 <translation id="462160925400706389">Mae <ph name="NAME" /> wedi'i chysylltu</translation>
 <translation id="4623167406982293031">Dilyswch eich cyfrif</translation>
@@ -911,6 +915,7 @@ Mae rhai nodweddion wedi'u cyfyngu i gynyddu oes y batri.</translation>
 <translation id="4666911709726371538">Rhagor o apiau</translation>
 <translation id="4667099493359681081">Wrthi'n lawrlwytho <ph name="FILENAME" /></translation>
 <translation id="4672539464599646374">Mae'r modd Arbed Batri wedi'i droi ymlaen</translation>
+<translation id="4673427585974421255">Cadw ymlaen</translation>
 <translation id="468293128311738995">Apiau o'ch ffôn</translation>
 <translation id="4690510401873698237">Silff ar y gwaelod</translation>
 <translation id="4696813013609194136">Datgloi'r ddyfais gyda chod rhiant</translation>
@@ -1049,7 +1054,6 @@ Mae rhai nodweddion wedi'u cyfyngu i gynyddu oes y batri.</translation>
 <translation id="5207949376430453814">Amlygu caret testun</translation>
 <translation id="5208059991603368177">Ymlaen</translation>
 <translation id="5216991270656129561">Wedi'i ddiffodd tan <ph name="TIME" /></translation>
-<translation id="5217646019792206018">Desg Nesaf: <ph name="NEXT_DESK_NAME" />, defnyddiwch Search+Space neu'r llwybr byr bysellfwrdd: Shift+Search+<ph name="NEXT_DESK_INDEX" /> i'w gweithredu.</translation>
 <translation id="5218064144558110424">Marcio fel heb ei chwblhau</translation>
 <translation id="5222676887888702881">Allgofnodi</translation>
 <translation id="5229343007215035173">Troi'r sgrîn preifatrwydd ymlaen/ei ddiffodd</translation>
@@ -1211,6 +1215,7 @@ Mae rhai nodweddion wedi'u cyfyngu i gynyddu oes y batri.</translation>
 <translation id="5802516411616338943">Agor Gosodiadau Cyflym</translation>
 <translation id="5804651031882187592">Diffodd y gosodiad "Cloi SIM"</translation>
 <translation id="5805809050170488595">Cliciwch i weithredu <ph name="NETWORK_NAME" /></translation>
+<translation id="5816222150329690597">Pan fyddwch yn diffodd Bluetooth, bydd '<ph name="DEVICE_NAME_1" />', '<ph name="DEVICE_NAME_2" />' a '<ph name="DEVICE_COUNT" />' o ddyfeisiau eraill yn datgysylltu o'ch Chromebook.</translation>
 <translation id="5823239091726045201">Google Tasks ar y we</translation>
 <translation id="5825969630400862129">Gosodiadau dyfeisiau cysylltiedig</translation>
 <translation id="5837036133683224804">Stopio <ph name="ROUTE_TITLE" /> ar <ph name="RECEIVER_NAME" /></translation>
@@ -1337,6 +1342,7 @@ Mae rhai nodweddion wedi'u cyfyngu i gynyddu oes y batri.</translation>
 <translation id="6298183524022479114">Addasu'r ddyfais hon yn yr ap</translation>
 <translation id="6309219492973062892">Clicio neu dapio eiconau silff 1-8</translation>
 <translation id="6315170314923504164">Llais</translation>
+<translation id="6319058840130157106">Symud yn ôl rhwng y gornel dde isaf, y Lansiwr, y bar cyfeiriad, y bar nodau tudalen, y wefan sydd ar agor a'r lawrlwythiadau</translation>
 <translation id="6324916366299863871">Golygu'r llwybr byr</translation>
 <translation id="6330012934079202188">Wrthi'n dangos ffenestri o bob desg, pwyswch y fysell Saeth i fyny i ddangos ffenestri o'r ddesg bresennol</translation>
 <translation id="6338485349199627913">Mae <ph name="DISPLAY_NAME" /> yn sesiwn a reolir gan <ph name="MANAGER" /></translation>
@@ -1390,6 +1396,7 @@ Mae rhai nodweddion wedi'u cyfyngu i gynyddu oes y batri.</translation>
 <translation id="6539852571005954999">Wrthi'n sganio'r lawrlwythiad <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771">Wrthi'n castio i <ph name="RECEIVER_NAME" /></translation>
 <translation id="6546062506073634094">Chwilio lluniau yn ôl cynnwys a rhagolygon lluniau</translation>
+<translation id="6547795021703527064">Pan fyddwch yn diffodd Bluetooth, bydd '<ph name="DEVICE_NAME" />' yn datgysylltu o'ch Chromebook.</translation>
 <translation id="6555373427270923730">Teipiwch gyfeiriad gwe yn y bar cyfeiriad, yna pwyswch <ph name="MODIFIER" /><ph name="KEY" /></translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Gosodiad newydd</translation>
@@ -1815,6 +1822,7 @@ I ddiffodd y ddyfais, pwyswch a daliwch y botwm pŵer ar y ddyfais eto.</transla
 <translation id="8314772463905284467">Mae Caps Lock wedi'i droi ymlaen</translation>
 <translation id="8315514906653279104">Wrthi'n troi ymlaen...</translation>
 <translation id="8331351032546853669">Lawrlwytho ar y gweill</translation>
+<translation id="8339706171276328417"><ph name="ACTION_DESCRIPTION" /> · <ph name="TIME" /></translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8345019317483336363">Mae'r ffenestr <ph name="WINDOW_TITLE" /> wedi'i dewis</translation>
 <translation id="8349826889576450703">lansiwr</translation>
@@ -1863,7 +1871,6 @@ I ddiffodd y ddyfais, pwyswch a daliwch y botwm pŵer ar y ddyfais eto.</transla
 <translation id="8517041960877371778">Mae'n bosib na fydd eich <ph name="DEVICE_TYPE" /> yn gwefru tra bydd ymlaen.</translation>
 <translation id="852060496139946719">{NUM_APPS,plural, =1{Mewnbwn meic wedi'i reoli gan <ph name="APP_NAME" />}zero{Mewnbwn meic wedi'i reoli gan # apiau}two{Mewnbwn meic wedi'i reoli gan # ap}few{Mewnbwn meic wedi'i reoli gan # ap}many{Mewnbwn meic wedi'i reoli gan # ap}other{Mewnbwn meic wedi'i reoli gan # ap}}</translation>
 <translation id="8535393432370007982">Dadwnued trefnu yn ôl lliw</translation>
-<translation id="853768060447955562">Desg Flaenorol: <ph name="PREVIOUS_DESK_NAME" />, defnyddiwch Search+Space neu'r llwybr byr bysellfwrdd: Shift+Search+<ph name="PREVIOUS_DESK_INDEX" /> i'w gweithredu.</translation>
 <translation id="8541078764854166027">Fframio camera</translation>
 <translation id="8542053257095774575">Nid oes unrhyw ddesgiau neu dempledi wedi'u cadw</translation>
 <translation id="8546059259582788728">Wedi dadwneud trefnu yn llwyddiannus</translation>
@@ -1921,6 +1928,7 @@ I ddiffodd y ddyfais, pwyswch a daliwch y botwm pŵer ar y ddyfais eto.</transla
 <translation id="878215960996152260"><ph name="APP_NAME" />, Ap wedi'i Osod, Wedi'i Rwystro</translation>
 <translation id="8785070478575117577">Cysylltu â <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790632710469941716">Symud ymlaen rhwng y gornel dde isaf, y Lansiwr, y bar cyfeiriad, y bar nodau tudalen, y wefan sydd ar agor a'r lawrlwythiadau</translation>
 <translation id="8792626944327216835">meicroffon</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">Ffolder <ph name="FOLDER_NAME" /></translation>
@@ -2027,13 +2035,13 @@ I ddiffodd y ddyfais, pwyswch a daliwch y botwm pŵer ar y ddyfais eto.</transla
 <translation id="925832987464884575">Cuddio rhagolygon</translation>
 <translation id="937214777182567951">Mae <ph name="MANAGER" /> yn gofyn i chi ddiweddaru'ch <ph name="DEVICE_TYPE" /> ar unwaith</translation>
 <translation id="938963181863597773">Beth sydd ar fy nghalendr?</translation>
-<translation id="943067377221312471">Desg Flaenorol: <ph name="PREVIOUS_DESK_NAME" />, defnyddiwch Search+Space i'w gweithredu.</translation>
 <translation id="945383118875625837">Llusgo'r ddolen i'r bar nodau tudalen</translation>
 <translation id="945522503751344254">Danfon adborth</translation>
 <translation id="951991426597076286">Gwrthod</translation>
 <translation id="953431725143473984">Diffodd y ddyfais?</translation>
 <translation id="954052413789300507">Nid oes digon o le storio ar gyfer <ph name="FILENAME" />. Rhyddhau lle storio.</translation>
 <translation id="954520015070501466">30mun</translation>
+<translation id="954786879461589145">Mae <ph name="USER" /> wedi addasu</translation>
 <translation id="974545358917229949">Wrthi'n dangos <ph name="RESULT_COUNT" /> o ganlyniadau ar gyfer <ph name="QUERY" /></translation>
 <translation id="981011780479609956">Dim dyddiad cwblhau</translation>
 <translation id="98120814841227350">Mynd i ddiwedd y ddogfen</translation>

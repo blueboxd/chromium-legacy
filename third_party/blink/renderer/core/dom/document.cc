@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -58,7 +59,6 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
@@ -163,6 +163,7 @@
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
+#include "third_party/blink/renderer/core/dom/shadow_including_tree_order_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
@@ -664,11 +665,23 @@ const ListedElement::List& Document::UnassociatedListedElementsList::Get(
     const Node& root = owner.GetTreeScope().RootNode();
     DCHECK(list_.empty());
 
-    // TODO(crbug.com/1243730): We do not consider shadow trees for now.
-    for (HTMLElement& element : Traversal<HTMLElement>::StartsAfter(root)) {
-      ListedElement* listed_element = ListedElement::From(element);
-      if (listed_element && !listed_element->Form()) {
-        list_.push_back(listed_element);
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillIncludeShadowDomInUnassociatedListedElements)) {
+      for (Node& current :
+           ShadowIncludingTreeOrderTraversal::DescendantsOf(root)) {
+        if (HTMLElement* element = DynamicTo<HTMLElement>(current)) {
+          if (ListedElement* listed_element = ListedElement::From(*element);
+              listed_element && !listed_element->Form()) {
+            list_.push_back(listed_element);
+          }
+        }
+      }
+    } else {
+      for (HTMLElement& element : Traversal<HTMLElement>::StartsAfter(root)) {
+        ListedElement* listed_element = ListedElement::From(element);
+        if (listed_element && !listed_element->Form()) {
+          list_.push_back(listed_element);
+        }
       }
     }
     dirty_ = false;
@@ -1929,14 +1942,11 @@ uint32_t Document::softNavigations() const {
   if (!window) {
     return 0;
   }
-  LocalFrame* frame = window->GetFrame();
-  if (!frame || !frame->IsMainFrame()) {
-    return 0;
+  if (SoftNavigationHeuristics* heuristics =
+          SoftNavigationHeuristics::From(*window)) {
+    return heuristics->SoftNavigationCount();
   }
-  SoftNavigationHeuristics* heuristics =
-      SoftNavigationHeuristics::From(*window);
-  DCHECK(heuristics);
-  return heuristics->SoftNavigationCount();
+  return 0;
 }
 
 bool Document::hidden() const {
@@ -5340,7 +5350,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
   // Remove focus from the existing focus node (if any)
   if (old_focused_element) {
     old_focused_element->SetFocused(false, params.type);
-    old_focused_element->SetHasFocusWithinUpToAncestor(false, ancestor);
+    old_focused_element->SetHasFocusWithinUpToAncestor(false, ancestor, true);
 
     DisplayLockUtilities::ElementLostFocus(old_focused_element);
 
@@ -5416,7 +5426,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     if (focused_element_ == nullptr) {
       return false;
     }
-    focused_element_->SetHasFocusWithinUpToAncestor(true, ancestor);
+    focused_element_->SetHasFocusWithinUpToAncestor(true, ancestor, true);
     DisplayLockUtilities::ElementGainedFocus(focused_element_.Get());
 
     // Element::setFocused for frames can dispatch events.
@@ -6380,7 +6390,7 @@ void Document::setDomain(const String& raw_domain,
   }
 }
 
-absl::optional<base::Time> Document::lastModifiedTime() const {
+std::optional<base::Time> Document::lastModifiedTime() const {
   AtomicString http_last_modified = override_last_modified_;
   if (http_last_modified.empty()) {
     if (DocumentLoader* document_loader = Loader()) {
@@ -6391,7 +6401,7 @@ absl::optional<base::Time> Document::lastModifiedTime() const {
   if (!http_last_modified.empty()) {
     return ParseDate(http_last_modified);
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 // https://html.spec.whatwg.org/C#dom-document-lastmodified
@@ -7841,7 +7851,7 @@ void Document::UpdateThemeColorCache() {
   }
 }
 
-absl::optional<Color> Document::ThemeColor() {
+std::optional<Color> Document::ThemeColor() {
   // Returns the color of the first meta[name=theme-color] element in
   // tree order that matches and is valid.
   // https://html.spec.whatwg.org/multipage/semantics.html#meta-theme-color
@@ -7858,7 +7868,7 @@ absl::optional<Color> Document::ThemeColor() {
       return color;
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void Document::UpdateAppTitle() {
@@ -8190,7 +8200,7 @@ void Document::ScheduleForTopLayerRemoval(Element* element,
     return;
   }
 
-  absl::optional<TopLayerReason> existing_pending_removal = absl::nullopt;
+  std::optional<TopLayerReason> existing_pending_removal = std::nullopt;
   for (const auto& pending_removal : top_layer_elements_pending_removal_) {
     if (pending_removal->element == element) {
       existing_pending_removal = pending_removal->reason;
@@ -8243,14 +8253,14 @@ void Document::RemoveFromTopLayerImmediately(Element* element) {
   probe::TopLayerElementsChanged(this);
 }
 
-absl::optional<Document::TopLayerReason>
-Document::IsScheduledForTopLayerRemoval(Element* element) const {
+std::optional<Document::TopLayerReason> Document::IsScheduledForTopLayerRemoval(
+    Element* element) const {
   for (const auto& entry : top_layer_elements_pending_removal_) {
     if (entry->element == element) {
       return entry->reason;
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 HTMLDialogElement* Document::ActiveModalDialog() const {

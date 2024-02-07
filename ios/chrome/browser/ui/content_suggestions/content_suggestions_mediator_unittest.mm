@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/default_browser/model/utils_test_support.h"
 #import "ios/chrome/browser/favicon/model/ios_chrome_large_icon_cache_factory.h"
 #import "ios/chrome/browser/favicon/model/ios_chrome_large_icon_service_factory.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_item_type.h"
@@ -55,7 +56,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_shortcut_tile_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/query_suggestion_view.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/shortcuts_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
@@ -130,9 +133,6 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
         base::BindRepeating(&BuildReadingListModelWithFakeStorage,
                             std::vector<scoped_refptr<ReadingListEntry>>()));
     test_cbs_builder.AddTestingFactory(
-        AuthenticationServiceFactory::GetInstance(),
-        base::BindRepeating(AuthenticationServiceFactory::GetDefaultFactory()));
-    test_cbs_builder.AddTestingFactory(
         segmentation_platform::SegmentationPlatformServiceFactory::
             GetInstance(),
         segmentation_platform::SegmentationPlatformServiceFactory::
@@ -192,9 +192,6 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
             &pref_service_, /*top_sites*/ nullptr, /*popular_sites*/ nullptr,
             /*custom_links*/ nullptr, /*icon_cacher*/ nullptr,
             /*supervisor=*/nullptr, true);
-    ReadingListModel* readingListModel =
-        ReadingListModelFactory::GetForBrowserState(
-            chrome_browser_state_.get());
 
     syncer::SyncService* sync_service =
         SyncServiceFactory::GetForBrowserState(chrome_browser_state_.get());
@@ -210,9 +207,7 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
              initWithLargeIconService:largeIconService
                        largeIconCache:cache
                       mostVisitedSite:std::move(mostVisitedSites)
-                     readingListModel:readingListModel
                           prefService:chrome_browser_state_.get()->GetPrefs()
-        isGoogleDefaultSearchProvider:NO
                           syncService:sync_service
                 authenticationService:authentication_service
                       identityManager:identityManager
@@ -280,22 +275,6 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
   ContentSuggestionsMetricsRecorder* metrics_recorder_;
 };
 
-// Tests that the command is sent to the dispatcher when opening the Reading
-// List.
-TEST_F(ContentSuggestionsMediatorTest, TestOpenReadingList) {
-  OCMExpect([dispatcher_ showReadingList]);
-
-  OCMExpect([mediator_.NTPMetricsDelegate shortcutTileOpened]);
-
-  // Action.
-  ContentSuggestionsMostVisitedActionItem* readingList =
-      ReadingListActionItem();
-  [mediator_ openMostVisitedItem:readingList atIndex:1];
-
-  // Test.
-  EXPECT_OCMOCK_VERIFY(dispatcher_);
-}
-
 // Tests that MostRecentTab can be opened and that its title is correct when
 // tab has a title.
 TEST_F(ContentSuggestionsMediatorTest, TestOpenMostRecentTab) {
@@ -303,7 +282,8 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenMostRecentTab) {
   auto web_state = CreateWebState("http://chromium.org");
   web_state->SetTitle(u"title");
   int recent_tab_index = web_state_list_->InsertWebState(
-      0, std::move(web_state), WebStateList::INSERT_ACTIVATE, WebStateOpener());
+      std::move(web_state),
+      WebStateList::InsertionParams::Automatic().Activate());
   favicon::WebFaviconDriver::CreateForWebState(
       web_state_list_->GetActiveWebState(),
       /*favicon_service=*/nullptr);
@@ -311,9 +291,9 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenMostRecentTab) {
       StartSurfaceRecentTabBrowserAgent::FromBrowser(browser_.get());
   browser_agent->SaveMostRecentTab();
   // Create NTP
-  web_state_list_->InsertWebState(1, CreateWebState("chrome://newtab"),
-                                  WebStateList::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list_->InsertWebState(
+      CreateWebState("chrome://newtab"),
+      WebStateList::InsertionParams::Automatic().Activate());
   web::WebState* ntp_web_state = web_state_list_->GetActiveWebState();
   mediator_.webState = ntp_web_state;
   NewTabPageTabHelper::FromWebState(ntp_web_state)->SetShowStartSurface(true);
@@ -342,8 +322,8 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenMostRecentTab) {
 TEST_F(ContentSuggestionsMediatorTest, TestOpenMostRecentTabNoTitle) {
   // Create non-NTP WebState
   int recent_tab_index = web_state_list_->InsertWebState(
-      0, CreateWebState("http://chromium.org"), WebStateList::INSERT_ACTIVATE,
-      WebStateOpener());
+      CreateWebState("http://chromium.org"),
+      WebStateList::InsertionParams::Automatic().Activate());
   favicon::WebFaviconDriver::CreateForWebState(
       web_state_list_->GetActiveWebState(),
       /*favicon_service=*/nullptr);
@@ -351,9 +331,9 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenMostRecentTabNoTitle) {
       StartSurfaceRecentTabBrowserAgent::FromBrowser(browser_.get());
   browser_agent->SaveMostRecentTab();
   // Create NTP
-  web_state_list_->InsertWebState(1, CreateWebState("chrome://newtab"),
-                                  WebStateList::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list_->InsertWebState(
+      CreateWebState("chrome://newtab"),
+      WebStateList::InsertionParams::Automatic().Activate());
   web::WebState* ntp_web_state = web_state_list_->GetActiveWebState();
   mediator_.webState = ntp_web_state;
   NewTabPageTabHelper::FromWebState(ntp_web_state)->SetShowStartSurface(true);
@@ -379,9 +359,9 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenMostRecentTabNoTitle) {
 
 TEST_F(ContentSuggestionsMediatorTest, TestStartSurfaceRecentTabObserving) {
   // Create non-NTP WebState
-  web_state_list_->InsertWebState(0, CreateWebState("http://chromium.org"),
-                                  WebStateList::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list_->InsertWebState(
+      CreateWebState("http://chromium.org"),
+      WebStateList::InsertionParams::Automatic().Activate());
   favicon::WebFaviconDriver::CreateForWebState(
       web_state_list_->GetActiveWebState(),
       /*favicon_service=*/nullptr);
@@ -389,9 +369,9 @@ TEST_F(ContentSuggestionsMediatorTest, TestStartSurfaceRecentTabObserving) {
       StartSurfaceRecentTabBrowserAgent::FromBrowser(browser_.get());
   browser_agent->SaveMostRecentTab();
   // Create NTP
-  web_state_list_->InsertWebState(1, CreateWebState("chrome://newtab"),
-                                  WebStateList::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list_->InsertWebState(
+      CreateWebState("chrome://newtab"),
+      WebStateList::InsertionParams::Automatic().Activate());
   web::WebState* web_state = browser_agent->most_recent_tab();
   [mediator_ configureMostRecentTabItemWithWebState:web_state
                                           timeLabel:@" - 12 hours ago"];
@@ -402,19 +382,6 @@ TEST_F(ContentSuggestionsMediatorTest, TestStartSurfaceRecentTabObserving) {
 
   OCMExpect([consumer_ hideReturnToRecentTabTile]);
   [mediator_ mostRecentTabWasRemoved:web_state];
-}
-
-// Tests that the command is sent to the dispatcher when opening the What's new.
-TEST_F(ContentSuggestionsMediatorTest, TestOpenWhatsNew) {
-  OCMExpect([dispatcher_ showWhatsNew]);
-
-  OCMExpect([mediator_.NTPMetricsDelegate shortcutTileOpened]);
-
-  // Action.
-  ContentSuggestionsMostVisitedActionItem* whatsNew = WhatsNewActionItem();
-  [mediator_ openMostVisitedItem:whatsNew atIndex:1];
-  // Test.
-  EXPECT_OCMOCK_VERIFY(dispatcher_);
 }
 
 // Tests that the reload logic (e.g. setting the consumer) triggers the correct
@@ -528,6 +495,15 @@ TEST_F(ContentSuggestionsMediatorTest,
       {});
 
   [mediator_ disconnect];
+
+  // Create NTP.
+  web_state_list_->InsertWebState(
+      CreateWebState("chrome://newtab"),
+      WebStateList::InsertionParams::Automatic().Activate());
+  web::WebState* ntp_web_state = web_state_list_->GetActiveWebState();
+  mediator_.webState = ntp_web_state;
+  NewTabPageTabHelper::FromWebState(ntp_web_state)->SetShowStartSurface(true);
+
   SetUpMediator();
   consumer_ = OCMProtocolMock(@protocol(ContentSuggestionsConsumer));
   mediator_.segmentationService =
@@ -600,6 +576,16 @@ TEST_F(ContentSuggestionsMediatorTest, TestModuleClickIndexMetric) {
        {kMagicStack, {{kMagicStackMostVisitedModuleParam, "true"}}}},
       {});
 
+  ShortcutsMediator* shortcutsMediator = [[ShortcutsMediator alloc]
+      initWithReadingListModel:ReadingListModelFactory::GetForBrowserState(
+                                   chrome_browser_state_.get())
+      featureEngagementTracker:feature_engagement::TrackerFactory::
+                                   GetForBrowserState(
+                                       browser_->GetBrowserState())
+                   authService:AuthenticationServiceFactory::GetForBrowserState(
+                                   chrome_browser_state_.get())];
+  shortcutsMediator.delegate = mediator_;
+  mediator_.shortcutsMediator = shortcutsMediator;
   mediator_.segmentationService =
       segmentation_platform::SegmentationPlatformServiceFactory::
           GetForBrowserState(chrome_browser_state_.get());
@@ -621,9 +607,14 @@ TEST_F(ContentSuggestionsMediatorTest, TestModuleClickIndexMetric) {
   histogram_tester_->ExpectUniqueSample(
       "IOS.MagicStack.Module.Click.MostVisited", 3, 1);
 
-  [mediator_
-      openMostVisitedItem:[[ContentSuggestionsMostVisitedActionItem alloc] init]
-                  atIndex:0];
+  ContentSuggestionsMostVisitedActionItem* readingList =
+      ReadingListActionItem();
+  ContentSuggestionsShortcutTileView* shortcutView =
+      [[ContentSuggestionsShortcutTileView alloc]
+          initWithConfiguration:readingList];
+  UIGestureRecognizer* recognizer = [[UIGestureRecognizer alloc] init];
+  [shortcutView addGestureRecognizer:recognizer];
+  [shortcutsMediator shortcutsTapped:recognizer];
   histogram_tester_->ExpectUniqueSample("IOS.MagicStack.Module.Click.Shortcuts",
                                         4, 1);
 }

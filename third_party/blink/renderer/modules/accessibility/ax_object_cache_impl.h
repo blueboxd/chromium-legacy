@@ -153,6 +153,7 @@ class MODULES_EXPORT AXObjectCacheImpl
     }
     ax_tree_source_->Freeze();
     CHECK(FocusedObject());
+    DUMP_WILL_BE_CHECK(!IsDirty());
   }
   void Thaw() override {
     CHECK_GE(frozen_count_, 1);
@@ -167,6 +168,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   //
 
   void SelectionChanged(Node*) override;
+
+  // Uses the relation cache to check whether the current element is pointed to
+  // by aria-labelledby or aria-describedby.
+  bool IsLabelOrDescription(Element&);
 
   // Effects a ChildrenChanged() on the passed-in object, if unignored,
   // otherwise, uses the first unignored ancestor. Returns the object that the
@@ -532,7 +537,15 @@ class MODULES_EXPORT AXObjectCacheImpl
   void GetImagesToAnnotate(ui::AXTreeUpdate& updates,
                            std::vector<ui::AXNodeData*>& nodes) override;
 
+  // The difference between this and IsDirty():
+  // - IsDirty() means there are updates to be processed to have a complete
+  // representation in the tree structure.
+  // - HasDirtyOirtyObjects() means there are updates ready to be sent
+  // to the serializer.
+  // TODO(accessibility) Differentiate naming -- there are too many kinds of
+  // "dirty", which leads to confusion.
   bool HasDirtyObjects() const override { return !dirty_objects_.empty(); }
+  bool IsDirty(AXObject& obj) { return ax_tree_serializer_->IsDirty(&obj); }
 
   bool AddPendingEvent(const ui::AXEvent& event,
                        bool insert_at_beginning) override;
@@ -540,9 +553,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   void MarkSerializerSubtreeDirty(AXObject& obj) {
     ax_tree_serializer_->MarkSubtreeDirty(&obj);
   }
-
-  bool IsDirty(AXObject& obj) { return ax_tree_serializer_->IsDirty(&obj); }
-
   void SetImageAsDataNodeId(int id, const gfx::Size& max_size) {
     ax_tree_source_->set_image_data_node_id(id, max_size);
   }
@@ -673,9 +683,12 @@ class MODULES_EXPORT AXObjectCacheImpl
   // details.
   void UpdateTreeIfNeeded();
 
-  // Make sure a relation cache exists and is initialized. Mst be called with
+  // Make sure a relation cache exists and is initialized. Must be called with
   // clean layout.
   void EnsureRelationCache();
+
+  // Make sure the AXTreeSerializer has been created.
+  void EnsureSerializer();
 
   // Helpers for CreateAndInit().
   AXObject* CreateFromRenderer(LayoutObject*);
@@ -823,6 +836,7 @@ class MODULES_EXPORT AXObjectCacheImpl
     ax::mojom::blink::Action event_from_action;
     BlinkAXEventIntentsSet event_intents;
 
+    virtual ~TreeUpdateParams() = default;
     void Trace(Visitor* visitor) const { visitor->Trace(node); }
   };
 

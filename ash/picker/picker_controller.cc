@@ -18,14 +18,19 @@
 #include "ash/picker/views/picker_view_delegate.h"
 #include "ash/public/cpp/ash_web_view_factory.h"
 #include "ash/public/cpp/picker/picker_client.h"
+#include "ash/public/cpp/picker/picker_search_result.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
 #include "base/hash/sha1.h"
+#include "ui/aura/window.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/display/screen.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -81,12 +86,34 @@ gfx::Rect GetCaretBounds() {
   return input_method->GetTextInputClient()->GetCaretBounds();
 }
 
+// Gets the current cursor point in universal screen coordinates in DIP.
+gfx::Point GetCursorPoint() {
+  return display::Screen::GetScreen()->GetCursorScreenPoint();
+}
+
+// Gets the bounds of the current focused window in universal screen coordinates
+// in DIP. Returns an empty rect if there is no currently focused window.
+gfx::Rect GetFocusedWindowBounds() {
+  return window_util::GetFocusedWindow()
+             ? window_util::GetFocusedWindow()->GetBoundsInScreen()
+             : gfx::Rect();
+}
+
 PickerInsertMediaRequest::MediaData ResultToInsertMediaData(
     const PickerSearchResult& result) {
   return std::visit(
       base::Overloaded{
           [](const PickerSearchResult::TextData& data) {
             return PickerInsertMediaRequest::MediaData::Text(data.text);
+          },
+          [](const PickerSearchResult::EmojiData& data) {
+            return PickerInsertMediaRequest::MediaData::Text(data.emoji);
+          },
+          [](const PickerSearchResult::SymbolData& data) {
+            return PickerInsertMediaRequest::MediaData::Text(data.symbol);
+          },
+          [](const PickerSearchResult::EmoticonData& data) {
+            return PickerInsertMediaRequest::MediaData::Text(data.emoticon);
           },
           [](const PickerSearchResult::GifData& data) {
             return PickerInsertMediaRequest::MediaData::Image(data.url);
@@ -137,7 +164,8 @@ void PickerController::ToggleWidget(
   if (widget_) {
     widget_->Close();
   } else {
-    widget_ = PickerView::CreateWidget(GetCaretBounds(), this,
+    widget_ = PickerView::CreateWidget(GetCaretBounds(), GetCursorPoint(),
+                                       GetFocusedWindowBounds(), this,
                                        trigger_event_timestamp);
     widget_->Show();
 
@@ -167,7 +195,10 @@ void PickerController::StartSearch(const std::u16string& query,
   callback.Run(PickerSearchResults({{
       PickerSearchResults::Section(
           u"Matching expressions",
-          {{PickerSearchResult::Text(u"👍"), PickerSearchResult::Text(u"😊"),
+          {{PickerSearchResult::Emoji(u"👍"), PickerSearchResult::Emoji(u"😊"),
+            PickerSearchResult::Symbol(u"⊃"), PickerSearchResult::Symbol(u"⊇"),
+            PickerSearchResult::Symbol(u"♬"),
+            PickerSearchResult::Emoticon(u"¯\\_(ツ)_/¯"),
             PickerSearchResult::Gif(
                 GURL(
                     "https://media.tenor.com/BzfS_9uPq_AAAAAd/cat-bonfire.gif"),
@@ -230,7 +261,9 @@ void PickerController::DownloadGifToString(
     std::move(callback).Run(std::string());
     return;
   }
-  client_->DownloadGifToString(url, std::move(callback));
+  std::optional<ValidGifUrl> validated_url = ValidGifUrl::Create(url);
+  CHECK(validated_url.has_value());
+  client_->DownloadGifToString(*validated_url, std::move(callback));
 }
 
 }  // namespace ash

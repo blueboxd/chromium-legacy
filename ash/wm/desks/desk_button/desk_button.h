@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/desk_profiles_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/geometry/size.h"
@@ -46,12 +47,11 @@ class ASH_EXPORT DeskButton : public views::Button {
 
   // views::Button:
   gfx::Size CalculatePreferredSize() const override;
-  void Layout() override;
+  void Layout(PassKey) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void StateChanged(ButtonState old_state) override;
-  View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
   // Initializes the view. Must be called before any meaningful UIs can be laid
@@ -88,11 +88,6 @@ class ASH_EXPORT DeskButton : public views::Button {
 
   std::u16string GetDeskNameLabelText(const Desk* active_desk) const;
 
-  // Shows the context menu for the given located event when the button is not
-  // activated. Please note, it re-uses the shelf view as the context menu
-  // controller so that they show the same menu items.
-  void MaybeShowContextMenuForEvent(ui::LocatedEvent* event);
-
   // Updates the shelf auto-hide disabler given `should_enable_shelf_auto_hide`.
   void UpdateShelfAutoHideDisabler(
       std::optional<Shelf::ScopedDisableAutoHide>& disabler,
@@ -103,6 +98,10 @@ class ASH_EXPORT DeskButton : public views::Button {
 
   // Image for the profile avatar.
   gfx::ImageSkia desk_avatar_image_;
+
+  // Profile summary of the desk's associated profile. It's cached during
+  // `UpdateAvatar()`.
+  LacrosProfileSummary profile_;
 
   // A label that displays the active desk's name.
   raw_ptr<views::Label> desk_name_label_;
@@ -116,7 +115,7 @@ class ASH_EXPORT DeskButton : public views::Button {
   // button has been pressed).
   bool is_activated_ = false;
 
-  // Used to suspend the shelf from audo-hiding when the button is activated or
+  // Used to suspend the shelf from auto-hiding when the button is activated or
   // hovered.
   std::optional<Shelf::ScopedDisableAutoHide>
       disable_shelf_auto_hide_activation_;

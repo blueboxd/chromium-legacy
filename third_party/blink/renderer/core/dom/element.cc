@@ -143,6 +143,7 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/forms/html_button_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_controls_collection.h"
@@ -232,8 +233,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
-
-enum class ClassStringContent { kEmpty, kWhiteSpaceOnly, kHasClasses };
 
 namespace {
 
@@ -398,6 +397,15 @@ bool IsElementReflectionAttribute(const QualifiedName& name) {
     return true;
   }
   if (name == html_names::kAriaOwnsAttr) {
+    return true;
+  }
+  if (name == html_names::kPopovertargetAttr) {
+    return true;
+  }
+  if (name == html_names::kAnchorAttr) {
+    return true;
+  }
+  if (name == html_names::kInvoketargetAttr) {
     return true;
   }
   return false;
@@ -689,7 +697,7 @@ Node* Element::Clone(Document& factory,
       // 7.1 Run attach a shadow root with copy, node’s shadow root’s mode,
       // true, node’s shadow root’s delegates focus, and node’s shadow root’s
       // slot assignment.
-      // TODO(crbug.com/1521128): it seems like the `registry` parameter should
+      // TODO(crbug.com/1523816): it seems like the `registry` parameter should
       // not always be nullptr.
       ShadowRoot& cloned_shadow_root = copy->AttachShadowRootInternal(
           shadow_root->GetType(),
@@ -824,6 +832,10 @@ void Element::SynchronizeContentAttributeAndElementReference(
 }
 
 void Element::SetElementAttribute(const QualifiedName& name, Element* element) {
+  DCHECK(IsElementReflectionAttribute(name))
+      << " Element attributes must be added to IsElementReflectionAttribute. "
+         "name: "
+      << name;
   ExplicitlySetAttrElementsMap* explicitly_set_attr_elements_map =
       GetDocument().GetExplicitlySetAttrElementsMap(this);
 
@@ -1044,6 +1056,14 @@ void Element::SetElementArrayAttribute(
     stored_elements->insert(element);
   }
 
+  // This |Set| call must occur after our call to |setAttribute| above.
+  //
+  // |setAttribute| will call through to |AttributeChanged| which calls
+  // |SynchronizeContentAttributeAndElementReference| erasing the entry for
+  // |name| from the map.
+  element_attribute_map->Set(name, stored_elements);
+
+  // |HandleAttributeChanged| must be called after updating the attribute map.
   if (isConnected()) {
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
       cache->HandleAttributeChanged(name, this);
@@ -1477,28 +1497,28 @@ bool Element::ShouldUpdateLastRememberedInlineSize() const {
              : style->ContainIntrinsicHeight().HasAuto();
 }
 
-void Element::SetLastRememberedInlineSize(absl::optional<LayoutUnit> size) {
+void Element::SetLastRememberedInlineSize(std::optional<LayoutUnit> size) {
   if (!size && !HasRareData()) {
     return;
   }
   EnsureElementRareData().SetLastRememberedInlineSize(size);
 }
 
-void Element::SetLastRememberedBlockSize(absl::optional<LayoutUnit> size) {
+void Element::SetLastRememberedBlockSize(std::optional<LayoutUnit> size) {
   if (!size && !HasRareData()) {
     return;
   }
   EnsureElementRareData().SetLastRememberedBlockSize(size);
 }
 
-absl::optional<LayoutUnit> Element::LastRememberedInlineSize() const {
+std::optional<LayoutUnit> Element::LastRememberedInlineSize() const {
   return HasRareData() ? GetElementRareData()->LastRememberedInlineSize()
-                       : absl::nullopt;
+                       : std::nullopt;
 }
 
-absl::optional<LayoutUnit> Element::LastRememberedBlockSize() const {
+std::optional<LayoutUnit> Element::LastRememberedBlockSize() const {
   return HasRareData() ? GetElementRareData()->LastRememberedBlockSize()
-                       : absl::nullopt;
+                       : std::nullopt;
 }
 
 bool Element::IsViewportScrollElement() {
@@ -1817,7 +1837,7 @@ void Element::setScrollLeft(double new_left) {
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
             scrollable_area->ScrollOffsetToPosition(end_offset), true, false);
-    absl::optional<gfx::PointF> snap_point =
+    std::optional<gfx::PointF> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
     if (snap_point.has_value()) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -1874,7 +1894,7 @@ void Element::setScrollTop(double new_top) {
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
             scrollable_area->ScrollOffsetToPosition(end_offset), false, true);
-    absl::optional<gfx::PointF> snap_point =
+    std::optional<gfx::PointF> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
     if (snap_point.has_value()) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -2079,7 +2099,7 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
         cc::SnapSelectionStrategy::CreateForEndPosition(
             scrollable_area->ScrollOffsetToPosition(new_offset),
             scroll_to_options->hasLeft(), scroll_to_options->hasTop());
-    absl::optional<gfx::PointF> snap_point =
+    std::optional<gfx::PointF> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
     if (snap_point.has_value()) {
       new_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -2698,61 +2718,19 @@ bool Element::HasLegalLinkAttribute(const QualifiedName&) const {
   return false;
 }
 
-template <typename CharacterType>
-static inline ClassStringContent ClassStringHasClassName(
-    const CharacterType* characters,
-    unsigned length) {
-  DCHECK_GT(length, 0u);
-
-  unsigned i = 0;
-  do {
-    if (IsNotHTMLSpace<CharacterType>(characters[i])) {
-      break;
-    }
-    ++i;
-  } while (i < length);
-
-  if (i == length && length >= 1) {
-    return ClassStringContent::kWhiteSpaceOnly;
-  }
-
-  return ClassStringContent::kHasClasses;
-}
-
-static inline ClassStringContent ClassStringHasClassName(
-    const AtomicString& new_class_string) {
-  unsigned length = new_class_string.length();
-
-  if (!length) {
-    return ClassStringContent::kEmpty;
-  }
-
-  if (new_class_string.Is8Bit()) {
-    return ClassStringHasClassName(new_class_string.Characters8(), length);
-  }
-  return ClassStringHasClassName(new_class_string.Characters16(), length);
-}
-
 void Element::ClassAttributeChanged(const AtomicString& new_class_string) {
   DCHECK(HasElementData());
-  ClassStringContent class_string_content_type =
-      ClassStringHasClassName(new_class_string);
   const bool should_fold_case = GetDocument().InQuirksMode();
-  if (class_string_content_type == ClassStringContent::kHasClasses) {
-    const SpaceSplitString old_classes = GetElementData()->ClassNames();
-    GetElementData()->SetClass(new_class_string, should_fold_case);
-    const SpaceSplitString& new_classes = GetElementData()->ClassNames();
-    GetDocument().GetStyleEngine().ClassChangedForElement(old_classes,
-                                                          new_classes, *this);
-  } else {
-    const SpaceSplitString& old_classes = GetElementData()->ClassNames();
+  const SpaceSplitString old_classes = GetElementData()->ClassNames();
+  if (UNLIKELY(new_class_string.empty())) {
     GetDocument().GetStyleEngine().ClassChangedForElement(old_classes, *this);
-    if (class_string_content_type == ClassStringContent::kWhiteSpaceOnly) {
-      GetElementData()->SetClass(new_class_string, should_fold_case);
-    } else {
-      GetElementData()->ClearClass();
-    }
+    GetElementData()->ClearClass();
+    return;
   }
+  GetElementData()->SetClass(new_class_string, should_fold_case);
+  const SpaceSplitString& new_classes = GetElementData()->ClassNames();
+  GetDocument().GetStyleEngine().ClassChangedForElement(old_classes,
+                                                        new_classes, *this);
 }
 
 void Element::UpdateClassList(const AtomicString& old_class_string,
@@ -4079,13 +4057,13 @@ void Element::ProcessContainIntrinsicSizeChanges() {
   if (ShouldUpdateLastRememberedBlockSize()) {
     should_record_new_intrinsic_sizes = true;
   } else {
-    SetLastRememberedBlockSize(absl::nullopt);
+    SetLastRememberedBlockSize(std::nullopt);
   }
 
   if (ShouldUpdateLastRememberedInlineSize()) {
     should_record_new_intrinsic_sizes = true;
   } else {
-    SetLastRememberedInlineSize(absl::nullopt);
+    SetLastRememberedInlineSize(std::nullopt);
   }
 
   if (allowed_to_record_new_intrinsic_sizes &&
@@ -4413,7 +4391,7 @@ void Element::UpdateDescendantHasDirAutoAttribute(bool has_dir_auto) {
   }
 }
 
-absl::optional<TextDirection> Element::ResolveAutoDirectionality(
+std::optional<TextDirection> Element::ResolveAutoDirectionality(
     bool& is_deferred) const {
   is_deferred = false;
   if (const TextControlElement* text_element =
@@ -4429,21 +4407,21 @@ absl::optional<TextDirection> Element::ResolveAutoDirectionality(
     if (!assigned_nodes.empty()) {
       for (Node* slotted_node : assigned_nodes) {
         if (slotted_node->IsTextNode()) {
-          if (const absl::optional<TextDirection> text_direction =
+          if (const std::optional<TextDirection> text_direction =
                   BidiParagraph::BaseDirectionForString(
                       slotted_node->textContent(true))) {
             return *text_direction;
           }
         } else if (Element* slotted_element =
                        DynamicTo<Element>(slotted_node)) {
-          absl::optional<TextDirection> slotted_child_result =
+          std::optional<TextDirection> slotted_child_result =
               slotted_element->ResolveAutoDirectionality(is_deferred);
           if (slotted_child_result) {
             return slotted_child_result;
           }
         }
       }
-      return absl::nullopt;
+      return std::nullopt;
     }
   }
 
@@ -4477,7 +4455,7 @@ absl::optional<TextDirection> Element::ResolveAutoDirectionality(
     }
 
     if (node->IsTextNode()) {
-      if (const absl::optional<TextDirection> text_direction =
+      if (const std::optional<TextDirection> text_direction =
               BidiParagraph::BaseDirectionForString(node->textContent(true))) {
         return *text_direction;
       }
@@ -4485,7 +4463,7 @@ absl::optional<TextDirection> Element::ResolveAutoDirectionality(
 
     node = NodeTraversal::Next(*node, this);
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void Element::AdjustDirectionalityIfNeededAfterChildrenChanged(
@@ -4496,11 +4474,11 @@ void Element::AdjustDirectionalityIfNeededAfterChildrenChanged(
 
   if (change.type == ChildrenChangeType::kTextChanged) {
     CHECK(change.old_text);
-    absl::optional<TextDirection> old_text_direction =
+    std::optional<TextDirection> old_text_direction =
         BidiParagraph::BaseDirectionForString(*change.old_text);
     auto* character_data = DynamicTo<CharacterData>(change.sibling_changed);
     DCHECK(character_data);
-    absl::optional<TextDirection> new_text_direction =
+    std::optional<TextDirection> new_text_direction =
         BidiParagraph::BaseDirectionForString(character_data->data());
     if (old_text_direction == new_text_direction) {
       return;
@@ -4531,7 +4509,7 @@ bool Element::ShouldAdjustDirectionalityForInsert(
 
 bool Element::DoesChildTextNodesDirectionMatchThis(const Node& node) const {
   if (node.IsTextNode()) {
-    const absl::optional<TextDirection> new_text_direction =
+    const std::optional<TextDirection> new_text_direction =
         BidiParagraph::BaseDirectionForString(node.textContent(true));
     if (!new_text_direction || (*new_text_direction == CachedDirectionality() &&
                                 !DirAutoInheritsFromParent())) {
@@ -5288,7 +5266,7 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
           (focus_delegation == FocusDelegation::kDelegateFocus);
       parameters_mismatch |=
           existing_shadow->GetSlotAssignmentMode() != slot_assignment;
-      // TODO(crbug.com/1521128): Not sure how to check `registry` match here.
+      // TODO(crbug.com/1523816): Not sure how to check `registry` match here.
       parameters_mismatch |=
           RuntimeEnabledFeatures::DeclarativeShadowDOMSerializableEnabled() &&
           existing_shadow->serializable() != serializable;
@@ -5298,6 +5276,7 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
       // clonable:true by default, and old code doesn't know to add
       // clonable:true to attachShadow() parameters, all old web components
       // would break. See https://github.com/whatwg/html/issues/10107
+      // For now, this does not check for `clonable` mismatch.
       if (parameters_mismatch) {
         exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                           "Parameters used for attachShadow() "
@@ -5340,10 +5319,9 @@ bool Element::AttachDeclarativeShadowRoot(HTMLTemplateElement& template_element,
     return false;
   }
 
-  // TODO(crbug.com/1521128): Declarative shadow roots should set the registry
+  // TODO(crbug.com/1523816): Declarative shadow roots should set the registry
   // argument here.
-  // Declarative shadow roots are clonable by default.
-  bool clonable = true;
+  bool clonable = true;  // Declarative shadow roots are clonable by default.
   ShadowRoot& shadow_root =
       AttachShadowRootInternal(type, focus_delegation, slot_assignment,
                                /*registry*/ nullptr, serializable, clonable);
@@ -5616,14 +5594,14 @@ void Element::ParseAttribute(const AttributeModificationParams& params) {
 }
 
 // static
-absl::optional<QualifiedName> Element::ParseAttributeName(
+std::optional<QualifiedName> Element::ParseAttributeName(
     const AtomicString& namespace_uri,
     const AtomicString& qualified_name,
     ExceptionState& exception_state) {
   AtomicString prefix, local_name;
   if (!Document::ParseQualifiedName(qualified_name, prefix, local_name,
                                     exception_state)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   DCHECK(!exception_state.HadException());
 
@@ -5633,7 +5611,7 @@ absl::optional<QualifiedName> Element::ParseAttributeName(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNamespaceError,
         "'" + namespace_uri + "' is an invalid namespace for attributes.");
-    return absl::nullopt;
+    return std::nullopt;
   }
   return q_name;
 }
@@ -5642,7 +5620,7 @@ void Element::setAttributeNS(const AtomicString& namespace_uri,
                              const AtomicString& qualified_name,
                              String value,
                              ExceptionState& exception_state) {
-  absl::optional<QualifiedName> parsed_name =
+  std::optional<QualifiedName> parsed_name =
       ParseAttributeName(namespace_uri, qualified_name, exception_state);
   if (!parsed_name) {
     return;
@@ -5662,7 +5640,7 @@ void Element::setAttributeNS(const AtomicString& namespace_uri,
                              const AtomicString& qualified_name,
                              const V8TrustedType* trusted_string,
                              ExceptionState& exception_state) {
-  absl::optional<QualifiedName> parsed_name =
+  std::optional<QualifiedName> parsed_name =
       ParseAttributeName(namespace_uri, qualified_name, exception_state);
   if (!parsed_name) {
     return;
@@ -6386,11 +6364,33 @@ void Element::FocusWithinStateChanged() {
   PseudoStateChanged(CSSSelector::kPseudoFocusWithin);
 }
 
-void Element::SetHasFocusWithinUpToAncestor(bool flag, Element* ancestor) {
-  for (Element* element = this; element && element != ancestor;
+void Element::SetHasFocusWithinUpToAncestor(bool flag,
+                                            Element* ancestor,
+                                            bool need_snap_container_search) {
+  bool reached_ancestor = false;
+  for (Element* element = this;
+       element && (need_snap_container_search || !reached_ancestor);
        element = FlatTreeTraversal::ParentElement(*element)) {
-    element->SetHasFocusWithin(flag);
-    element->FocusWithinStateChanged();
+    if (!reached_ancestor && element != ancestor) {
+      element->SetHasFocusWithin(flag);
+      element->FocusWithinStateChanged();
+    }
+    // If |ancestor| or any of its ancestors is a snap container, that snap
+    // container needs to know which one of its descendants newly gained or lost
+    // focus even if its own HasFocusWithin state has not changed.
+    if (element != this && need_snap_container_search) {
+      if (const auto* box = element->GetLayoutBoxForScrolling()) {
+        if (box->Style() && !box->Style()->GetScrollSnapType().is_none) {
+          if (GetDocument().GetFrame() && GetDocument().GetFrame()->View()) {
+            // Tag the enclosing snap container for an update so it can be
+            // updated with focus information.
+            GetDocument().GetFrame()->View()->AddPendingSnapUpdate(
+                box->GetScrollableArea());
+          }
+        }
+      }
+    }
+    reached_ancestor |= element == ancestor;
   }
 }
 
@@ -9819,6 +9819,12 @@ Element* Element::ImplicitAnchorElement() {
     }
     if (Element* select_list = html_element->popoverOwnerSelectListElement()) {
       return select_list;
+    }
+    if (auto* datalist = DynamicTo<HTMLDataListElement>(html_element)) {
+      if (auto* select = datalist->ParentSelect()) {
+        CHECK(RuntimeEnabledFeatures::StylableSelectEnabled());
+        return select;
+      }
     }
   } else if (PseudoElement* pseudo_element = DynamicTo<PseudoElement>(this)) {
     switch (pseudo_element->GetPseudoId()) {

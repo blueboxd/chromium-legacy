@@ -69,17 +69,6 @@ void OnCapturedSurfaceControlResult(
     CapturedSurfaceControlResult result) {
   std::move(callback).Run(CscResultToDOMException(result));
 }
-
-void OnGetZoomLevelResult(
-    base::OnceCallback<void(absl::optional<int>, const String&)> callback,
-    absl::optional<int> zoom_level,
-    CapturedSurfaceControlResult result) {
-  // Note that OnGetZoomLevelResult() will shortly be removed (by m123),
-  // so this translation back to String is temporary.
-  const DOMException* const exception = CscResultToDOMException(result);
-  std::move(callback).Run(zoom_level,
-                          /*error=*/exception ? exception->message() : "");
-}
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 }  // namespace
@@ -217,7 +206,7 @@ void MediaStreamVideoCapturerSource::RestartSourceImpl(
                          weak_factory_.GetWeakPtr(), new_capture_params));
 }
 
-absl::optional<media::VideoCaptureFormat>
+std::optional<media::VideoCaptureFormat>
 MediaStreamVideoCapturerSource::GetCurrentFormat() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return capture_params_.requested_format;
@@ -263,7 +252,7 @@ void MediaStreamVideoCapturerSource::SendWheel(
     base::OnceCallback<void(DOMException*)> callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const absl::optional<base::UnguessableToken>& session_id =
+  const std::optional<base::UnguessableToken>& session_id =
       device().serializable_session_id();
   if (!session_id.has_value()) {
     std::move(callback).Run(MakeDOMException(DOMExceptionCode::kUnknownError,
@@ -277,28 +266,12 @@ void MediaStreamVideoCapturerSource::SendWheel(
       WTF::BindOnce(&OnCapturedSurfaceControlResult, std::move(callback)));
 }
 
-void MediaStreamVideoCapturerSource::GetZoomLevel(
-    base::OnceCallback<void(absl::optional<int>, const String&)> callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  const absl::optional<base::UnguessableToken>& session_id =
-      device().serializable_session_id();
-  if (!session_id.has_value()) {
-    std::move(callback).Run(absl::nullopt, "Missing session ID.");
-    return;
-  }
-
-  GetMediaStreamDispatcherHost()->GetZoomLevel(
-      session_id.value(),
-      WTF::BindOnce(&OnGetZoomLevelResult, std::move(callback)));
-}
-
 void MediaStreamVideoCapturerSource::SetZoomLevel(
     int zoom_level,
     base::OnceCallback<void(DOMException*)> callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const absl::optional<base::UnguessableToken>& session_id =
+  const std::optional<base::UnguessableToken>& session_id =
       device().serializable_session_id();
   if (!session_id.has_value()) {
     std::move(callback).Run(MakeDOMException(DOMExceptionCode::kUnknownError,
@@ -317,7 +290,7 @@ void MediaStreamVideoCapturerSource::ApplySubCaptureTarget(
     base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>
         callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  const absl::optional<base::UnguessableToken>& session_id =
+  const std::optional<base::UnguessableToken>& session_id =
       device().serializable_session_id();
   if (!session_id.has_value()) {
     std::move(callback).Run(
@@ -329,10 +302,10 @@ void MediaStreamVideoCapturerSource::ApplySubCaptureTarget(
       std::move(callback));
 }
 
-absl::optional<uint32_t>
+std::optional<uint32_t>
 MediaStreamVideoCapturerSource::GetNextSubCaptureTargetVersion() {
   if (NumTracks() != 1) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return ++current_sub_capture_target_version_;
 }

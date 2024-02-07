@@ -8,8 +8,8 @@
 #import "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/identity_test_utils.h"
+#import "components/supervised_user/core/browser/supervised_user_utils.h"
 #import "components/supervised_user/core/common/supervised_user_constants.h"
-#import "components/supervised_user/core/common/supervised_user_utils.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state_manager.h"
@@ -118,7 +118,8 @@ TEST_F(IOSFamilyLinkUserMetricsProviderTest,
 
   histogram_tester.ExpectUniqueSample(
       supervised_user::kFamilyLinkUserLogSegmentHistogramName,
-      supervised_user::LogSegment::kSupervisionEnabledByPolicy,
+      supervised_user::FamilyLinkUserLogRecord::Segment::
+          kSupervisionEnabledByPolicy,
       /*expected_bucket_count=*/1);
 }
 
@@ -134,7 +135,8 @@ TEST_F(IOSFamilyLinkUserMetricsProviderTest,
 
   histogram_tester.ExpectUniqueSample(
       supervised_user::kFamilyLinkUserLogSegmentHistogramName,
-      supervised_user::LogSegment::kSupervisionEnabledByUser,
+      supervised_user::FamilyLinkUserLogRecord::Segment::
+          kSupervisionEnabledByUser,
       /*expected_bucket_count=*/1);
 }
 
@@ -150,7 +152,7 @@ TEST_F(IOSFamilyLinkUserMetricsProviderTest,
 
   histogram_tester.ExpectUniqueSample(
       supervised_user::kFamilyLinkUserLogSegmentHistogramName,
-      supervised_user::LogSegment::kUnsupervised,
+      supervised_user::FamilyLinkUserLogRecord::Segment::kUnsupervised,
       /*expected_bucket_count=*/1);
 }
 
@@ -171,7 +173,7 @@ TEST_F(IOSFamilyLinkUserMetricsProviderTest,
   metrics_provider()->OnDidCreateMetricsLog();
   histogram_tester.ExpectUniqueSample(
       supervised_user::kFamilyLinkUserLogSegmentHistogramName,
-      supervised_user::LogSegment::kMixedProfile,
+      supervised_user::FamilyLinkUserLogRecord::Segment::kMixedProfile,
       /*expected_bucket_count=*/1);
 }
 
@@ -200,7 +202,7 @@ TEST_F(IOSFamilyLinkUserMetricsProviderTest,
   metrics_provider()->OnDidCreateMetricsLog();
   histogram_tester.ExpectUniqueSample(
       supervised_user::kFamilyLinkUserLogSegmentHistogramName,
-      supervised_user::LogSegment::kMixedProfile,
+      supervised_user::FamilyLinkUserLogRecord::Segment::kMixedProfile,
       /*expected_bucket_count=*/1);
 }
 
@@ -210,6 +212,6 @@ TEST_F(IOSFamilyLinkUserMetricsProviderTest, NotSignedInLoggedAsUnsupervised) {
   metrics_provider()->OnDidCreateMetricsLog();
   histogram_tester.ExpectUniqueSample(
       supervised_user::kFamilyLinkUserLogSegmentHistogramName,
-      supervised_user::LogSegment::kUnsupervised,
+      supervised_user::FamilyLinkUserLogRecord::Segment::kUnsupervised,
       /*expected_bucket_count=*/1);
 }

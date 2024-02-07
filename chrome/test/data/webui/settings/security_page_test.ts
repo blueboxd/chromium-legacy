@@ -27,6 +27,7 @@ function pagePrefs() {
     profile: {password_manager_leak_detection: {value: false}},
     safebrowsing: {
       scout_reporting_enabled: {value: true},
+      esb_opt_in_with_friendlier_settings: {value: false},
     },
     generated: {
       safe_browsing: {
@@ -494,7 +495,7 @@ suite('SafeBrowsing', function() {
 
   test(
       'SafeBrowsingRadio_ManuallyExpandedRemainExpandedOnRepeatSelection',
-      function() {
+      async function() {
         page.$.safeBrowsingStandard.click();
         flush();
         assertEquals(
@@ -506,7 +507,7 @@ suite('SafeBrowsing', function() {
         // Expanding another radio button should not collapse already expanded
         // option.
         page.$.safeBrowsingEnhanced.$.expandButton.click();
-        flush();
+        await page.$.safeBrowsingEnhanced.$.expandButton.updateComplete;
         assertTrue(page.$.safeBrowsingStandard.expanded);
         assertTrue(page.$.safeBrowsingEnhanced.expanded);
 
@@ -528,7 +529,7 @@ suite('SafeBrowsing', function() {
             page.prefs.generated.safe_browsing.value);
 
         page.$.safeBrowsingEnhanced.$.expandButton.click();
-        flush();
+        await page.$.safeBrowsingEnhanced.$.expandButton.updateComplete;
         assertTrue(page.$.safeBrowsingStandard.expanded);
         assertTrue(page.$.safeBrowsingEnhanced.expanded);
 
@@ -973,4 +974,30 @@ suite('SafeBrowsing', function() {
     assertEquals(subLabel, standardProtection.subLabel);
   });
   // </if>
+
+  test('FriendlierSettingsPopulatedOnEsbOptIn', async function() {
+    loadTimeData.overrideValues({
+      enableFriendlierSafeBrowsingSettings: false,
+    });
+    resetPage();
+    page.$.safeBrowsingEnhanced.click();
+    assertFalse(
+        page.getPref('safebrowsing.esb_opt_in_with_friendlier_settings').value);
+
+    loadTimeData.overrideValues({
+      enableFriendlierSafeBrowsingSettings: true,
+    });
+    resetPage();
+    page.$.safeBrowsingEnhanced.click();
+    assertTrue(
+        page.getPref('safebrowsing.esb_opt_in_with_friendlier_settings').value);
+  });
+
+  test('FriendlierSettingsClearedOnEsbOptOut', async function() {
+    page.$.safeBrowsingEnhanced.click();
+    page.setPrefValue('safebrowsing.esb_opt_in_with_friendlier_settings', true);
+    page.$.safeBrowsingStandard.click();
+    assertFalse(
+        page.getPref('safebrowsing.esb_opt_in_with_friendlier_settings').value);
+  });
 });

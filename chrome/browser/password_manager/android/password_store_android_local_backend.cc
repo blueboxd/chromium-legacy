@@ -61,6 +61,10 @@ void PasswordStoreAndroidLocalBackend::Shutdown(
   PasswordStoreAndroidBackend::Shutdown(std::move(shutdown_completed));
 }
 
+bool PasswordStoreAndroidLocalBackend::IsAbleToSavePasswords() {
+  return true;
+}
+
 void PasswordStoreAndroidLocalBackend::GetAllLoginsAsync(
     LoginsOrErrorReply callback) {
   GetAllLoginsInternal(std::string(), std::move(callback));
@@ -172,6 +176,12 @@ void PasswordStoreAndroidLocalBackend::OnCallToGMSCoreSucceeded() {
 
 std::string PasswordStoreAndroidLocalBackend::GetAccountToRetryOperation() {
   return std::string();
+}
+
+PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType
+PasswordStoreAndroidLocalBackend::GetStoreType() {
+  return PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType::
+      kLocal;
 }
 
 }  // namespace password_manager

@@ -518,7 +518,8 @@ void ProfileMenuView::BuildIdentity() {
         ui::ImageModel::FromImage(account_info.account_image), menu_title_,
         menu_subtitle_);
   } else {
-    if (base::FeatureList::IsEnabled(switches::kUnoDesktop) &&
+    if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+            switches::ExplicitBrowserSigninPhase::kExperimental) &&
         account.IsEmpty()) {
       account_info =
           signin_ui_util::GetSingleAccountForPromos(identity_manager);
@@ -644,7 +645,8 @@ void ProfileMenuView::BuildSyncInfo() {
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE);
     button_text = l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON);
     show_sync_badge = true;
-  } else if (base::FeatureList::IsEnabled(switches::kUnoDesktop) &&
+  } else if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+                 switches::ExplicitBrowserSigninPhase::kExperimental) &&
              !account_info_for_promos.IsEmpty()) {
     account_info = account_info_for_promos;
     description = l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO);
@@ -778,7 +780,11 @@ void ProfileMenuView::BuildAvailableProfiles() {
       !web_app::AppBrowserController::IsWebApp(browser())) {
     AddAvailableProfile(
         profiles::GetGuestAvatar(),
-        l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
+        l10n_util::GetStringUTF16(
+            switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+                switches::ExplicitBrowserSigninPhase::kFull)
+                ? IDS_PROFILE_MENU_OPEN_GUEST_PROFILE
+                : IDS_GUEST_PROFILE_NAME),
         /*is_guest=*/true,
         /*is_enabled=*/true,
         base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,

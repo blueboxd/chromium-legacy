@@ -554,8 +554,10 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
           IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE,
           l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK)));
 
-  html_source->AddBoolean("unoDesktopEnabled",
-                          base::FeatureList::IsEnabled(switches::kUnoDesktop));
+  html_source->AddBoolean(
+      "unoDesktopEnabled",
+      switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+          switches::ExplicitBrowserSigninPhase::kExperimental));
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -1979,14 +1981,14 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_DISABLED},
       {"topicsPageCurrentTopicsDescriptionEmpty",
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_EMPTY},
-      {"topicsPageCurrentTopicsDescriptionEmptyTopText",
-       IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_EMPTY_TOP_TEXT},
-      {"topicsPageCurrentTopicsDescriptionEmptyPtb",
-       IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_EMPTY_PTB},
-      {"topicsPageBlockedTopicsDescriptionEmptyTopText",
-       IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY_TOP_TEXT},
-      {"topicsPageBlockedTopicsDescriptionEmptyPtb",
-       IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY_PTB},
+      {"topicsPageCurrentTopicsDescriptionEmptyTextHeading",
+       IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_EMPTY_TEXT_HEADING},
+      {"topicsPageCurrentTopicsDescriptionEmptyTextV2",
+       IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_EMPTY_TEXT_V2},
+      {"topicsPageBlockedTopicsDescriptionEmptyTextHeading",
+       IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY_TEXT_HEADING},
+      {"topicsPageBlockedTopicsDescriptionEmptyTextV2",
+       IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY_TEXT_V2},
       {"topicsPageBlockTopic", IDS_SETTINGS_TOPICS_PAGE_BLOCK_TOPIC},
       {"topicsPageBlockTopicA11yLabel",
        IDS_SETTINGS_TOPICS_PAGE_BLOCK_TOPIC_A11Y_LABEL},
@@ -2112,7 +2114,10 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MANAGE_TOPICS_PAGE_DESCRIPTION,
           base::ASCIIToUTF16(
-              chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL)));
+              chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL),
+          l10n_util::GetStringUTF16(
+              IDS_SETTINGS_MANAGE_TOPICS_PAGE_DESCRIPTION_LEARN_MORE_ARIA_LABEL),
+          l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
   // Topics and fledge both link to the cookies setting page and cross-link
   // each other in the footers.
   html_source->AddString(
@@ -2797,9 +2802,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       {"siteSettingsHidDevicesAsk", IDS_SETTINGS_SITE_SETTINGS_HID_DEVICES_ASK},
       {"siteSettingsHidDevicesBlock",
        IDS_SETTINGS_SITE_SETTINGS_HID_DEVICES_BLOCK},
-      {"siteSettingsMidiDevices", IDS_SITE_SETTINGS_TYPE_MIDI},
+      {"siteSettingsMidiDevices", IDS_SITE_SETTINGS_TYPE_MIDI_SYSEX},
       {"siteSettingsMidiDevicesMidSentence",
-       IDS_SITE_SETTINGS_TYPE_MIDI_MID_SENTENCE},
+       IDS_SITE_SETTINGS_TYPE_MIDI_SYSEX_MID_SENTENCE},
       {"siteSettingsSerialPorts", IDS_SITE_SETTINGS_TYPE_SERIAL_PORTS},
       {"siteSettingsSerialPortsMidSentence",
        IDS_SITE_SETTINGS_TYPE_SERIAL_PORTS_MID_SENTENCE},
@@ -3435,10 +3440,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(
           permissions::features::kPermissionDedicatedCpssSetting));
 
-  html_source->AddBoolean(
-      "blockMidiByDefault",
-      base::FeatureList::IsEnabled(features::kBlockMidiByDefault));
-
   // The exception placeholder should not be translated. See
   // crbug.com/1095878.
   html_source->AddString("addSiteExceptionPlaceholder", "[*.]example.com");
@@ -3505,7 +3506,8 @@ void AddSiteDataPageStrings(content::WebUIDataSource* html_source,
   html_source->AddLocalizedStrings(kLocalizedStrings);
   html_source->AddLocalizedString(
       "siteDataPageClearOnExitRadioSubLabel",
-      base::FeatureList::IsEnabled(switches::kUnoDesktop)
+      switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+          switches::ExplicitBrowserSigninPhase::kExperimental)
           ? IDS_SETTINGS_SITE_DATA_PAGE_CLEAR_ON_EXIT_WITH_EXCEPTION_RADIO_SUBLABEL
           : IDS_SETTINGS_SITE_DATA_PAGE_CLEAR_ON_EXIT_RADIO_SUBLABEL);
 }

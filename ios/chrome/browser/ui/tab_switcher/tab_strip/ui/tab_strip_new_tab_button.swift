@@ -57,9 +57,10 @@ class TabStripNewTabButton: UIView {
 
     button.imageView?.contentMode = .center
     button.layer.cornerRadius = TabStripConstants.NewTabButton.cornerRadius
-    button.backgroundColor = UIColor(named: kPrimaryBackgroundColor)
+    button.backgroundColor = UIColor(named: kGroupedSecondaryBackgroundColor)
 
     button.translatesAutoresizingMaskIntoConstraints = false
     button.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+    button.isPointerInteractionEnabled = true
   }
 }

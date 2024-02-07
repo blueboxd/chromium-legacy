@@ -36,7 +36,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/app/notification_metrics.h"
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
 #include "chrome/browser/browser_features.h"
@@ -203,10 +202,10 @@ void LaunchBrowserStartup(Profile* profile) {
 
   base::AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
   StartupBrowserCreator browser_creator;
-  browser_creator.LaunchBrowser(*base::CommandLine::ForCurrentProcess(),
-                                profile, base::FilePath(),
-                                chrome::startup::IsProcessStartup::kNo,
-                                chrome::startup::IsFirstRun::kYes, nullptr);
+  browser_creator.LaunchBrowser(
+      *base::CommandLine::ForCurrentProcess(), profile, base::FilePath(),
+      chrome::startup::IsProcessStartup::kNo, chrome::startup::IsFirstRun::kYes,
+      nullptr, /*restore_tabbed_browser=*/true);
 }
 
 // Creates an empty browser window with the given profile and returns a pointer
@@ -1088,12 +1087,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 // This is called after profiles have been loaded and preferences registered.
 // It is safe to access the default profile here.
 - (void)applicationDidFinishLaunching:(NSNotification*)notify {
-  // Check if Chrome got launched by clicking on a notification.
-  if (@available(macOS 10.8, *)) {
-    if ([notify userInfo][NSApplicationLaunchUserNotificationKey])
-      LogLaunchedViaNotificationAction(NotificationActionSource::kBrowser);
-  }
-
   if (g_browser_process->browser_policy_connector()
           ->chrome_browser_cloud_management_controller()
           ->IsEnterpriseStartupDialogShowing()) {

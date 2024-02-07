@@ -5625,6 +5625,7 @@ interface NavigateEvent : Event
     method scroll
 interface Navigation : EventTarget
     attribute @@toStringTag
+    getter activation
     getter canGoBack
     getter canGoForward
     getter currentEntry
@@ -5645,6 +5646,12 @@ interface Navigation : EventTarget
     setter onnavigate
     setter onnavigateerror
     setter onnavigatesuccess
+interface NavigationActivation
+    attribute @@toStringTag
+    getter entry
+    getter from
+    getter navigationType
+    method constructor
 interface NavigationCurrentEntryChangeEvent : Event
     attribute @@toStringTag
     getter from
@@ -6044,6 +6051,9 @@ interface OverconstrainedError : DOMException
     attribute @@toStringTag
     getter constraint
     method constructor
+interface PageRevealEvent : Event
+    attribute @@toStringTag
+    method constructor
 interface PageTransitionEvent : Event
     attribute @@toStringTag
     getter persisted
@@ -6305,7 +6315,9 @@ interface PerformanceScriptTiming : PerformanceEntry
     getter invoker
     getter invokerType
     getter pauseDuration
-    getter sourceLocation
+    getter sourceCharPosition
+    getter sourceFunctionName
+    getter sourceURL
     getter window
     getter windowAttribution
     method constructor
@@ -11396,6 +11408,7 @@ namespace console
     getter onoffline
     getter ononline
     getter onpagehide
+    getter onpagereveal
     getter onpageshow
     getter onpause
     getter onplay
@@ -11611,6 +11624,7 @@ namespace console
     setter onoffline
     setter ononline
     setter onpagehide
+    setter onpagereveal
     setter onpageshow
     setter onpause
     setter onplay

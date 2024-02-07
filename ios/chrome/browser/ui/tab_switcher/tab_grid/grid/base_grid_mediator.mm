@@ -289,6 +289,8 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   [self.consumer removeItemWithID:detachedWebState->GetUniqueIdentifier()
                    selectedItemID:GetActiveNonPinnedTabID(webStateList)];
 
+  [self removeFromSelectionItemID:detachedWebState->GetUniqueIdentifier()];
+
   // The pinned WebState could be detached only in case it was displayed in
   // the Tab Search and was closed from the context menu. In such a case
   // there were no observation added for it. Therefore, there is no need to
@@ -811,9 +813,8 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   int webStateListIndex = [self webStateListIndexFromItemIndex:index];
 
   self.webStateList->InsertWebState(
-      base::checked_cast<int>(webStateListIndex), std::move(webState),
-      (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
-      WebStateOpener());
+      std::move(webState),
+      WebStateList::InsertionParams::AtIndex(webStateListIndex).Activate());
 }
 
 #pragma mark - TabCollectionDragDropHandler
@@ -821,7 +822,10 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 - (NSArray<UIDragItem*>*)allSelectedDragItems {
   NSMutableArray<UIDragItem*>* dragItems = [[NSMutableArray alloc] init];
   for (web::WebStateID itemID : _selectedEditingItemIDs) {
-    [dragItems addObject:[self dragItemForItemWithID:itemID]];
+    UIDragItem* dragItem = [self dragItemForItemWithID:itemID];
+    if (dragItem) {
+      [dragItems addObject:dragItem];
+    }
   }
   return dragItems;
 }

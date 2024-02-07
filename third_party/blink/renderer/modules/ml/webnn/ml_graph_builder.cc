@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_layer_normalization_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_leaky_relu_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_linear_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_lstm_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pad_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pool_2d_options.h"
@@ -186,6 +187,19 @@ webnn::ReduceKind BlinkReduceKindToComponent(
     default:
       NOTREACHED_NORETURN();
   }
+}
+
+webnn::RecurrentNetworkDirection BlinkRecurrentNetworkDirectionToComponent(
+    blink::V8MLRecurrentNetworkDirection::Enum direction) {
+  switch (direction) {
+    case blink::V8MLRecurrentNetworkDirection::Enum::kForward:
+      return webnn::RecurrentNetworkDirection::kForward;
+    case blink::V8MLRecurrentNetworkDirection::Enum::kBackward:
+      return webnn::RecurrentNetworkDirection::kBackward;
+    case blink::V8MLRecurrentNetworkDirection::Enum::kBoth:
+      return webnn::RecurrentNetworkDirection::kBoth;
+  }
+  NOTREACHED_NORETURN();
 }
 
 webnn::BatchNormalizationAttributes ConvertToBatchNormalizationAttributes(
@@ -393,6 +407,40 @@ webnn::LayerNormalizationAttributes ConvertToLayerNormalizationAttributes(
   return attributes;
 }
 
+webnn::LstmAttributes ConvertToLstmAttributes(
+    const blink::MLLstmOptions* options) {
+  CHECK(options);
+  webnn::LstmAttributes attributes;
+
+  if (options->hasBias()) {
+    attributes.bias = ConvertToComponentOperand(options->bias());
+  }
+  if (options->hasRecurrentBias()) {
+    attributes.recurrent_bias =
+        ConvertToComponentOperand(options->recurrentBias());
+  }
+  if (options->hasPeepholeWeight()) {
+    attributes.peephole_weight =
+        ConvertToComponentOperand(options->peepholeWeight());
+  }
+  if (options->hasInitialHiddenState()) {
+    attributes.initial_hidden_state =
+        ConvertToComponentOperand(options->initialHiddenState());
+  }
+  if (options->hasInitialCellState()) {
+    attributes.initial_cell_state =
+        ConvertToComponentOperand(options->initialCellState());
+  }
+  if (options->hasActivations()) {
+    attributes.activation_count = options->activations().size();
+  }
+  attributes.return_sequence = options->returnSequence();
+  attributes.direction =
+      BlinkRecurrentNetworkDirectionToComponent(options->direction().AsEnum());
+
+  return attributes;
+}
+
 bool ValidateClampOptions(const MLClampOptions* options,
                           ExceptionState& exception_state) {
   // The generated code of MLClampOptions uses blink::ToRestrictedFloat to
@@ -411,14 +459,14 @@ bool ValidateClampOptions(const MLClampOptions* options,
   return true;
 }
 
-absl::optional<Vector<uint32_t>> BroadcastShapes(
+std::optional<Vector<uint32_t>> BroadcastShapes(
     const Vector<uint32_t>& dims_lhs,
     const Vector<uint32_t>& dims_rhs,
     bool bidirectional = true) {
   auto output_shape = webnn::BroadcastShapes(
       base::make_span(dims_lhs), base::make_span(dims_rhs), bidirectional);
   if (!output_shape) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return Vector<uint32_t>(output_shape.value());
 }
@@ -472,7 +520,7 @@ MLOperand* BuildElementWiseBinary(MLGraphBuilder* builder,
         "The input operand data types don't match.");
     return nullptr;
   }
-  absl::optional<Vector<uint32_t>> dims_output =
+  std::optional<Vector<uint32_t>> dims_output =
       BroadcastShapes(a->Dimensions(), b->Dimensions());
   if (!dims_output) {
     exception_state.ThrowDOMException(
@@ -1236,6 +1284,63 @@ MLActivation* MLGraphBuilder::linear(const MLLinearOptions* options,
       this, MLOperator::OperatorKind::kLinear, options);
 }
 
+HeapVector<Member<const MLOperand>> MLGraphBuilder::lstm(
+    const MLOperand* input,
+    const MLOperand* weight,
+    const MLOperand* recurrent_weight,
+    const uint32_t steps,
+    const uint32_t hidden_size,
+    const MLLstmOptions* options,
+    ExceptionState& exception_state) {
+  auto validated_outputs = webnn::ValidateLstmAndInferOutput(
+      ConvertToComponentOperand(input), ConvertToComponentOperand(weight),
+      ConvertToComponentOperand(recurrent_weight), steps, hidden_size,
+      ConvertToLstmAttributes(options));
+  if (!validated_outputs.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        String::FromUTF8(validated_outputs.error()));
+    return {};
+  }
+
+  auto* lstm = MakeGarbageCollected<MLOperator>(
+      this, MLOperator::OperatorKind::kLstm, options);
+
+  HeapVector<Member<const MLOperand>> outputs;
+  for (const auto& validated_output : validated_outputs.value()) {
+    auto output = MLOperand::ValidateAndCreateOutput(
+        this, ComponentOperandTypeToBlink(validated_output.data_type),
+        Vector<uint32_t>(validated_output.dimensions), lstm);
+    if (!output.has_value()) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                        output.error());
+      return {};
+    }
+    outputs.push_back(output.value());
+  }
+
+  HeapVector<Member<const MLOperand>> inputs = {input, weight,
+                                                recurrent_weight};
+  if (options->hasBias()) {
+    inputs.push_back(options->bias());
+  }
+  if (options->hasRecurrentBias()) {
+    inputs.push_back(options->recurrentBias());
+  }
+  if (options->hasPeepholeWeight()) {
+    inputs.push_back(options->peepholeWeight());
+  }
+  if (options->hasInitialHiddenState()) {
+    inputs.push_back(options->initialHiddenState());
+  }
+  if (options->hasInitialCellState()) {
+    inputs.push_back(options->initialCellState());
+  }
+
+  lstm->Connect(std::move(inputs), outputs);
+  return outputs;
+}
+
 MLOperand* MLGraphBuilder::matmul(const MLOperand* a,
                                   const MLOperand* b,
                                   ExceptionState& exception_state) {
@@ -1307,6 +1412,13 @@ MLOperand* MLGraphBuilder::averagePool2d(const MLOperand* input,
                                          ExceptionState& exception_state) {
   return BuildPool2d(this, MLOperator::OperatorKind::kAveragePool2d, input,
                      options, exception_state);
+}
+
+MLOperand* MLGraphBuilder::l2Pool2d(const MLOperand* input,
+                                    const MLPool2dOptions* options,
+                                    ExceptionState& exception_state) {
+  return BuildPool2d(this, MLOperator::OperatorKind::kL2Pool2d, input, options,
+                     exception_state);
 }
 
 MLOperand* MLGraphBuilder::maxPool2d(const MLOperand* input,

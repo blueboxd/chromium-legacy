@@ -116,7 +116,6 @@ ContentSettingsType kPermissionType[] = {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
 #endif
-    ContentSettingsType::MIDI,
     ContentSettingsType::MIDI_SYSEX,
     ContentSettingsType::CLIPBOARD_READ_WRITE,
 #if BUILDFLAG(IS_ANDROID)
@@ -138,6 +137,7 @@ ContentSettingsType kPermissionType[] = {
 #if !BUILDFLAG(IS_ANDROID)
     ContentSettingsType::AUTO_PICTURE_IN_PICTURE,
 #endif  // !BUILDFLAG(IS_ANDROID)
+    ContentSettingsType::AUTOMATIC_FULLSCREEN,
 };
 
 // The list of setting types which request permission for a pair of requesting
@@ -340,16 +340,6 @@ void PageInfo::OnStatusChanged(CookieControlsStatus status,
     enforcement_ = enforcement;
     blocking_status_ = blocking_status;
     cookie_exception_expiration_ = expiration;
-    PresentSiteData(base::DoNothing());
-  }
-}
-
-void PageInfo::OnSitesCountChanged(int allowed_third_party_sites_count,
-                                   int blocked_third_party_sites_count) {
-  if (allowed_third_party_sites_count_ != allowed_third_party_sites_count ||
-      blocked_third_party_sites_count_ != blocked_third_party_sites_count) {
-    allowed_third_party_sites_count_ = allowed_third_party_sites_count;
-    blocked_third_party_sites_count_ = blocked_third_party_sites_count;
     PresentSiteData(base::DoNothing());
   }
 }
@@ -1264,6 +1254,12 @@ bool PageInfo::ShouldShowPermission(
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+  if (info.type == ContentSettingsType::AUTOMATIC_FULLSCREEN &&
+      !base::FeatureList::IsEnabled(
+          features::kAutomaticFullscreenContentSetting)) {
+    return false;
+  }
+
   const bool is_incognito =
       web_contents_->GetBrowserContext()->IsOffTheRecord();
 #if BUILDFLAG(IS_ANDROID)
@@ -1317,32 +1313,6 @@ bool PageInfo::ShouldShowPermission(
           features::kWebBluetoothNewPermissionsBackend) &&
       !PageInfo::IsPermissionFactoryDefault(info, is_incognito)) {
     return true;
-  }
-
-  if (base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
-    ContentSetting midi_sysex_setting = GetContentSettings()->GetContentSetting(
-        site_url_, site_url_, ContentSettingsType::MIDI_SYSEX);
-    // At most one of MIDI and MIDI-SysEx should be displayed in the page info
-    // bubble. Show MIDI-SysEx if it's allowed since it has higher access to
-    // MIDI devices, show MIDI otherwise.
-    // Don't show MIDI if SysEx is allowed.
-    if (info.type == ContentSettingsType::MIDI &&
-        midi_sysex_setting == ContentSetting::CONTENT_SETTING_ALLOW) {
-      return false;
-    }
-    // Don't show MIDI-SysEx if it is not allowed. Technically having MIDI_SYSEX
-    // blocked and MIDI default is legal, but with the current implementation
-    // blocking either permission with block both permissions so we don't have
-    // to handle that case.
-    if (info.type == ContentSettingsType::MIDI_SYSEX &&
-        midi_sysex_setting != ContentSetting::CONTENT_SETTING_ALLOW) {
-      return false;
-    }
-  } else {
-    // Don't show MIDI.
-    if (info.type == ContentSettingsType::MIDI) {
-      return false;
-    }
   }
 
   // Show the content setting when it has a non-default value.
@@ -1478,14 +1448,6 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
 
   PageInfoUI::CookiesNewInfo cookies_info;
   cookies_info.allowed_sites_count = GetSitesWithAllowedCookiesAccessCount();
-  // TODO(crbug.com/1446230): Clean up and remove the fallback after the feature
-  // was launched. If blocked_third_party_sites_count_ isn't set, use fallback
-  // and count the sites.
-  cookies_info.blocked_third_party_sites_count =
-      blocked_third_party_sites_count_.value_or(
-          GetThirdPartySitesWithBlockedCookiesAccessCount(site_url_));
-  cookies_info.allowed_third_party_sites_count =
-      allowed_third_party_sites_count_.value_or(0);
 
 #if !BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(

@@ -40,6 +40,9 @@ import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
+import java.util.List;
+import java.util.function.DoubleConsumer;
+
 /** Impl class that will resolve components for tab management. */
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
@@ -157,7 +160,8 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
             @NonNull ModalDialogManager modalDialogManager,
             @Nullable OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @NonNull OnClickListener newTabButtonOnClickListener,
-            boolean isIncognito) {
+            boolean isIncognito,
+            @NonNull DoubleConsumer onToolbarAlphaChange) {
         // TODO(crbug/1505772): Consider making this an activity scoped singleton and possibly
         // hosting it in CTA/HubProvider.
         TabSwitcherPaneCoordinatorFactory factory =
@@ -183,7 +187,8 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
                             factory,
                             incongitorTabModelFilterSupplier,
                             newTabButtonOnClickListener,
-                            incognitoReauthControllerSupplier);
+                            incognitoReauthControllerSupplier,
+                            onToolbarAlphaChange);
         } else {
             Supplier<TabModelFilter> tabModelFilterSupplier =
                     () -> tabModelSelector.getTabModelFilterProvider().getTabModelFilter(false);
@@ -195,8 +200,26 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
                             factory,
                             tabModelFilterSupplier,
                             newTabButtonOnClickListener,
-                            new TabSwitcherPaneDrawableCoordinator(activity, tabModelSelector));
+                            new TabSwitcherPaneDrawableCoordinator(activity, tabModelSelector),
+                            onToolbarAlphaChange);
         }
         return Pair.create(new TabSwitcherPaneAdapter(pane), pane);
+    }
+
+    @Override
+    public TabGroupCreationDialog createTabGroupCreationDialogDelegate(
+            @NonNull Activity activity,
+            @NonNull ModalDialogManager modalDialogManager,
+            @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier) {
+        return new TabGroupCreationDialogDelegate(
+                activity, modalDialogManager, tabModelSelectorSupplier);
+    }
+
+    @Override
+    public ColorPicker createColorPickerCoordinator(
+            @NonNull Context context,
+            @NonNull List<Integer> colors,
+            @NonNull ColorPickerDelegate delegate) {
+        return new ColorPickerCoordinator(context, colors, delegate);
     }
 }

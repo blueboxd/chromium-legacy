@@ -23,7 +23,6 @@ build_webui_tests("build") {
     "apn_subpage_test.ts",
     "cellular_networks_list_test.js",
     "cellular_roaming_toggle_button_test.js",
-    "esim_remove_profile_dialog_test.js",
     "fake_canvas_context.ts",
     "fake_input_method_private.ts",
     "fake_language_settings_private.ts",
@@ -32,7 +31,6 @@ build_webui_tests("build") {
     "fake_personalization_search_handler.ts",
     "fake_quick_unlock_private.ts",
     "fake_receive_manager.ts",
-    "fake_settings_private.js",
     "fake_settings_search_handler.ts",
     "fake_system_display.ts",
     "fake_user_action_recorder.ts",
@@ -41,11 +39,8 @@ build_webui_tests("build") {
     "lacros_extension_controlled_indicator_test.ts",
     "lock_screen_subpage_test.ts",
     "onc_mojo_test.ts",
-    "os_about_page_tests.js",
     "os_page_availability_test.ts",
-    "test_about_page_browser_proxy.ts",
     "test_api.ts",
-    "test_device_name_browser_proxy.ts",
     "test_extension_control_browser_proxy.ts",
     "test_lacros_extension_control_browser_proxy.ts",
     "test_os_lifetime_browser_proxy.ts",
@@ -53,7 +48,6 @@ build_webui_tests("build") {
     "utils.ts",
 
     # Subfolder files.
-    "app_management/app_test.js",
     "app_management/fake_page_handler.ts",
     "app_management/file_handling_item_test.ts",
     "app_management/managed_apps_test.ts",
@@ -131,6 +125,7 @@ build_webui_tests("build") {
 
     "internet_page/cellular_setup_dialog_test.ts",
     "internet_page/esim_install_error_dialog_test.ts",
+    "internet_page/esim_remove_profile_dialog_test.ts",
     "internet_page/esim_rename_dialog_test.ts",
     "internet_page/hotspot_config_dialog_test.ts",
     "internet_page/hotspot_subpage_test.ts",
@@ -202,6 +197,14 @@ build_webui_tests("build") {
     "os_a11y_page/text_to_speech_subpage_test.ts",
     "os_a11y_page/tts_voice_subpage_test.ts",
 
+    "os_about_page/channel_switcher_dialog_test.ts",
+    "os_about_page/consumer_auto_update_toggle_dialog_test.ts",
+    "os_about_page/detailed_build_info_subpage_test.ts",
+    "os_about_page/edit_hostname_dialog_test.ts",
+    "os_about_page/os_about_page_test.ts",
+    "os_about_page/test_about_page_browser_proxy.ts",
+    "os_about_page/test_device_name_browser_proxy.ts",
+
     "os_apps_page/app_management_page/app_detail_view_test.ts",
     "os_apps_page/app_management_page/app_details_item_test.ts",
     "os_apps_page/app_management_page/app_item_test.ts",
@@ -219,6 +222,9 @@ build_webui_tests("build") {
     "os_apps_page/app_management_page/resize_lock_item_test.ts",
     "os_apps_page/app_management_page/supported_links_item_test.ts",
     "os_apps_page/app_management_page/test_plugin_vm_browser_proxy.ts",
+    "os_apps_page/app_management_page/file_handling_item_test.ts",
+    "os_apps_page/app_management_page/permission_item_test.ts",
+    "os_apps_page/app_management_page/uninstall_button_test.ts",
 
     "os_apps_page/app_notifications_page/app_notification_row_test.ts",
     "os_apps_page/app_notifications_page/app_notifications_manager_subpage_test.ts",
@@ -237,7 +243,7 @@ build_webui_tests("build") {
     "os_bluetooth_page/os_bluetooth_pairing_dialog_test.ts",
     "os_bluetooth_page/os_bluetooth_saved_devices_subpage_test.ts",
     "os_bluetooth_page/os_bluetooth_summary_test.ts",
-    "os_bluetooth_page/os_bluetooth_true_wireless_images_tests.js",
+    "os_bluetooth_page/os_bluetooth_true_wireless_images_test.ts",
     "os_bluetooth_page/os_paired_bluetooth_list_test.ts",
     "os_bluetooth_page/os_paired_bluetooth_list_item_test.ts",
     "os_bluetooth_page/os_saved_devices_list_test.ts",
@@ -368,13 +374,13 @@ build_webui_tests("build") {
 
   ts_deps = [
     "//ash/webui/common/resources:build_ts",
+    "//ash/webui/common/resources/cr_elements:build_ts",
     "//chrome/browser/resources/ash/settings:build_ts",
     "//chrome/test/data/webui/chromeos:build_ts",
     "//chrome/test/data/webui/cr_components/chromeos:build_ts",
     "//chrome/test/data/webui/nearby_share:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/app_management:build_ts",
-    "//ui/webui/resources/cr_elements:build_ts",
     "//ui/webui/resources/js:build_ts",
     "//ui/webui/resources/mojo:build_ts",
   ]

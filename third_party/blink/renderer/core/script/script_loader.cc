@@ -95,7 +95,7 @@ blink::scheduler::TaskAttributionInfo* GetRunningTask(
   if (!script_state || !script_state->World().IsMainWorld() || !tracker) {
     return nullptr;
   }
-  return tracker->RunningTask(script_state);
+  return tracker->RunningTask(script_state->GetIsolate());
 }
 
 }  // namespace
@@ -347,6 +347,33 @@ bool IsEligibleForDelay(const Resource& resource,
       }
       break;
     case features::AsyncScriptExperimentalSchedulingTarget::kBoth:
+      break;
+  }
+
+  static const bool opt_out_low =
+      features::kDelayAsyncScriptExecutionOptOutLowFetchPriorityHintParam.Get();
+  static const bool opt_out_auto =
+      features::kDelayAsyncScriptExecutionOptOutAutoFetchPriorityHintParam
+          .Get();
+  static const bool opt_out_high =
+      features::kDelayAsyncScriptExecutionOptOutHighFetchPriorityHintParam
+          .Get();
+
+  switch (resource.GetResourceRequest().GetFetchPriorityHint()) {
+    case mojom::blink::FetchPriorityHint::kLow:
+      if (opt_out_low) {
+        return false;
+      }
+      break;
+    case mojom::blink::FetchPriorityHint::kAuto:
+      if (opt_out_auto) {
+        return false;
+      }
+      break;
+    case mojom::blink::FetchPriorityHint::kHigh:
+      if (opt_out_high) {
+        return false;
+      }
       break;
   }
 
@@ -834,7 +861,7 @@ PendingScript* ScriptLoader::PrepareScript(
         context_window->GetFrame()->GetAttributionSrcLoader()->CanRegister(
             url,
             /*element=*/nullptr,
-            /*request_id=*/absl::nullopt)) {
+            /*request_id=*/std::nullopt)) {
       options.SetAttributionReportingEligibility(
           ScriptFetchOptions::AttributionReportingEligibility::kEligible);
     }

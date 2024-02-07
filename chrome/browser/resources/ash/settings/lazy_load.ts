@@ -137,8 +137,6 @@ export {LifetimeBrowserProxyImpl} from '/shared/settings/lifetime_browser_proxy.
 export {NetworkListElement} from 'chrome://resources/ash/common/network/network_list.js';
 export {AddSmbShareDialogElement} from 'chrome://resources/ash/common/smb_shares/add_smb_share_dialog.js';
 export {SmbBrowserProxy, SmbBrowserProxyImpl, SmbMountResult} from 'chrome://resources/ash/common/smb_shares/smb_browser_proxy.js';
-export {AppManagementSupportedLinksItemElement} from 'chrome://resources/cr_components/app_management/supported_links_item.js';
-export {AppManagementSupportedLinksOverlappingAppsDialogElement} from 'chrome://resources/cr_components/app_management/supported_links_overlapping_apps_dialog.js';
 // Tests should use this export of `sanitizerInnerHtml` to prevent repeated
 // TrustedTypes policies from being created.
 export {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
@@ -191,6 +189,7 @@ export {ApnSubpageElement} from './internet_page/apn_subpage.js';
 export {CellularNetworksListElement} from './internet_page/cellular_networks_list.js';
 export {CellularRoamingToggleButtonElement} from './internet_page/cellular_roaming_toggle_button.js';
 export {EsimInstallErrorDialogElement} from './internet_page/esim_install_error_dialog.js';
+export {EsimRemoveProfileDialogElement} from './internet_page/esim_remove_profile_dialog.js';
 export {SettingsHotspotSubpageElement} from './internet_page/hotspot_subpage.js';
 export {SettingsInternetDetailPageElement} from './internet_page/internet_detail_subpage.js';
 export {SettingsInternetKnownNetworksPageElement} from './internet_page/internet_known_networks_subpage.js';
@@ -235,6 +234,10 @@ export {SettingsSwitchAccessSetupGuideDialogElement} from './os_a11y_page/switch
 export {SettingsSwitchAccessSubpageElement} from './os_a11y_page/switch_access_subpage.js';
 export {PdfOcrUserSelection, ScreenAiInstallStatus, SettingsTextToSpeechSubpageElement} from './os_a11y_page/text_to_speech_subpage.js';
 export {SettingsTtsVoiceSubpageElement} from './os_a11y_page/tts_voice_subpage.js';
+export {SettingsChannelSwitcherDialogElement} from './os_about_page/channel_switcher_dialog.js';
+export {SettingsConsumerAutoUpdateToggleDialogElement} from './os_about_page/consumer_auto_update_toggle_dialog.js';
+export {SettingsDetailedBuildInfoSubpageElement} from './os_about_page/detailed_build_info_subpage.js';
+export {EditHostnameDialogElement} from './os_about_page/edit_hostname_dialog.js';
 export {SettingsAndroidAppsSubpageElement} from './os_apps_page/android_apps_subpage.js';
 export {AppManagementAppDetailViewElement} from './os_apps_page/app_management_page/app_detail_view.js';
 export {AppManagementAppDetailsItem} from './os_apps_page/app_management_page/app_details_item.js';
@@ -247,11 +250,15 @@ export {AppManagementChromeAppDetailViewElement} from './os_apps_page/app_manage
 export {AppManagementDomSwitchElement} from './os_apps_page/app_management_page/dom_switch.js';
 export {AppManagementMainViewElement} from './os_apps_page/app_management_page/main_view.js';
 export {AppManagementPermissionHeadingElement} from './os_apps_page/app_management_page/permission_heading.js';
+export {AppManagementPermissionItemElement} from './os_apps_page/app_management_page/permission_item.js';
 export {AppManagementPinToShelfItemElement} from './os_apps_page/app_management_page/pin_to_shelf_item.js';
 export {AppManagementPluginVmDetailViewElement} from './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_detail_view.js';
 export {AppManagementPwaDetailViewElement} from './os_apps_page/app_management_page/pwa_detail_view.js';
 export {AppManagementResizeLockItemElement} from './os_apps_page/app_management_page/resize_lock_item.js';
 export {AppManagementSubAppsItemElement} from './os_apps_page/app_management_page/sub_apps_item.js';
+export {AppManagementSupportedLinksItemElement} from './os_apps_page/app_management_page/supported_links_item.js';
+export {AppManagementSupportedLinksOverlappingAppsDialogElement} from './os_apps_page/app_management_page/supported_links_overlapping_apps_dialog.js';
+export {AppManagementUninstallButtonElement} from './os_apps_page/app_management_page/uninstall_button.js';
 export {AppNotificationRowElement} from './os_apps_page/app_notifications_page/app_notification_row.js';
 export {SettingsAppNotificationsManagerSubpage} from './os_apps_page/app_notifications_page/app_notifications_manager_subpage.js';
 export {AppNotificationsSubpage} from './os_apps_page/app_notifications_page/app_notifications_subpage.js';

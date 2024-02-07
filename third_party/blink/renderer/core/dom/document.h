@@ -31,6 +31,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/check_op.h"
 #include "base/containers/enum_set.h"
@@ -43,7 +44,6 @@
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
@@ -330,7 +330,7 @@ struct UnloadEventTimingInfo {
   // The unload timing of the old document. This is only set from
   // Document::DispatchUnloadEvents() of the old document. This might not be set
   // if no old document gets unloaded.
-  absl::optional<UnloadEventTiming> unload_timing;
+  std::optional<UnloadEventTiming> unload_timing;
 };
 
 // A document (https://dom.spec.whatwg.org/#concept-document) is the root node
@@ -565,7 +565,9 @@ class CORE_EXPORT Document : public ContainerNode,
   HTMLCollection* DocumentAllNamedItems(const AtomicString& name);
 
   // The unassociated listed elements are listed elements that are not
-  // associated to a <form> element.
+  // associated to a <form> element. Note that if
+  // `features::kAutofillIncludeShadowDomInUnassociatedListedElements` is
+  // enabled, this includes elements inside Shadow DOM.
   const ListedElement::List& UnassociatedListedElements() const;
   void MarkUnassociatedListedElementsDirty();
 
@@ -610,6 +612,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetIsViewSource(bool is_view_source) {
     is_view_source_ = is_view_source;
   }
+
+  virtual bool IsJSONDocument() const { return false; }
 
   // WebXR DOM Overlay support, cf https://immersive-web.github.io/dom-overlays/
   // True if there's an ongoing "immersive-ar" WebXR session with a DOM Overlay
@@ -878,7 +882,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool WellFormed() const { return well_formed_; }
 
-  const DocumentToken& Token() const { return token_; }
+  const DocumentToken& Token() const {
+    if (!token_.has_value()) {
+      token_.emplace();
+    }
+    return token_.value();
+  }
 
   // Return the document URL, or an empty URL if it's unavailable.
   // This is not an implementation of web-exposed Document.prototype.URL.
@@ -1206,7 +1215,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void OverrideLastModified(const AtomicString& modified) {
     override_last_modified_ = modified;
   }
-  absl::optional<base::Time> lastModifiedTime() const;
+  std::optional<base::Time> lastModifiedTime() const;
   String lastModified() const;
 
   // The cookieURL is used to query the cookie database for this document's
@@ -1366,7 +1375,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Vector<IconURL> IconURLs(int icon_types_mask);
 
   void UpdateThemeColorCache();
-  absl::optional<Color> ThemeColor();
+  std::optional<Color> ThemeColor();
 
   // Returns the HTMLLinkElement currently in use for the Web Manifest.
   // Returns null if there is no such element.
@@ -1583,10 +1592,10 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   void ScheduleForTopLayerRemoval(Element*, TopLayerReason);
   void RemoveFinishedTopLayerElements();
-  // Returns absl::nullopt if the provided element is not scheduled for top
+  // Returns std::nullopt if the provided element is not scheduled for top
   // layer removal. If it is scheduled for removal, then this returns the reason
   // for the element being in the top layer.
-  absl::optional<TopLayerReason> IsScheduledForTopLayerRemoval(Element*) const;
+  std::optional<TopLayerReason> IsScheduledForTopLayerRemoval(Element*) const;
 
   HTMLDialogElement* ActiveModalDialog() const;
 
@@ -2284,7 +2293,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ResizeObserver& GetLazyLoadedAutoSizedImgObserver();
 
-  const DocumentToken token_;
+  // Mutable because the token is lazily-generated on demand if no token is
+  // explicitly set.
+  mutable std::optional<DocumentToken> token_;
 
   // Bitfield used for tracking UKM sampling of media features such that each
   // media feature is sampled only once per document.
@@ -2781,7 +2792,7 @@ class CORE_EXPORT Document : public ContainerNode,
   unsigned data_list_count_ = 0;
 
   // If legacy DOM Mutation event listeners are supported by the embedder.
-  absl::optional<bool> legacy_dom_mutations_supported_;
+  std::optional<bool> legacy_dom_mutations_supported_;
 
   // For rendering media URLs in a top-level context that use the
   // Content-Security-Policy header to sandbox their content. This causes

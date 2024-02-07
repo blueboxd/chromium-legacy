@@ -242,7 +242,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
               (),
               (override));
   MOCK_METHOD(bool, IsNewTabPage, (), (const, override));
-  MOCK_METHOD(SyncState, GetPasswordSyncState, (), (const, override));
   MOCK_METHOD(profile_metrics::BrowserProfileType,
               GetProfileType,
               (),
@@ -346,13 +345,7 @@ void CheckMetricHasValue(const ukm::TestUkmRecorder& test_ukm_recorder,
 }
 
 class FailingPasswordStoreBackend : public FakePasswordStoreBackend {
-  void InitBackend(AffiliatedMatchHelper* affiliated_match_helper,
-                   RemoteChangesReceived remote_form_changes_received,
-                   base::RepeatingClosure sync_enabled_or_disabled_cb,
-                   base::OnceCallback<void(bool)> completion) override {
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(completion), /*success=*/false));
-  }
+  bool IsAbleToSavePasswords() override { return false; }
 };
 
 // Creates a set map of `ServerPrediction`s for `form` according to the
@@ -394,8 +387,6 @@ class PasswordManagerTestBase : public testing::Test {
     ON_CALL(client_, GetProfilePasswordStore())
         .WillByDefault(Return(store_.get()));
 
-    feature_list_.InitWithFeatureState(features::kEnablePasswordsAccountStorage,
-                                       ShouldEnableAccountStorage());
     if (ShouldEnableAccountStorage()) {
       account_store_ =
           base::MakeRefCounted<TestPasswordStore>(IsAccountStore(true));
@@ -448,6 +439,15 @@ class PasswordManagerTestBase : public testing::Test {
     prefs_->registry()->RegisterIntegerPref(
         password_manager::prefs::kRelaunchChromeBubbleDismissedCounter, 0);
 #endif
+#if BUILDFLAG(IS_ANDROID)
+    const auto upm_pref_value =
+        ShouldEnableAccountStorage()
+            ? password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOn
+            : password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff;
+    prefs_->registry()->RegisterIntegerPref(
+        prefs::kPasswordsUseUPMLocalAndSeparateStores,
+        static_cast<int>(upm_pref_value));
+#endif  // BUILDFLAG(IS_ANDROID)
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(prefs_.get()));
 
     field_info_manager_ = std::make_unique<FieldInfoManager>(
@@ -779,9 +779,6 @@ class PasswordManagerTestBase : public testing::Test {
   std::unique_ptr<PasswordAutofillManager> password_autofill_manager_;
   std::unique_ptr<PasswordManager> manager_;
   std::unique_ptr<FieldInfoManager> field_info_manager_;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // The boolean parameter determines whether to enable a second account-scoped

@@ -381,6 +381,10 @@ inline constexpr char kContextualSearchWasFullyPrivacyEnabled[] =
 // Boolean pref recording whether cookie and data would be used only for
 // essential purposes.
 inline constexpr char kEssentialSearchEnabled[] = "essential_search_enabled";
+// Boolean pref recording the last applied value for kEssentialSearchEnabled
+// prefs.
+inline constexpr char kLastEssentialSearchValue[] =
+    "last_essential_search_value";
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_MAC)
@@ -623,22 +627,6 @@ inline constexpr char kLastSessionLength[] = "session.last_session_length";
 // The URL from which the Terms of Service can be downloaded. The value is only
 // honored for public accounts.
 inline constexpr char kTermsOfServiceURL[] = "terms_of_service.url";
-
-// A boolean pref recording whether user has dismissed the multiprofile
-// introduction dialog show.
-inline constexpr char kMultiProfileNeverShowIntro[] =
-    "settings.multi_profile_never_show_intro";
-
-// A boolean pref recording whether user has dismissed the multiprofile
-// teleport warning dialog show.
-inline constexpr char kMultiProfileWarningShowDismissed[] =
-    "settings.multi_profile_warning_show_dismissed";
-
-// A string pref that holds string enum values of how the user should behave
-// in a multiprofile session. See ChromeOsMultiProfileUserBehavior policy
-// for more details of the valid values.
-inline constexpr char kMultiProfileUserBehavior[] =
-    "settings.multiprofile_user_behavior";
 
 // A boolean preference indicating whether user has seen first-run tutorial
 // already.
@@ -2791,11 +2779,6 @@ inline constexpr char kDeviceEnrollmentCanExit[] = "enrollment.can_exit";
 inline constexpr char kDeviceDMTokenV1[] = "device_dm_token";
 inline constexpr char kDeviceDMTokenV2[] = "device_dm_token_v2";
 
-// Key name of a dictionary in local state to store cached multiprofle user
-// behavior policy value.
-inline constexpr char kCachedMultiProfileUserBehavior[] =
-    "CachedMultiProfileUserBehavior";
-
 // A string pref with initial locale set in VPD or manifest.
 inline constexpr char kInitialLocale[] = "intl.initial_locale";
 
@@ -3297,6 +3280,8 @@ inline constexpr char kCreatePasskeysInICloudKeychain[] =
 // latter if necessary. The timestamp therefore represents the "freshness" of
 // the CWS information saved.
 inline constexpr char kCWSInfoTimestamp[] = "extensions.cws_info_timestamp";
+inline constexpr char kCWSInfoFetchErrorTimestamp[] =
+    "extensions.cws_info_fetch_error_timestamp";
 
 // A bool value for running GarbageCollectStoragePartitionCommand.
 inline constexpr char kShouldGarbageCollectStoragePartitions[] =

@@ -52,6 +52,7 @@ import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.GlobalRenderFrameHostId;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
 import java.util.HashMap;
@@ -238,11 +239,13 @@ public class ReadAloudController
                     ReadAloudMetrics.recordIsPageReadable(isReadable);
                     ReadAloudMetrics.recordIsPageReadabilitySuccessful(true);
 
-                    // isPlaybackEnabled() should only be checked if isReadable == true.
-                    isReadable = isReadable && ReadAloudFeatures.isPlaybackEnabled();
+                    // Register _KnownReadable trial before checking more playback conditions
                     if (isReadable) {
                         ReadAloudFeatures.activateKnownReadableTrial();
                     }
+
+                    // isPlaybackEnabled() should only be checked if isReadable == true.
+                    isReadable = isReadable && ReadAloudFeatures.isPlaybackEnabled();
 
                     mReadabilityMap.put(url, isReadable);
                     mTimepointsSupportedMap.put(url, timepointsSupported);
@@ -327,6 +330,14 @@ public class ReadAloudController
                         }
 
                         @Override
+                        public void onActivityAttachmentChanged(
+                                Tab tab, @Nullable WindowAndroid window) {
+                            super.onActivityAttachmentChanged(tab, window);
+                            Log.d(TAG, "onActivityAttachmentChanged");
+                            maybeStopPlayback(tab);
+                        }
+
+                        @Override
                         protected void onTabSelected(Tab tab) {
                             super.onTabSelected(tab);
                             if (tab != null && tab.getUrl() != null) {
@@ -347,6 +358,7 @@ public class ReadAloudController
 
                         @Override
                         public void willCloseTab(Tab tab) {
+                            Log.d(TAG, "Tab closed");
                             maybeStopPlayback(tab);
                         }
                     };
@@ -426,11 +438,13 @@ public class ReadAloudController
     }
 
     /**
-     * Checks if Read Aloud is supported which is true iff: user is not in the
-     * incognito mode and user opted into "Make searches and browsing better".
+     * Checks if Read Aloud is supported which is true iff: user is not in the incognito mode and
+     * user opted into "Make searches and browsing better". If the ReadAloudInMultiWindow flag is
+     * disabled, this will return false if the activity is in multi window mode.
      */
     public boolean isAvailable() {
-        return ReadAloudFeatures.isAllowed(mProfileSupplier.get());
+        return ReadAloudFeatures.isAllowed(mProfileSupplier.get())
+                && !ReadAloudFeatures.isInMultiWindowAndDisabled(mActivity);
     }
 
     /** Returns true if the web contents within current Tab is readable. */
@@ -872,7 +886,14 @@ public class ReadAloudController
                 new ReadAloudPlaybackHooks.CreatePlaybackCallback() {
                     @Override
                     public void onSuccess(Playback playback) {
-
+                        // Check if in multi-window mode and not supporting multi-window
+                        // This failure will also trigger when the user goes into multi-window mode
+                        // with a playback since we will attempt to restore
+                        if (ReadAloudFeatures.isInMultiWindowAndDisabled(mActivity)) {
+                            playback.release();
+                            promise.reject(new Exception("In multi window mode"));
+                            return;
+                        }
                         // If we rely on the backend to detect page language, ensure it is supported
                         if (args.getLanguage() == null
                                 && !mReadabilityHooks
@@ -882,9 +903,10 @@ public class ReadAloudController
                                                         playback.getMetadata().languageCode()))) {
                             playback.release();
                             promise.reject(new Exception("Unsupported language"));
-                        } else {
-                            promise.fulfill(playback);
+                            return;
                         }
+
+                        promise.fulfill(playback);
                     }
 
                     @Override

@@ -22,6 +22,7 @@
 #include "base/strings/strcat.h"
 #include "chrome/browser/password_manager/android/password_manager_android_util.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend_error.h"
+#include "components/password_manager/core/browser/password_store/split_stores_and_local_upm.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -114,6 +115,11 @@ void PasswordStoreProxyBackend::Shutdown(base::OnceClosure shutdown_completed) {
   built_in_backend_.reset();
 }
 
+bool PasswordStoreProxyBackend::IsAbleToSavePasswords() {
+  // shadow_backend()->IsAbleToSavePasswords() doesn't matter because it's a
+  // fallback.
+  return main_backend()->IsAbleToSavePasswords();
+}
 void PasswordStoreProxyBackend::GetAllLoginsAsync(LoginsOrErrorReply callback) {
   main_backend()->GetAllLoginsAsync(std::move(callback));
 }
@@ -311,9 +317,8 @@ void PasswordStoreProxyBackend::MaybeFallbackOnOperation(
     const MethodName& method_name,
     base::OnceCallback<void(ResultT)> result_callback,
     ResultT result) {
-  if (!is_account_store_ &&
-      password_manager_android_util::UsesSplitStoresAndUPMForLocal(prefs_)) {
-    // The backend for local passwords doesn't support unenrollment and as such
+  if (password_manager::UsesSplitStoresAndUPMForLocal(prefs_)) {
+    // After store split the backend doesn't support unenrollment and as such
     // doesn't support fallbacks.
     std::move(result_callback).Run(std::move(result));
     return;
@@ -362,7 +367,7 @@ bool PasswordStoreProxyBackend::UsesAndroidBackendAsMainBackend() {
   CHECK(sync_service_, base::NotFatalUntil::M123);
   if (is_account_store_) {
     // The account store shouldn't be used unless the split happened.
-    CHECK(password_manager_android_util::UsesSplitStoresAndUPMForLocal(prefs_));
+    CHECK(password_manager::UsesSplitStoresAndUPMForLocal(prefs_));
     return UsesAndroidBackendAsMainBackendForAccount();
   }
   return UsesAndroidBackendAsMainBackendForProfile();
@@ -376,7 +381,7 @@ bool PasswordStoreProxyBackend::UsesAndroidBackendAsMainBackendForAccount() {
 
 bool PasswordStoreProxyBackend::UsesAndroidBackendAsMainBackendForProfile() {
   CHECK(!is_account_store_);
-  if (password_manager_android_util::UsesSplitStoresAndUPMForLocal(prefs_)) {
+  if (password_manager::UsesSplitStoresAndUPMForLocal(prefs_)) {
     return true;
   }
 

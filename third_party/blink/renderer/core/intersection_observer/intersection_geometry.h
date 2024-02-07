@@ -121,7 +121,7 @@ class CORE_EXPORT IntersectionGeometry {
                        const Vector<Length>& target_margin,
                        const Vector<Length>& scroll_margin,
                        unsigned flags,
-                       absl::optional<RootGeometry>& root_geometry,
+                       std::optional<RootGeometry>& root_geometry,
                        CachedRects* cached_rects = nullptr);
 
   IntersectionGeometry(const IntersectionGeometry&) = default;
@@ -226,6 +226,7 @@ class CORE_EXPORT IntersectionGeometry {
                   const Vector<Length>& scroll_margin,
                   CachedRects* cached_rects);
   bool ApplyClip(const LayoutObject* target,
+                 const LayoutBox* local_ancestor,
                  const LayoutObject* root,
                  const gfx::RectF& root_rect,
                  gfx::RectF& unclipped_intersection_rect,

@@ -592,7 +592,7 @@ bool AppListBubbleAppsPage::MaybeScrollToShowToast() {
   return true;
 }
 
-void AppListBubbleAppsPage::Layout() {
+void AppListBubbleAppsPage::Layout(PassKey) {
   LayoutSuperclass<views::View>(this);
   if (gradient_helper_)
     gradient_helper_->UpdateGradientMask();
@@ -983,7 +983,7 @@ void AppListBubbleAppsPage::OnToggleContinueSection() {
   }
 }
 
-BEGIN_METADATA(AppListBubbleAppsPage, views::View)
+BEGIN_METADATA(AppListBubbleAppsPage)
 END_METADATA
 
 }  // namespace ash

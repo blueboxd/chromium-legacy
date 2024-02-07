@@ -84,16 +84,21 @@ using password_manager::WarningType;
 
   // Service to know whether passwords are synced.
   raw_ptr<syncer::SyncService> _syncService;
+
+  // The user pref service.
+  raw_ptr<PrefService> _prefService;
 }
 
 - (instancetype)initWithPasswordCheckManager:
                     (scoped_refptr<IOSChromePasswordCheckManager>)
                         passwordCheckManager
                                faviconLoader:(FaviconLoader*)faviconLoader
-                                 syncService:(syncer::SyncService*)syncService {
+                                 syncService:(syncer::SyncService*)syncService
+                                 prefService:(PrefService*)prefService {
   self = [super init];
   if (self) {
     _syncService = syncService;
+    _prefService = prefService;
     _faviconLoader = faviconLoader;
 
     _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
@@ -122,9 +127,9 @@ using password_manager::WarningType;
   _currentState = _passwordCheckManager->GetPasswordCheckState();
   [self updateConsumerPasswordCheckState:_currentState];
   [self.consumer
-      setSavingPasswordsToAccount:password_manager::sync_util::
-                                      GetPasswordSyncState(_syncService) !=
-                                  password_manager::SyncState::kNotSyncing];
+      setSavingPasswordsToAccount:
+          password_manager::sync_util::GetPasswordSyncState(_syncService) !=
+          password_manager::sync_util::SyncState::kNotActive];
 }
 
 - (void)disconnect {
@@ -139,6 +144,7 @@ using password_manager::WarningType;
   _passwordCheckManager.reset();
   _savedPasswordsPresenter = nullptr;
   _faviconLoader = nullptr;
+  _prefService = nullptr;
   _syncService = nullptr;
 }
 
@@ -345,7 +351,8 @@ using password_manager::WarningType;
 
 // Compute whether user is capable to run password check in Google Account.
 - (BOOL)canUseAccountPasswordCheckup {
-  return password_manager::sync_util::GetAccountForSaving(_syncService) &&
+  return password_manager::sync_util::GetAccountForSaving(_prefService,
+                                                          _syncService) &&
          !_syncService->GetUserSettings()->IsEncryptEverythingEnabled();
 }
 
@@ -391,9 +398,9 @@ using password_manager::WarningType;
 
 - (void)onSyncStateChanged {
   [self.consumer
-      setSavingPasswordsToAccount:password_manager::sync_util::
-                                      GetPasswordSyncState(_syncService) !=
-                                  password_manager::SyncState::kNotSyncing];
+      setSavingPasswordsToAccount:
+          password_manager::sync_util::GetPasswordSyncState(_syncService) !=
+          password_manager::sync_util::SyncState::kNotActive];
 }
 
 @end

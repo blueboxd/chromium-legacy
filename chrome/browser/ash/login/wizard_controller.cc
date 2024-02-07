@@ -930,12 +930,10 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnApplyOnlinePasswordScreenExit,
                           weak_factory_.GetWeakPtr())));
 
-  if (features::AreLocalPasswordsEnabledForConsumers()) {
-    append(std::make_unique<LocalPasswordSetupScreen>(
-        oobe_ui->GetView<LocalPasswordSetupHandler>()->AsWeakPtr(),
-        base::BindRepeating(&WizardController::OnLocalPasswordSetupScreenExit,
-                            weak_factory_.GetWeakPtr())));
-  }
+  append(std::make_unique<LocalPasswordSetupScreen>(
+      oobe_ui->GetView<LocalPasswordSetupHandler>()->AsWeakPtr(),
+      base::BindRepeating(&WizardController::OnLocalPasswordSetupScreenExit,
+                          weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<LocalDataLossWarningScreen>(
       oobe_ui->GetView<LocalDataLossWarningScreenHandler>()->AsWeakPtr(),
@@ -1367,8 +1365,10 @@ void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
     case GaiaScreen::Result::CANCEL: {
       if (features::IsOobeSoftwareUpdateEnabled()) {
         // When `OobeSoftwareUpdate` is enabled, clicking the back button should
-        // return the user to the user creation screen if it was enabled.
-        if (wizard_context_->is_user_creation_enabled &&
+        // return the user to the user creation screen if it is enabled or the
+        // user is still in the oobe flow.
+        if ((wizard_context_->is_user_creation_enabled ||
+             !wizard_context_->is_add_person_flow) &&
             result == GaiaScreen::Result::BACK) {
           AdvanceToScreen(UserCreationView::kScreenId);
           break;

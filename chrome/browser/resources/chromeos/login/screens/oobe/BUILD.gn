@@ -30,7 +30,6 @@ js_library("welcome") {
     ":welcome_dialog",
     "../..:display_manager",
     "../../:cr_ui",
-    "../../components:oobe_cr_lottie",
     "../../components:oobe_select",
     "../../components:oobe_types",
     "../../components/behaviors:login_screen_behavior",
@@ -43,16 +42,13 @@ js_library("welcome") {
   extra_deps = [ ":web_components" ]
   externs_list = [
     "$externs_path/tts.js",
-    "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js",
+    "//ash/webui/common/resources/cr_elements/cr_input/cr_input_externs.js",
   ]
 }
 
 js_library("welcome_dialog") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/welcome_dialog.js" ]
   deps = [
-    "../../components:long_touch_detector",
-    "../../components:oobe_cr_lottie",
-    "../../components:quick_start_entry_point",
     "../../components/behaviors:oobe_i18n_behavior",
     "../../components/dialogs:oobe_modal_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",

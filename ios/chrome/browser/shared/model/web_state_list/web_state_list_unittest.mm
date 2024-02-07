@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 
+#import "base/memory/raw_ptr.h"
 #import "base/scoped_multi_source_observation.h"
 #import "base/scoped_observation.h"
 #import "base/supports_user_data.h"
@@ -180,6 +181,25 @@ class FakeNavigationManager : public web::FakeNavigationManager {
   int last_committed_item_index = 0;
 };
 
+// A WebStateListDelegate that records the last inserted/activated WebState.
+class TestWebStateListDelegate final : public WebStateListDelegate {
+ public:
+  web::WebState* LastInsertedWebState() { return last_inserted_web_state_; }
+  web::WebState* LastActivatedWebState() { return last_activated_web_state_; }
+
+  // WebStateListDelegate implementation.
+  void WillAddWebState(web::WebState* web_state) final {
+    last_inserted_web_state_ = web_state;
+  }
+  void WillActivateWebState(web::WebState* web_state) final {
+    last_activated_web_state_ = web_state;
+  }
+
+ private:
+  raw_ptr<web::WebState> last_inserted_web_state_;
+  raw_ptr<web::WebState> last_activated_web_state_;
+};
+
 }  // namespace
 
 class WebStateListTest : public PlatformTest {
@@ -192,7 +212,7 @@ class WebStateListTest : public PlatformTest {
   WebStateListTest& operator=(const WebStateListTest&) = delete;
 
  protected:
-  FakeWebStateListDelegate web_state_list_delegate_;
+  TestWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   WebStateListTestObserver observer_;
 
@@ -209,15 +229,21 @@ class WebStateListTest : public PlatformTest {
   }
 
   void AppendNewWebState(const char* url, WebStateOpener opener) {
-    web_state_list_.InsertWebState(WebStateList::kInvalidIndex,
-                                   CreateWebState(url),
-                                   WebStateList::INSERT_NO_FLAGS, opener);
+    web_state_list_.InsertWebState(
+        CreateWebState(url),
+        WebStateList::InsertionParams::Automatic().WithOpener(opener));
   }
 
   void AppendNewWebState(std::unique_ptr<web::FakeWebState> web_state) {
-    web_state_list_.InsertWebState(
-        WebStateList::kInvalidIndex, std::move(web_state),
-        WebStateList::INSERT_NO_FLAGS, WebStateOpener());
+    web_state_list_.InsertWebState(std::move(web_state));
+  }
+
+  web::WebState* LastInsertedWebState() {
+    return web_state_list_delegate_.LastInsertedWebState();
+  }
+
+  web::WebState* LastActivatedWebState() {
+    return web_state_list_delegate_.LastActivatedWebState();
   }
 };
 
@@ -228,14 +254,22 @@ TEST_F(WebStateListTest, IsEmpty) {
 
   AppendNewWebState(kURL0);
 
+  ASSERT_GE(web_state_list_.count(), 1);
+  EXPECT_EQ(LastInsertedWebState(), web_state_list_.GetWebStateAt(0));
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
+
   EXPECT_TRUE(observer_.web_state_inserted());
-  EXPECT_EQ(1, web_state_list_.count());
+  ASSERT_EQ(1, web_state_list_.count());
   EXPECT_FALSE(web_state_list_.empty());
 }
 
 // Tests that inserting a single webstate works.
 TEST_F(WebStateListTest, InsertUrlSingle) {
   AppendNewWebState(kURL0);
+
+  ASSERT_GE(web_state_list_.count(), 1);
+  EXPECT_EQ(LastInsertedWebState(), web_state_list_.GetWebStateAt(0));
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
 
   EXPECT_TRUE(observer_.web_state_inserted());
   ASSERT_EQ(1, web_state_list_.count());
@@ -244,15 +278,26 @@ TEST_F(WebStateListTest, InsertUrlSingle) {
 
 // Tests that inserting multiple webstates puts them in the expected places.
 TEST_F(WebStateListTest, InsertUrlMultiple) {
-  web_state_list_.InsertWebState(0, CreateWebState(kURL0),
-                                 WebStateList::INSERT_FORCE_INDEX,
-                                 WebStateOpener());
-  web_state_list_.InsertWebState(0, CreateWebState(kURL1),
-                                 WebStateList::INSERT_FORCE_INDEX,
-                                 WebStateOpener());
-  web_state_list_.InsertWebState(1, CreateWebState(kURL2),
-                                 WebStateList::INSERT_FORCE_INDEX,
-                                 WebStateOpener());
+  web_state_list_.InsertWebState(CreateWebState(kURL0),
+                                 WebStateList::InsertionParams::AtIndex(0));
+
+  ASSERT_GE(web_state_list_.count(), 1);
+  EXPECT_EQ(LastInsertedWebState(), web_state_list_.GetWebStateAt(0));
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
+
+  web_state_list_.InsertWebState(CreateWebState(kURL1),
+                                 WebStateList::InsertionParams::AtIndex(0));
+
+  ASSERT_GE(web_state_list_.count(), 1);
+  EXPECT_EQ(LastInsertedWebState(), web_state_list_.GetWebStateAt(0));
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
+
+  web_state_list_.InsertWebState(CreateWebState(kURL2),
+                                 WebStateList::InsertionParams::AtIndex(1));
+
+  ASSERT_GE(web_state_list_.count(), 1);
+  EXPECT_EQ(LastInsertedWebState(), web_state_list_.GetWebStateAt(1));
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
 
   EXPECT_TRUE(observer_.web_state_inserted());
   ASSERT_EQ(3, web_state_list_.count());
@@ -266,7 +311,15 @@ TEST_F(WebStateListTest, ActivateWebState) {
   AppendNewWebState(kURL0);
   EXPECT_EQ(nullptr, web_state_list_.GetActiveWebState());
 
+  ASSERT_GE(web_state_list_.count(), 1);
+  EXPECT_EQ(LastInsertedWebState(), web_state_list_.GetWebStateAt(0));
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
+
   web_state_list_.ActivateWebStateAt(0);
+
+  ASSERT_GE(web_state_list_.count(), 1);
+  EXPECT_EQ(LastInsertedWebState(), web_state_list_.GetWebStateAt(0));
+  EXPECT_EQ(LastActivatedWebState(), web_state_list_.GetWebStateAt(0));
 
   EXPECT_TRUE(observer_.web_state_activated());
   ASSERT_EQ(1, web_state_list_.count());
@@ -277,9 +330,12 @@ TEST_F(WebStateListTest, ActivateWebState) {
 // Tests activating a webstate as it is inserted.
 TEST_F(WebStateListTest, InsertActivate) {
   web_state_list_.InsertWebState(
-      0, CreateWebState(kURL0),
-      WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE,
-      WebStateOpener());
+      CreateWebState(kURL0),
+      WebStateList::InsertionParams::AtIndex(0).Activate());
+
+  ASSERT_GE(web_state_list_.count(), 1);
+  EXPECT_EQ(LastInsertedWebState(), web_state_list_.GetWebStateAt(0));
+  EXPECT_EQ(LastActivatedWebState(), web_state_list_.GetWebStateAt(0));
 
   EXPECT_TRUE(observer_.web_state_inserted());
   EXPECT_TRUE(observer_.web_state_activated());
@@ -310,9 +366,8 @@ TEST_F(WebStateListTest, GetIndexOfWebState) {
   EXPECT_EQ(1, web_state_list_.GetIndexOfWebState(target_web_state));
 
   // Another webstate inserted before target; target now at index 2.
-  web_state_list_.InsertWebState(0, CreateWebState(kURL3),
-                                 WebStateList::INSERT_FORCE_INDEX,
-                                 WebStateOpener());
+  web_state_list_.InsertWebState(CreateWebState(kURL3),
+                                 WebStateList::InsertionParams::AtIndex(0));
   EXPECT_EQ(2, web_state_list_.GetIndexOfWebState(target_web_state));
 }
 
@@ -373,6 +428,7 @@ TEST_F(WebStateListTest, GetIndexOfInactiveWebStateWithURL) {
   // Remove the webstate at index 1, so the only webstate with the target URL
   // is after the active webstate.
   web_state_list_.DetachWebStateAt(1);
+
   // Active webstate is now index 1, target URL is at index 2.
   EXPECT_EQ(2, web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
 }
@@ -387,8 +443,8 @@ TEST_F(WebStateListTest, InsertInheritOpener) {
             web_state_list_.GetActiveWebState());
 
   web_state_list_.InsertWebState(
-      WebStateList::kInvalidIndex, CreateWebState(kURL1),
-      WebStateList::INSERT_INHERIT_OPENER, WebStateOpener());
+      CreateWebState(kURL1),
+      WebStateList::InsertionParams::Automatic().InheritOpener());
 
   ASSERT_EQ(2, web_state_list_.count());
   ASSERT_EQ(web_state_list_.GetActiveWebState(),
@@ -563,6 +619,8 @@ TEST_F(WebStateListTest, ReplaceWebStateAt) {
   std::unique_ptr<web::WebState> old_web_state(
       web_state_list_.ReplaceWebStateAt(1, CreateWebState(kURL2)));
 
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
+
   EXPECT_TRUE(observer_.web_state_replaced());
   EXPECT_FALSE(observer_.web_state_activated());
   EXPECT_EQ(WebStateList::kInvalidIndex, web_state_list_.active_index());
@@ -588,6 +646,8 @@ TEST_F(WebStateListTest, ReplaceActiveWebStateAt) {
   std::unique_ptr<web::WebState> old_web_state(
       web_state_list_.ReplaceWebStateAt(1, CreateWebState(kURL2)));
 
+  EXPECT_EQ(LastActivatedWebState(), web_state_list_.GetWebStateAt(1));
+
   EXPECT_TRUE(observer_.web_state_replaced());
   EXPECT_TRUE(observer_.web_state_activated());
   EXPECT_EQ(1, web_state_list_.active_index());
@@ -598,7 +658,7 @@ TEST_F(WebStateListTest, ReplaceActiveWebStateAt) {
 }
 
 // Tests detaching webstates at index 0.
-TEST_F(WebStateListTest, DetachWebStateAtIndexBegining) {
+TEST_F(WebStateListTest, DetachWebStateAtIndexBeginning) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
   AppendNewWebState(kURL2);
@@ -612,6 +672,8 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexBegining) {
 
   observer_.ResetStatistics();
   web_state_list_.DetachWebStateAt(0);
+
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
 
   EXPECT_TRUE(observer_.web_state_detached());
   EXPECT_FALSE(observer_.web_state_activated());
@@ -637,6 +699,8 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexMiddle) {
   observer_.ResetStatistics();
   web_state_list_.DetachWebStateAt(1);
 
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
+
   EXPECT_TRUE(observer_.web_state_detached());
   EXPECT_FALSE(observer_.web_state_activated());
   EXPECT_EQ(WebStateList::kInvalidIndex, web_state_list_.active_index());
@@ -661,6 +725,8 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexLast) {
   observer_.ResetStatistics();
   web_state_list_.DetachWebStateAt(2);
 
+  EXPECT_EQ(LastActivatedWebState(), nullptr);
+
   EXPECT_TRUE(observer_.web_state_detached());
   EXPECT_FALSE(observer_.web_state_activated());
   EXPECT_EQ(WebStateList::kInvalidIndex, web_state_list_.active_index());
@@ -676,6 +742,8 @@ TEST_F(WebStateListTest, DetachActiveWebState) {
   AppendNewWebState(kURL2);
   web_state_list_.ActivateWebStateAt(0);
 
+  EXPECT_EQ(LastActivatedWebState(), web_state_list_.GetActiveWebState());
+
   // Sanity check before closing WebState.
   EXPECT_EQ(3, web_state_list_.count());
   EXPECT_EQ(kURL0, web_state_list_.GetWebStateAt(0)->GetVisibleURL().spec());
@@ -685,6 +753,9 @@ TEST_F(WebStateListTest, DetachActiveWebState) {
 
   observer_.ResetStatistics();
   web_state_list_.DetachWebStateAt(0);
+
+  // Note: this is a different WebState.
+  EXPECT_EQ(LastActivatedWebState(), web_state_list_.GetActiveWebState());
 
   EXPECT_TRUE(observer_.web_state_detached());
   EXPECT_TRUE(observer_.web_state_activated());
@@ -993,7 +1064,7 @@ TEST_F(WebStateListTest, StartBatchOperation_IsBatchInProgress) {
 
 // Tests WebStates are pinned correctly while their order in the WebStateList
 // doesn't change.
-TEST_F(WebStateListTest, SetWebStatePinned_KeepingExisitingOrder) {
+TEST_F(WebStateListTest, SetWebStatePinned_KeepingExistingOrder) {
   EXPECT_TRUE(web_state_list_.empty());
 
   AppendNewWebState(kURL0);
@@ -1283,7 +1354,7 @@ TEST_F(WebStateListTest, MoveWebStateAt_KeepsPinnedWebStateWithinPinnedRange) {
   EXPECT_EQ(web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec(), kURL2);
   EXPECT_EQ(web_state_list_.GetWebStateAt(3)->GetVisibleURL().spec(), kURL3);
 
-  // Try to move first pinned WebState inside of the pinned WebStates range.
+  // Try to move first pinned WebState contains of the pinned WebStates range.
   web_state_list_.MoveWebStateAt(0, 2);
 
   // Try to move first pinned WebState outside of the pinned WebStates range.
@@ -1350,4 +1421,53 @@ TEST_F(WebStateListTest, WebStateListAsWeakPtr) {
   EXPECT_TRUE(weak_web_state_list);
   web_state_list.reset();
   EXPECT_FALSE(weak_web_state_list);
+}
+
+using WebStateListRangeTest = PlatformTest;
+
+TEST_F(WebStateListRangeTest, InvalidRange) {
+  WebStateList::Range range = WebStateList::Range::InvalidRange();
+
+  EXPECT_FALSE(range.IsValid());
+}
+
+TEST_F(WebStateListRangeTest, ZeroRange) {
+  WebStateList::Range range(0, 0);
+
+  EXPECT_TRUE(range.IsValid());
+  EXPECT_EQ(0, range.start());
+  EXPECT_EQ(0, range.count());
+  EXPECT_EQ(0, range.end());
+
+  EXPECT_FALSE(range.contains(-1));
+  EXPECT_FALSE(range.contains(0));
+  EXPECT_FALSE(range.contains(1));
+
+  EXPECT_EQ(WebStateList::Range(0, 0), range);
+  EXPECT_NE(WebStateList::Range(0, 1), range);
+  EXPECT_NE(WebStateList::Range(1, 0), range);
+  EXPECT_NE(WebStateList::Range(1, 1), range);
+  EXPECT_NE(WebStateList::Range::InvalidRange(), range);
+}
+
+TEST_F(WebStateListRangeTest, SomeRange) {
+  WebStateList::Range range(1, 2);
+
+  EXPECT_TRUE(range.IsValid());
+  EXPECT_EQ(1, range.start());
+  EXPECT_EQ(2, range.count());
+  EXPECT_EQ(3, range.end());
+
+  EXPECT_FALSE(range.contains(-1));
+  EXPECT_FALSE(range.contains(0));
+  EXPECT_TRUE(range.contains(1));
+  EXPECT_TRUE(range.contains(2));
+  EXPECT_FALSE(range.contains(3));
+
+  EXPECT_NE(WebStateList::Range(0, 0), range);
+  EXPECT_NE(WebStateList::Range(0, 1), range);
+  EXPECT_NE(WebStateList::Range(1, 0), range);
+  EXPECT_NE(WebStateList::Range(1, 1), range);
+  EXPECT_EQ(WebStateList::Range(1, 2), range);
+  EXPECT_NE(WebStateList::Range::InvalidRange(), range);
 }

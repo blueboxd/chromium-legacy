@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.LocaleList;
+import android.os.Looper;
 import android.provider.Browser;
 import android.text.TextUtils;
 
@@ -37,7 +38,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
-import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderPickerActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
@@ -65,6 +64,7 @@ import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.profile_metrics.BrowserProfileType;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.url.GURL;
@@ -124,53 +124,61 @@ public class BookmarkUtils {
         showSaveFlow(
                 activity,
                 bottomSheetController,
-                fromExplicitTrackUi,
+                tab.getProfile(),
                 newBookmarkId,
+                fromExplicitTrackUi,
                 /* wasBookmarkMoved= */ false,
-                /* isNewBookmark= */ true,
-                tab.getProfile());
+                /* isNewBookmark= */ true);
         callback.onResult(newBookmarkId);
     }
 
     /**
-     * Shows the bookmark save flow.
+     * Shows the bookmark save flow with the given {@link BookmarkId}.
      *
      * @param activity The current Activity.
      * @param bottomSheetController The BottomSheetController, used to show the save flow.
-     * @param fromExplicitTrackUi Whether the bookmark was added from the explicit UI.
-     * @param bookmarkId The BookmarkId to show the save flow for. Can be null in some cases.
+     * @param profile The profile currently used.
+     * @param bookmarkId The BookmarkId to show the save flow for. Can be null in some cases (e.g. a
+     *     bookmark fails to be added) and in this case, the function writes to logcat and exits
+     *     without any action.
+     * @param fromExplicitTrackUi Whether the bookmark was added from the explicit UI (e.g. the
+     *     price-track menu item).
      * @param wasBookmarkMoved Whether the save flow is shown as a result of a moved bookmark.
      * @param isNewBookmark Whether the bookmark is newly created.
-     * @param profile The profile currently used.
      */
-    public static void showSaveFlow(
+    static void showSaveFlow(
             @NonNull Activity activity,
             @NonNull BottomSheetController bottomSheetController,
-            boolean fromExplicitTrackUi,
+            @NonNull Profile profile,
             @Nullable BookmarkId bookmarkId,
+            boolean fromExplicitTrackUi,
             boolean wasBookmarkMoved,
-            boolean isNewBookmark,
-            @NonNull Profile profile) {
+            boolean isNewBookmark) {
         if (bookmarkId == null) {
             Log.e(TAG, "Null bookmark found when showing the save flow, aborting.");
             return;
         }
 
         ShoppingService shoppingService = ShoppingServiceFactory.getForProfile(profile);
+        UserEducationHelper userEducationHelper =
+                new UserEducationHelper(activity, new Handler(Looper.myLooper()));
+        IdentityManager identityManager =
+                IdentityServicesProvider.get().getIdentityManager(profile);
 
         BookmarkSaveFlowCoordinator bookmarkSaveFlowCoordinator =
                 new BookmarkSaveFlowCoordinator(
                         activity,
                         bottomSheetController,
                         shoppingService,
-                        new UserEducationHelper(activity, new Handler()),
+                        userEducationHelper,
                         profile,
-                        IdentityServicesProvider.get().getIdentityManager(profile));
+                        identityManager);
         bookmarkSaveFlowCoordinator.show(
                 bookmarkId, fromExplicitTrackUi, wasBookmarkMoved, isNewBookmark);
     }
 
     // The legacy code path to add or edit bookmark without triggering the bookmark bottom sheet.
+    // Used for feed and GTS.
     private static BookmarkId addBookmarkAndShowSnackbar(
             BookmarkModel bookmarkModel,
             Tab tab,
@@ -178,14 +186,9 @@ public class BookmarkUtils {
             Activity activity,
             boolean fromCustomTab,
             @BookmarkType int bookmarkType) {
+        BookmarkId parentId = null;
         if (bookmarkType == BookmarkType.READING_LIST) {
-            return addToReadingList(
-                    tab.getOriginalUrl(),
-                    tab.getTitle(),
-                    snackbarManager,
-                    bookmarkModel,
-                    activity,
-                    tab.getProfile());
+            parentId = bookmarkModel.getDefaultReadingListFolder();
         }
         BookmarkId bookmarkId =
                 addBookmarkInternal(
@@ -193,7 +196,7 @@ public class BookmarkUtils {
                         bookmarkModel,
                         tab.getTitle(),
                         tab.getOriginalUrl(),
-                        /* parent= */ null,
+                        /* parent= */ parentId,
                         BookmarkType.NORMAL);
 
         if (bookmarkId != null && bookmarkId.getType() == BookmarkType.NORMAL) {
@@ -264,36 +267,63 @@ public class BookmarkUtils {
      * overwritten. After successful addition, a snackbar will be shown notifying the user about the
      * result of the operation.
      *
-     * @param url The associated URL.
+     * @param activity The associated activity which is adding this reading list item.
+     * @param bookmarkModel The bookmark model that talks to the bookmark backend.
      * @param title The title of the reading list item being added.
+     * @param url The associated URL.
      * @param snackbarManager The snackbar manager that will be used to show a snackbar.
-     * @param bookmarkBridge The bookmark bridge that talks to the bookmark backend.
-     * @param context The associated context.
-     * @return The bookmark ID created after saving the article to the reading list.
      * @param profile The profile currently used.
+     * @param bottomSheetController The {@link BottomSheetController} which is used to show the
+     *     BookmarkSaveFlow.
+     * @return The bookmark ID created after saving the article to the reading list.
+     * @deprecated Used only by feed, new users should rely on addOrEditBookmark (or the tab
+     *     bookmarker).
      */
+    @Deprecated
     public static BookmarkId addToReadingList(
-            GURL url,
-            String title,
-            SnackbarManager snackbarManager,
-            BookmarkBridge bookmarkBridge,
-            Context context,
-            @NonNull Profile profile) {
-        assert bookmarkBridge.isBookmarkModelLoaded();
-        BookmarkId bookmarkId = bookmarkBridge.addToDefaultReadingList(title, url);
+            @NonNull Activity activity,
+            @NonNull BookmarkModel bookmarkModel,
+            @NonNull String title,
+            @NonNull GURL url,
+            @NonNull SnackbarManager snackbarManager,
+            @NonNull Profile profile,
+            @NonNull BottomSheetController bottomSheetController) {
+        assert bookmarkModel.isBookmarkModelLoaded();
+        BookmarkId bookmarkId =
+                addBookmarkInternal(
+                        activity,
+                        bookmarkModel,
+                        title,
+                        url,
+                        bookmarkModel.getDefaultReadingListFolder(),
+                        BookmarkType.READING_LIST);
+        if (bookmarkId == null) {
+            return null;
+        }
 
-        if (bookmarkId != null) {
+        // Reading list is aligned with the bookmark save flow used by all other bookmark saves.
+        // This is bundled with account bookmarks to modernize the infra.
+        if (BookmarkFeatures.isBookmarksAccountStorageEnabled()) {
+            showSaveFlow(
+                    activity,
+                    bottomSheetController,
+                    profile,
+                    bookmarkId,
+                    /* fromExplicitTrackUi= */ false,
+                    /* wasBookmarkMoved= */ false,
+                    /* isNewBookmark= */ true);
+        } else {
             Snackbar snackbar =
                     Snackbar.make(
-                            context.getString(R.string.reading_list_saved),
+                            activity.getString(R.string.reading_list_saved),
                             new SnackbarController() {},
                             Snackbar.TYPE_ACTION,
                             Snackbar.UMA_READING_LIST_BOOKMARK_ADDED);
             snackbarManager.showSnackbar(snackbar);
-
-            TrackerFactory.getTrackerForProfile(profile)
-                    .notifyEvent(EventConstants.READ_LATER_ARTICLE_SAVED);
         }
+
+        TrackerFactory.getTrackerForProfile(profile)
+                .notifyEvent(EventConstants.READ_LATER_ARTICLE_SAVED);
         return bookmarkId;
     }
 
@@ -608,16 +638,6 @@ public class BookmarkUtils {
         }
     }
 
-    /** Starts an {@link BookmarkFolderPickerActivity} for the given {@link BookmarkId}. */
-    public static void startFolderPickerActivity(Context context, BookmarkId... bookmarkIds) {
-        // TODO(crbug.com/1465757): Record user action.
-        Intent intent = new Intent(context, BookmarkFolderPickerActivity.class);
-        intent.putStringArrayListExtra(
-                BookmarkFolderPickerActivity.INTENT_BOOKMARK_IDS,
-                bookmarkIdsToStringList(bookmarkIds));
-        context.startActivity(intent);
-    }
-
     /** Given the {@link BookmarkId}s, return a list of those ids serialized to string. */
     public static ArrayList<String> bookmarkIdsToStringList(BookmarkId... bookmarkIds) {
         ArrayList<String> bookmarkStrings = new ArrayList<>(bookmarkIds.length);
@@ -831,52 +851,6 @@ public class BookmarkUtils {
         if (Objects.equals(parentId, bookmarkModel.getRootFolderId())) return false;
 
         return true;
-    }
-
-    /**
-     * Moves the given {@link BookmarkId}s to the new parent if the parent is valid. Type swapping
-     * between regular bookmarks and Reading List items as necessary. This method assumes that the
-     * bookmark ids that are passed in are valid bookmarks that are moveable. If the newParent
-     * argument doesn't point to a valid location for all of the {@param bookmarksToMove}, then the
-     * operation is abandoned and nothing is moved.
-     *
-     * @param bookmarkModel The underlying BookmarkModel, used to move the bookmarks.
-     * @param bookmarksToMove The {@link BookmarkId}s to move.
-     * @param newParent The {@link BookmarkId} to be the new parent.
-     */
-    public static void moveBookmarksToParent(
-            BookmarkModel bookmarkModel, List<BookmarkId> bookmarksToMove, BookmarkId newParent) {
-        List<BookmarkId> bookmarksToMoveCopy = new ArrayList<>(bookmarksToMove);
-        // Check if each bookmark is moveable to the given parent.
-        for (BookmarkId id : bookmarksToMoveCopy) {
-            BookmarkItem item = bookmarkModel.getBookmarkById(id);
-            boolean canAddCurrentBookmarkToViewedParent =
-                    item.isFolder()
-                            ? canAddFolderToParent(bookmarkModel, newParent)
-                            : canAddBookmarkToParent(bookmarkModel, newParent);
-            if (!canAddCurrentBookmarkToViewedParent) return;
-        }
-
-        List<BookmarkId> typeSwappedReadingListItems = new ArrayList<>();
-        ReadingListUtils.typeSwapBookmarksIfNecessary(
-                bookmarkModel, bookmarksToMoveCopy, typeSwappedReadingListItems, newParent);
-        if (bookmarksToMoveCopy.size() > 0) {
-            bookmarkModel.moveBookmarks(bookmarksToMoveCopy, newParent);
-        }
-    }
-
-    /**
-     * Given a {@link BookmarkId}, returns the parent bookmark that should be used when going up.
-     * All bookmarks will skip over mobile bookmarks and other bookmarks.
-     *
-     * @param bookmarkModel The {@link BookmarkModel}.
-     * @param bookmarkId The {@link BookmarkId} to get the parent for.
-     */
-    public static BookmarkId getParentFolderForViewing(
-            BookmarkModel bookmarkModel, BookmarkId bookmarkId) {
-        BookmarkItem item = bookmarkModel.getBookmarkById(bookmarkId);
-        BookmarkId parent = item.getParentId();
-        return parent;
     }
 
     /** Returns whether the given folder should display images. */

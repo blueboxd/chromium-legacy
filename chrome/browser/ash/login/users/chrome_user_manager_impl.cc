@@ -47,7 +47,6 @@
 #include "chrome/browser/ash/login/signin/auth_error_observer.h"
 #include "chrome/browser/ash/login/signin/auth_error_observer_factory.h"
 #include "chrome/browser/ash/login/users/affiliation.h"
-#include "chrome/browser/ash/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
@@ -106,6 +105,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_manager_pref_names.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -118,12 +118,16 @@
 #include "ui/wm/core/wm_core_switches.h"
 
 namespace ash {
-namespace {
 
 // TODO(b/278643115) Remove the using when moved.
-using user_manager::kMultiProfileUserBehaviorPref;
+namespace prefs {
+using user_manager::prefs::kMultiProfileUserBehaviorPref;
+using user_manager::prefs::kRegularUsersPref;
+}  // namespace prefs
 using user_manager::MultiUserSignInPolicy;
 using user_manager::ParseMultiUserSignInPolicyPref;
+
+namespace {
 
 using ::content::BrowserThread;
 
@@ -169,7 +173,7 @@ bool GetUserLockAttributes(const user_manager::User* user,
   }
   if (policy) {
     *policy = ParseMultiUserSignInPolicyPref(
-                  prefs->GetString(kMultiProfileUserBehaviorPref))
+                  prefs->GetString(prefs::kMultiProfileUserBehaviorPref))
                   .value_or(MultiUserSignInPolicy::kUnrestricted);
   }
   return true;
@@ -292,7 +296,6 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
                             : nullptr),
       cros_settings_(CrosSettings::Get()),
       device_local_account_policy_service_(nullptr),
-      user_image_manager_registry_(this),
       multi_profile_user_controller_(GetLocalState(), this),
       mount_performer_(std::make_unique<MountPerformer>()) {
   UpdateNumberOfUsers();
@@ -434,8 +437,6 @@ void ChromeUserManagerImpl::Shutdown() {
     device_local_account_policy_service_->RemoveObserver(this);
   }
 
-  user_image_manager_registry_.Shutdown();
-
   multi_profile_user_controller_.Shutdown();
   cloud_external_data_policy_handlers_.clear();
   session_observation_.Reset();
@@ -444,11 +445,6 @@ void ChromeUserManagerImpl::Shutdown() {
 MultiProfileUserController*
 ChromeUserManagerImpl::GetMultiProfileUserController() {
   return &multi_profile_user_controller_;
-}
-
-UserImageManager* ChromeUserManagerImpl::GetUserImageManager(
-    const AccountId& account_id) {
-  return user_image_manager_registry_.GetManager(account_id);
 }
 
 user_manager::UserList ChromeUserManagerImpl::GetUsersAllowedForMultiProfile()
@@ -582,7 +578,10 @@ void ChromeUserManagerImpl::OnUserProfileLoaded(const AccountId& account_id) {
             AuthErrorObserverFactory::GetInstance()->GetForProfile(profile);
         sync_observer->StartObserving();
       }
-      multi_profile_user_controller_.StartObserving(profile);
+      auto* user =
+          user_manager::UserManager::Get()->FindUserAndModify(account_id);
+      CHECK(user);
+      multi_profile_user_controller_.StartObserving(user);
     }
   }
   system::UpdateSystemTimezone(profile);
@@ -705,7 +704,7 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
   // Remove ephemeral regular users (except the owner) when on the login screen.
   if (!IsUserLoggedIn()) {
     ScopedListPrefUpdate prefs_users_update(GetLocalState(),
-                                            user_manager::kRegularUsersPref);
+                                            prefs::kRegularUsersPref);
     // Take snapshot because DeleteUser called in the loop will update it.
     std::vector<raw_ptr<user_manager::User, VectorExperimental>> users = users_;
     for (user_manager::User* user : users) {
@@ -1237,16 +1236,6 @@ bool ChromeUserManagerImpl::IsDeprecatedSupervisedAccountId(
     const AccountId& account_id) const {
   return gaia::ExtractDomainName(account_id.GetUserEmail()) ==
          user_manager::kSupervisedUserDomain;
-}
-
-const gfx::ImageSkia& ChromeUserManagerImpl::GetResourceImageSkiaNamed(
-    int id) const {
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
-}
-
-std::u16string ChromeUserManagerImpl::GetResourceStringUTF16(
-    int string_id) const {
-  return l10n_util::GetStringUTF16(string_id);
 }
 
 void ChromeUserManagerImpl::ScheduleResolveLocale(

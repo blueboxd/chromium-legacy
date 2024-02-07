@@ -14,12 +14,14 @@
 #include "ash/system/notification_center/notification_style_utils.h"
 #include "ash/system/notification_center/views/ash_notification_expand_button.h"
 #include "ash/system/notification_center/views/conversation_item_view.h"
+#include "ash/system/notification_center/views/timestamp_view.h"
 #include "base/functional/bind.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -31,7 +33,7 @@
 namespace {
 
 constexpr auto kAppIconContainerInteriorMargin =
-    gfx::Insets::TLBR(16, 12, 0, 12);
+    gfx::Insets::TLBR(16, 12, 0, 0);
 constexpr auto kCollapsedPreviewContainerDefaultMargin =
     gfx::Insets::TLBR(0, 0, 0, 8);
 constexpr auto kCollapsedPreviewContainerInteriorMargin =
@@ -40,8 +42,8 @@ constexpr auto kConversationsContainerInteriorMargin =
     gfx::Insets::TLBR(8, 12, 0, 0);
 constexpr auto kExpandButtonContainerInteriorMargin =
     gfx::Insets::TLBR(0, 12, 0, 12);
-constexpr auto kMainTextContainerInteriorMargin =
-    gfx::Insets::TLBR(12, 0, 0, 0);
+constexpr auto kTextContainerInteriorMargin = gfx::Insets::TLBR(12, 12, 0, 0);
+constexpr auto kTitleRowDefaultMargin = gfx::Insets::TLBR(0, 0, 0, 6);
 
 }  // namespace
 
@@ -97,6 +99,8 @@ void ConversationNotificationView::UpdateWithNotification(
     return;
   }
 
+  timestamp_->SetTimestamp(notification.timestamp());
+
   auto* conversation_container = GetViewByID(ViewId::kConversationContainer);
   // TODO(b/284512022): We should update the container with new
   // conversations instead of repopulating for every update.
@@ -112,12 +116,25 @@ ConversationNotificationView::GetControlButtonsView() const {
   return control_buttons_view_;
 }
 
+void ConversationNotificationView::ToggleInlineSettings(
+    const ui::Event& event) {
+  bool should_show_inline_settings = !inline_settings_view_->GetVisible();
+  inline_settings_view_->SetVisible(should_show_inline_settings);
+  collapsed_preview_container_->SetVisible(!should_show_inline_settings &&
+                                           !expanded_);
+  conversations_container_->SetVisible(!should_show_inline_settings &&
+                                       expanded_);
+  right_controls_container_->SetVisible(!should_show_inline_settings);
+
+  PreferredSizeChanged();
+}
+
 std::unique_ptr<views::FlexLayoutView>
 ConversationNotificationView::CreateMainContainer(
     const Notification& notification) {
-  auto container = std::make_unique<views::FlexLayoutView>();
-  container->SetID(ViewId::kCollapsedModeContainer);
-  container->SetOrientation(views::LayoutOrientation::kHorizontal);
+  auto main_container = std::make_unique<views::FlexLayoutView>();
+  main_container->SetID(ViewId::kCollapsedModeContainer);
+  main_container->SetOrientation(views::LayoutOrientation::kHorizontal);
 
   auto app_icon_container = std::make_unique<views::FlexLayoutView>();
   app_icon_container->SetInteriorMargin(kAppIconContainerInteriorMargin);
@@ -132,23 +149,73 @@ ConversationNotificationView::CreateMainContainer(
 
   app_icon_container->AddChildView(std::move(app_icon_view));
 
-  auto main_text_container = std::make_unique<views::FlexLayoutView>();
-  main_text_container->SetOrientation(views::LayoutOrientation::kVertical);
-  main_text_container->SetInteriorMargin(kMainTextContainerInteriorMargin);
-  main_text_container->SetCrossAxisAlignment(views::LayoutAlignment::kStart);
-  main_text_container->SetProperty(
+  auto center_content_container = std::make_unique<views::FlexLayoutView>();
+  center_content_container->SetOrientation(views::LayoutOrientation::kVertical);
+  center_content_container->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(
           views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
                                    views::MaximumFlexSizeRule::kUnbounded)));
 
-  auto title = std::make_unique<views::Label>();
-  title->SetID(ViewId::kTitleLabel);
-  title->SetText(notification.title());
+  center_content_container->AddChildView(CreateTextContainer(notification));
+  set_inline_settings_enabled(
+      notification.rich_notification_data().settings_button_handler ==
+      message_center::SettingsButtonHandler::INLINE);
+  if (inline_settings_enabled()) {
+    inline_settings_view_ = center_content_container->AddChildView(
+        notification_style_utils::CreateInlineSettingsViewForMessageView(this));
+  }
 
-  notification_style_utils::ConfigureLabelStyle(
-      title.get(), kNotificationTitleLabelSize, true,
-      gfx::Font::Weight::MEDIUM);
+  main_container->AddChildView(std::move(app_icon_container));
+  main_container->AddChildView(std::move(center_content_container));
+  right_controls_container_ =
+      main_container->AddChildView(CreateRightControlsContainer());
+
+  return main_container;
+}
+
+std::unique_ptr<views::FlexLayoutView>
+ConversationNotificationView::CreateRightControlsContainer() {
+  auto right_controls_container = std::make_unique<views::FlexLayoutView>();
+  right_controls_container->SetOrientation(views::LayoutOrientation::kVertical);
+  right_controls_container->SetCrossAxisAlignment(views::LayoutAlignment::kEnd);
+
+  auto expand_button_container = std::make_unique<views::FlexLayoutView>();
+  expand_button_container->SetInteriorMargin(
+      kExpandButtonContainerInteriorMargin);
+  auto expand_button = std::make_unique<AshNotificationExpandButton>();
+  expand_button->SetID(ViewId::kExpandButton);
+  // base::Unretained is safe here because the `expand_button` is owned by
+  // `this` and will be destroyed before `this`.
+  expand_button->SetCallback(base::BindRepeating(
+      &ConversationNotificationView::ToggleExpand, base::Unretained(this)));
+
+  expand_button_container->AddChildView(std::move(expand_button));
+
+  auto view =
+      std::make_unique<message_center::NotificationControlButtonsView>(this);
+  view->SetID(ViewId::kControlButtonsView);
+  view->SetBetweenButtonSpacing(kNotificationControlButtonsHorizontalSpacing);
+  view->SetCloseButtonIcon(vector_icons::kCloseChromeRefreshIcon);
+  view->SetSettingsButtonIcon(vector_icons::kSettingsOutlineIcon);
+  view->SetButtonIconColors(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconColorPrimary));
+  view->SetNotificationControlButtonFactory(
+      std::make_unique<AshNotificationControlButtonFactory>());
+
+  control_buttons_view_ =
+      right_controls_container->AddChildView(std::move(view));
+  right_controls_container->AddChildView(std::move(expand_button_container));
+  return right_controls_container;
+}
+
+std::unique_ptr<views::FlexLayoutView>
+ConversationNotificationView::CreateTextContainer(
+    const message_center::Notification& notification) {
+  auto text_container = std::make_unique<views::FlexLayoutView>();
+  text_container->SetOrientation(views::LayoutOrientation::kVertical);
+  text_container->SetInteriorMargin(kTextContainerInteriorMargin);
+  text_container->SetCrossAxisAlignment(views::LayoutAlignment::kStart);
 
   auto collapsed_preview_container = std::make_unique<views::FlexLayoutView>();
   collapsed_preview_container->SetID(ViewId::kCollapsedPreviewContainer);
@@ -175,53 +242,42 @@ ConversationNotificationView::CreateMainContainer(
   collapsed_preview_container->AddChildView(
       std::move(collapsed_preview_message));
 
-  main_text_container->AddChildView(std::move(title));
+  text_container->AddChildView(CreateTitleRow(notification));
   collapsed_preview_container_ =
-      main_text_container->AddChildView(std::move(collapsed_preview_container));
-
-  container->AddChildView(std::move(app_icon_container));
-  container->AddChildView(std::move(main_text_container));
-  container->AddChildView(CreateNotificationControlButtonsView());
-
-  return container;
+      text_container->AddChildView(std::move(collapsed_preview_container));
+  return text_container;
 }
 
 std::unique_ptr<views::FlexLayoutView>
-ConversationNotificationView::CreateNotificationControlButtonsView() {
-  auto control_buttons_container = std::make_unique<views::FlexLayoutView>();
-  control_buttons_container->SetOrientation(
-      views::LayoutOrientation::kVertical);
-  control_buttons_container->SetCrossAxisAlignment(
-      views::LayoutAlignment::kEnd);
+ConversationNotificationView::CreateTitleRow(const Notification& notification) {
+  auto title_row = std::make_unique<views::FlexLayoutView>();
+  title_row->SetOrientation(views::LayoutOrientation::kHorizontal);
+  title_row->SetDefault(views::kMarginsKey, kTitleRowDefaultMargin);
 
-  auto expand_button_container = std::make_unique<views::FlexLayoutView>();
-  expand_button_container->SetInteriorMargin(
-      kExpandButtonContainerInteriorMargin);
-  auto expand_button = std::make_unique<AshNotificationExpandButton>();
-  expand_button->SetID(ViewId::kExpandButton);
-  // base::Unretained is safe here because the `expand_button` is owned by
-  // `this` and will be destroyed before `this`.
-  expand_button->SetCallback(base::BindRepeating(
-      &ConversationNotificationView::ToggleExpand, base::Unretained(this)));
+  auto title = std::make_unique<views::Label>();
+  title->SetID(ViewId::kTitleLabel);
+  title->SetText(notification.title());
 
-  expand_button_container->AddChildView(std::move(expand_button));
+  notification_style_utils::ConfigureLabelStyle(
+      title.get(), kNotificationTitleLabelSize, true,
+      gfx::Font::Weight::MEDIUM);
 
-  auto view =
-      std::make_unique<message_center::NotificationControlButtonsView>(this);
-  view->SetID(ViewId::kControlButtonsView);
-  view->SetBetweenButtonSpacing(kNotificationControlButtonsHorizontalSpacing);
-  view->SetCloseButtonIcon(vector_icons::kCloseChromeRefreshIcon);
-  view->SetSettingsButtonIcon(vector_icons::kSettingsOutlineIcon);
-  view->SetButtonIconColors(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconColorPrimary));
-  view->SetNotificationControlButtonFactory(
-      std::make_unique<AshNotificationControlButtonFactory>());
+  auto divider = std::make_unique<views::Label>();
+  divider->SetText(kNotificationTitleRowDivider);
+  notification_style_utils::ConfigureLabelStyle(divider.get(),
+                                                kNotificationSecondaryLabelSize,
+                                                /*is_color_primary=*/false);
 
-  control_buttons_view_ =
-      control_buttons_container->AddChildView(std::move(view));
-  control_buttons_container->AddChildView(std::move(expand_button_container));
+  auto timestamp = std::make_unique<TimestampView>();
+  notification_style_utils::ConfigureLabelStyle(timestamp.get(),
+                                                kNotificationSecondaryLabelSize,
+                                                /*is_color_primary=*/false);
 
-  return control_buttons_container;
+  title_row->AddChildView(std::move(title));
+  title_row->AddChildView(std::move(divider));
+  timestamp_ = title_row->AddChildView(std::move(timestamp));
+
+  return title_row;
 }
 
 BEGIN_METADATA(ConversationNotificationView, MessageView)

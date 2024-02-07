@@ -88,9 +88,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void SetFrameVisible(bool frame_visible) override;
   bool IsFrameVisible() const override;
   void SetVisibleAreaLarge(bool is_large) override;
-  bool IsVisibleAreaLarge() const override;
   void SetHadUserActivation(bool had_user_activation) override;
-  bool HadUserActivation() const override;
 
   bool IsPageVisible() const override;
 
@@ -279,13 +277,16 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
     return frame_task_queue_controller_.get();
   }
 
-  // Create the QueueTraits for a specific TaskType. This returns absl::nullopt
+  // Create the QueueTraits for a specific TaskType. This returns std::nullopt
   // for loading tasks and non-frame-level tasks.
   static MainThreadTaskQueue::QueueTraits CreateQueueTraitsForTaskType(
       TaskType);
 
   // Reset the state which should not persist across navigations.
   void ResetForNavigation();
+
+  // Whether the frame is considered important.
+  bool IsImportant() const;
 
   base::WeakPtr<FrameOrWorkerScheduler> GetFrameOrWorkerSchedulerWeakPtr()
       override;

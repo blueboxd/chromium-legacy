@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
-#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -147,12 +146,12 @@ NSInteger kFeedSymbolPointSize = 17;
   [super traitCollectionDidChange:previousTraitCollection];
   if (previousTraitCollection.preferredContentSizeCategory !=
       self.traitCollection.preferredContentSizeCategory) {
-    UIFont* font = [self fontForTitle];
-    self.titleLabel.font = font;
-    NSDictionary* attributes =
-        [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
-    [self.segmentedControl setTitleTextAttributes:attributes
-                                         forState:UIControlStateNormal];
+    if ([self.feedControlDelegate isFollowingFeedAvailable]) {
+      [self updateSegmentedControlFont:self.segmentedControl];
+    } else {
+      UIFont* font = [self fontForTitle];
+      self.titleLabel.font = font;
+    }
   }
 }
 
@@ -347,9 +346,11 @@ NSInteger kFeedSymbolPointSize = 17;
   if ([self.feedControlDelegate isFollowingFeedAvailable]) {
     buttonConfiguration.image =
         DefaultSymbolTemplateWithPointSize(kMenuSymbol, kFeedSymbolPointSize);
-    buttonConfiguration.background.backgroundColor =
-        [[UIColor colorNamed:kGrey200Color] colorWithAlphaComponent:0.8];
-    menuButton.layer.cornerRadius = kButtonSize / 2;
+    if (!IsFeedContainmentEnabled()) {
+      buttonConfiguration.background.backgroundColor =
+          [[UIColor colorNamed:kGrey200Color] colorWithAlphaComponent:0.8];
+      menuButton.layer.cornerRadius = kButtonSize / 2;
+    }
     menuButton.clipsToBounds = YES;
   } else {
     UIImage* menuIcon = DefaultSymbolTemplateWithPointSize(
@@ -418,12 +419,7 @@ NSInteger kFeedSymbolPointSize = 17;
   segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
   [segmentedControl setApportionsSegmentWidthsByContent:NO];
 
-  // Set text font and color.
-  UIFont* font = [self fontForTitle];
-  NSDictionary* attributes =
-      [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
-  [segmentedControl setTitleTextAttributes:attributes
-                                  forState:UIControlStateNormal];
+  [self updateSegmentedControlFont:segmentedControl];
 
   // Set selected feed and tap action.
   segmentedControl.selectedSegmentIndex =
@@ -474,6 +470,23 @@ NSInteger kFeedSymbolPointSize = 17;
   hiddenFeedLabel.numberOfLines = 0;
   hiddenFeedLabel.textAlignment = NSTextAlignmentCenter;
   return hiddenFeedLabel;
+}
+
+// Updates the font and color of the segmented control header to adapt to the
+// current dynamic sizing.
+- (void)updateSegmentedControlFont:(UISegmentedControl*)segmentedControl {
+  NSDictionary* normalAttributes = [NSDictionary
+      dictionaryWithObjectsAndKeys:[self fontForTitle], NSFontAttributeName,
+                                   [UIColor colorNamed:kTextSecondaryColor],
+                                   NSForegroundColorAttributeName, nil];
+  [segmentedControl setTitleTextAttributes:normalAttributes
+                                  forState:UIControlStateNormal];
+  NSDictionary* selectedAttributes = [NSDictionary
+      dictionaryWithObjectsAndKeys:[self fontForTitle], NSFontAttributeName,
+                                   [UIColor colorNamed:kTextPrimaryColor],
+                                   NSForegroundColorAttributeName, nil];
+  [segmentedControl setTitleTextAttributes:selectedAttributes
+                                  forState:UIControlStateSelected];
 }
 
 - (void)addCustomSearchEngineView {

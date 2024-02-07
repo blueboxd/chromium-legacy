@@ -205,8 +205,9 @@ class TabstripLikeBackground : public views::Background {
 }  // namespace
 
 class ToolbarView::ContainerView : public views::View {
+  METADATA_HEADER(ContainerView, views::View)
+
  public:
-  METADATA_HEADER(ContainerView);
   // Calling PreferredSizeChanged() will trigger the parent's
   // ChildPreferredSizeChanged.
   // Bubble up calls to ChildPreferredSizeChanged.
@@ -784,7 +785,7 @@ gfx::Size ToolbarView::GetMinimumSize() const {
   return size;
 }
 
-void ToolbarView::Layout() {
+void ToolbarView::Layout(PassKey) {
   // If we have not been initialized yet just do nothing.
   if (!initialized_)
     return;

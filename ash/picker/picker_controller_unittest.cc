@@ -42,8 +42,10 @@ class TestPickerClient : public PickerClient {
     return web_view_factory_.Create(params);
   }
 
-  void DownloadGifToString(const GURL& url,
+  void DownloadGifToString(const ValidGifUrl& url,
                            DownloadGifToStringCallback callback) override {}
+  void StartCrosSearch(const std::u16string& query,
+                       CrosSearchResultsCallback callback) override {}
 
  private:
   TestAshWebViewFactory web_view_factory_;

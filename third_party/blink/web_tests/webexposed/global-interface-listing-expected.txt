@@ -5679,6 +5679,7 @@ interface MLGraphBuilder
     method identity
     method input
     method instanceNormalization
+    method l2Pool2d
     method layerNormalization
     method leakyRelu
     method lesser
@@ -5686,6 +5687,7 @@ interface MLGraphBuilder
     method linear
     method log
     method logicalNot
+    method lstm
     method matmul
     method max
     method maxPool2d
@@ -6788,6 +6790,7 @@ interface OTPCredential : Credential
 interface Observable
     attribute @@toStringTag
     method constructor
+    method forEach
     method subscribe
     method takeUntil
     method toArray
@@ -7259,7 +7262,9 @@ interface PerformanceScriptTiming : PerformanceEntry
     getter invoker
     getter invokerType
     getter pauseDuration
-    getter sourceLocation
+    getter sourceCharPosition
+    getter sourceFunctionName
+    getter sourceURL
     getter window
     getter windowAttribution
     method constructor

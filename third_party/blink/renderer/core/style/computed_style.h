@@ -160,10 +160,11 @@ class WebkitTextStrokeColor;
 // ComputedStyle stores the computed value [1] for every CSS property on an
 // element and provides the interface between the style engine and the rest of
 // Blink. It acts as a container where the computed value of every CSS property
-// can be stored and retrieved:
+// can be retrieved after its created using a builder.
 //
-//   auto style = ComputedStyle::CreateInitialStyleSingleton();
-//   style->SetDisplay(EDisplay::kNone); //'display' keyword property
+//   ComputedStyleBuilder builder(*ComputedStyle::GetInitialStyleSingleton());
+//   builder.SetDisplay(EDisplay::kNone); //'display' keyword property
+//   auto style = builder.TakeStyle();
 //   style->Display();
 //
 // In addition to storing the computed value of every CSS property,
@@ -330,9 +331,11 @@ class ComputedStyle final : public ComputedStyleBase {
     ComputedStyleBase::TraceAfterDispatch(visitor);
   }
 
-  // Create the per-document/context singleton that is used for shallow-copying
-  // into new instances.
-  CORE_EXPORT static const ComputedStyle* CreateInitialStyleSingleton();
+  // Singletons to be used for StyleBuilder. The instances are
+  // context-independent and must always be used as `const` versions to avoid
+  // pollution of the style. Instances are allocated as per-thread singletons.
+  CORE_EXPORT static const ComputedStyle* GetInitialStyleSingleton();
+  CORE_EXPORT static const ComputedStyle* GetInitialStyleForImgSingleton();
 
   static const ComputedStyle* NullifyEnsured(const ComputedStyle* style) {
     if (!style) {
@@ -914,12 +917,12 @@ class ComputedStyle final : public ComputedStyleBase {
 
   // accent-color
   // An empty optional means the accent-color is 'auto'
-  absl::optional<blink::Color> AccentColorResolved() const;
+  std::optional<blink::Color> AccentColorResolved() const;
 
   // scrollbar-color
   // An empty optional means the scrollbar-color is 'auto'
-  absl::optional<blink::Color> ScrollbarThumbColorResolved() const;
-  absl::optional<blink::Color> ScrollbarTrackColorResolved() const;
+  std::optional<blink::Color> ScrollbarThumbColorResolved() const;
+  std::optional<blink::Color> ScrollbarTrackColorResolved() const;
 
   // Comparison operators
   // FIXME: Replace callers of operator== wth a named method instead, e.g.
@@ -1814,11 +1817,11 @@ class ComputedStyle final : public ComputedStyleBase {
   }
 
   // Returns (by value) the last text decoration, if any.
-  absl::optional<AppliedTextDecoration> LastAppliedTextDecoration() const {
+  std::optional<AppliedTextDecoration> LastAppliedTextDecoration() const {
     if (HasAppliedTextDecorations()) {
       return AppliedTextDecorations().back();
     }
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Overflow utility functions.

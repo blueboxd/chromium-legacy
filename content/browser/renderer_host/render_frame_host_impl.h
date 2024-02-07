@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <cstdint>
 #include <deque>
 #include <list>
@@ -226,7 +225,6 @@ class UrgentMessageScope;
 
 namespace network {
 class ResourceRequestBody;
-class URLLoaderFactoryBuilder;
 }  // namespace network
 
 namespace ukm {
@@ -266,12 +264,12 @@ class FileSystemManagerImpl;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
-class PrerenderCancellationReason;
 class IdleManagerImpl;
 class NavigationEarlyHintsManager;
 class NavigationRequest;
 class PeerConnectionTrackerHost;
 class PrefetchedSignedExchangeCache;
+class PrerenderCancellationReason;
 class PresentationServiceImpl;
 class PushMessagingManager;
 class RenderAccessibilityHost;
@@ -3457,10 +3455,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void UpdatePermissionsForNavigation(NavigationRequest* request);
 
-  // Returns true if there is an active transient fullscreen allowance for the
-  // Window Management feature (i.e. on screen configuration changes).
-  bool WindowManagementAllowsFullscreen();
-
   // Returns the latest NavigationRequest that has resulted in sending a Commit
   // IPC to the renderer process that hasn't yet been acked by the DidCommit IPC
   // from the renderer process.  Returns null if no such NavigationRequest
@@ -3500,18 +3494,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ukm::SourceIdObj ukm_source_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
-
-  // Lets ContentBrowserClient and devtools_instrumentation wrap the subresource
-  // factories before they are sent to a renderer process.
-  void WillCreateURLLoaderFactory(
-      const url::Origin& request_initiator,
-      network::URLLoaderFactoryBuilder& factory_builder,
-      ukm::SourceIdObj ukm_source_id,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-          header_client = nullptr,
-      bool* bypass_redirect_checks = nullptr,
-      bool* disable_secure_dns = nullptr,
-      network::mojom::URLLoaderFactoryOverridePtr* factory_override = nullptr);
 
   // Returns true if the ExecuteJavaScript() API can be used on this host.
   // The checks do not apply to ExecuteJavaScriptInIsolatedWorld, nor to

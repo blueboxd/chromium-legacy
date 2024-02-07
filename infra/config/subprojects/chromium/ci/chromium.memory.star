@@ -811,4 +811,6 @@ ci.builder(
         ),
     ],
     contact_team_email = "chrome-memory-safety-team@google.com",
+    execution_timeout = 15 * time.hour,
+    notifies = ["codeql-infra"],
 )

@@ -19,9 +19,6 @@ class TabStripLayout: UICollectionViewFlowLayout {
   /// Dynamic size of a tab.
   private var tabCellSize: CGSize = .zero
 
-  /// Last update item action.
-  public var lastUpdateAction: UICollectionViewUpdateItem.Action = .none
-
   /// Index paths of animated items.
   private var indexPathsOfDeletingItems: [IndexPath] = []
   private var indexPathsOfInsertingItems: [IndexPath] = []
@@ -66,11 +63,9 @@ class TabStripLayout: UICollectionViewFlowLayout {
       switch item.updateAction {
       case .insert:
         indexPathsOfInsertingItems.append(item.indexPathAfterUpdate!)
-        lastUpdateAction = .insert
         break
       case .delete:
         indexPathsOfDeletingItems.append(item.indexPathBeforeUpdate!)
-        lastUpdateAction = .delete
         break
       default:
         break
@@ -107,9 +102,16 @@ class TabStripLayout: UICollectionViewFlowLayout {
     -> UICollectionViewLayoutAttributes?
   {
     guard
-      let attributes: UICollectionViewLayoutAttributes =
-        self.layoutAttributesForItem(at: itemIndexPath)
+      var attributes: UICollectionViewLayoutAttributes =
+        super.finalLayoutAttributesForDisappearingItem(at: itemIndexPath)
     else { return nil }
+
+    /// Update `attributes` if the disappearing cell is selected.
+    if let selectedAttributes = self.layoutAttributesForSelectedCell(
+      layoutAttributes: attributes)
+    {
+      attributes = selectedAttributes
+    }
 
     if indexPathsOfDeletingItems.contains(itemIndexPath) {
       // Animate the disappearing item by fading it out and translating it down
@@ -319,8 +321,19 @@ class TabStripLayout: UICollectionViewFlowLayout {
     var origin = layoutAttributes.frame.origin
     var horizontalInset: CGFloat = 0
 
-    let staticSeparatorHorizontalInset =
-      tabCellSize.width - TabStripConstants.AnimatedSeparator.collapseHorizontalInsetThreshold
+    // Add a static separator horizontal inset only if the selected cell is the
+    // first or the last one. Otherwise, when the selected cell is anchored and
+    // a cell is scrolled behind, only one separator is displayed until the
+    // horizontal inset threshold is reached.
+    var staticSeparatorHorizontalInset: CGFloat = 0
+    if let snapshot = dataSource?.snapshot() {
+      let itemCount = snapshot.itemIdentifiers.count
+      if indexPath.item == 0 || indexPath.item == itemCount - 1 {
+        staticSeparatorHorizontalInset =
+          tabCellSize.width - TabStripConstants.AnimatedSeparator.collapseHorizontalInsetThreshold
+      }
+    }
+
     var hideLeftStaticSeparator = true
     var hideRightStaticSeparator = true
 

@@ -11,6 +11,7 @@
 
 #include "base/feature_list.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -237,6 +238,10 @@ bool AddressComponent::IsSupportedType(FieldType field_type) const {
          GetAdditionalSupportedFieldTypes().contains(field_type);
 }
 
+bool AddressComponent::IsValueReadOnly() const {
+  return false;
+}
+
 void AddressComponent::GetSupportedTypes(FieldTypeSet* supported_types) const {
   return AddressComponent::GetTypes(/*storable_only=*/false, supported_types);
 }
@@ -255,6 +260,11 @@ void AddressComponent::GetTypes(bool storable_only,
   supported_types->insert(storage_type_);
   if (!storable_only) {
     supported_types->insert_all(GetAdditionalSupportedFieldTypes());
+    // Include synthesized types in the list of supported (not storable) types.
+    for (const AddressComponent* synthesized_node :
+         synthesized_subcomponents_) {
+      supported_types->insert(synthesized_node->GetStorageType());
+    }
   }
 
   for (AddressComponent* subcomponent : subcomponents_) {
@@ -325,7 +335,7 @@ bool AddressComponent::SetValueForType(
     const std::u16string& value,
     const VerificationStatus& verification_status) {
   AddressComponent* node_for_type = GetNodeForType(field_type);
-  if (!node_for_type) {
+  if (!node_for_type || node_for_type->IsValueReadOnly()) {
     return false;
   }
   node_for_type->GetStorageType() == field_type
@@ -396,6 +406,13 @@ const AddressComponent* AddressComponent::GetNodeForType(
   // Check if the current node supports `field_type`. If so return the node.
   if (IsSupportedType(field_type)) {
     return this;
+  }
+
+  // Check if the requested node is one the synthesized subcomponents.
+  for (const AddressComponent* synthesized_node : synthesized_subcomponents_) {
+    if (synthesized_node->GetStorageType() == field_type) {
+      return synthesized_node;
+    }
   }
   // Check if any of the descendants of the node support `field_type`
   for (const AddressComponent* subcomponent : subcomponents_) {
@@ -672,6 +689,7 @@ bool AddressComponent::AllDescendantsAreEmpty() const {
 
 void AddressComponent::WipeRawPtrsForDestruction() {
   subcomponents_.clear();
+  synthesized_subcomponents_.clear();
   parent_ = nullptr;
 }
 
@@ -836,6 +854,16 @@ bool AddressComponent::CompleteFullTree() {
   }
 }
 
+void AddressComponent::GenerateTreeSynthesizedNodes() {
+  for (AddressComponent* subcomponent : subcomponents_) {
+    subcomponent->GenerateTreeSynthesizedNodes();
+  }
+
+  for (AddressComponent* synthesized_component : synthesized_subcomponents_) {
+    synthesized_component->FormatValueFromSubcomponents();
+  }
+}
+
 void AddressComponent::RecursivelyCompleteTree() {
   if (IsAtomic())
     return;
@@ -924,6 +952,12 @@ void AddressComponent::MergeVerificationStatuses(
     subcomponents_[i]->MergeVerificationStatuses(
         *newer_component.subcomponents_.at(i));
   }
+}
+
+void AddressComponent::RegisterSynthesizedSubcomponent(
+    AddressComponent* synthesized_component) {
+  synthesized_component->SetParent(this);
+  synthesized_subcomponents_.push_back(synthesized_component);
 }
 
 const std::vector<AddressToken> AddressComponent::GetSortedTokens() const {

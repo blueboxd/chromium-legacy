@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_DECORATION_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_DECORATION_PAINTER_H_
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include <optional>
+
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/paint/highlight_painter.h"
 #include "third_party/blink/renderer/core/paint/text_decoration_info.h"
@@ -48,16 +49,24 @@ class CORE_EXPORT TextDecorationPainter {
 
   // Sets the given optional to a new TextDecorationInfo with the decorations
   // that need to be painted, or nullopt if decorations should not be painted.
-  void UpdateDecorationInfo(absl::optional<TextDecorationInfo>&,
+  void UpdateDecorationInfo(std::optional<TextDecorationInfo>&,
                             const FragmentItem&,
                             const ComputedStyle&,
-                            absl::optional<LineRelativeRect> = {},
+                            std::optional<LineRelativeRect> = {},
                             const AppliedTextDecoration* = nullptr);
 
   enum Phase { kOriginating, kSelection };
   void Begin(const FragmentItem&, Phase phase);
   void PaintExceptLineThrough(const TextFragmentPaintInfo&);
   void PaintOnlyLineThrough();
+
+  // Variants of the above that can be called without calling begin. The
+  // provided state overrides that bound to the TextDecorationPainter.
+  void PaintExceptLineThrough(TextDecorationInfo&,
+                              const TextPaintStyle&,
+                              const TextFragmentPaintInfo&,
+                              TextDecorationLine lines_to_paint);
+  void PaintOnlyLineThrough(TextDecorationInfo&, const TextPaintStyle&);
 
   const InlinePaintContext* InlineContext() const { return inline_context_; }
 
@@ -70,6 +79,12 @@ class CORE_EXPORT TextDecorationPainter {
   enum Step { kBegin, kExcept, kOnly };
   void ClipIfNeeded(GraphicsContextStateSaver&);
 
+  void PaintUnderOrOverLineDecorations(TextDecorationInfo&,
+                                       const TextFragmentPaintInfo&,
+                                       const TextPaintStyle&,
+                                       TextDecorationLine lines_to_paint);
+  void PaintLineThroughDecorations(TextDecorationInfo&, const TextPaintStyle&);
+
   TextPainter& text_painter_;
   const InlinePaintContext* inline_context_;
   const PaintInfo& paint_info_;
@@ -80,8 +95,8 @@ class CORE_EXPORT TextDecorationPainter {
 
   Step step_;
   Phase phase_;
-  absl::optional<TextDecorationInfo> decoration_info_;
-  absl::optional<gfx::RectF> clip_rect_;
+  std::optional<TextDecorationInfo> decoration_info_;
+  std::optional<gfx::RectF> clip_rect_;
 };
 
 }  // namespace blink

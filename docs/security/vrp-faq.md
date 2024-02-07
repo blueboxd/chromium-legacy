@@ -4,7 +4,23 @@
 
 ## News and Updates
 
+**Chromium has migrated to a new issue tracker.** Please report all Chromium
+security bugs in the new tracker using [this
+form](https://issues.chromium.org/issues/new?noWizard=true&component=1363614&template=1922342).
+
 Please check here for any news and updates about the Chrome VRP.
+
+* 4 February 2024: The Chromium issue tracker migration is now complete. Please
+  submit all issues using the [new issue tracker](https://issues.chromium.org)
+  and use [this
+  form](https://issues.chromium.org/issues/new?noWizard=true&component=1363614&template=1922342)
+  for directly reporting security issue to the security team.
+
+* 1 February 2024: Chromium issue tracker migration will begin on Friday, 2
+  February 2024. During the migration new issues will not be able to be
+  reported. As of 4 February 2024, all security bugs should be reported using
+  [this form](https://issues.chromium.org/new), and select 'Security' from the
+  "Which of the following best describes the issue being reported?" dropdown.
 
 * 26 January 2024: Chromium is moving to a new issue tracker. This is currently
   scheduled for 5 February 2024. More information will be provided next week
@@ -44,12 +60,9 @@ possible, please consider the following best practices for Chromium security bug
 reports:
 
 * Use the [security bug reporting
-  form](https://bugs.chromium.org/p/chromium/issues/entry?template=Security+Bug)
-  for the Chromium bug tracker; this will allow the bug report to be included in
-  the security bug triage queue immediately.
-  (Please note this link will be changing the evening on or before 5 February
-  2024.)
-
+  form](https://issues.chromium.org/issues/new?noWizard=true&component=1363614&template=1922342)
+  * This will allow the bug report to be included in the security bug triage
+    queue immediately.
 * Include the version number and OS used to reproduce the bug. For an [extra
   bonus reward](https://g.co/chrome/vrp/#bisect-bonus), please consider
   including a bisection.

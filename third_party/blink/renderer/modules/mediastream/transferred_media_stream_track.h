@@ -91,8 +91,6 @@ class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
                  int wheel_delta_x,
                  int wheel_delta_y,
                  base::OnceCallback<void(DOMException*)> callback) override;
-  void GetZoomLevel(base::OnceCallback<void(absl::optional<int>, const String&)>
-                        callback) override;
   void SetZoomLevel(int zoom_level,
                     base::OnceCallback<void(DOMException*)> callback) override;
 #endif
@@ -111,7 +109,7 @@ class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
       uint32_t context_buffer_size) override;
 
   ImageCapture* GetImageCapture() override;
-  absl::optional<const MediaStreamDevice> device() const override;
+  std::optional<const MediaStreamDevice> device() const override;
   void BeingTransferred(const base::UnguessableToken& transfer_id) override;
   bool TransferAllowed(String& message) const override;
 

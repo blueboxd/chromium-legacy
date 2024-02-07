@@ -204,10 +204,6 @@ void MaybeLogAuditIssue(GlobalRenderFrameHostId render_frame_id,
                         const std::optional<std::string>& request_devtools_id,
                         std::optional<std::string> invalid_parameter,
                         AttributionReportingIssueType violation_type) {
-  if (!request_devtools_id.has_value()) {
-    return;
-  }
-
   auto* render_frame_host = RenderFrameHost::FromID(render_frame_id);
   if (!render_frame_host) {
     return;
@@ -224,7 +220,9 @@ void MaybeLogAuditIssue(GlobalRenderFrameHostId render_frame_id,
   }
 
   auto affected_request = blink::mojom::AffectedRequest::New();
-  affected_request->request_id = request_devtools_id.value();
+  if (request_devtools_id.has_value()) {
+    affected_request->request_id = request_devtools_id.value();
+  }
   affected_request->url = request_url.spec();
   details->request = std::move(affected_request);
 
@@ -910,11 +908,6 @@ void AttributionDataHostManagerImpl::RegisterDataHost(
 bool AttributionDataHostManagerImpl::RegisterNavigationDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
     const blink::AttributionSrcToken& attribution_src_token) {
-  // Should only be possible with a misbehaving renderer.
-  if (BackgroundRegistrationsEnabled()) {
-    return false;
-  }
-
   auto [it, inserted] = navigation_data_host_map_.try_emplace(
       attribution_src_token, std::move(data_host));
   // Should only be possible with a misbehaving renderer.
@@ -1367,12 +1360,6 @@ bool AttributionDataHostManagerImpl::NotifyBackgroundRegistrationData(
     std::vector<network::TriggerVerification> trigger_verifications) {
   CHECK(BackgroundRegistrationsEnabled());
 
-  auto reporting_origin =
-      SuitableOrigin::Create(url::Origin::Create(reporting_url));
-  if (!reporting_origin.has_value()) {
-    return false;
-  }
-
   auto it = registrations_.find(id);
   // If the registrations cannot be found, it means that it was dropped early
   // due to being tied to an ineligle navigation.
@@ -1380,6 +1367,18 @@ bool AttributionDataHostManagerImpl::NotifyBackgroundRegistrationData(
     return false;
   }
   CHECK(!it->registrations_complete());
+
+  auto reporting_origin = url::Origin::Create(reporting_url);
+  auto suitable_reporting_origin = SuitableOrigin::Create(reporting_origin);
+  if (!suitable_reporting_origin.has_value()) {
+    MaybeLogAuditIssue(
+        it->render_frame_id(),
+        /*request_url=*/reporting_url, it->devtools_request_id(),
+        /*invalid_parameter=*/reporting_origin.Serialize(),
+        /*violation_type=*/
+        AttributionReportingIssueType::kUntrustworthyReportingOrigin);
+    return false;
+  }
 
   auto header = RegistrarAndHeader::Get(
       headers,
@@ -1401,7 +1400,7 @@ bool AttributionDataHostManagerImpl::NotifyBackgroundRegistrationData(
   ParseHeader(
       it,
       HeaderPendingDecode(std::move(header->header),
-                          std::move(reporting_origin.value()),
+                          std::move(suitable_reporting_origin.value()),
                           std::move(reporting_url), std::move(verifications)),
       header->registrar);
   return true;
@@ -1716,7 +1715,14 @@ void AttributionDataHostManagerImpl::HandleParsedWebTrigger(
     attribution_manager_->HandleTrigger(std::move(*trigger),
                                         registrations.render_frame_id());
   } else {
-    // TODO(https://crbug.com/1457238): Notify of failed trigger registration.
+    MaybeLogAuditIssue(
+        registrations.render_frame_id(),
+        /*request_url=*/pending_decode.reporting_url,
+        registrations.devtools_request_id(),
+        /*invalid_parameter=*/pending_decode.header,
+        /*violation_type=*/
+        AttributionReportingIssueType::kInvalidRegisterTriggerHeader);
+    attribution_reporting::RecordTriggerRegistrationError(trigger.error());
   }
 }
 

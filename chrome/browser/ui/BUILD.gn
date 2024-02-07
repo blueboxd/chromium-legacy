@@ -1165,6 +1165,8 @@ static_library("ui") {
       "download/download_bubble_row_list_view_info.h",
       "download/download_bubble_row_view_info.cc",
       "download/download_bubble_row_view_info.h",
+      "download/download_bubble_security_view_info.cc",
+      "download/download_bubble_security_view_info.h",
       "download/download_display.cc",
       "download/download_display.h",
       "download/download_item_mode.cc",
@@ -1365,6 +1367,10 @@ static_library("ui") {
       "performance_controls/performance_controls_hats_service_factory.h",
       "performance_controls/performance_controls_metrics.cc",
       "performance_controls/performance_controls_metrics.h",
+      "performance_controls/tab_resource_usage_collector.cc",
+      "performance_controls/tab_resource_usage_collector.h",
+      "performance_controls/tab_resource_usage_tab_helper.cc",
+      "performance_controls/tab_resource_usage_tab_helper.h",
       "permission_bubble/permission_prompt.h",
       "privacy_sandbox/privacy_sandbox_prompt.cc",
       "privacy_sandbox/privacy_sandbox_prompt.h",
@@ -2015,7 +2021,6 @@ static_library("ui") {
       "//chrome/browser/companion/core/mojom:mojo_bindings",
       "//chrome/browser/companion/text_finder",
       "//chrome/browser/companion/visual_query",
-      "//chrome/browser/headless:command_processor",
       "//chrome/browser/image_editor",
       "//chrome/browser/image_editor:image_editor_component_util",
       "//chrome/browser/media/prefs:prefs",
@@ -2171,6 +2176,10 @@ static_library("ui") {
       ]
       deps += [ "//chrome/browser/ui/webui/new_tab_page/foo:mojo_bindings" ]
     }
+
+    if (!is_android) {
+      deps += [ "//chrome/browser/headless:command_processor" ]
+    }
   }
 
   if (enable_paint_preview) {
@@ -2184,10 +2193,7 @@ static_library("ui") {
       "webui/family_link_user_internals/family_link_user_internals_ui.cc",
       "webui/family_link_user_internals/family_link_user_internals_ui.h",
     ]
-    deps += [
-      "//components/supervised_user/core/browser",
-      "//components/supervised_user/core/browser:supervised_user_preferences",
-    ]
+    deps += [ "//components/supervised_user/core/browser" ]
   }
 
   if (enable_supervised_users && enable_extensions) {
@@ -4536,7 +4542,10 @@ static_library("ui") {
       "Carbon.framework",
       "Quartz.framework",
     ]
-    weak_frameworks = [ "ScreenTime.framework" ]
+    weak_frameworks = [
+      "LocalAuthenticationEmbeddedUI.framework",  # macOS 12+
+      "ScreenTime.framework",  # macOS 11+
+    ]
   }
 
   if (is_win) {
@@ -5041,6 +5050,8 @@ static_library("ui") {
       "views/autofill/payments/promo_code_label_button.h",
       "views/autofill/payments/promo_code_label_view.cc",
       "views/autofill/payments/promo_code_label_view.h",
+      "views/autofill/payments/save_card_and_virtual_card_enroll_confirmation_bubble_views.cc",
+      "views/autofill/payments/save_card_and_virtual_card_enroll_confirmation_bubble_views.h",
       "views/autofill/payments/save_card_bubble_views.cc",
       "views/autofill/payments/save_card_bubble_views.h",
       "views/autofill/payments/save_card_manage_cards_bubble_views.cc",
@@ -5420,8 +5431,6 @@ static_library("ui") {
       "views/intent_picker_bubble_view.h",
       "views/javascript_tab_modal_dialog_view_views.cc",
       "views/javascript_tab_modal_dialog_view_views.h",
-      "views/layout/interpolating_layout_manager.cc",
-      "views/layout/interpolating_layout_manager.h",
       "views/location_bar/content_setting_image_view.cc",
       "views/location_bar/content_setting_image_view.h",
       "views/location_bar/cookie_controls/cookie_controls_bubble_coordinator.cc",
@@ -5700,6 +5709,8 @@ static_library("ui") {
       "views/performance_controls/memory_saver_chip_view.h",
       "views/performance_controls/memory_saver_resource_view.cc",
       "views/performance_controls/memory_saver_resource_view.h",
+      "views/permissions/chip/multi_image_container.cc",
+      "views/permissions/chip/multi_image_container.h",
       "views/permissions/chip/permission_chip_theme.h",
       "views/permissions/chip/permission_chip_view.cc",
       "views/permissions/chip/permission_chip_view.h",
@@ -6199,7 +6210,10 @@ static_library("ui") {
       "views/webauthn/webauthn_hover_button.h",
       "views/webid/account_selection_bubble_view.cc",
       "views/webid/account_selection_bubble_view.h",
-      "views/webid/account_selection_view_interface.h",
+      "views/webid/account_selection_modal_view.cc",
+      "views/webid/account_selection_modal_view.h",
+      "views/webid/account_selection_view_base.cc",
+      "views/webid/account_selection_view_base.h",
       "views/webid/fedcm_account_selection_view_desktop.cc",
       "views/webid/fedcm_account_selection_view_desktop.h",
       "views/webid/fedcm_modal_dialog_view.cc",
@@ -6362,6 +6376,8 @@ static_library("ui") {
         "views/chrome_views_delegate_mac.cc",
         "views/policy/enterprise_startup_dialog_mac_util.h",
         "views/policy/enterprise_startup_dialog_mac_util.mm",
+        "views/webauthn/mac_authentication_view.h",
+        "views/webauthn/mac_authentication_view.mm",
       ]
       deps += [ "//components/crash/core/common:crash_key" ]
     } else {
@@ -6907,6 +6923,7 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "autofill/payments/desktop_payments_window_manager_test_api.h",
     "content_settings/fake_owner.cc",
     "content_settings/fake_owner.h",
     "find_bar/find_bar_host_unittest_util.h",

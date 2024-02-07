@@ -223,32 +223,16 @@ const FeatureEntry::FeatureVariation
          std::size(kOmniboxCompanyEntityAdjustmentMostAggressive), nullptr},
 };
 
-const FeatureEntry::FeatureParam
-    kDefaultBrowserVideoConditionsHalfscreenPromo[] = {
-        {kDefaultBrowserVideoPromoVariant, kVideoConditionsHalfscreenPromo}};
-const FeatureEntry::FeatureParam
-    kDefaultBrowserVideoConditionsFullscreenPromo[] = {
-        {kDefaultBrowserVideoPromoVariant, kVideoConditionsFullscreenPromo}};
-const FeatureEntry::FeatureParam
-    kDefaultBrowserGenericConsitionsFullscreenPromo[] = {
-        {kDefaultBrowserVideoPromoVariant, kGenericConditionsFullscreenPromo}};
-const FeatureEntry::FeatureParam
-    kDefaultBrowserGenericConditionsHalfscreenPromo[] = {
-        {kDefaultBrowserVideoPromoVariant, kGenericConditionsHalfscreenPromo}};
+const FeatureEntry::FeatureParam kDefaultBrowserVideoFullscreenPromo[] = {
+    {kDefaultBrowserVideoPromoVariant, kVideoFullscreenPromo}};
+const FeatureEntry::FeatureParam kDefaultBrowserVideoHalfscreenPromo[] = {
+    {kDefaultBrowserVideoPromoVariant, kVideoHalfscreenPromo}};
 
 const FeatureEntry::FeatureVariation kDefaultBrowserVideoPromoVariations[] = {
-    {"Show half screen ui with video condtions",
-     kDefaultBrowserVideoConditionsHalfscreenPromo,
-     std::size(kDefaultBrowserVideoConditionsHalfscreenPromo), nullptr},
-    {"Show full screen ui with video condtions",
-     kDefaultBrowserVideoConditionsFullscreenPromo,
-     std::size(kDefaultBrowserVideoConditionsFullscreenPromo), nullptr},
-    {"Show full screen ui with generic condtions",
-     kDefaultBrowserGenericConsitionsFullscreenPromo,
-     std::size(kDefaultBrowserGenericConsitionsFullscreenPromo), nullptr},
-    {"Show half screen ui with generic condtions",
-     kDefaultBrowserGenericConditionsHalfscreenPromo,
-     std::size(kDefaultBrowserGenericConditionsHalfscreenPromo), nullptr},
+    {"Show half screen ui", kDefaultBrowserVideoHalfscreenPromo,
+     std::size(kDefaultBrowserVideoHalfscreenPromo), nullptr},
+    {"Show full screen ui", kDefaultBrowserVideoFullscreenPromo,
+     std::size(kDefaultBrowserVideoFullscreenPromo), nullptr},
 };
 
 // Uses int values from SigninPromoViewStyle enum.
@@ -1080,10 +1064,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kIOSPasswordBottomSheetAutofocus)},
-    {"ios-payments-bottom-sheet",
-     flag_descriptions::kIOSPaymentsBottomSheetName,
-     flag_descriptions::kIOSPaymentsBottomSheetDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kIOSPaymentsBottomSheet)},
     {"omnibox-zero-suggest-prefetching",
      flag_descriptions::kOmniboxZeroSuggestPrefetchingName,
      flag_descriptions::kOmniboxZeroSuggestPrefetchingDescription,
@@ -1608,6 +1588,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tab-grid-always-bounce", flag_descriptions::kTabGridAlwaysBounceName,
      flag_descriptions::kTabGridAlwaysBounceDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabGridAlwaysBounce)},
+    {"disable-lens-camera", flag_descriptions::kDisableLensCameraName,
+     flag_descriptions::kDisableLensCameraDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kDisableLensCamera)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

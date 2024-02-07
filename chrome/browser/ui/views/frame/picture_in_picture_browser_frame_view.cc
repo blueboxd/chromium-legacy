@@ -724,8 +724,10 @@ gfx::Size PictureInPictureBrowserFrameView::GetMinimumSize() const {
 }
 
 gfx::Size PictureInPictureBrowserFrameView::GetMaximumSize() const {
-  if (!GetWidget() || !GetWidget()->GetNativeWindow())
-    return gfx::Size();
+  if (!GetWidget() || !GetWidget()->GetNativeWindow()) {
+    // The maximum size can't be smaller than the minimum size.
+    return GetMinimumSize();
+  }
 
   auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(
       GetWidget()->GetNativeWindow());
@@ -750,7 +752,7 @@ void PictureInPictureBrowserFrameView::OnThemeChanged() {
   BrowserNonClientFrameView::OnThemeChanged();
 }
 
-void PictureInPictureBrowserFrameView::Layout() {
+void PictureInPictureBrowserFrameView::Layout(PassKey) {
   gfx::Rect content_area = GetLocalBounds();
   content_area.Inset(FrameBorderInsets());
   gfx::Rect top_bar = content_area;

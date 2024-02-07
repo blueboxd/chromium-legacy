@@ -17,7 +17,6 @@
 #include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/ash/login/users/affiliation.h"
-#include "chrome/browser/ash/login/users/avatar/user_image_manager_registry.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
@@ -35,10 +34,6 @@
 #include "components/user_manager/user.h"
 
 class PrefRegistrySimple;
-
-namespace gfx {
-class ImageSkia;
-}
 
 namespace policy {
 class CloudExternalDataPolicyHandler;
@@ -72,7 +67,6 @@ class ChromeUserManagerImpl
 
   // UserManagerInterface implementation:
   MultiProfileUserController* GetMultiProfileUserController() override;
-  UserImageManager* GetUserImageManager(const AccountId& account_id) override;
 
   // UserManager implementation:
   void Shutdown() override;
@@ -90,8 +84,6 @@ class ChromeUserManagerImpl
   void AsyncRemoveCryptohome(const AccountId& account_id) const override;
   bool IsDeprecatedSupervisedAccountId(
       const AccountId& account_id) const override;
-  const gfx::ImageSkia& GetResourceImageSkiaNamed(int id) const override;
-  std::u16string GetResourceStringUTF16(int string_id) const override;
   void ScheduleResolveLocale(const std::string& locale,
                              base::OnceClosure on_resolved_callback,
                              std::string* out_resolved_locale) const override;
@@ -220,9 +212,6 @@ class ChromeUserManagerImpl
   base::ScopedObservation<session_manager::SessionManager,
                           session_manager::SessionManagerObserver>
       session_observation_{this};
-
-  // TODO(b/278643115): Move this out from ChromeUserManagerImpl.
-  UserImageManagerRegistry user_image_manager_registry_;
 
   // Session length limiter.
   std::unique_ptr<SessionLengthLimiter> session_length_limiter_;

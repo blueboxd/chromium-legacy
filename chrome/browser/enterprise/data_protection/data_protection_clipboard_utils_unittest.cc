@@ -10,6 +10,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/enterprise/data_controls/features.h"
+#include "content/public/browser/clipboard_types.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
@@ -79,6 +80,16 @@ class DataProtectionClipboardTest : public testing::Test {
             [this]() { return contents()->GetBrowserContext(); }),
         *contents()->GetPrimaryMainFrame());
   }
+
+  content::ClipboardEndpoint CopyEndpoint(GURL url) {
+    return content::ClipboardEndpoint(ui::DataTransferEndpoint(std::move(url)),
+                                      base::BindLambdaForTesting([this]() {
+                                        return contents()->GetBrowserContext();
+                                      }),
+                                      *contents()->GetPrimaryMainFrame());
+  }
+
+  content::ClipboardMetadata CopyMetadata() { return {.size = 123}; }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
@@ -170,10 +181,15 @@ TEST_F(DataProtectionPasteIfAllowedByPolicyTest,
 }
 
 TEST_F(DataProtectionIsClipboardCopyAllowedByPolicyTest, Default) {
-  std::u16string replacement;
-  EXPECT_TRUE(IsClipboardCopyAllowedByPolicy(
-      browser_context(), GURL("https://source.com"), 123, replacement));
-  EXPECT_TRUE(replacement.empty());
+  base::test::TestFuture<const std::u16string&, std::optional<std::u16string>>
+      future;
+  IsClipboardCopyAllowedByPolicy(CopyEndpoint(GURL("https://source.com")),
+                                 CopyMetadata(), u"foo", future.GetCallback());
+  auto data = future.Get<std::u16string>();
+  EXPECT_EQ(data, u"foo");
+
+  auto replacement = future.Get<std::optional<std::u16string>>();
+  EXPECT_FALSE(replacement);
 }
 
 TEST_F(DataProtectionIsClipboardCopyAllowedByPolicyTest, StringReplacement) {
@@ -187,10 +203,16 @@ TEST_F(DataProtectionIsClipboardCopyAllowedByPolicyTest, StringReplacement) {
                     ]
                   })"});
 
-  std::u16string replacement;
-  EXPECT_FALSE(IsClipboardCopyAllowedByPolicy(
-      browser_context(), GURL("https://source.com"), 123, replacement));
-  EXPECT_EQ(replacement,
+  base::test::TestFuture<const std::u16string&, std::optional<std::u16string>>
+      future;
+  IsClipboardCopyAllowedByPolicy(CopyEndpoint(GURL("https://source.com")),
+                                 CopyMetadata(), u"foo", future.GetCallback());
+  auto data = future.Get<std::u16string>();
+  EXPECT_EQ(data, u"foo");
+
+  auto replacement = future.Get<std::optional<std::u16string>>();
+  EXPECT_TRUE(replacement);
+  EXPECT_EQ(*replacement,
             u"Pasting this content here is blocked by your administrator.");
 }
 
@@ -205,10 +227,16 @@ TEST_F(DataProtectionIsClipboardCopyAllowedByPolicyTest, NoStringReplacement) {
                     ]
                   })"});
 
-  std::u16string replacement;
-  EXPECT_TRUE(IsClipboardCopyAllowedByPolicy(
-      browser_context(), GURL("https://random.com"), 123, replacement));
-  EXPECT_TRUE(replacement.empty());
+  base::test::TestFuture<const std::u16string&, std::optional<std::u16string>>
+      future;
+  IsClipboardCopyAllowedByPolicy(CopyEndpoint(GURL("https://random.com")),
+                                 CopyMetadata(), u"foo", future.GetCallback());
+
+  auto data = future.Get<std::u16string>();
+  EXPECT_EQ(data, u"foo");
+
+  auto replacement = future.Get<std::optional<std::u16string>>();
+  EXPECT_FALSE(replacement);
 }
 
 }  // namespace enterprise_data_protection

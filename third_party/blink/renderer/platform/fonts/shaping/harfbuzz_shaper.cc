@@ -436,7 +436,7 @@ void HarfBuzzShaper::CommitGlyphs(RangeContext* range_data,
   BufferSlice next_slice;
   unsigned run_start_index = slice.start_character_index;
   for (const BufferSlice* current_slice = &slice;;) {
-    auto run = ShapeResult::RunInfo::Create(
+    auto* run = MakeGarbageCollected<ShapeResult::RunInfo>(
         current_font, direction, canvas_rotation, script, run_start_index,
         current_slice->num_glyphs, current_slice->num_characters);
     unsigned next_start_glyph;
@@ -664,7 +664,7 @@ void SplitUntilNextCaseChange(
     SmallCapsIterator::SmallCapsBehavior& small_caps_behavior) {
   // TODO(layout-dev): Add support for latin-1 to SmallCapsIterator.
   const UChar* normalized_buffer;
-  absl::optional<String> utf16_text;
+  std::optional<String> utf16_text;
   if (text.Is8Bit()) {
     utf16_text.emplace(text);
     utf16_text->Ensure16Bit();

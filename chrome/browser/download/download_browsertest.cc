@@ -2335,7 +2335,7 @@ IN_PROC_BROWSER_TEST_P(PdfDownloadTestSplitCacheEnabled,
 
     content::BeginNavigateIframeToURL(web_contents,
                                       /*iframe_id=*/"test", subframe_url);
-    test_pdf_viewer_stream_manager->DeprecatedWaitUntilPdfLoaded();
+    test_pdf_viewer_stream_manager->WaitUntilPdfLoadedInFirstChild();
 
     content::RenderFrameHost* extension_host =
         pdf_extension_test_util::GetOnlyPdfExtensionHost(web_contents);
@@ -2523,7 +2523,7 @@ IN_PROC_BROWSER_TEST_P(PdfDownloadTestSplitCacheEnabled,
 
     content::BeginNavigateIframeToURL(web_contents,
                                       /*iframe_id=*/"test", subframe_url);
-    test_pdf_viewer_stream_manager->DeprecatedWaitUntilPdfLoaded();
+    test_pdf_viewer_stream_manager->WaitUntilPdfLoadedInFirstChild();
 
     target_frame = pdf_extension_test_util::GetOnlyPdfPluginFrame(web_contents);
     ASSERT_TRUE(target_frame);
@@ -2718,13 +2718,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_SaveLargeImage) {
   base::FilePath data_file = ui_test_utils::GetTestFilePath(
       base::FilePath().AppendASCII("downloads"),
       base::FilePath().AppendASCII("large_image.png"));
-  std::string png_data, data_url;
+  std::string png_data;
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     CHECK(base::ReadFileToString(data_file, &png_data));
   }
 
-  data_url = base::Base64Encode(png_data);
+  std::string data_url = base::Base64Encode(png_data);
   data_url.insert(0, "data:image/png;base64,");
 
   ASSERT_GE(data_url.size(), url::kMaxURLChars);

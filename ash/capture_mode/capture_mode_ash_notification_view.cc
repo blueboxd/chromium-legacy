@@ -52,7 +52,7 @@ void CaptureModeAshNotificationView::UpdateWithNotification(
     CreateExtraView();
 }
 
-void CaptureModeAshNotificationView::Layout() {
+void CaptureModeAshNotificationView::Layout(PassKey) {
   LayoutSuperclass<AshNotificationView>(this);
   if (!extra_view_)
     return;
@@ -84,7 +84,7 @@ void CaptureModeAshNotificationView::CreateExtraView() {
           : capture_mode_util::CreatePlayIconView());
 }
 
-BEGIN_METADATA(CaptureModeAshNotificationView, AshNotificationView)
+BEGIN_METADATA(CaptureModeAshNotificationView)
 END_METADATA
 
 }  // namespace ash

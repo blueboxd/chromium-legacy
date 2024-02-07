@@ -84,6 +84,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
       const storage::BucketLocator& bucket_locator,
       mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
+      const base::UnguessableToken& client_token,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void DeleteForStorageKey(const blink::StorageKey& storage_key,
                            DeleteForStorageKeyCallback callback) override;
@@ -108,12 +109,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void GetFilePathForTesting(const storage::BucketLocator& bucket_locator,
                              GetFilePathForTestingCallback callback) override;
   void ResetCachesForTesting(base::OnceClosure callback) override;
-  void ForceSchemaDowngradeForTesting(
-      const storage::BucketLocator& bucket_locator,
-      ForceSchemaDowngradeForTestingCallback callback) override;
-  void HasV2SchemaCorruptionForTesting(
-      const storage::BucketLocator& bucket_locator,
-      HasV2SchemaCorruptionForTestingCallback callback) override;
   void WriteToIndexedDBForTesting(const storage::BucketLocator& bucket_locator,
                                   const std::string& key,
                                   const std::string& value,
@@ -233,6 +228,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void BindIndexedDBImpl(
       mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
+      const base::UnguessableToken& client_token,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
       storage::QuotaErrorOr<storage::BucketInfo> bucket_info);
   void ForceCloseImpl(

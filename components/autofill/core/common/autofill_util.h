@@ -98,9 +98,6 @@ bool IsPaymentsAutofillManuallyTriggered(
 bool IsPasswordsAutofillManuallyTriggered(
     AutofillSuggestionTriggerSource trigger_source);
 
-// TODO(crbug.com/1522705): Remove.
-void DumpWithoutCrashingForDuplicateIds(const FormData& form);
-
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_UTIL_H_

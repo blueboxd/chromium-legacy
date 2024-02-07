@@ -104,18 +104,22 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtilsJni;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.CommonTypesProto;
+import org.chromium.components.optimization_guide.proto.HintsProto.PageInsightsHubRequestContextMetadata;
+import org.chromium.components.optimization_guide.proto.HintsProto.RequestContextMetadata;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 /** Unit tests for {@link PageInsightsMediator}. */
 @LooperMode(Mode.PAUSED)
@@ -152,10 +156,13 @@ public class PageInsightsMediatorTest {
     @Mock private DomDistillerUrlUtils.Natives mDistillerUrlUtilsJniMock;
     @Mock private BackPressManager mBackPressManager;
     @Mock private BackPressHandler mBackPressHandler;
-    @Mock private Function<NavigationHandle, PageInsightsConfig> mPageInsightsConfigProvider;
+    @Mock private PageInsightsCoordinator.ConfigProvider mPageInsightsConfigProvider;
     @Mock private NavigationHandle mNavigationHandle;
     @Mock private ObservableSupplier<Boolean> mInMotionSupplier;
     @Mock private ApplicationViewportInsetSupplier mAppInsetSupplier;
+    @Mock private WebContents mWebContents;
+    @Mock private NavigationController mNavigationController;
+    @Mock private NavigationEntry mLastCommittedNavigationEntry;
 
     @Captor
     private ArgumentCaptor<BrowserControlsStateProvider.Observer>
@@ -191,17 +198,20 @@ public class PageInsightsMediatorTest {
         when(mSurfaceScope.provideSurfaceRenderer()).thenReturn(mSurfaceRenderer);
         when(mMockTabProvider.get()).thenReturn(mTab);
         when(mTab.getUrl()).thenReturn(JUnitTestGURLs.EXAMPLE_URL);
+        when(mTab.getWebContents()).thenReturn(mWebContents);
+        when(mWebContents.getNavigationController()).thenReturn(mNavigationController);
+        when(mNavigationController.getLastCommittedEntryIndex()).thenReturn(0);
+        when(mNavigationController.getEntryAtIndex(0)).thenReturn(mLastCommittedNavigationEntry);
         when(mShareDelegateSupplier.get()).thenReturn(mShareDelegate);
         when(mProfileSupplier.get()).thenReturn(mProfile);
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
         when(mIdentityServicesProvider.getIdentityManager(mProfile)).thenReturn(mIdentityManager);
         when(mBottomSheetController.getBottomSheetBackPressHandler()).thenReturn(mBackPressHandler);
-        when(mPageInsightsConfigProvider.apply(any()))
+        when(mPageInsightsConfigProvider.get(any(), any()))
                 .thenReturn(
                         PageInsightsConfig.newBuilder()
                                 .setShouldAutoTrigger(true)
                                 .setShouldXsurfaceLog(true)
-                                .setShouldAttachGaiaToRequest(true)
                                 .build());
         when(mInMotionSupplier.get()).thenReturn(false);
         ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(false);
@@ -332,7 +342,7 @@ public class PageInsightsMediatorTest {
     @Test
     @MediumTest
     public void testAutoTrigger_shouldNotAutoTrigger_doesNotTrigger() {
-        when(mPageInsightsConfigProvider.apply(mNavigationHandle))
+        when(mPageInsightsConfigProvider.get(mNavigationHandle, mLastCommittedNavigationEntry))
                 .thenReturn(PageInsightsConfig.newBuilder().setShouldAutoTrigger(false).build());
         createMediator(SHORT_TRIGGER_DELAY_MS);
         View feedView = new View(ContextUtils.getApplicationContext());
@@ -465,6 +475,55 @@ public class PageInsightsMediatorTest {
 
     @Test
     @MediumTest
+    public void testAutoTrigger_sendsCorrectMetadata() {
+        when(mPageInsightsConfigProvider.get(mNavigationHandle, mLastCommittedNavigationEntry))
+                .thenReturn(
+                        PageInsightsConfig.newBuilder()
+                                .setShouldAutoTrigger(true)
+                                .setServerShouldNotLogOrPersonalize(true)
+                                .setIsInitialPage(true)
+                                .setNavigationTimestampMs(1234L)
+                                .build());
+        TestValues testValues = new TestValues();
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB,
+                PageInsightsDataLoader.PAGE_INSIGHTS_SEND_CONTEXT_METADATA,
+                "true");
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB,
+                PageInsightsDataLoader.PAGE_INSIGHTS_SEND_TIMESTAMP,
+                "true");
+        createMediator(
+                SHORT_TRIGGER_DELAY_MS, testValues, PageInsightsIntentParams.getDefaultInstance());
+        View feedView = new View(ContextUtils.getApplicationContext());
+        when(mSurfaceRenderer.render(eq(TEST_FEED_ELEMENTS_OUTPUT), any())).thenReturn(feedView);
+        when(mControlsStateProvider.getBrowserControlHiddenRatio()).thenReturn(1.0f);
+
+        mMediator.onPageLoadStarted(mTab, null);
+        mMediator.onDidFinishNavigationInPrimaryMainFrame(mTab, mNavigationHandle);
+        mShadowLooper.idleFor(2500, TimeUnit.MILLISECONDS);
+
+        RequestContextMetadata expectedMetadata =
+                RequestContextMetadata.newBuilder()
+                        .setPageInsightsHubMetadata(
+                                PageInsightsHubRequestContextMetadata.newBuilder()
+                                        .setIsUserInitiated(false)
+                                        .setIsInitialPage(true)
+                                        .setShouldNotLogOrPersonalize(true)
+                                        .setNavigationTimestampMs(1234L))
+                        .build();
+        verify(mOptimizationGuideBridgeJniMock, times(1))
+                .canApplyOptimizationOnDemand(
+                        anyLong(),
+                        any(),
+                        any(),
+                        eq(CommonTypesProto.RequestContext.CONTEXT_PAGE_INSIGHTS_HUB.getNumber()),
+                        any(),
+                        eq(expectedMetadata.toByteArray()));
+    }
+
+    @Test
+    @MediumTest
     public void testAutoTrigger_signedIn_providesBothXSurfaceLoggingParamsAndLogs()
             throws Exception {
         createMediator(SHORT_TRIGGER_DELAY_MS);
@@ -591,45 +650,39 @@ public class PageInsightsMediatorTest {
 
     @Test
     @MediumTest
-    public void testLaunch_shouldNotAttachGaia_doesNotAttachGaia() throws Exception {
-        when(mPageInsightsConfigProvider.apply(mNavigationHandle))
+    public void testLaunch_sendsCorrectMetadata() throws Exception {
+        when(mPageInsightsConfigProvider.get(mNavigationHandle, mLastCommittedNavigationEntry))
                 .thenReturn(
                         PageInsightsConfig.newBuilder()
-                                .setShouldAttachGaiaToRequest(false)
+                                .setServerShouldNotLogOrPersonalize(true)
+                                .setIsInitialPage(true)
+                                .setNavigationTimestampMs(1234L)
                                 .build());
-        createMediator();
+        TestValues testValues = new TestValues();
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB,
+                PageInsightsDataLoader.PAGE_INSIGHTS_SEND_CONTEXT_METADATA,
+                "true");
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB,
+                PageInsightsDataLoader.PAGE_INSIGHTS_SEND_TIMESTAMP,
+                "true");
+        createMediator(testValues, PageInsightsIntentParams.getDefaultInstance());
         mMediator.onDidFinishNavigationInPrimaryMainFrame(mTab, mNavigationHandle);
         View feedView = new View(ContextUtils.getApplicationContext());
         when(mSurfaceRenderer.render(eq(TEST_FEED_ELEMENTS_OUTPUT), any())).thenReturn(feedView);
 
         mMediator.launch();
 
-        verify(mOptimizationGuideBridgeJniMock, times(1))
-                .canApplyOptimizationOnDemand(
-                        anyLong(),
-                        any(),
-                        any(),
-                        eq(
-                                CommonTypesProto.RequestContext
-                                        .CONTEXT_NON_PERSONALIZED_PAGE_INSIGHTS_HUB
-                                        .getNumber()),
-                        any(),
-                        any());
-    }
-
-    @Test
-    @MediumTest
-    public void testLaunch_shouldAttachGaia_attachesGaia() throws Exception {
-        when(mPageInsightsConfigProvider.apply(mNavigationHandle))
-                .thenReturn(
-                        PageInsightsConfig.newBuilder().setShouldAttachGaiaToRequest(true).build());
-        createMediator();
-        mMediator.onDidFinishNavigationInPrimaryMainFrame(mTab, mNavigationHandle);
-        View feedView = new View(ContextUtils.getApplicationContext());
-        when(mSurfaceRenderer.render(eq(TEST_FEED_ELEMENTS_OUTPUT), any())).thenReturn(feedView);
-
-        mMediator.launch();
-
+        RequestContextMetadata expectedMetadata =
+                RequestContextMetadata.newBuilder()
+                        .setPageInsightsHubMetadata(
+                                PageInsightsHubRequestContextMetadata.newBuilder()
+                                        .setIsUserInitiated(true)
+                                        .setIsInitialPage(true)
+                                        .setShouldNotLogOrPersonalize(true)
+                                        .setNavigationTimestampMs(1234L))
+                        .build();
         verify(mOptimizationGuideBridgeJniMock, times(1))
                 .canApplyOptimizationOnDemand(
                         anyLong(),
@@ -637,7 +690,7 @@ public class PageInsightsMediatorTest {
                         any(),
                         eq(CommonTypesProto.RequestContext.CONTEXT_PAGE_INSIGHTS_HUB.getNumber()),
                         any(),
-                        any());
+                        eq(expectedMetadata.toByteArray()));
     }
 
     @Test
@@ -705,7 +758,7 @@ public class PageInsightsMediatorTest {
     @MediumTest
     public void testLaunch_signedIn_shouldNotXSurfaceLog_doesNotCallOnSurfaceCreated()
             throws Exception {
-        when(mPageInsightsConfigProvider.apply(mNavigationHandle))
+        when(mPageInsightsConfigProvider.get(mNavigationHandle, mLastCommittedNavigationEntry))
                 .thenReturn(PageInsightsConfig.newBuilder().setShouldXsurfaceLog(false).build());
         createMediator();
         mMediator.onDidFinishNavigationInPrimaryMainFrame(mTab, mNavigationHandle);

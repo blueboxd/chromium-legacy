@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_suggestion_generator.h"
 #include "ui/gfx/image/image.h"
 
 namespace favicon_base {
@@ -34,6 +35,7 @@ namespace password_manager {
 
 class PasswordManagerClient;
 class PasswordManagerDriver;
+class PasswordSuggestionGenerator;
 
 // This class is responsible for filling password forms.
 class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
@@ -69,13 +71,14 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void DeleteFillData();
 
   // Handles a request from the renderer to show a popup with the suggestions
-  // from the password manager. |options| should be a bitwise mask of
-  // autofill::ShowPasswordSuggestionsOptions values.
-  void OnShowPasswordSuggestions(autofill::FieldRendererId element_id,
-                                 base::i18n::TextDirection text_direction,
-                                 const std::u16string& typed_username,
-                                 int options,
-                                 const gfx::RectF& bounds);
+  // from the password manager.
+  void OnShowPasswordSuggestions(
+      autofill::FieldRendererId element_id,
+      autofill::AutofillSuggestionTriggerSource trigger_source,
+      base::i18n::TextDirection text_direction,
+      const std::u16string& typed_username,
+      ShowWebAuthnCredentials show_webauthn_credentials,
+      const gfx::RectF& bounds);
 
   // If there are relevant credentials for the current frame show them and
   // return true. Otherwise, return false.
@@ -107,23 +110,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   bool PreviewSuggestionForTest(const std::u16string& username);
 
  private:
-  using ForPasswordField = base::StrongAlias<class ForPasswordFieldTag, bool>;
-  using OffersGeneration = base::StrongAlias<class OffersGenerationTag, bool>;
-  using ShowAllPasswords = base::StrongAlias<class ShowAllPasswordsTag, bool>;
-  using ShowPasswordSuggestions =
-      base::StrongAlias<class ShowPasswordSuggestionsTag, bool>;
-  using ShowWebAuthnCredentials =
-      base::StrongAlias<class ShowWebAuthnCredentialsTag, bool>;
-
-  // Builds the suggestions used to show or update the autofill popup.
-  std::vector<autofill::Suggestion> BuildSuggestions(
-      const std::u16string& username_filter,
-      ForPasswordField for_password_field,
-      ShowAllPasswords show_all_passwords,
-      OffersGeneration for_generation,
-      ShowPasswordSuggestions show_password_suggestions,
-      ShowWebAuthnCredentials show_webauthn_credentials);
-
   // Called just before showing a popup to log which |suggestions| were shown.
   void LogMetricsForSuggestions(
       const std::vector<autofill::Suggestion>& suggestions) const;
@@ -193,6 +179,8 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void CancelBiometricReauthIfOngoing();
 
   std::unique_ptr<autofill::PasswordFormFillData> fill_data_;
+
+  password_manager::PasswordSuggestionGenerator suggestion_generator_;
 
   // Contains the favicon for the credentials offered on the current page.
   gfx::Image page_favicon_;

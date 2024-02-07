@@ -270,7 +270,8 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypesForAccount(
         // this changes, also update the migration logic in
         // MigrateGlobalDataTypePrefsToAccount().
         type_enabled =
-            base::FeatureList::IsEnabled(switches::kUnoDesktop) &&
+            switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+                switches::ExplicitBrowserSigninPhase::kExperimental) &&
             pref_service_->GetBoolean(::prefs::kExplicitBrowserSignin);
 #endif
       } else if (type == UserSelectableType::kBookmarks ||
@@ -403,24 +404,11 @@ void SyncPrefs::SetSelectedTypeForAccount(
 
 void SyncPrefs::KeepAccountSettingsPrefsOnlyForUsers(
     const std::vector<signin::GaiaIdHash>& available_gaia_ids) {
-  std::vector<std::string> removed_identities;
-  for (std::pair<const std::string&, const base::Value&> account_settings :
-       pref_service_->GetDict(prefs::internal::kSelectedTypesPerAccount)) {
-    if (!base::Contains(available_gaia_ids, signin::GaiaIdHash::FromBase64(
-                                                account_settings.first))) {
-      removed_identities.push_back(account_settings.first);
-    }
-  }
-  if (!removed_identities.empty()) {
-    {
-      ScopedDictPrefUpdate update_selected_types_dict(
-          pref_service_, prefs::internal::kSelectedTypesPerAccount);
-      base::Value::Dict& all_accounts = update_selected_types_dict.Get();
-      for (const auto& account_id : removed_identities) {
-        all_accounts.Remove(account_id);
-      }
-    }
-  }
+  KeepAccountSettingsPrefsOnlyForUsers(
+      available_gaia_ids, prefs::internal::kSelectedTypesPerAccount);
+  KeepAccountSettingsPrefsOnlyForUsers(
+      available_gaia_ids,
+      prefs::internal::kSyncEncryptionBootstrapTokenPerAccount);
 }
 
 #if BUILDFLAG(IS_IOS)
@@ -611,6 +599,18 @@ void SyncPrefs::SetEncryptionBootstrapTokenForAccount(
   }
 }
 
+void SyncPrefs::ClearEncryptionBootstrapTokenForAccount(
+    const signin::GaiaIdHash& gaia_id_hash) {
+  CHECK(gaia_id_hash.IsValid());
+  {
+    ScopedDictPrefUpdate update_account_passphrase_dict(
+        pref_service_,
+        prefs::internal::kSyncEncryptionBootstrapTokenPerAccount);
+    base::Value::Dict& all_accounts = update_account_passphrase_dict.Get();
+    all_accounts.Remove(gaia_id_hash.ToBase64());
+  }
+}
+
 // static
 const char* SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType type) {
   return GetPrefNameForType(type);
@@ -686,6 +686,13 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
       return base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos) &&
              base::FeatureList::IsEnabled(kEnablePreferencesAccountStorage);
     case UserSelectableType::kPasswords:
+      // WARNING: This should actually be checking
+      // password_manager::features_util::CanCreateAccountStore() too, otherwise
+      // a crash can happen. But a) it would require a cyclic dependency, and
+      // b) by the time kEnablePasswordsAccountStorageForNonSyncingUsers is
+      // rolled out on Android, CanCreateAccountStore() should always return
+      // true (or at least it can be some trivial GmsCore version check and live
+      // in components/sync/).
       return base::FeatureList::IsEnabled(
           kEnablePasswordsAccountStorageForNonSyncingUsers);
     case UserSelectableType::kAutofill:
@@ -707,6 +714,9 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
       return base::FeatureList::IsEnabled(
           kSyncSharedTabGroupDataInTransportMode);
     case UserSelectableType::kApps:
+#if BUILDFLAG(IS_ANDROID)
+      return base::FeatureList::IsEnabled(kWebApkBackupAndRestoreBackend);
+#endif
     case UserSelectableType::kExtensions:
     case UserSelectableType::kThemes:
     case UserSelectableType::kSavedTabGroups:
@@ -750,6 +760,29 @@ void SyncPrefs::OnFirstSetupCompletePrefChange() {
   }
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+void SyncPrefs::KeepAccountSettingsPrefsOnlyForUsers(
+    const std::vector<signin::GaiaIdHash>& available_gaia_ids,
+    const char* pref_path) {
+  std::vector<std::string> removed_identities;
+  for (std::pair<const std::string&, const base::Value&> account_settings :
+       pref_service_->GetDict(pref_path)) {
+    if (!base::Contains(available_gaia_ids, signin::GaiaIdHash::FromBase64(
+                                                account_settings.first))) {
+      removed_identities.push_back(account_settings.first);
+    }
+  }
+  if (!removed_identities.empty()) {
+    {
+      ScopedDictPrefUpdate update_account_settings_dict(pref_service_,
+                                                        pref_path);
+      base::Value::Dict& all_accounts = update_account_settings_dict.Get();
+      for (const auto& account_id : removed_identities) {
+        all_accounts.Remove(account_id);
+      }
+    }
+  }
+}
 
 // static
 void SyncPrefs::RegisterTypeSelectedPref(PrefRegistrySimple* registry,

@@ -22,6 +22,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -99,6 +100,7 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @EnableFeatures({ChromeFeatureList.READALOUD, ChromeFeatureList.READALOUD_PLAYBACK})
+@DisableFeatures({ChromeFeatureList.READALOUD_IN_MULTI_WINDOW})
 public class ReadAloudControllerUnitTest {
     private static final GURL sTestGURL = JUnitTestGURLs.EXAMPLE_URL;
     private static final long KNOWN_READABLE_TRIAL_PTR = 12345678L;
@@ -262,6 +264,25 @@ public class ReadAloudControllerUnitTest {
     }
 
     @Test
+    public void testIsAvailable_inMultiWindow() {
+        shadowOf(mActivity).setInMultiWindowMode(true);
+        assertFalse(mController.isAvailable());
+
+        shadowOf(mActivity).setInMultiWindowMode(false);
+        assertTrue(mController.isAvailable());
+    }
+
+    @Test
+    @EnableFeatures({ChromeFeatureList.READALOUD_IN_MULTI_WINDOW})
+    public void testIsAvailable_inMultiWindow_flag() {
+        shadowOf(mActivity).setInMultiWindowMode(true);
+        assertTrue(mController.isAvailable());
+
+        shadowOf(mActivity).setInMultiWindowMode(false);
+        assertTrue(mController.isAvailable());
+    }
+
+    @Test
     public void testReloadingPage() {
         // Reload tab before any playback starts - tests null checks
         mController.getTabModelTabObserverforTests().onPageLoadStarted(mTab, mTab.getUrl());
@@ -285,6 +306,41 @@ public class ReadAloudControllerUnitTest {
 
         // now reload the playing tab
         mController.getTabModelTabObserverforTests().onPageLoadStarted(mTab, mTab.getUrl());
+
+        verify(mPlayerCoordinator).dismissPlayers();
+        verify(mPlayback).release();
+    }
+
+    @Test
+    public void testOnActivityAttachmentChanged() {
+        // change tab attachment before any playback starts - tests null checks
+        mController
+                .getTabModelTabObserverforTests()
+                .onActivityAttachmentChanged(mTab, /* window= */ null);
+
+        verify(mPlayerCoordinator, never()).dismissPlayers();
+        verify(mPlayback, never()).release();
+
+        // now start playing a tab
+        mController.playTab(mTab);
+        verify(mPlaybackHooks, times(1))
+                .createPlayback(Mockito.any(), mPlaybackCallbackCaptor.capture());
+        onPlaybackSuccess(mPlayback);
+
+        // change attachement of some other tab, playback should keep going
+        MockTab newTab = mTabModelSelector.addMockTab();
+        newTab.setGurlOverrideForTesting(new GURL("https://en.wikipedia.org/wiki/Alphabet_Inc."));
+        mController
+                .getTabModelTabObserverforTests()
+                .onActivityAttachmentChanged(newTab, /* window= */ null);
+
+        verify(mPlayerCoordinator, never()).dismissPlayers();
+        verify(mPlayback, never()).release();
+
+        // now detach the playing tab
+        mController
+                .getTabModelTabObserverforTests()
+                .onActivityAttachmentChanged(mTab, /* window= */ null);
 
         verify(mPlayerCoordinator).dismissPlayers();
         verify(mPlayback).release();
@@ -508,6 +564,41 @@ public class ReadAloudControllerUnitTest {
         newTab.setGurlOverrideForTesting(new GURL("https://en.wikipedia.org/wiki/Alphabet_Inc."));
         mController.playTab(newTab);
         verify(mPlayback, times(1)).release();
+    }
+
+    @Test
+    public void testPlayTab_inMultiWindow() {
+        mFakeTranslateBridge.setCurrentLanguage("en");
+        mTab.setGurlOverrideForTesting(new GURL("https://en.wikipedia.org/wiki/Google"));
+        mController.playTab(mTab);
+
+        verify(mPlaybackHooks)
+                .createPlayback(mPlaybackArgsCaptor.capture(), mPlaybackCallbackCaptor.capture());
+        assertEquals(null, mPlaybackArgsCaptor.getValue().getLanguage());
+
+        shadowOf(mActivity).setInMultiWindowMode(true);
+        onPlaybackSuccess(mPlayback);
+
+        verify(mPlayerCoordinator).playbackFailed();
+    }
+
+    @Test
+    @EnableFeatures({ChromeFeatureList.READALOUD_IN_MULTI_WINDOW})
+    public void testPlayTab_inMultiWindow_flag() {
+        mFakeTranslateBridge.setCurrentLanguage("en");
+        mTab.setGurlOverrideForTesting(new GURL("https://en.wikipedia.org/wiki/Google"));
+        mController.playTab(mTab);
+
+        verify(mPlaybackHooks)
+                .createPlayback(mPlaybackArgsCaptor.capture(), mPlaybackCallbackCaptor.capture());
+        assertEquals(null, mPlaybackArgsCaptor.getValue().getLanguage());
+
+        shadowOf(mActivity).setInMultiWindowMode(true);
+        onPlaybackSuccess(mPlayback);
+
+        verify(mPlayerCoordinator, times(1))
+                .playbackReady(eq(mPlayback), eq(PlaybackListener.State.PLAYING));
+        verify(mPlayerCoordinator).addObserver(mController);
     }
 
     @Test
@@ -1521,6 +1612,18 @@ public class ReadAloudControllerUnitTest {
         // Page is not readable so do not activate the trial.
         mCallbackCaptor.getValue().onSuccess(sTestGURL.getSpec(), false, false);
         verify(mReadAloudFeaturesNatives, never()).activateSyntheticTrial(anyLong());
+    }
+
+    @Test
+    @DisableFeatures(ChromeFeatureList.READALOUD_PLAYBACK)
+    public void testKnownReadableTrialCanActivateWithoutPlaybackFlag() {
+        mController.maybeCheckReadability(sTestGURL);
+        verify(mHooksImpl, times(1))
+                .isPageReadable(eq(sTestGURL.getSpec()), mCallbackCaptor.capture());
+        // Page is readable so activate the trial.
+        mCallbackCaptor.getValue().onSuccess(sTestGURL.getSpec(), true, false);
+        verify(mReadAloudFeaturesNatives, times(1))
+                .activateSyntheticTrial(eq(KNOWN_READABLE_TRIAL_PTR));
     }
 
     @Test

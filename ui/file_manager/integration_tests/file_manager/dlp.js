@@ -8,8 +8,7 @@ import {testcase} from '../testcase.js';
 
 import {openAndWaitForClosingDialog, remoteCall, setupAndWaitUntilReady} from './background.js';
 import {DirectoryTreePageObject} from './page_objects/directory_tree.js';
-import {FakeTask} from './tasks.js';
-import {BASIC_ANDROID_ENTRY_SET, BASIC_LOCAL_ENTRY_SET} from './test_data.js';
+import {BASIC_ANDROID_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, FakeTask} from './test_data.js';
 
 /**
  * Copies or moves a file from Downloads to the provided location.
@@ -230,7 +229,7 @@ testcase.dlpShowManagedIcon = async () => {
       'to restrictions by administrator policy.';
   const label = await remoteCall.waitForElement(
       appId, ['files-tooltip[visible=true]', '#label']);
-  chrome.test.assertTrue(label.text.startsWith(labelTextPrefix));
+  chrome.test.assertTrue((label.text ?? '').startsWith(labelTextPrefix));
 };
 
 /**

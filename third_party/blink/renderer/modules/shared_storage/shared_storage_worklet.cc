@@ -4,10 +4,11 @@
 
 #include "third_party/blink/renderer/modules/shared_storage/shared_storage_worklet.h"
 
+#include <optional>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/shared_storage/shared_storage_utils.h"
 #include "third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -35,7 +36,7 @@ const char kSharedStorageWorkletExpiredMessage[] =
     "The sharedStorage worklet cannot execute further operations because the "
     "previous operation did not include the option \'keepAlive: true\'.";
 
-absl::optional<BlinkCloneableMessage> Serialize(
+std::optional<BlinkCloneableMessage> Serialize(
     const SharedStorageRunOperationMethodOptions* options,
     const ExecutionContext& execution_context,
     ExceptionState& exception_state) {
@@ -46,7 +47,7 @@ absl::optional<BlinkCloneableMessage> Serialize(
                 SerializedScriptValue::SerializeOptions(), exception_state)
           : SerializedScriptValue::UndefinedValue();
   if (exception_state.HadException()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   BlinkCloneableMessage output;
@@ -179,7 +180,33 @@ ScriptPromise SharedStorageWorklet::addModule(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise SharedStorageWorklet::SelectURL(
+// This C++ overload is called by JavaScript:
+// sharedStorage.selectURL('foo', [{url: "bar.com"}]);
+//
+// It returns a JavaScript promise that resolves to an urn::uuid.
+ScriptPromise SharedStorageWorklet::selectURL(
+    ScriptState* script_state,
+    const String& name,
+    HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
+    ExceptionState& exception_state) {
+  return selectURL(script_state, name, urls,
+                   SharedStorageRunOperationMethodOptions::Create(),
+                   exception_state);
+}
+
+// This C++ overload is called by JavaScript:
+// 1. sharedStorage.selectURL('foo', [{url: "bar.com"}], {data: {'option': 0}});
+// 2. sharedStorage.selectURL('foo', [{url: "bar.com"}], {data: {'option': 0},
+// resolveToConfig: true});
+//
+// It returns a JavaScript promise:
+// 1. that resolves to an urn::uuid, when `resolveToConfig` is false or
+// unspecified.
+// 2. that resolves to a fenced frame config, when `resolveToConfig` is true.
+//
+// This function implements the other overload, with `resolveToConfig`
+// defaulting to false.
+ScriptPromise SharedStorageWorklet::selectURL(
     ScriptState* script_state,
     const String& name,
     HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
@@ -349,7 +376,7 @@ ScriptPromise SharedStorageWorklet::SelectURL(
     index++;
   }
 
-  absl::optional<BlinkCloneableMessage> serialized_data =
+  std::optional<BlinkCloneableMessage> serialized_data =
       Serialize(options, *execution_context, exception_state);
   if (!serialized_data) {
     LogSharedStorageWorkletError(
@@ -398,7 +425,7 @@ ScriptPromise SharedStorageWorklet::SelectURL(
              SharedStorageWorklet* shared_storage_worklet,
              base::TimeTicks start_time, bool resolve_to_config, bool success,
              const String& error_message,
-             const absl::optional<FencedFrame::RedactedFencedFrameConfig>&
+             const std::optional<FencedFrame::RedactedFencedFrameConfig>&
                  result_config) {
             DCHECK(resolver);
             ScriptState* script_state = resolver->GetScriptState();
@@ -434,7 +461,14 @@ ScriptPromise SharedStorageWorklet::SelectURL(
   return promise;
 }
 
-ScriptPromise SharedStorageWorklet::Run(
+ScriptPromise SharedStorageWorklet::run(ScriptState* script_state,
+                                        const String& name,
+                                        ExceptionState& exception_state) {
+  return run(script_state, name,
+             SharedStorageRunOperationMethodOptions::Create(), exception_state);
+}
+
+ScriptPromise SharedStorageWorklet::run(
     ScriptState* script_state,
     const String& name,
     const SharedStorageRunOperationMethodOptions* options,
@@ -449,7 +483,7 @@ ScriptPromise SharedStorageWorklet::Run(
     return ScriptPromise();
   }
 
-  absl::optional<BlinkCloneableMessage> serialized_data =
+  std::optional<BlinkCloneableMessage> serialized_data =
       Serialize(options, *execution_context, exception_state);
   if (!serialized_data) {
     LogSharedStorageWorkletError(SharedStorageWorkletErrorType::kRunWebVisible);

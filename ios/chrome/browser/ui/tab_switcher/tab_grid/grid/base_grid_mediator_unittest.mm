@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/test/fake_tab_collection_consumer.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
+#import "ios/web/public/web_state_id.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
@@ -94,6 +95,22 @@ class BaseGridMediatorWithPriceDropIndicatorsTest
 
 #pragma mark - Consumer tests
 
+// Tests drag and dropping an item that has been closed.
+TEST_P(BaseGridMediatorTest, DragAndDropClosedItem) {
+  std::unique_ptr<web::FakeWebState> web_state =
+      CreateFakeWebStateWithURL(GURL("https://google.com"));
+  web::WebStateID item_identifier = web_state.get()->GetUniqueIdentifier();
+  browser_->GetWebStateList()->InsertWebState(
+      std::move(web_state), WebStateList::InsertionParams::AtIndex(1));
+
+  [mediator_ switchToMode:TabGridModeSelection];
+  [mediator_ addToSelectionItemID:item_identifier];
+
+  browser_->GetWebStateList()->CloseWebStateAt(1,
+                                               WebStateList::CLOSE_USER_ACTION);
+  EXPECT_EQ(0UL, [mediator_ allSelectedDragItems].count);
+}
+
 // Tests that the consumer is populated after the tab model is set on the
 // mediator.
 TEST_P(BaseGridMediatorTest, ConsumerPopulateItems) {
@@ -104,11 +121,11 @@ TEST_P(BaseGridMediatorTest, ConsumerPopulateItems) {
 // Tests that the consumer is notified when a web state is inserted.
 TEST_P(BaseGridMediatorTest, ConsumerInsertItem) {
   ASSERT_EQ(3UL, consumer_.items.size());
-  auto web_state = CreateFakeWebStateWithURL(GURL());
+  std::unique_ptr<web::FakeWebState> web_state =
+      CreateFakeWebStateWithURL(GURL());
   web::WebStateID item_identifier = web_state.get()->GetUniqueIdentifier();
-  browser_->GetWebStateList()->InsertWebState(1, std::move(web_state),
-                                              WebStateList::INSERT_FORCE_INDEX,
-                                              WebStateOpener());
+  browser_->GetWebStateList()->InsertWebState(
+      std::move(web_state), WebStateList::InsertionParams::AtIndex(1));
   EXPECT_EQ(4UL, consumer_.items.size());
   // The same ID should be selected after the insertion, since the new web state
   // wasn't selected.
@@ -140,7 +157,8 @@ TEST_P(BaseGridMediatorTest, ConsumerUpdateSelectedItem) {
 // The selected item is replaced, so the new selected item id should be the
 // id of the new item.
 TEST_P(BaseGridMediatorTest, ConsumerReplaceItem) {
-  auto new_web_state = CreateFakeWebStateWithURL(GURL());
+  std::unique_ptr<web::FakeWebState> new_web_state =
+      CreateFakeWebStateWithURL(GURL());
   web::WebStateID new_item_identifier = new_web_state->GetUniqueIdentifier();
   @autoreleasepool {
     browser_->GetWebStateList()->ReplaceWebStateAt(1, std::move(new_web_state));

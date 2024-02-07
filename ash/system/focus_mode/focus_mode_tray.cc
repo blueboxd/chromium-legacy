@@ -48,6 +48,20 @@ constexpr base::TimeDelta kStartAnimationDelay = base::Milliseconds(300);
 constexpr base::TimeDelta kTaskItemViewFadeOutDuration =
     base::Milliseconds(200);
 
+std::u16string GetAccessibleTrayName(
+    const FocusModeSession::Snapshot& session_snapshot) {
+  if (session_snapshot.state == FocusModeSession::State::kEnding) {
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_ENDING_MOMENT_ACCESSIBLE_NAME);
+  }
+
+  const std::u16string time_remaining =
+      focus_mode_util::GetDurationString(session_snapshot.remaining_time,
+                                         /*digital_format=*/false);
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_ACCESSIBLE_NAME, time_remaining);
+}
+
 }  // namespace
 
 class FocusModeTray::TaskItemView : public views::BoxLayoutView {
@@ -128,7 +142,6 @@ FocusModeTray::FocusModeTray(Shelf* shelf)
   SetCallback(base::BindRepeating(&FocusModeTray::FocusModeIconActivated,
                                   weak_ptr_factory_.GetWeakPtr()));
 
-  image_view_->SetTooltipText(GetAccessibleNameForTray());
   image_view_->SetHorizontalAlignment(views::ImageView::Alignment::kCenter);
   image_view_->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
   image_view_->SetPreferredSize(gfx::Size(kTrayItemSize, kTrayItemSize));
@@ -138,12 +151,37 @@ FocusModeTray::FocusModeTray(Shelf* shelf)
   progress_indicator_ =
       ProgressIndicator::CreateDefaultInstance(base::BindRepeating(
           [](FocusModeTray* view) -> std::optional<float> {
+            if (!view->GetVisible() || view->is_active()) {
+              return 0.0f;
+            }
+            if (view->show_progress_ring_after_animation_) {
+              return ProgressIndicator::kForcedShow;
+            }
+
             auto* controller = FocusModeController::Get();
-            if (view->is_active() || !controller->in_focus_session()) {
-              // `kProgressComplete` causes the layer to not be painted, hiding
-              // the progress indicator.
+
+            // `kProgressComplete` is only returned by an ending moment, so that
+            // we can know when the pulse animation is done.
+            if (controller->in_ending_moment()) {
+              bool is_animating = false;
+              if (auto* progress_ring_animation =
+                      view->progress_indicator_->animation_registry()
+                          ->GetProgressRingAnimationForKey(
+                              view->progress_indicator_->animation_key())) {
+                is_animating = progress_ring_animation->IsAnimating();
+              }
+
+              // After the pulse animation, the ring isn't shown when the value
+              // is left at `kProgressComplete`, so we need to set it manually
+              // to `kForcedShow` to show the ring.
+              if (!is_animating && (view->progress_indicator_->progress() ==
+                                    ProgressIndicator::kProgressComplete)) {
+                view->show_progress_ring_after_animation_ = true;
+                return ProgressIndicator::kForcedShow;
+              }
               return ProgressIndicator::kProgressComplete;
             }
+
             return controller->current_session()
                 ->GetSnapshot(base::Time::Now())
                 .progress;
@@ -152,7 +190,7 @@ FocusModeTray::FocusModeTray(Shelf* shelf)
   progress_indicator_->SetInnerIconVisible(false);
   progress_indicator_->SetInnerRingVisible(false);
   progress_indicator_->SetOuterRingStrokeWidth(kProgressIndicatorThickness);
-  progress_indicator_->SetColorId(cros_tokens::kCrosSysPrimary);
+  progress_indicator_->SetColorId(cros_tokens::kCrosRefPrimary70);
 
   tray_container()->layer()->Add(
       progress_indicator_->CreateLayer(base::BindRepeating(
@@ -188,9 +226,11 @@ void FocusModeTray::ClickedOutsideBubble() {
 }
 
 std::u16string FocusModeTray::GetAccessibleNameForTray() {
-  // TODO(b/288975135): Update once we get UX writing.
-  return l10n_util::GetStringUTF16(
-      IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_ACTIVE_LABEL);
+  if (!session_snapshot_) {
+    return std::u16string();
+  }
+
+  return GetAccessibleTrayName(session_snapshot_.value());
 }
 
 std::u16string FocusModeTray::GetAccessibleNameForBubble() {
@@ -284,8 +324,9 @@ void FocusModeTray::ShowBubble() {
   ending_moment_view_ = bubble_view_container_->AddChildView(
       std::make_unique<FocusModeEndingMomentView>());
 
-  UpdateBubbleViews(
-      controller->current_session()->GetSnapshot(base::Time::Now()));
+  session_snapshot_ =
+      controller->current_session()->GetSnapshot(base::Time::Now());
+  UpdateBubbleViews(session_snapshot_.value());
 
   if (controller->HasSelectedTask()) {
     task_item_view_ =
@@ -317,29 +358,39 @@ void FocusModeTray::OnThemeChanged() {
 
 void FocusModeTray::OnFocusModeChanged(bool in_focus_session) {
   UpdateProgressRing();
+  show_progress_ring_after_animation_ = false;
 
-  if (!bubble_) {
+  auto current_session = FocusModeController::Get()->current_session();
+  if (!current_session) {
+    session_snapshot_.reset();
     return;
   }
 
-  auto current_session = FocusModeController::Get()->current_session();
-  CHECK(current_session);
-  UpdateBubbleViews(current_session->GetSnapshot(base::Time::Now()));
+  session_snapshot_ = current_session->GetSnapshot(base::Time::Now());
+  image_view_->SetTooltipText(GetAccessibleTrayName(session_snapshot_.value()));
+
+  if (bubble_) {
+    UpdateBubbleViews(session_snapshot_.value());
+  }
 }
 
 void FocusModeTray::OnTimerTick(
     const FocusModeSession::Snapshot& session_snapshot) {
+  session_snapshot_ = session_snapshot;
+  image_view_->SetTooltipText(GetAccessibleTrayName(session_snapshot_.value()));
   UpdateProgressRing();
   MaybeUpdateCountdownViewUI(session_snapshot);
 }
 
 void FocusModeTray::OnActiveSessionDurationChanged(
     const FocusModeSession::Snapshot& session_snapshot) {
+  session_snapshot_ = session_snapshot;
+  image_view_->SetTooltipText(GetAccessibleTrayName(session_snapshot_.value()));
   UpdateProgressRing();
   MaybeUpdateCountdownViewUI(session_snapshot);
 }
 
-void FocusModeTray::Layout() {
+void FocusModeTray::Layout(PassKey) {
   LayoutSuperclass<views::View>(this);
 
   // Position the progress indicator based on the position of the image view.

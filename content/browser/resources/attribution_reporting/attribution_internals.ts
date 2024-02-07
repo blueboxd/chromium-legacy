@@ -51,6 +51,18 @@ function undefinedFirst<V extends Comparable>(f: CompareFunc<V>):
   };
 }
 
+function compareLexicographic<V>(f: CompareFunc<V>): CompareFunc<V[]> {
+  return (a: V[], b: V[]): number => {
+    for (let i = 0; i < a.length && i < b.length; ++i) {
+      const r = f(a[i]!, b[i]!);
+      if (r !== 0) {
+        return r;
+      }
+    }
+    return compareDefault(a.length, b.length);
+  };
+}
+
 function bigintReplacer(_key: string, value: any): any {
   return typeof value === 'bigint' ? value.toString() : value;
 }
@@ -137,13 +149,21 @@ class CodeColumn<T> extends ValueColumn<T, string> {
 }
 
 class ListColumn<T, V> extends ValueColumn<T, V[]> {
+  readonly compare?: (a: T, b: T) => number;
+
   constructor(
       header: string,
       getValue: (row: T) => V[],
       private readonly renderItem: RenderFunc<V> = setInnerText,
       private readonly tdClass?: string,
+      compareValues?: CompareFunc<V>,
   ) {
     super(header, getValue);
+
+    if (compareValues) {
+      const cmp = compareLexicographic(compareValues);
+      this.compare = (a, b) => cmp(this.getValue(a), this.getValue(b));
+    }
   }
 
   override render(td: HTMLElement, row: T): void {
@@ -359,9 +379,11 @@ class SourceTableModel extends ArrayTableModel<Source> {
           numberColumn('Source Event ID', (e) => e.sourceEventId),
           stringOrBoolColumn('Status', (e) => e.status),
           urlColumn('Source Origin', (e) => e.sourceOrigin),
-          new ListColumn('Destinations', (e) => e.destinations, renderUrl),
+          new ListColumn(
+              'Destinations', (e) => e.destinations, renderUrl,
+              /*tdClass=*/ undefined, compareDefault),
           urlColumn('Reporting Origin', (e) => e.reportingOrigin),
-          dateColumn('Source Registration Time', (e) => e.sourceTime),
+          dateColumn('Registration Time', (e) => e.sourceTime),
           dateColumn('Expiry Time', (e) => e.expiryTime),
           new CodeColumn<Source>('Trigger Specs', (e) => e.triggerSpecs),
           dateColumn(
@@ -390,7 +412,7 @@ class SourceTableModel extends ArrayTableModel<Source> {
               'Aggregatable Dedup Keys', (e) => e.aggregatableDedupKeys,
               setInnerText, numberClass),
         ],
-        5,  // Sort by source registration time by default.
+        5,  // Sort by registration time by default.
         'No sources.',
     );
   }
@@ -763,7 +785,7 @@ class OsRegistrationTableModel extends ArrayTableModel<OsRegistration> {
           stringOrBoolColumn('Result', (e) => e.result),
         ],
         0,
-        'No OS Registrations',
+        'No OS registrations.',
     );
   }
 }
@@ -1092,11 +1114,10 @@ class AttributionInternals implements ObserverInterface {
 
   refresh(): void {
     this.handler.isAttributionReportingEnabled().then((response) => {
-      const featureStatusContent =
-          document.querySelector<HTMLElement>('#feature-status-content')!;
-      featureStatusContent.innerText =
-          response.enabled ? 'enabled' : 'disabled';
-      featureStatusContent.classList.toggle('disabled', !response.enabled);
+      const featureStatus =
+          document.querySelector<HTMLElement>('#feature-status')!;
+      featureStatus.innerText = response.enabled ? 'enabled' : 'disabled';
+      featureStatus.classList.toggle('disabled', !response.enabled);
 
       const reportDelaysContent =
           document.querySelector<HTMLElement>('#report-delays')!;

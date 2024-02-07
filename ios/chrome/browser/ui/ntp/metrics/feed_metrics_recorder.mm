@@ -617,7 +617,7 @@ using feed::FeedUserActionType;
       base::UmaHistogramSparse(kFollowCountAfterUnfollow, followCount);
       break;
     case FollowCountLogReasonEngaged:
-      base::UmaHistogramSparse(kFollowCountWhenEngaged, followCount);
+      // TODO(b/323593501): Report on-feed-engagement follow count.
       break;
   }
 }
@@ -1033,6 +1033,12 @@ using feed::FeedUserActionType;
 // Checks if a Good Visit should be recorded. `interacted` is YES if it was
 // triggered by an explicit interaction. (e.g. Opening a new Tab in Incognito.)
 - (void)checkEngagementGoodVisitWithInteraction:(BOOL)interacted {
+  // Certain actions can be dispatched by a background thread, such as showing a
+  // snackbar. We shouldn't access the PrefService in the background, so these
+  // are ignored.
+  if (![NSThread isMainThread]) {
+    return;
+  }
   // Determine if this interaction is part of a new session.
   base::Time now = base::Time::Now();
   if ((now - self.lastInteractionTimeForGoodVisits) >

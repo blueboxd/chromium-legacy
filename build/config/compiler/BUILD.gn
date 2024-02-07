@@ -496,9 +496,6 @@ config("compiler") {
     # linker_driver.py script runs dsymutil itself, which is set to be the
     # linker for Rust targets as well.
     rustflags += [ "-Csplit-debuginfo=unpacked" ]
-
-    # TODO(crbug.com/1519899): Figure out how to remove this.
-    cflags += [ "-fno-define-target-os-macros" ]
   }
 
   # Linux/Android/Fuchsia common flags setup.
@@ -1949,6 +1946,35 @@ config("prevent_unsafe_narrowing") {
         # fixing types to be sign-correct.
         "-Wtautological-unsigned-zero-compare",
       ]
+    }
+  }
+}
+
+# unsafe_buffer_warning -------------------------------------------------------
+
+# Paths of third-party headers that violate Wunsafe-buffer-usage, but which we
+# have been unable to fix yet. We use this list to be able to make progress and
+# enable the warning on code that we do control/own.
+#
+# WARNING: This will disable all warnings in the files. ONLY USE THIS for
+# third-party code which we do not control/own. Fix the warnings instead in
+# our own code.
+if (is_clang) {
+  unsafe_buffer_warning_header_allowlist =
+      [ "third_party/googletest/src/googletest/include/gtest" ]
+}
+
+# Enables warnings on pointer arithmetic/indexing or calls to functions
+# annotated with `UNSAFE_BUFFER_USAGE`.
+config("unsafe_buffer_warning") {
+  if (is_clang) {
+    cflags = [ "-Wunsafe-buffer-usage" ]
+    foreach(h, unsafe_buffer_warning_header_allowlist) {
+      if (is_win) {
+        cflags += [ "/clang:--system-header-prefix=$h" ]
+      } else {
+        cflags += [ "--system-header-prefix=$h" ]
+      }
     }
   }
 }

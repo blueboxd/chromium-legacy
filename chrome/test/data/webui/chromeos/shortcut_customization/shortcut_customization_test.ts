@@ -10,11 +10,11 @@ import {FakeShortcutInputProvider} from 'chrome://resources/ash/common/shortcut_
 import {KeyEvent} from 'chrome://resources/ash/common/shortcut_input_ui/input_device_settings.mojom-webui.js';
 import {Modifier as ModifierEnum} from 'chrome://resources/ash/common/shortcut_input_ui/shortcut_utils.js';
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
-import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
-import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
+import {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import {CrDialogElement} from 'chrome://resources/ash/common/cr_elements/cr_dialog/cr_dialog.js';
+import {CrDrawerElement} from 'chrome://resources/ash/common/cr_elements/cr_drawer/cr_drawer.js';
+import {CrIconButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
+import {CrToolbarSearchFieldElement} from 'chrome://resources/ash/common/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
 import {IronIconElement} from 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -510,7 +510,7 @@ suite('shortcutCustomizationAppTest', function() {
     assertTrue(editElement.hasError);
     const expected_error_message =
         'Shortcut is being used for "TestConflictName". Press a new ' +
-        'shortcut. To replace the original shortcut, press this shortcut ' +
+        'shortcut. To replace the existing shortcut, press this shortcut ' +
         'again.';
     assertEquals(
         expected_error_message,
@@ -923,7 +923,16 @@ suite('shortcutCustomizationAppTest', function() {
         AcceleratorConfigResult.kConflictCanOverride;
     const expectedErrorMessage =
         'Shortcut is being used for "BRIGHTNESS_UP". Press a new shortcut. ' +
-        'To replace the original shortcut, press this shortcut again.';
+        'To replace the existing shortcut, press this shortcut again.';
+    await validateAcceleratorInDialog(
+        acceleratorConfigResult, expectedErrorMessage);
+  });
+
+  test('ValidateNonStandardWithSearch', async () => {
+    const acceleratorConfigResult =
+        AcceleratorConfigResult.kNonStandardWithSearch;
+    const expectedErrorMessage =
+        '] is not available with the launcher key. Press a new shortcut.';
     await validateAcceleratorInDialog(
         acceleratorConfigResult, expectedErrorMessage);
   });

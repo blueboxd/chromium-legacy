@@ -17,6 +17,10 @@
 namespace ash::features {
 namespace {
 
+// Whether 'LocalPasswordsForConsumers' has been force enabled.
+// TODO(b/323178117) - Remove once enabled by default, or by M123 branch.
+static bool g_local_password_for_consumers_force_enable = false;
+
 // Controls whether Instant Tethering supports hosts which use the background
 // advertisement model.
 BASE_FEATURE(kInstantTetheringBackgroundAdvertisementSupport,
@@ -282,6 +286,9 @@ BASE_FEATURE(kBatterySaverAlwaysOn,
              "CrosBatterySaverAlwaysOn",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Display weather information in birch UI.
+BASE_FEATURE(kBirchWeather, "BirchWeather", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables the usage of fixed Bluetooth A2DP packet size to improve
 // audio performance in noisy environment.
 BASE_FEATURE(kBluetoothFixA2dpPacketSize,
@@ -363,7 +370,7 @@ BASE_FEATURE(kBorealisWebUIInstaller,
 
 BASE_FEATURE(kBorealisZinkGlDriver,
              "BorealisZinkGlDriver",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<BorealisZinkGlDriverParam>::Option
     borealis_zink_gl_driver_options[] = {
@@ -388,6 +395,11 @@ BASE_FEATURE(kCameraEffectsSupportedByHardware,
 BASE_FEATURE(kCameraPrivacySwitchNotifications,
              "CameraPrivacySwitchNotifications",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the feature to parameterize glyph for "Campbell" feature.
+BASE_FEATURE(kCampbellGlyph,
+             "CampbellGlyph",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the capture mode advanced audio settings are enabled.
 BASE_FEATURE(kCaptureModeAudioMixing,
@@ -444,14 +456,6 @@ BASE_FEATURE(kCellularUseSecondEuicc,
 BASE_FEATURE(kCheckPasswordsAgainstCryptohomeHelper,
              "CheckPasswordsAgainstCryptohomeHelper",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, an educational footer may appear at the bottom of the clipboard
-// history menu. Whether the educational footer appears is based on user/device
-// state, such as when the user last used the clipboard history menu or when a
-// clipboard history nudge was last seen.
-BASE_FEATURE(kClipboardHistoryFooter,
-             "ClipboardHistoryFooter",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled alongside the keyboard auto-repeat setting, holding down Ctrl+V
 // will cause the clipboard history menu to show. From there, the user can
@@ -1054,7 +1058,7 @@ BASE_FEATURE(kFastPairDevicesBluetoothSettings,
 // window snapped.
 BASE_FEATURE(kFasterSplitScreenSetup,
              "FasterSplitScreenSetup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, allows the creation of up to 16 desks (default is 8). This flag
 // is intended to be controlled by the feature management module.
@@ -1341,10 +1345,15 @@ BASE_FEATURE(kGrowthFramework,
              "GrowthFramework",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables Demo mode customizations with growth campaigns.
+// Enables Demo Mode customizations with growth campaigns.
 BASE_FEATURE(kGrowthCampaignsInDemoMode,
              "GrowthCampaignsInDemoMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables consumer session customizations with growth campaigns.
+BASE_FEATURE(kGrowthCampaignsInConsumerSession,
+             "GrowthCampaignsInConsumerSession",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables new on-device recognition for legacy handwriting input.
 // This flag should be OVERRIDDEN for devices which do not have on-device
@@ -1704,6 +1713,12 @@ BASE_FEATURE(kLacrosWaylandLogging,
 // command line flag is passed).
 BASE_FEATURE(kLacrosProfileBackwardMigration,
              "LacrosProfileBackwardMigration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables automatic downloading and installing fonts via language packs, based
+// on the user's preferences.
+BASE_FEATURE(kLanguagePacksFonts,
+             "LanguagePacksFonts",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the Language Pack corresponding to the application locale is
@@ -2257,6 +2272,13 @@ BASE_FEATURE(kPrintManagementJelly,
              "PrintManagementJelly",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// If enabled, ChromeOS print preview app is available. Enabling does not
+// replace the existing Chrome print preview UI, and will require an additional
+// flag and pref configured to facilitate. See b/323421684 for more information.
+BASE_FEATURE(kPrintPreviewCrosApp,
+             "PrintPreviewCrosApp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, improved messaging for printer setup displayed in print
 // management app.
 BASE_FEATURE(kPrintManagementSetupAssistance,
@@ -2558,12 +2580,6 @@ BASE_FEATURE(kShimlessRMA3pDiagnosticsDevMode,
              "ShimlessRMA3pDiagnosticsDevMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, the jelly colors will be used in the shortcut customization app.
-// Requires jelly-colors flag to also be enabled.
-BASE_FEATURE(kShortcutCustomizationJelly,
-             "ShortcutCustomizationJelly",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, system shortcuts will utilize state machiens instead of
 // keeping track of entire history of keys pressed.
 BASE_FEATURE(kShortcutStateMachines,
@@ -2614,11 +2630,6 @@ BASE_FEATURE(kFeatureManagementFeatureAwareDeviceDemoMode,
 // the attract loop videos.
 BASE_FEATURE(kDemoModeGMSCoreWindowCloser,
              "DemoModeGMSCoreWindowCloser",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables the shutdown confirmation bubble from the login shelf view.
-BASE_FEATURE(kShutdownConfirmationBubble,
-             "ShutdownConfirmationBubble",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Moves toasts to the bottom-side corner where the status area is instead of
@@ -2672,9 +2683,6 @@ BASE_FEATURE(kFeatureManagementSystemLiveCaption,
 BASE_FEATURE(kSystemNudgeMigration,
              "SystemNudgeMigration",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables the ability to play sounds for system services.
-BASE_FEATURE(kSystemSounds, "SystemSounds", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables the shadows of system tray bubbles.
 BASE_FEATURE(kSystemTrayShadow,
@@ -2758,12 +2766,6 @@ BASE_FEATURE(kUpstreamTrustedReportsFirmware,
 BASE_FEATURE(kUseAndroidStagingSmds,
              "UseAndroidStagingSmds",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, the login shelf view is placed in its own widget instead of
-// sharing the shelf widget with other components.
-BASE_FEATURE(kUseLoginShelfWidget,
-             "UseLoginShelfWidget",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Use the staging URL as part of the "Messages" feature under "Connected
 // Devices" settings.
@@ -3077,10 +3079,6 @@ bool AreSideAlignedToastsEnabled() {
          base::FeatureList::IsEnabled(kSideAlignedToasts);
 }
 
-bool AreSystemSoundsEnabled() {
-  return base::FeatureList::IsEnabled(kSystemSounds);
-}
-
 bool IsAudioHFPMicSRToggleEnabled() {
   return base::FeatureList::IsEnabled(kAudioHFPMicSRToggle);
 }
@@ -3199,6 +3197,10 @@ bool IsBatterySaverAlwaysOn() {
   return base::FeatureList::IsEnabled(kBatterySaverAlwaysOn);
 }
 
+bool IsBirchWeatherEnabled() {
+  return base::FeatureList::IsEnabled(kBirchWeather);
+}
+
 bool IsBluetoothDisconnectWarningEnabled() {
   return base::FeatureList::IsEnabled(kBluetoothDisconnectWarning);
 }
@@ -3225,10 +3227,6 @@ bool IsCellularCarrierLockEnabled() {
 
 bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {
   return base::FeatureList::IsEnabled(kCheckPasswordsAgainstCryptohomeHelper);
-}
-
-bool IsClipboardHistoryFooterEnabled() {
-  return base::FeatureList::IsEnabled(kClipboardHistoryFooter);
 }
 
 bool IsClipboardHistoryLongpressEnabled() {
@@ -3543,6 +3541,11 @@ bool IsGrowthCampaignsInDemoModeEnabled() {
          base::FeatureList::IsEnabled(kGrowthCampaignsInDemoMode);
 }
 
+bool IsGrowthCampaignsInConsumerSessionEnabled() {
+  return IsGrowthFrameworkEnabled() &&
+         base::FeatureList::IsEnabled(kGrowthCampaignsInConsumerSession);
+}
+
 bool AreGlanceablesV2Enabled() {
   return base::FeatureList::IsEnabled(kGlanceablesV2);
 }
@@ -3752,8 +3755,7 @@ bool IsJellyEnabledForScanningApp() {
 }
 
 bool IsJellyEnabledForShortcutCustomization() {
-  return chromeos::features::IsJellyEnabled() &&
-         base::FeatureList::IsEnabled(kShortcutCustomizationJelly);
+  return chromeos::features::IsJellyEnabled();
 }
 
 bool IsKerberosRememberPasswordByDefaultEnabled() {
@@ -3805,7 +3807,15 @@ bool IsLinkCrossDeviceInternalsEnabled() {
 }
 
 bool AreLocalPasswordsEnabledForConsumers() {
+  if (g_local_password_for_consumers_force_enable) {
+    return true;
+  }
+
   return base::FeatureList::IsEnabled(kLocalPasswordForConsumers);
+}
+
+void ForceEnableLocalPasswordsForConsumers() {
+  g_local_password_for_consumers_force_enable = true;
 }
 
 bool IsLockScreenHideSensitiveNotificationsSupported() {
@@ -4144,6 +4154,10 @@ bool IsPrinterSettingsRevampEnabled() {
   return base::FeatureList::IsEnabled(kPrinterSettingsRevamp);
 }
 
+bool IsPrinterPreviewCrosAppEnabled() {
+  return base::FeatureList::IsEnabled(kPrintPreviewCrosApp);
+}
+
 bool IsPrintPreviewDiscoveredPrintersEnabled() {
   return base::FeatureList::IsEnabled(kPrintPreviewDiscoveredPrinters);
 }
@@ -4400,10 +4414,6 @@ bool IsTrilinearFilteringEnabled() {
 bool IsUnmanagedDeviceDeviceTrustConnectorFeatureEnabled() {
   return base::FeatureList::IsEnabled(
       kUnmanagedDeviceDeviceTrustConnectorEnabled);
-}
-
-bool IsUseLoginShelfWidgetEnabled() {
-  return base::FeatureList::IsEnabled(kUseLoginShelfWidget);
 }
 
 bool ShouldUseAndroidStagingSmds() {

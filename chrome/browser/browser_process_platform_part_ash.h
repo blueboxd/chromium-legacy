@@ -25,6 +25,7 @@ class InSessionPasswordChangeManager;
 class ProfileHelper;
 class SchedulerConfigurationManager;
 class TimeZoneResolver;
+class UserImageManagerRegistry;
 
 namespace system {
 class AutomaticRebootManager;
@@ -37,6 +38,10 @@ class SystemClock;
 
 namespace policy {
 class BrowserPolicyConnectorAsh;
+}
+
+namespace app_list {
+class EssentialSearchManager;
 }
 
 class ScopedKeepAlive;
@@ -118,6 +123,14 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartChromeOS {
 
   ash::AshProxyMonitor* ash_proxy_monitor() { return ash_proxy_monitor_.get(); }
 
+  app_list::EssentialSearchManager* essential_search_manager() {
+    return essential_search_manager_.get();
+  }
+
+  ash::InSessionPasswordChangeManager* in_session_password_change_manager() {
+    return in_session_password_change_manager_.get();
+  }
+
   ash::system::TimeZoneResolverManager* GetTimezoneResolverManager();
 
   ash::TimeZoneResolver* GetTimezoneResolver();
@@ -130,10 +143,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartChromeOS {
   void DestroySystemClock();
 
   ash::AccountManagerFactory* GetAccountManagerFactory();
-
-  ash::InSessionPasswordChangeManager* in_session_password_change_manager() {
-    return in_session_password_change_manager_.get();
-  }
 
   static void EnsureFactoryBuilt();
 
@@ -160,6 +169,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartChromeOS {
 
   std::unique_ptr<ash::ChromeUserManager> chrome_user_manager_;
 
+  std::unique_ptr<ash::UserImageManagerRegistry> user_image_manager_registry_;
+
   std::unique_ptr<ash::system::DeviceDisablingManagerDefaultDelegate>
       device_disabling_manager_delegate_;
   std::unique_ptr<ash::system::DeviceDisablingManager>
@@ -180,6 +191,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartChromeOS {
       cros_component_manager_;
 
   std::unique_ptr<ash::AccountManagerFactory> account_manager_factory_;
+
+  std::unique_ptr<app_list::EssentialSearchManager> essential_search_manager_;
 
   std::unique_ptr<ash::InSessionPasswordChangeManager>
       in_session_password_change_manager_;

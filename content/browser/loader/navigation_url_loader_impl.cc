@@ -141,11 +141,13 @@ class NavigationLoaderInterceptorBrowserContainer
             [](LoaderCallback callback,
                URLLoaderRequestInterceptor::RequestHandler handler) {
               if (handler) {
-                std::move(callback).Run(base::MakeRefCounted<
-                                        network::SingleRequestURLLoaderFactory>(
-                    std::move(handler)));
+                std::move(callback).Run(NavigationLoaderInterceptor::Result(
+                    base::MakeRefCounted<
+                        network::SingleRequestURLLoaderFactory>(
+                        std::move(handler)),
+                    /*subresource_loader_params=*/std::nullopt));
               } else {
-                std::move(callback).Run({});
+                std::move(callback).Run(std::nullopt);
               }
             },
             std::move(callback)));
@@ -602,22 +604,26 @@ void NavigationURLLoaderImpl::Restart() {
     }
     url_loader_.reset();
   }
-  interceptor_index_ = 0;
   received_response_ = false;
-  MaybeStartLoader(/*interceptor=*/nullptr, /*single_request_factory=*/{});
+  head_update_params_ = ResponseHeadUpdateParams();
+  MaybeStartLoader(/*next_interceptor_index=*/0,
+                   /*interceptor_result=*/std::nullopt);
 }
 
 void NavigationURLLoaderImpl::MaybeStartLoader(
-    NavigationLoaderInterceptor* interceptor,
-    scoped_refptr<network::SharedURLLoaderFactory> single_request_factory) {
+    size_t next_interceptor_index,
+    std::optional<NavigationLoaderInterceptor::Result> interceptor_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(started_);
 
-  if (single_request_factory) {
-    // `interceptor` wants to handle the request with
-    // `single_request_handler`.
-    DCHECK(interceptor);
+  subresource_loader_params_ =
+      interceptor_result
+          ? std::move(interceptor_result->subresource_loader_params)
+          : std::nullopt;
 
+  // Intercept the request with `interceptor_result->single_request_factory` if
+  // it's non-null.
+  if (interceptor_result && interceptor_result->single_request_factory) {
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
         CreateURLLoaderThrottles();
     // Intercepted requests need MimeSniffingThrottle to do mime sniffing.
@@ -641,45 +647,32 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
     }
 
     url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
-        std::move(single_request_factory), std::move(throttles),
-        global_request_id_.request_id, network::mojom::kURLLoadOptionNone,
-        resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
+        std::move(interceptor_result->single_request_factory),
+        std::move(throttles), global_request_id_.request_id,
+        network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
+        kNavigationUrlLoaderTrafficAnnotation,
         GetUIThreadTaskRunner({BrowserTaskType::kNavigationNetworkResponse}));
-
-    subresource_loader_params_ =
-        interceptor->MaybeCreateSubresourceLoaderParams();
     return;
   }
 
-  // Before falling back to the next interceptor, see if `interceptor` still
-  // wants to give additional info to the frame for subresource loading. In
-  // that case we will just fall back to the default loader (i.e. won't go on
-  // to the next interceptors) but send the subresource_loader_params to the
-  // child process. This is necessary for correctness in the cases where, e.g.
-  // there's a controlling service worker that doesn't have a fetch event
-  // handler so it doesn't intercept requests.
-  if (interceptor) {
-    subresource_loader_params_ =
-        interceptor->MaybeCreateSubresourceLoaderParams();
-
-    // If non-null `subresource_loader_params_` is returned, make sure
-    // we skip the next interceptors.
-    if (subresource_loader_params_)
-      interceptor_index_ = interceptors_.size();
-  }
-
-  // See if the next interceptor wants to handle the request.
-  if (interceptor_index_ < interceptors_.size()) {
-    auto* next_interceptor = interceptors_[interceptor_index_++].get();
+  // Fallback to the next interceptor.
+  // Skip subsequent interceptors if `interceptor_result` is not nullopt.
+  if (!interceptor_result && next_interceptor_index < interceptors_.size()) {
+    CHECK(!subresource_loader_params_);
+    auto* next_interceptor = interceptors_[next_interceptor_index].get();
     next_interceptor->MaybeCreateLoader(
         *resource_request_, browser_context_,
         base::BindOnce(&NavigationURLLoaderImpl::MaybeStartLoader,
-                       weak_factory_.GetWeakPtr(), next_interceptor),
+                       weak_factory_.GetWeakPtr(), next_interceptor_index + 1),
         base::BindOnce(
             &NavigationURLLoaderImpl::FallbackToNonInterceptedRequest,
             weak_factory_.GetWeakPtr()));
     return;
   }
+
+  // Here `subresource_loader_params_` can be non-null e.g. when there's a
+  // controlling service worker that doesn't have a fetch event handler so it
+  // doesn't intercept requests.
 
   // If we already have the default `url_loader_` we must come here after a
   // redirect. No interceptors wanted to intercept the redirected request, so
@@ -699,15 +692,11 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
 
 void NavigationURLLoaderImpl::FallbackToNonInterceptedRequest(
     bool reset_subresource_loader_params,
-    const ResponseHeadUpdateParams& head_update_params) {
+    ResponseHeadUpdateParams head_update_params) {
   if (reset_subresource_loader_params)
     subresource_loader_params_.reset();
 
-  intercepting_worker_start_time_ =
-      head_update_params.load_timing_info.service_worker_start_time;
-  intercepting_worker_ready_time_ =
-      head_update_params.load_timing_info.service_worker_ready_time;
-  intercepting_worker_router_info_ = head_update_params.router_info.Clone();
+  head_update_params_ = std::move(head_update_params);
 
   scoped_refptr<network::SharedURLLoaderFactory> factory =
       PrepareForNonInterceptedRequest();
@@ -861,14 +850,16 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   response_body_ = std::move(response_body);
   received_response_ = true;
 
-  if (!intercepting_worker_start_time_.is_null()) {
+  if (!head_update_params_.load_timing_info.service_worker_start_time
+           .is_null()) {
     head->load_timing.service_worker_start_time =
-        intercepting_worker_start_time_;
+        head_update_params_.load_timing_info.service_worker_start_time;
     head->load_timing.service_worker_ready_time =
-        intercepting_worker_ready_time_;
+        head_update_params_.load_timing_info.service_worker_ready_time;
   }
-  if (!intercepting_worker_router_info_.is_null()) {
-    head->service_worker_router_info = intercepting_worker_router_info_.Clone();
+  if (!head_update_params_.router_info.is_null()) {
+    head->service_worker_router_info =
+        std::move(head_update_params_.router_info);
   }
 
   // If the default loader (network) was used to handle the URL load request
@@ -1383,22 +1374,19 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   std::string scheme = resource_request_->url.scheme();
   scoped_refptr<network::SharedURLLoaderFactory> factory_for_webui;
   if (base::Contains(schemes, scheme)) {
-    network::URLLoaderFactoryBuilder factory_builder;
-    GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        browser_context_, frame_tree_node->current_frame_host(),
-        frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-        ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
-        frame_tree_node->navigation_request()->GetNavigationId(), ukm_id,
-        factory_builder, /*header_client=*/nullptr,
-        /*bypass_redirect_checks=*/nullptr, /*disable_secure_dns=*/nullptr,
-        /*factory_override=*/nullptr,
-        content::GetUIThreadTaskRunner(
-            {content::BrowserTaskType::kNavigationNetworkResponse}));
-
-    factory_for_webui =
-        std::move(factory_builder)
-            .Finish(CreateWebUIURLLoaderFactory(
-                frame_tree_node->current_frame_host(), scheme, {}));
+    factory_for_webui = url_loader_factory::Create(
+        ContentBrowserClient::URLLoaderFactoryType::kNavigation,
+        url_loader_factory::TerminalParams::ForNonNetwork(
+            CreateWebUIURLLoaderFactory(frame_tree_node->current_frame_host(),
+                                        scheme, {})),
+        url_loader_factory::ContentClientParams(
+            browser_context_, frame_tree_node->current_frame_host(),
+            frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+            url::Origin(), ukm_id,
+            /*bypass_redirect_checks=*/nullptr,
+            frame_tree_node->navigation_request()->GetNavigationId(),
+            content::GetUIThreadTaskRunner(
+                {content::BrowserTaskType::kNavigationNetworkResponse})));
   }
 
   network_loader_factory_ = CreateNetworkLoaderFactory(
@@ -1681,46 +1669,42 @@ void NavigationURLLoaderImpl::
   DCHECK(frame_tree_node);
   DCHECK(frame_tree_node->navigation_request());
 
-  network::URLLoaderFactoryBuilder factory_builder;
-
   auto* frame = frame_tree_node->current_frame_host();
-  GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      frame->GetSiteInstance()->GetBrowserContext(), frame,
-      frame->GetProcess()->GetID(),
-      ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
-      frame_tree_node->navigation_request()->GetNavigationId(),
-      ukm::SourceIdObj::FromInt64(ukm_source_id_), factory_builder,
-      /*header_client=*/nullptr,
-      /*bypass_redirect_checks=*/nullptr, /*disable_secure_dns=*/nullptr,
-      /*factory_override=*/nullptr,
-      content::GetUIThreadTaskRunner(
-          {content::BrowserTaskType::kNavigationNetworkResponse}));
-
-  // TODO(lukasza, jam): It is unclear why FileURLLoaderFactory is the only
-  // non-http factory that allows DevTools intereception.  For comparison all
-  // non-WebUI cases in RFHI::CommitNavigation allow DevTools
-  // interception.  Let's try to be more consistent / less ad-hoc.
-  if (url.SchemeIs(url::kFileScheme)) {
-    if (frame_tree_node) {  // May be nullptr in some unit tests.
-      devtools_instrumentation::WillCreateURLLoaderFactoryParams::ForFrame(
-          frame)
-          .Run(
-              /*is_navigation=*/true, /*is_download=*/false, factory_builder,
-              /*factory_override=*/nullptr);
-    }
-  }
 
   auto it = non_network_url_loader_factories_.find(url.scheme());
-  if (it != non_network_url_loader_factories_.end()) {
-    mojo::Remote<network::mojom::URLLoaderFactory> remote(
-        std::move(it->second));
-    std::move(factory_builder)
-        .Finish(std::move(factory_receiver), std::move(remote));
-    non_network_url_loader_factories_.erase(it);
+  if (it == non_network_url_loader_factories_.end()) {
+    DVLOG(1) << "Ignoring request with unknown scheme: " << url.spec();
     return;
   }
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> terminal =
+      std::move(it->second);
+  non_network_url_loader_factories_.erase(it);
 
-  DVLOG(1) << "Ignoring request with unknown scheme: " << url.spec();
+  // TODO(lukasza, jam): It is unclear why FileURLLoaderFactory is the only
+  // non-http factory that allows DevTools interception. For comparison all
+  // non-WebUI cases in RFHI::CommitNavigation allow DevTools interception.
+  // Let's try to be more consistent / less ad-hoc.
+  std::optional<devtools_instrumentation::WillCreateURLLoaderFactoryParams>
+      devtools_params =
+          url.SchemeIs(url::kFileScheme)
+              ? std::make_optional(
+                    devtools_instrumentation::WillCreateURLLoaderFactoryParams::
+                        ForFrame(frame))
+              : std::nullopt;
+
+  url_loader_factory::CreateAndConnectToPendingReceiver(
+      std::move(factory_receiver),
+      ContentBrowserClient::URLLoaderFactoryType::kNavigation,
+      url_loader_factory::TerminalParams::ForNonNetwork(std::move(terminal)),
+      url_loader_factory::ContentClientParams(
+          frame->GetSiteInstance()->GetBrowserContext(), frame,
+          frame->GetProcess()->GetID(), url::Origin(),
+          ukm::SourceIdObj::FromInt64(ukm_source_id_),
+          /*bypass_redirect_checks=*/nullptr,
+          frame_tree_node->navigation_request()->GetNavigationId(),
+          content::GetUIThreadTaskRunner(
+              {content::BrowserTaskType::kNavigationNetworkResponse})),
+      devtools_params);
 }
 
 void NavigationURLLoaderImpl::RecordReceivedResponseUkmForOutermostMainFrame() {

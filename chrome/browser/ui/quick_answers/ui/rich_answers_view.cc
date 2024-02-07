@@ -147,6 +147,7 @@ views::UniqueWidgetPtr RichAnswersView::CreateWidget(
   rich_answers_view->SetPaintToLayer();
   rich_answers_view->layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF(kRoundedCornerRadius));
+  rich_answers_view->layer()->SetIsFastRoundedCorner(true);
 
   return widget;
 }
@@ -364,7 +365,7 @@ views::View* RichAnswersView::GetContentView() {
   return content_view_;
 }
 
-BEGIN_METADATA(RichAnswersView, views::View)
+BEGIN_METADATA(RichAnswersView)
 END_METADATA
 
 }  // namespace quick_answers

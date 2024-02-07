@@ -51,8 +51,8 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/ui/mock_fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
+#include "components/autofill/core/browser/ui/popup_hiding_reasons.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
-#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/device_reauth/mock_device_authenticator.h"
@@ -201,7 +201,8 @@ class TestAutofillClientTemplate : public T {
     if (!form_data_importer_) {
       set_test_form_data_importer(std::make_unique<FormDataImporter>(
           /*client=*/this,
-          /*personal_data_manager=*/nullptr, /*app_locale=*/"en-US"));
+          /*personal_data_manager=*/nullptr, /*history_service=*/nullptr,
+          /*app_locale=*/"en-US"));
     }
 
     return form_data_importer_.get();

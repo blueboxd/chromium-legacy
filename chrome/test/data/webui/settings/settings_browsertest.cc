@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "build/config/coverage/buildflags.h"
 #include "chrome/browser/preloading/preloading_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
@@ -563,6 +564,11 @@ IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, MAYBE_CookiesPageTest) {
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, ExceptionsList) {
   RunTest("settings/cookies_page_test.js", "runMochaSuite('ExceptionsList')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, CookieSettingsUiAlignmentTest) {
+  RunTest("settings/cookies_page_test.js",
+          "runMochaSuite('CookieSettingsUiAlignmentTest')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, FirstPartySetsUIDisabled) {
@@ -1135,7 +1141,13 @@ IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubModule) {
   RunTest("settings/safety_hub_module_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubPage) {
+#if BUILDFLAG(USE_JAVASCRIPT_COVERAGE)
+// TODO(crbug.com/1523686): Webviews don't work properly with JS coverage.
+#define MAYBE_SafetyHubPage DISABLED_SafetyHubPage
+#else
+#define MAYBE_SafetyHubPage SafetyHubPage
+#endif
+IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, MAYBE_SafetyHubPage) {
   RunTest("settings/safety_hub_page_test.js", "mocha.run()");
 }
 

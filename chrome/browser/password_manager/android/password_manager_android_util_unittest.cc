@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
+#include "base/strings/to_string.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
@@ -29,6 +30,7 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/password_store/password_store_results_observer.h"
+#include "components/password_manager/core/browser/password_store/split_stores_and_local_upm.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_notifier_impl.h"
@@ -44,10 +46,13 @@
 #include "components/sync/service/sync_service_impl.h"
 #include "components/sync/service/sync_user_settings.h"
 #include "components/sync/test/fake_server.h"
+#include "components/sync/test/fake_server_http_post_provider.h"
 #include "components/sync/test/fake_server_network_resources.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using password_manager::UsesSplitStoresAndUPMForLocal;
 
 namespace password_manager_android_util {
 namespace {
@@ -183,15 +188,13 @@ TEST_F(PasswordManagerAndroidUtilTest,
 // Integration test for UsesSplitStoresAndUPMForLocal(), which emulates restarts
 // by creating and destroying TestingProfiles. This doesn't exercise any of the
 // Java layers.
-// TODO(crbug.com/1257820): Replace with PRE_ AndroidBrowserTests when those
+// TODO(b/324196888): Replace with PRE_ AndroidBrowserTests when those
 // are supported, preferably using a FakePasswordStoreAndroidBackend.
 class UsesSplitStoresAndUPMForLocalTest : public ::testing::Test {
  public:
   UsesSplitStoresAndUPMForLocalTest() {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         syncer::kSyncDeferredStartupTimeoutSeconds, "0");
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        kSkipLocalUpmGmsCoreVersionCheckForTesting);
   }
 
   // Can be invoked more than once, calling DestroyProfile() in-between.
@@ -240,6 +243,8 @@ class UsesSplitStoresAndUPMForLocalTest : public ::testing::Test {
     ASSERT_FALSE(identity_test_env_adaptor_);
     sync_service();
     ASSERT_TRUE(identity_test_env_adaptor_);
+
+    fake_server::FakeServerHttpPostProvider::EnableNetwork();
   }
 
   void DestroyProfile() {
@@ -327,12 +332,9 @@ class UsesSplitStoresAndUPMForLocalTest : public ::testing::Test {
 
 TEST_F(UsesSplitStoresAndUPMForLocalTest,
        SignedOutWithoutPasswords_NewInstall) {
-  base::test::ScopedFeatureList enable_local_upm;
-  enable_local_upm.InitWithFeatures(
-      {password_manager::features::kEnablePasswordsAccountStorage,
-       password_manager::features::
-           kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration},
-      {});
+  base::test::ScopedFeatureList enable_local_upm(
+      password_manager::features::
+          kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
   CreateProfile();
   EXPECT_TRUE(UsesSplitStoresAndUPMForLocal(pref_service()));
   DestroyProfile();
@@ -342,22 +344,18 @@ TEST_F(UsesSplitStoresAndUPMForLocalTest,
        SignedOutWithoutPasswords_ExistingInstall) {
   {
     base::test::ScopedFeatureList disable_local_upm;
-    disable_local_upm.InitWithFeatures(
-        {}, {password_manager::features::kEnablePasswordsAccountStorage,
-             password_manager::features::
-                 kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration});
+    disable_local_upm.InitAndDisableFeature(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
     CreateProfile();
     ASSERT_FALSE(UsesSplitStoresAndUPMForLocal(pref_service()));
     DestroyProfile();
   }
 
   {
-    base::test::ScopedFeatureList enable_local_upm;
-    enable_local_upm.InitWithFeatures(
-        {password_manager::features::kEnablePasswordsAccountStorage,
-         password_manager::features::
-             kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration},
-        {});
+    base::test::ScopedFeatureList enable_local_upm(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
     CreateProfile();
     EXPECT_TRUE(UsesSplitStoresAndUPMForLocal(pref_service()));
     DestroyProfile();
@@ -368,8 +366,7 @@ TEST_F(UsesSplitStoresAndUPMForLocalTest, SignedOutWithPasswords) {
   {
     base::test::ScopedFeatureList disable_local_upm;
     disable_local_upm.InitWithFeatures(
-        {}, {password_manager::features::kEnablePasswordsAccountStorage,
-             password_manager::features::
+        {}, {password_manager::features::
                  kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
              password_manager::features::
                  kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration});
@@ -380,10 +377,9 @@ TEST_F(UsesSplitStoresAndUPMForLocalTest, SignedOutWithPasswords) {
   }
 
   {
-    base::test::ScopedFeatureList enable_local_upm;
-    enable_local_upm.InitWithFeatures(
-        {password_manager::features::kEnablePasswordsAccountStorage,
-         password_manager::features::
+    base::test::ScopedFeatureList enable_local_upm_no_migration;
+    enable_local_upm_no_migration.InitWithFeatures(
+        {password_manager::features::
              kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration},
         {password_manager::features::
              kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration});
@@ -395,10 +391,9 @@ TEST_F(UsesSplitStoresAndUPMForLocalTest, SignedOutWithPasswords) {
   }
 
   {
-    base::test::ScopedFeatureList enable_local_upm;
-    enable_local_upm.InitWithFeatures(
-        {password_manager::features::kEnablePasswordsAccountStorage,
-         password_manager::features::
+    base::test::ScopedFeatureList enable_local_upm_with_migration;
+    enable_local_upm_with_migration.InitWithFeatures(
+        {password_manager::features::
              kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
          password_manager::features::
              kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration},
@@ -411,10 +406,11 @@ TEST_F(UsesSplitStoresAndUPMForLocalTest, SignedOutWithPasswords) {
     SignInAndEnableSync();
     ASSERT_TRUE(
         SyncDataTypeActiveWaiter(sync_service(), syncer::PREFERENCES).Wait());
-    ASSERT_FALSE(sync_service()->GetActiveDataTypes().Has(syncer::PASSWORDS));
+    // TODO(b/321217859): Re-implement sync suppression and uncomment.
+    // ASSERT_FALSE(sync_service()->GetActiveDataTypes().Has(syncer::PASSWORDS));
 
     // Pretend the migration finished.
-    // TODO(crbug.com/1495626): Once the migration is implemented, make this a
+    // TODO(b/324196888): Once the migration is implemented, make this a
     // call to a fake instead of directly setting the pref.
     pref_service()->SetInteger(
         password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
@@ -432,8 +428,7 @@ TEST_F(UsesSplitStoresAndUPMForLocalTest, SignedOutWithCustomSettings) {
   {
     base::test::ScopedFeatureList disable_local_upm;
     disable_local_upm.InitWithFeatures(
-        {}, {password_manager::features::kEnablePasswordsAccountStorage,
-             password_manager::features::
+        {}, {password_manager::features::
                  kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
              password_manager::features::
                  kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration});
@@ -447,8 +442,7 @@ TEST_F(UsesSplitStoresAndUPMForLocalTest, SignedOutWithCustomSettings) {
   {
     base::test::ScopedFeatureList enable_local_upm;
     enable_local_upm.InitWithFeatures(
-        {password_manager::features::kEnablePasswordsAccountStorage,
-         password_manager::features::
+        {password_manager::features::
              kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
          password_manager::features::
              kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration},
@@ -460,29 +454,28 @@ TEST_F(UsesSplitStoresAndUPMForLocalTest, SignedOutWithCustomSettings) {
   }
 }
 
-TEST_F(UsesSplitStoresAndUPMForLocalTest, Syncing) {
+TEST_F(UsesSplitStoresAndUPMForLocalTest, SyncingCompletedInitialMigration) {
   {
     base::test::ScopedFeatureList disable_local_upm;
-    disable_local_upm.InitWithFeatures(
-        {}, {password_manager::features::kEnablePasswordsAccountStorage,
-             password_manager::features::
-                 kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration});
+    disable_local_upm.InitAndDisableFeature(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
     CreateProfile();
     profile_password_store()->AddLogin(MakeExampleForm());
     SignInAndEnableSync();
     ASSERT_TRUE(
         SyncDataTypeActiveWaiter(sync_service(), syncer::PASSWORDS).Wait());
+    pref_service()->SetInteger(
+        password_manager::prefs::kCurrentMigrationVersionToGoogleMobileServices,
+        1);
     ASSERT_FALSE(UsesSplitStoresAndUPMForLocal(pref_service()));
     DestroyProfile();
   }
 
   {
-    base::test::ScopedFeatureList enable_local_upm;
-    enable_local_upm.InitWithFeatures(
-        {password_manager::features::kEnablePasswordsAccountStorage,
-         password_manager::features::
-             kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration},
-        {});
+    base::test::ScopedFeatureList enable_local_upm(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
     CreateProfile();
     ASSERT_TRUE(
         SyncDataTypeActiveWaiter(sync_service(), syncer::PASSWORDS).Wait());
@@ -494,6 +487,125 @@ TEST_F(UsesSplitStoresAndUPMForLocalTest, Syncing) {
     account_password_store()->GetAllLogins(account_store_observer.GetWeakPtr());
     EXPECT_EQ(profile_store_observer.WaitForResults().size(), 0u);
     EXPECT_EQ(account_store_observer.WaitForResults().size(), 1u);
+    DestroyProfile();
+  }
+
+  {
+    // Disabling the flag again should move the data back to the "profile"
+    // database. To rule out that data is just being redownloaded from the
+    // fake server, disable network.
+    base::test::ScopedFeatureList disable_local_upm;
+    disable_local_upm.InitAndDisableFeature(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
+    fake_server::FakeServerHttpPostProvider::DisableNetwork();
+    CreateProfile();
+    EXPECT_FALSE(UsesSplitStoresAndUPMForLocal(pref_service()));
+    password_manager::PasswordStoreResultsObserver profile_store_observer;
+    profile_password_store()->GetAllLogins(profile_store_observer.GetWeakPtr());
+    EXPECT_EQ(profile_store_observer.WaitForResults().size(), 1u);
+    EXPECT_FALSE(account_password_store());
+    DestroyProfile();
+  }
+}
+
+TEST_F(UsesSplitStoresAndUPMForLocalTest, SyncingButUnenrolled) {
+  // Set that initial migration is complete but user got unenrolled.
+  {
+    CreateProfile();
+    pref_service()->SetInteger(
+        password_manager::prefs::kCurrentMigrationVersionToGoogleMobileServices,
+        1);
+    pref_service()->SetBoolean(
+        password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
+        true);
+    SignInAndEnableSync();
+    ASSERT_TRUE(
+        SyncDataTypeActiveWaiter(sync_service(), syncer::PASSWORDS).Wait());
+    DestroyProfile();
+  }
+  {
+    base::test::ScopedFeatureList enable_local_upm(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
+    CreateProfile();
+    ASSERT_TRUE(
+        SyncDataTypeActiveWaiter(sync_service(), syncer::PASSWORDS).Wait());
+    EXPECT_FALSE(UsesSplitStoresAndUPMForLocal(pref_service()));
+    DestroyProfile();
+  }
+}
+
+TEST_F(UsesSplitStoresAndUPMForLocalTest,
+       SyncingButDidNotFinishInitialMigration) {
+  // Set that initial migration was not complete.
+  {
+    CreateProfile();
+    pref_service()->SetInteger(
+        password_manager::prefs::kCurrentMigrationVersionToGoogleMobileServices,
+        0);
+    base::test::ScopedFeatureList enable_local_upm(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
+    SignInAndEnableSync();
+    ASSERT_TRUE(
+        SyncDataTypeActiveWaiter(sync_service(), syncer::PASSWORDS).Wait());
+    DestroyProfile();
+  }
+  {
+    base::test::ScopedFeatureList enable_local_upm(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
+    CreateProfile();
+    ASSERT_TRUE(
+        SyncDataTypeActiveWaiter(sync_service(), syncer::PASSWORDS).Wait());
+    EXPECT_FALSE(UsesSplitStoresAndUPMForLocal(pref_service()));
+    DestroyProfile();
+  }
+}
+
+TEST_F(UsesSplitStoresAndUPMForLocalTest,
+       BumpMinimumGmsCoreVersionRevertsExperiment) {
+  {
+    base::test::ScopedFeatureList enable_local_upm(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
+    CreateProfile();
+    pref_service()->SetInteger(
+        password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
+        static_cast<int>(
+            password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOn));
+    SignInAndEnableSync();
+    ASSERT_TRUE(
+        SyncDataTypeActiveWaiter(sync_service(), syncer::PASSWORDS).Wait());
+    EXPECT_TRUE(UsesSplitStoresAndUPMForLocal(pref_service()));
+
+    // Add a password to the account store.
+    account_password_store()->AddLogin(MakeExampleForm());
+
+    DestroyProfile();
+  }
+  {
+    // Increasing minimum GMSCore version should move the data back to the
+    // "profile" database. To rule out that data is just being redownloaded from
+    // the fake server, disable network.
+    base::test::ScopedFeatureList enable_local_upm;
+    enable_local_upm.InitAndEnableFeatureWithParameters(
+        password_manager::features::
+            kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
+        {{password_manager::features::kUPMLocalPasswordsMinGmsVersionCode.name,
+          base::ToString(std::numeric_limits<int>::max())}});
+    fake_server::FakeServerHttpPostProvider::DisableNetwork();
+    CreateProfile();
+    ASSERT_TRUE(
+        SyncDataTypeActiveWaiter(sync_service(), syncer::PASSWORDS).Wait());
+    EXPECT_FALSE(UsesSplitStoresAndUPMForLocal(pref_service()));
+
+    // Passwords in the account store must be moved to the profile store.
+    EXPECT_FALSE(account_password_store());
+    password_manager::PasswordStoreResultsObserver profile_store_observer;
+    profile_password_store()->GetAllLogins(profile_store_observer.GetWeakPtr());
+    EXPECT_EQ(profile_store_observer.WaitForResults().size(), 1u);
     DestroyProfile();
   }
 }

@@ -23,6 +23,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
@@ -59,6 +60,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features.DisableFeatures;
@@ -73,6 +75,9 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.language.settings.LanguageSettings;
+import org.chromium.chrome.browser.magic_stack.ModuleDelegate.ModuleType;
+import org.chromium.chrome.browser.magic_stack.ModuleProviderBuilder;
+import org.chromium.chrome.browser.magic_stack.ModuleRegistry;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics.ThemeSettingsEntry;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
@@ -81,6 +86,7 @@ import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.privacy.settings.PrivacySettings;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -96,6 +102,7 @@ import org.chromium.chrome.browser.sync.settings.SyncPromoPreference.State;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.chrome.browser.ui.signin.SyncPromoController;
+import org.chromium.chrome.features.magic_stack.ChromeHomeModulesConfigSettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
@@ -121,7 +128,6 @@ import java.util.HashSet;
 /** Test for {@link MainSettings}. Main purpose is to have a quick confidence check on the xml. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "show-autofill-signatures"})
-@DisableFeatures(ChromeFeatureList.TANGIBLE_SYNC)
 @DoNotBatch(reason = "Tests cannot run batched because they launch a Settings activity.")
 public class MainSettingsFragmentTest {
     private static final String SEARCH_ENGINE_SHORT_NAME = "Google";
@@ -159,6 +165,7 @@ public class MainSettingsFragmentTest {
     @Mock private PasswordCheck mPasswordCheck;
 
     @Mock private SyncConsentActivityLauncher mMockSyncConsentActivityLauncher;
+    @Mock private ModuleProviderBuilder mMockModuleProviderBuilder;
 
     private MainSettings mMainSettings;
 
@@ -187,6 +194,7 @@ public class MainSettingsFragmentTest {
     @Test
     @LargeTest
     @Feature({"RenderTest"})
+    @DisabledTest(message = "http://b/issues/41491395")
     public void testRenderDifferentSignedInStates() throws IOException {
         launchSettingsActivity();
         waitForOptionsMenu();
@@ -482,6 +490,7 @@ public class MainSettingsFragmentTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "http://b/issues/41491395")
     public void testAccountSignIn() throws InterruptedException {
         launchSettingsActivity();
 
@@ -755,6 +764,60 @@ public class MainSettingsFragmentTest {
                 .perform(scrollTo(hasDescendant(withText("PlusAddressesTestTitle"))));
         onView(withText("PlusAddressesTestTitle")).perform(click());
         intended(IntentMatchers.hasData("https://test.plusaddresses.google.com"));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.MAGIC_STACK_ANDROID, ChromeFeatureList.PRICE_CHANGE_MODULE})
+    public void testHomeModulesConfigSettingsEnabled_MagicStackAndPriceChangeEnabled() {
+        ModuleRegistry moduleRegistry = ModuleRegistry.getInstance();
+        PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingFeatures.setPriceTrackingEnabledForTesting(true);
+        launchSettingsActivity();
+        Assert.assertTrue(moduleRegistry.hasCustomizableModule());
+        assertSettingsExists(
+                MainSettings.PREF_HOME_MODULES_CONFIG, ChromeHomeModulesConfigSettings.class);
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures({ChromeFeatureList.MAGIC_STACK_ANDROID, ChromeFeatureList.PRICE_CHANGE_MODULE})
+    public void testHomeModulesConfigSettingsEnabled_MagicStackAndPriceChangeDisabled() {
+        ModuleRegistry moduleRegistry = ModuleRegistry.getInstance();
+        when(mMockModuleProviderBuilder.isEligible()).thenReturn(true);
+        moduleRegistry.registerModule(ModuleType.PRICE_CHANGE, mMockModuleProviderBuilder);
+        launchSettingsActivity();
+        Assert.assertTrue(moduleRegistry.hasCustomizableModule());
+        assertSettingsExists(
+                MainSettings.PREF_HOME_MODULES_CONFIG, ChromeHomeModulesConfigSettings.class);
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.MAGIC_STACK_ANDROID, ChromeFeatureList.PRICE_CHANGE_MODULE})
+    public void testHomeModulesConfigSettingsDisabled_MagicStackAndPriceChangeEnabled() {
+        ModuleRegistry moduleRegistry = ModuleRegistry.getInstance();
+        PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingFeatures.setPriceTrackingEnabledForTesting(false);
+        launchSettingsActivity();
+        Assert.assertFalse(moduleRegistry.hasCustomizableModule());
+        Assert.assertNull(
+                "Home modules config setting should not be shown on automotive",
+                mMainSettings.findPreference(MainSettings.PREF_HOME_MODULES_CONFIG));
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures({ChromeFeatureList.MAGIC_STACK_ANDROID, ChromeFeatureList.PRICE_CHANGE_MODULE})
+    public void testHomeModulesConfigSettingsDisabled_MagicStackAndPriceChangeDisabled() {
+        ModuleRegistry moduleRegistry = ModuleRegistry.getInstance();
+        when(mMockModuleProviderBuilder.isEligible()).thenReturn(false);
+        moduleRegistry.registerModule(ModuleType.PRICE_CHANGE, mMockModuleProviderBuilder);
+        launchSettingsActivity();
+        Assert.assertFalse(moduleRegistry.hasCustomizableModule());
+        Assert.assertNull(
+                "Home modules config setting should not be shown on automotive",
+                mMainSettings.findPreference(MainSettings.PREF_HOME_MODULES_CONFIG));
     }
 
     private void launchSettingsActivity() {

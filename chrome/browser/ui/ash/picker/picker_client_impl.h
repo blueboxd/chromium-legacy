@@ -5,14 +5,31 @@
 #ifndef CHROME_BROWSER_UI_ASH_PICKER_PICKER_CLIENT_IMPL_H_
 #define CHROME_BROWSER_UI_ASH_PICKER_PICKER_CLIENT_IMPL_H_
 
+#include <memory>
+#include <string>
+
 #include "ash/public/cpp/picker/picker_client.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
+
+class Profile;
+
+namespace app_list {
+class SearchEngine;
+}
 
 namespace ash {
 class PickerController;
 }
 
+namespace user_manager {
+class User;
+}
+
 // Implements the PickerClient used by Ash.
-class PickerClientImpl : public ash::PickerClient {
+class PickerClientImpl
+    : public ash::PickerClient,
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   // Sets this instance as the client of `controller`.
   // Automatically unsets the client when this instance is destroyed.
@@ -24,11 +41,24 @@ class PickerClientImpl : public ash::PickerClient {
   // ash::PickerClient:
   std::unique_ptr<ash::AshWebView> CreateWebView(
       const ash::AshWebView::InitParams& params) override;
-  void DownloadGifToString(const GURL& url,
+  void DownloadGifToString(const ash::ValidGifUrl& url,
                            DownloadGifToStringCallback callback) override;
+  void StartCrosSearch(const std::u16string& query,
+                       CrosSearchResultsCallback callback) override;
+
+  // user_manager::UserManager::UserSessionStateObserver:
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
  private:
+  void SetProfileByUser(const user_manager::User* user);
+  void SetProfile(Profile* profile);
+
   raw_ptr<ash::PickerController> controller_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
+
+  std::unique_ptr<app_list::SearchEngine> search_engine_;
+
+  base::WeakPtrFactory<PickerClientImpl> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_PICKER_PICKER_CLIENT_IMPL_H_

@@ -208,6 +208,7 @@
 #include "components/browsing_topics/browsing_topics_service.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/private_network_settings.h"
@@ -527,7 +528,7 @@
 #include "chrome/browser/direct_sockets/chrome_direct_sockets_delegate.h"
 #include "chrome/browser/headless/chrome_browser_main_extra_parts_headless.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
-#include "chrome/browser/metrics/chrome_responsiveness_calculator_delegate.h"
+#include "chrome/browser/metrics/usage_scenario/chrome_responsiveness_calculator_delegate.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
 #include "chrome/browser/page_info/about_this_site_side_panel_throttle.h"
 #include "chrome/browser/search/instant_service.h"
@@ -1522,6 +1523,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(
       policy::policy_prefs::kForcePermissionPolicyUnloadDefaultEnabled, false);
+
+  registry->RegisterStringPref(prefs::kAllowedDomainsForApps, std::string());
 
 #if BUILDFLAG(IS_CHROMEOS)
   registry->RegisterListPref(prefs::kMandatoryExtensionsForIncognitoNavigation);
@@ -4137,6 +4140,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->require_transient_activation_for_show_file_or_directory_picker =
       IsFileOrDirectoryPickerWithoutGestureAllowed(web_contents);
 #endif  // !BUILDFLAG(IS_ANDROID)
+  web_prefs->require_transient_activation_for_html_fullscreen =
+      IsTransientActivationRequiredForHtmlFullscreen(
+          web_contents->GetPrimaryMainFrame());
 
   switch (GetWebTheme()->GetPreferredContrast()) {
     case ui::NativeTheme::PreferredContrast::kNoPreference:
@@ -4241,6 +4247,14 @@ bool ChromeContentBrowserClient::OverrideWebPreferencesAfterNavigation(
   web_prefs->require_transient_activation_for_show_file_or_directory_picker =
       require_transient_activation_for_show_file_or_directory_picker;
 #endif  // !BUILDFLAG(IS_ANDROID)
+  const bool require_transient_activation_for_html_fullscreen =
+      IsTransientActivationRequiredForHtmlFullscreen(
+          web_contents->GetPrimaryMainFrame());
+  prefs_changed |=
+      (web_prefs->require_transient_activation_for_html_fullscreen !=
+       require_transient_activation_for_html_fullscreen);
+  web_prefs->require_transient_activation_for_html_fullscreen =
+      require_transient_activation_for_html_fullscreen;
 
   for (auto& parts : extra_parts_) {
     prefs_changed |=
@@ -7402,20 +7416,26 @@ void ChromeContentBrowserClient::IsClipboardPasteAllowedByPolicy(
 #endif  // BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
 }
 
-bool ChromeContentBrowserClient::IsClipboardCopyAllowed(
-    content::BrowserContext* browser_context,
-    const GURL& url,
-    size_t data_size_in_bytes,
-    std::u16string& replacement_data) {
+void ChromeContentBrowserClient::IsClipboardCopyAllowedByPolicy(
+    const content::ClipboardEndpoint& source,
+    const content::ClipboardMetadata& metadata,
+    const std::u16string& data,
+    IsClipboardCopyAllowedCallback callback) {
 #if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
-  return enterprise_data_protection::IsClipboardCopyAllowedByPolicy(
-      browser_context, url, data_size_in_bytes, replacement_data);
+  enterprise_data_protection::IsClipboardCopyAllowedByPolicy(
+      source, metadata, data, std::move(callback));
 #else
+  std::u16string replacement_data;
   ClipboardRestrictionService* service =
       ClipboardRestrictionServiceFactory::GetInstance()->GetForBrowserContext(
-          browser_context);
-  return service->IsUrlAllowedToCopy(url, data_size_in_bytes,
-                                     &replacement_data);
+          source.browser_context());
+  if (service->IsUrlAllowedToCopy(*source.data_transfer_endpoint()->GetURL(),
+                                  metadata.size.value_or(0),
+                                  &replacement_data)) {
+    std::move(callback).Run(data, std::nullopt);
+  } else {
+    std::move(callback).Run(data, std::move(replacement_data));
+  }
 #endif  // BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
 }
 
@@ -7929,6 +7949,24 @@ bool ChromeContentBrowserClient::
 #else   // !BUILDFLAG(IS_ANDROID)
   return true;
 #endif  // !BUILDFLAG(IS_ANDROID)
+}
+
+bool ChromeContentBrowserClient::IsTransientActivationRequiredForHtmlFullscreen(
+    content::RenderFrameHost* render_frame_host) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutomaticFullscreenContentSetting)) {
+    const GURL& url = render_frame_host->GetLastCommittedURL();
+    const HostContentSettingsMap* const content_settings =
+        HostContentSettingsMapFactory::GetForProfile(
+            render_frame_host->GetBrowserContext());
+    if (content_settings->GetContentSetting(
+            url, url, ContentSettingsType::AUTOMATIC_FULLSCREEN) ==
+        CONTENT_SETTING_ALLOW) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 #if BUILDFLAG(IS_MAC)

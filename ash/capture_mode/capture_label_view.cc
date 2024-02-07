@@ -326,7 +326,7 @@ void CaptureLabelView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   shadow_->SetContentBounds(layer()->bounds());
 }
 
-void CaptureLabelView::Layout() {
+void CaptureLabelView::Layout(PassKey) {
   gfx::Rect label_bounds = GetLocalBounds();
   capture_button_container_->SetBoundsRect(label_bounds);
 
@@ -464,7 +464,7 @@ void CaptureLabelView::OnCountDownAnimationFinished() {
   std::move(countdown_finished_callback_).Run();  // `this` is destroyed here.
 }
 
-BEGIN_METADATA(CaptureLabelView, views::View)
+BEGIN_METADATA(CaptureLabelView)
 END_METADATA
 
 }  // namespace ash

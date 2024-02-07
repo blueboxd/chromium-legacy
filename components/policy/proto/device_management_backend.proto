@@ -438,6 +438,29 @@ message DeviceRegisterResponse {
   // registering for policy is affiliated on the device.
   // Only sent if DeviceRegisterRequest.Type == USER
   repeated string user_affiliation_ids = 5;
+
+  // The display name Chrome should use when setting up the profile, used for
+  // OIDC managed profile only.
+  optional string user_display_name = 7;
+
+  // The email of the user who logged into this profile, used for OIDC managed
+  // profile only.
+  optional string user_email = 8;
+
+  // Enum listing the possible types of the third party identity used for OIDC
+  // managed profiles.
+  enum ThirdPartyIdentityType {
+    // The profile does not have third party identity.
+    NONE = 0;
+    // The third party identity is synced to Google (Dasher) and there is an
+    // associated GAIA ID for it.
+    DASHER_BASED = 1;
+    // The third party identity is not synced to Google and there is no
+    // associated GAIA ID for it.
+    DASHERLESS = 2;
+  }
+  optional ThirdPartyIdentityType third_party_identity_type = 9
+      [default = NONE];
 }
 
 // Request from device to server to unregister device.
@@ -889,6 +912,13 @@ message PolicyFetchResponse {
   // to new_public_key_verification_data_signature, but is computed over
   // DEPRECATEDPolicyPublicKeyAndDomain (which is equivalent to
   // PublicKeyVerificationData proto with version field unset).
+  //
+  // Do not remove this unless you know for sure that this is not required by
+  // managed devices any more, including devices that might be pinned to
+  // milestones older than current Stable.
+  // Note: As of February 2024, this is still strictly required by
+  // CloudPolicyValidator, see
+  // https://source.chromium.org/chromium/chromium/src/+/main:components/policy/core/common/cloud/cloud_policy_validator.cc;drc=08b91b49531894cbe9061a1148fd535155c2554b;l=407
   optional bytes new_public_key_verification_signature_deprecated = 7
       [deprecated = true];
 

@@ -696,6 +696,58 @@ struct StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
 };
 
 template <>
+struct StructTraits<autofill::mojom::PasswordSuggestionRequestDataView,
+                    autofill::PasswordSuggestionRequest> {
+  static autofill::FieldRendererId element_id(
+      const autofill::PasswordSuggestionRequest& r) {
+    return r.element_id;
+  }
+
+  static const autofill::FormData& form_data(
+      const autofill::PasswordSuggestionRequest& r) {
+    return r.form_data;
+  }
+
+  static autofill::AutofillSuggestionTriggerSource trigger_source(
+      const autofill::PasswordSuggestionRequest& r) {
+    return r.trigger_source;
+  }
+
+  static uint64_t username_field_index(
+      const autofill::PasswordSuggestionRequest& r) {
+    return r.username_field_index;
+  }
+
+  static uint64_t password_field_index(
+      const autofill::PasswordSuggestionRequest& r) {
+    return r.password_field_index;
+  }
+
+  static base::i18n::TextDirection text_direction(
+      const autofill::PasswordSuggestionRequest& r) {
+    return r.text_direction;
+  }
+
+  static const std::u16string& typed_username(
+      const autofill::PasswordSuggestionRequest& r) {
+    return r.typed_username;
+  }
+
+  static int show_webauthn_credentials(
+      const autofill::PasswordSuggestionRequest& r) {
+    return r.show_webauthn_credentials;
+  }
+
+  static const gfx::RectF& bounds(
+      const autofill::PasswordSuggestionRequest& r) {
+    return r.bounds;
+  }
+
+  static bool Read(autofill::mojom::PasswordSuggestionRequestDataView data,
+                   autofill::PasswordSuggestionRequest* out);
+};
+
+template <>
 struct StructTraits<autofill::mojom::ParsingResultDataView,
                     autofill::ParsingResult> {
   static autofill::FieldRendererId username_renderer_id(

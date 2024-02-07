@@ -465,7 +465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.DiskUsageChronos" units="KB"
-    expires_after="2024-06-01">
+    expires_after="2024-08-04">
   <owner>sarthakkukreti@google.com</owner>
   <owner>chromeos-storage@google.com</owner>
   <summary>
@@ -475,7 +475,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.DiskUsageVar" units="KB" expires_after="2024-06-01">
+<histogram name="Platform.DiskUsageVar" units="KB" expires_after="2024-08-04">
   <owner>sarthakkukreti@google.com</owner>
   <owner>chromeos-storage@google.com</owner>
   <summary>
@@ -1806,6 +1806,17 @@ chromium-metrics-reviews@google.com.
     memory from VMs. This is recorded by resourced every time it makes a reclaim
     request to the VM Memory Management Service to try to resolve memory
     pressure in the host.
+  </summary>
+</histogram>
+
+<histogram name="Platform.RksAgent.CertificateFetchResult"
+    enum="CertificateFetchResult" expires_after="2024-12-31">
+  <owner>hcyang@google.com</owner>
+  <owner>cros-hwsec+uma@google.com</owner>
+  <summary>
+    The result of fetching the recoverable key store certificate files from a
+    gstatic URL. This recorded after each fetch attempt, which is scheduled
+    periodically (once per day, retries every 10 minutes if fails).
   </summary>
 </histogram>
 

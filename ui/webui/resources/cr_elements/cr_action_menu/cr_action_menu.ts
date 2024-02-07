@@ -143,7 +143,10 @@ export class CrActionMenuElement extends CrLitElement {
       // and reposition to its anchor accordingly.
       autoReposition: {type: Boolean},
 
-      open: {type: Boolean},
+      open: {
+        type: Boolean,
+        notify: true,
+      },
 
       // Descriptor of the menu. Should be something along the lines of "menu"
       roleDescription: {type: String},
@@ -173,11 +176,6 @@ export class CrActionMenuElement extends CrLitElement {
     this.removeListeners_();
   }
 
-  private fire_(eventName: string, detail?: any) {
-    this.dispatchEvent(
-        new CustomEvent(eventName, {bubbles: true, composed: true, detail}));
-  }
-
   /**
    * Exposing internal <dialog> elements for tests.
    */
@@ -203,7 +201,7 @@ export class CrActionMenuElement extends CrLitElement {
 
     // Catch and re-fire the 'close' event such that it bubbles across Shadow
     // DOM v1.
-    this.fire_('close');
+    this.fire('close');
   }
 
   private onClick_(e: Event) {
@@ -219,7 +217,7 @@ export class CrActionMenuElement extends CrLitElement {
     if (e.key === 'Tab' || e.key === 'Escape') {
       this.close();
       if (e.key === 'Tab') {
-        this.fire_('tabkeyclose', {shiftKey: e.shiftKey});
+        this.fire('tabkeyclose', {shiftKey: e.shiftKey});
       }
       e.preventDefault();
       return;
@@ -303,8 +301,6 @@ export class CrActionMenuElement extends CrLitElement {
     if (this.lastConfig_) {
       this.lastConfig_ = null;
     }
-
-    this.fire_('open-changed', {value: this.open});
   }
 
   /**
@@ -408,8 +404,6 @@ export class CrActionMenuElement extends CrLitElement {
         });
       }
     }
-
-    this.fire_('open-changed', {value: this.open});
   }
 
   private resetStyle_() {
@@ -477,7 +471,7 @@ export class CrActionMenuElement extends CrLitElement {
       this.resizeObserver_ = new ResizeObserver(() => {
         if (this.lastConfig_) {
           this.positionDialog_(this.lastConfig_);
-          this.fire_('cr-action-menu-repositioned');  // For easier testing.
+          this.fire('cr-action-menu-repositioned');  // For easier testing.
         }
       });
 

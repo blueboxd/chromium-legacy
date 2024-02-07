@@ -13,9 +13,11 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "chrome/browser/ash/app_list/search/essential_search/essential_search_manager.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/ash/login/session/chrome_session_manager.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_manager_registry.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/ash/net/ash_proxy_monitor.h"
 #include "chrome/browser/ash/net/delay_network_call.h"
@@ -102,6 +104,9 @@ void BrowserProcessPlatformPart::ShutdownAutomaticRebootManager() {
 void BrowserProcessPlatformPart::InitializeChromeUserManager() {
   DCHECK(!chrome_user_manager_);
   chrome_user_manager_ = ash::ChromeUserManagerImpl::CreateChromeUserManager();
+  user_image_manager_registry_ =
+      std::make_unique<ash::UserImageManagerRegistry>(
+          chrome_user_manager_.get());
   // LoginState and DeviceCloudPolicyManager outlives UserManager, so on
   // their initialization, there's no way to start observing UserManager.
   // This is the earliest timing to do so.
@@ -126,6 +131,7 @@ void BrowserProcessPlatformPart::DestroyChromeUserManager() {
     login_state->OnUserManagerWillBeDestroyed(chrome_user_manager_.get());
   }
 
+  user_image_manager_registry_.reset();
   chrome_user_manager_.reset();
 }
 
@@ -202,6 +208,10 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
     Profile* primary_profile) {
   DCHECK(primary_profile);
 
+  DCHECK(!essential_search_manager_);
+  essential_search_manager_ =
+      app_list::EssentialSearchManager::Create(primary_profile);
+
   DCHECK(!in_session_password_change_manager_);
   in_session_password_change_manager_ =
       ash::InSessionPasswordChangeManager::CreateIfEnabled(primary_profile);
@@ -222,6 +232,7 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
 void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
   if (ash::SystemProxyManager::Get())
     ash::SystemProxyManager::Get()->StopObservingPrimaryProfilePrefs();
+  essential_search_manager_.reset();
   in_session_password_change_manager_.reset();
 }
 

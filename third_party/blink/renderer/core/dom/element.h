@@ -318,7 +318,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void setAttribute(const QualifiedName&, const String&, ExceptionState&);
 
-  static absl::optional<QualifiedName> ParseAttributeName(
+  static std::optional<QualifiedName> ParseAttributeName(
       const AtomicString& namespace_uri,
       const AtomicString& qualified_name,
       ExceptionState&);
@@ -850,7 +850,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void Focus(const FocusOptions*);
 
   virtual void SetFocused(bool received, mojom::blink::FocusType);
-  void SetHasFocusWithinUpToAncestor(bool, Element* ancestor);
+  void SetHasFocusWithinUpToAncestor(bool,
+                                     Element* ancestor,
+                                     bool need_snap_container_search = false);
   void FocusStateChanged();
   void FocusVisibleStateChanged();
   void FocusWithinStateChanged();
@@ -1265,10 +1267,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // size has changed.
   void LastRememberedSizeChanged(ResizeObserverSize* size);
 
-  void SetLastRememberedInlineSize(absl::optional<LayoutUnit>);
-  void SetLastRememberedBlockSize(absl::optional<LayoutUnit>);
-  absl::optional<LayoutUnit> LastRememberedInlineSize() const;
-  absl::optional<LayoutUnit> LastRememberedBlockSize() const;
+  void SetLastRememberedInlineSize(std::optional<LayoutUnit>);
+  void SetLastRememberedBlockSize(std::optional<LayoutUnit>);
+  std::optional<LayoutUnit> LastRememberedInlineSize() const;
+  std::optional<LayoutUnit> LastRememberedBlockSize() const;
 
   // Returns a unique pseudo element for the given |pseudo_id| and
   // |view_transition_name| originating from this DOM element.
@@ -1439,7 +1441,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   TextDirection ParentDirectionality() const;
   bool RecalcSelfOrAncestorHasDirAuto();
-  absl::optional<TextDirection> ResolveAutoDirectionality(
+  std::optional<TextDirection> ResolveAutoDirectionality(
       bool& is_deferred) const;
 
  private:

@@ -191,12 +191,6 @@ url::Origin URLToOrigin(GURL url) {
 }
 #endif
 
-const syncer::SyncService* GetSyncServiceForProfile(Profile* profile) {
-  if (SyncServiceFactory::HasSyncService(profile))
-    return SyncServiceFactory::GetForProfile(profile);
-  return nullptr;
-}
-
 }  // namespace
 
 // static
@@ -709,7 +703,10 @@ PrefService* ChromePasswordManagerClient::GetLocalStatePrefs() const {
 }
 
 const syncer::SyncService* ChromePasswordManagerClient::GetSyncService() const {
-  return GetSyncServiceForProfile(profile_);
+  if (SyncServiceFactory::HasSyncService(profile_)) {
+    return SyncServiceFactory::GetForProfile(profile_);
+  }
+  return nullptr;
 }
 
 password_manager::PasswordStoreInterface*
@@ -733,13 +730,6 @@ ChromePasswordManagerClient::GetAccountPasswordStore() const {
 password_manager::PasswordReuseManager*
 ChromePasswordManagerClient::GetPasswordReuseManager() const {
   return PasswordReuseManagerFactory::GetForProfile(profile_);
-}
-
-password_manager::SyncState ChromePasswordManagerClient::GetPasswordSyncState()
-    const {
-  const syncer::SyncService* sync_service =
-      SyncServiceFactory::GetForProfile(profile_);
-  return password_manager::sync_util::GetPasswordSyncState(sync_service);
 }
 
 bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
@@ -1077,12 +1067,19 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
               CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED)) {
     return;
   }
-#if BUILDFLAG(IS_ANDROID)
   password_manager::ContentPasswordManagerDriver* driver =
       GetDriverFactory()->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
   CHECK(driver);
+  // This guards against possibility that generation was available on page load
+  // but later became unavailable due to inability to save passwords.
+  if (!driver->GetPasswordGenerationHelper() ||
+      !driver->GetPasswordGenerationHelper()->IsGenerationEnabled(
+          /*log_debug_data*/ false)) {
+    return;
+  }
+#if BUILDFLAG(IS_ANDROID)
   if (!ShouldAcceptFocusEvent(web_contents(), driver,
                               FocusedFieldType::kFillablePasswordField)) {
     return;
@@ -1107,12 +1104,6 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
   driver->GetPasswordAutofillManager()->MaybeShowPasswordSuggestions(
       element_bounds_in_screen_space, ui_data.text_direction);
 #else
-  password_manager::ContentPasswordManagerDriver* driver =
-      GetDriverFactory()->GetDriverForFrame(rfh);
-  // This method is called over Mojo via a RenderFrameHostReceiverSet; the
-  // current target frame must be live.
-  CHECK(driver);
-
   // Attempt to show the autofill dropdown UI first.
   gfx::RectF element_bounds_in_top_frame_space =
       TransformToRootCoordinates(driver->render_frame_host(), ui_data.bounds);
@@ -1376,12 +1367,9 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       credentials_filter_(
           this,
-          base::BindRepeating(&GetSyncServiceForProfile, profile_),
           DiceWebSigninInterceptorFactory::GetForProfile(profile_)),
 #else
-      credentials_filter_(
-          this,
-          base::BindRepeating(&GetSyncServiceForProfile, profile_)),
+      credentials_filter_(this),
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
       account_storage_auth_helper_(

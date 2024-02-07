@@ -1691,19 +1691,17 @@ void ContainerNode::CheckSoftNavigationHeuristicsTracking(
   if (!frame || !frame->IsMainFrame()) {
     return;
   }
-  ScriptState* script_state = ToScriptStateForMainWorld(frame);
-  if (!script_state) {
-    return;
-  }
 
-  SoftNavigationHeuristics* heuristics =
-      SoftNavigationHeuristics::From(*window);
-  DCHECK(heuristics);
-  if (heuristics->ModifiedDOM(script_state)) {
-    if (inserted_node.IsHTMLElement()) {
-      inserted_node.SetIsModifiedBySoftNavigation();
-    } else {
-      SetIsModifiedBySoftNavigation();
+  if (SoftNavigationHeuristics* heuristics =
+          SoftNavigationHeuristics::From(*window)) {
+    // TODO(crbug.com/1521100): This does not filter out updates from isolated
+    // worlds. Should it?
+    if (heuristics->ModifiedDOM()) {
+      if (inserted_node.IsHTMLElement()) {
+        inserted_node.SetIsModifiedBySoftNavigation();
+      } else {
+        SetIsModifiedBySoftNavigation();
+      }
     }
   }
 }

@@ -17,6 +17,7 @@ namespace blink {
 class Credential;
 class CredentialCreationOptions;
 class CredentialRequestOptions;
+class IdentityCredentialRequestOptions;
 class ExceptionState;
 class Navigator;
 class ScriptPromise;
@@ -48,6 +49,26 @@ class MODULES_EXPORT CredentialsContainer final : public ScriptWrappable,
   void Trace(Visitor*) const override;
 
  private:
+  // get() implementation for FedCM and WebIdentityDigitalCredential.
+  ScriptPromise GetForIdentity(ScriptState*,
+                               ScriptPromiseResolver* resolver,
+                               const ScriptPromise& promise,
+                               const CredentialRequestOptions&,
+                               const IdentityCredentialRequestOptions&,
+                               ExceptionState&);
+
+  // get() implementation for WebIdentityDigitalCredential.
+  // Returns absl::nullopt if the passed-in CredentialRequestOptions are not for
+  // a WebIdentityDigitalCredential.
+  absl::optional<ScriptPromise> GetForDigitalCredential(
+      ScriptState*,
+      ScriptPromiseResolver*,
+      const ScriptPromise&,
+      const CredentialRequestOptions&,
+      const IdentityProviderRequestOptions& first_identity_provider,
+      size_t num_identity_providers,
+      ExceptionState&);
+
   class OtpRequestAbortAlgorithm;
   class PublicKeyRequestAbortAlgorithm;
 

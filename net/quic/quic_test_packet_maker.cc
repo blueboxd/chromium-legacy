@@ -15,6 +15,7 @@
 #include "net/quic/quic_http_utils.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/third_party/quiche/src/quiche/quic/core/http/http_constants.h"
+#include "net/third_party/quiche/src/quiche/quic/core/qpack/qpack_instruction_encoder.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_stream.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
@@ -82,6 +83,10 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
         frame.ack_frequency_frame =
             new quic::QuicAckFrequencyFrame(*frame.ack_frequency_frame);
         break;
+      case quic::RESET_STREAM_AT_FRAME:
+        frame.reset_stream_at_frame =
+            new quic::QuicResetStreamAtFrame(*frame.reset_stream_at_frame);
+        break;
 
       case quic::NUM_FRAME_TYPES:
         DCHECK(false) << "Cannot clone frame type: " << frame.type;
@@ -104,7 +109,8 @@ QuicTestPacketMaker::QuicTestPacketMaker(quic::ParsedQuicVersion version,
       connection_id_(connection_id),
       clock_(clock),
       host_(host),
-      qpack_encoder_(&decoder_stream_error_delegate_),
+      qpack_encoder_(&decoder_stream_error_delegate_,
+                     quic::HuffmanEncoding::kEnabled),
       perspective_(perspective),
       client_priority_uses_incremental_(client_priority_uses_incremental),
       use_priority_header_(use_priority_header) {
@@ -1144,8 +1150,8 @@ void QuicTestPacketMaker::AddQuicAckFrame(uint64_t first_received,
   ack_frame->largest_acked = quic::QuicPacketNumber(largest_received);
   ack_frame->ack_delay_time = quic::QuicTime::Delta::Zero();
   for (uint64_t i = smallest_received; i <= largest_received; ++i) {
-    ack_frame->received_packet_times.push_back(
-        std::make_pair(quic::QuicPacketNumber(i), clock_->Now()));
+    ack_frame->received_packet_times.emplace_back(quic::QuicPacketNumber(i),
+                                                  clock_->Now());
   }
   if (largest_received > 0) {
     DCHECK_GE(largest_received, first_received);

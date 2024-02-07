@@ -6,7 +6,6 @@
 
 #import <AuthenticationServices/AuthenticationServices.h>
 
-#import <optional>
 #import <vector>
 
 #import "base/apple/foundation_util.h"
@@ -21,41 +20,24 @@
 #import "base/time/time.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #import "components/feature_engagement/public/event_constants.h"
-#import "components/feature_engagement/public/tracker.h"
 #import "components/feed/core/v2/public/ios/pref_names.h"
 #import "components/history/core/browser/features.h"
 #import "components/ntp_tiles/most_visited_sites.h"
-#import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/pref_registry/pref_registry_syncable.h"
-#import "components/prefs/ios/pref_observer_bridge.h"
-#import "components/reading_list/core/reading_list_model.h"
-#import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #import "components/search_engines/search_terms_data.h"
 #import "components/search_engines/template_url.h"
 #import "components/segmentation_platform/public/constants.h"
 #import "components/segmentation_platform/public/features.h"
 #import "components/segmentation_platform/public/segmentation_platform_service.h"
-#import "components/signin/public/identity_manager/identity_manager.h"
-#import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/user_selectable_type.h"
-#import "components/sync/service/sync_user_settings.h"
 #import "components/url_formatter/elide_url.h"
-#import "ios/chrome/app/application_delegate/app_state.h"
-#import "ios/chrome/app/application_delegate/app_state_observer.h"
-#import "ios/chrome/browser/default_browser/model/utils.h"
-#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
-#import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
-#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_constants.h"
-#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_factory.h"
-#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_observer_bridge.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -63,7 +45,6 @@
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
-#import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -71,9 +52,6 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
-#import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
-#import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
-#import "ios/chrome/browser/synced_sessions/model/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_tile_view.h"
@@ -89,6 +67,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/shortcuts_config.h"
 #import "ios/chrome/browser/ui/content_suggestions/parcel_tracking/parcel_tracking_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_magic_stack_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_prefs.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_state.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/utils.h"
@@ -97,6 +76,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/start_suggest_service_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_helper.h"
+#import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_helper_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_item.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/ntp/metrics/home_metrics.h"
@@ -115,23 +95,10 @@ namespace {
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 using RequestSource = SearchTermsData::RequestSource;
 
-// The Safety Check (Magic Stack) module runs (at minimum) once every 24 hours.
-constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
-
 }  // namespace
 
-@interface ContentSuggestionsMediator () <AppStateObserver,
-                                          IdentityManagerObserverBridgeDelegate,
-                                          MostVisitedTilesMediatorDelegate,
-                                          SyncObserverModelBridge,
-                                          ReadingListModelBridgeObserver,
-                                          PrefObserverDelegate,
-                                          SafetyCheckManagerObserver,
-                                          SyncedSessionsObserver> {
-  std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
-  std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
-      _syncedSessionsObserver;
-}
+@interface ContentSuggestionsMediator () <MostVisitedTilesMediatorDelegate,
+                                          TabResumptionHelperDelegate>
 
 // Whether the contents section should be hidden completely.
 // Don't use PrefBackedBoolean or PrefMember as this value needs to be checked
@@ -152,15 +119,6 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 // Item for the "Return to Recent Tab" tile.
 @property(nonatomic, strong)
     ContentSuggestionsReturnToRecentTabItem* returnToRecentTabItem;
-// Item for the reading list action item.  Reference is used to update the
-// reading list count.
-@property(nonatomic, strong)
-    ContentSuggestionsMostVisitedActionItem* readingListItem;
-// Indicates if reading list model is loaded. Readlist cannot be triggered until
-// it is.
-@property(nonatomic, assign) NSInteger readingListModelIsLoaded;
-// Number of unread items in reading list model.
-@property(nonatomic, assign) NSInteger readingListUnreadCount;
 // YES if the Return to Recent Tab tile is being shown.
 @property(nonatomic, assign, getter=mostRecentTabStartSurfaceTileIsShowing)
     BOOL showMostRecentTabStartSurfaceTile;
@@ -173,28 +131,10 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 @end
 
 @implementation ContentSuggestionsMediator {
-  // Bridge to listen to pref changes.
-  std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
-  // Registrar for pref changes notifications.
-  PrefChangeRegistrar _prefChangeRegistrar;
   // Local State prefs.
   raw_ptr<PrefService> _localState;
-  // Used by SetUpList to get the sync status.
-  raw_ptr<syncer::SyncService> _syncService;
-  // Used by the Safety Check (Magic Stack) module for the current Safety Check
-  // state.
-  SafetyCheckState* _safetyCheckState;
-  // Observes changes to signed-in status.
-  std::unique_ptr<signin::IdentityManagerObserverBridge>
-      _identityObserverBridge;
-  // Observer for sync service status changes.
-  std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
-  // Observer for Safety Check changes.
-  std::unique_ptr<SafetyCheckObserverBridge> _safetyCheckManagerObserver;
   // Helper class for the tab resumption tile.
   std::unique_ptr<TabResumptionHelper> _tabResumptionHelper;
-  // Item displayed in the tab resumption tile.
-  TabResumptionItem* _tabResumptionItem;
   // The latest module ranking returned from the SegmentationService.
   NSArray<NSNumber*>* _magicStackOrderFromSegmentation;
   // YES if the module ranking has been received from the SegmentationService.
@@ -205,7 +145,6 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
   // any additions beyond `_magicStackOrderFromSegmentation` (e.g. Set Up List).
   NSArray<NSNumber*>* _latestMagicStackOrder;
   MostVisitedTilesMediator* _mostVisitedTilesMediator;
-  ShortcutsConfig* _shortcutsConfig;
   SetUpListMediator* _setUpListMediator;
 }
 
@@ -216,9 +155,7 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
                    largeIconCache:(LargeIconCache*)largeIconCache
                   mostVisitedSite:(std::unique_ptr<ntp_tiles::MostVisitedSites>)
                                       mostVisitedSites
-                 readingListModel:(ReadingListModel*)readingListModel
                       prefService:(PrefService*)prefService
-    isGoogleDefaultSearchProvider:(BOOL)isGoogleDefaultSearchProvider
                       syncService:(syncer::SyncService*)syncService
             authenticationService:(AuthenticationService*)authenticationService
                   identityManager:(signin::IdentityManager*)identityManager
@@ -240,23 +177,9 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
          URLLoadingBrowserAgent:UrlLoadingBrowserAgent::FromBrowser(browser)];
     _mostVisitedTilesMediator.delegate = self;
     _mostVisitedTilesMediator.contentSuggestionsDelegate = self.delegate;
-    _mostVisitedTilesMediator.NTPMetricsDelegate = self.NTPMetricsDelegate;
     _mostVisitedTilesMediator.actionFactory = actionFactory;
 
-    _readingListModelBridge =
-        std::make_unique<ReadingListModelBridge>(self, readingListModel);
-
-    _syncService = syncService;
-
     BOOL isSetupListEnabled = set_up_list_utils::IsSetUpListActive(_localState);
-    if (IsTabResumptionEnabled() || isSetupListEnabled) {
-      _syncObserverBridge =
-          std::make_unique<SyncObserverBridge>(self, _syncService);
-      _identityObserverBridge =
-          std::make_unique<signin::IdentityManagerObserverBridge>(
-              identityManager, self);
-    }
-
     if (isSetupListEnabled) {
       _setUpListMediator = [[SetUpListMediator alloc]
             initWithPrefService:prefService
@@ -266,61 +189,14 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
                      sceneState:browser->GetSceneState()];
     }
 
-    if (IsTabResumptionEnabled() &&
-        !tab_resumption_prefs::IsTabResumptionDisabled(_localState)) {
-      if (!IsTabResumptionEnabledForMostRecentTabOnly()) {
-        sync_sessions::SessionSyncService* sessionSyncService =
-            SessionSyncServiceFactory::GetForBrowserState(
-                browser->GetBrowserState());
-        _syncedSessionsObserver =
-            std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
-                self, sessionSyncService);
-      }
-
-      _tabResumptionHelper = std::make_unique<TabResumptionHelper>(browser);
+    if (IsTabResumptionEnabled()) {
+      _tabResumptionHelper = std::make_unique<TabResumptionHelper>(
+          browser, identityManager, _localState);
+      _tabResumptionHelper->SetDelegate(self);
     }
-
-    SceneState* sceneState = browser->GetSceneState();
-
-    [sceneState.appState addObserver:self];
 
     _browser = browser;
 
-    if (IsSafetyCheckMagicStackEnabled() &&
-        !safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState)) {
-      if (!_prefObserverBridge) {
-        _prefObserverBridge = std::make_unique<PrefObserverBridge>(self);
-      }
-
-      _prefChangeRegistrar.Init(_localState);
-
-      // TODO(crbug.com/1481230): Stop observing
-      // `kIosSettingsSafetyCheckLastRunTime` changes once the Settings Safety
-      // Check is refactored to use the new Safety Check Manager.
-      _prefObserverBridge->ObserveChangesForPreference(
-          prefs::kIosSettingsSafetyCheckLastRunTime, &_prefChangeRegistrar);
-
-      _prefObserverBridge->ObserveChangesForPreference(
-          prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult,
-          &_prefChangeRegistrar);
-
-      _safetyCheckState = [self initialSafetyCheckState];
-      _safetyCheckState.commandhandler = _presentationDelegate;
-
-      _safetyCheckManagerObserver = std::make_unique<SafetyCheckObserverBridge>(
-          self, IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
-                    browser->GetBrowserState()));
-
-      if (sceneState.appState.initStage > InitStageNormalUI &&
-          sceneState.appState.firstSceneHasInitializedUI &&
-          _safetyCheckState.runningState == RunningSafetyCheckState::kRunning) {
-        IOSChromeSafetyCheckManager* safetyCheckManager =
-            IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
-                browser->GetBrowserState());
-
-        safetyCheckManager->StartSafetyCheck();
-      }
-    }
   }
 
   return self;
@@ -336,17 +212,10 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
   _setUpListMediator = nil;
   [_mostVisitedTilesMediator disconnect];
   _mostVisitedTilesMediator = nil;
-  _readingListModelBridge.reset();
-  _syncObserverBridge.reset();
-  _identityObserverBridge.reset();
-  _safetyCheckManagerObserver.reset();
-  _syncedSessionsObserver.reset();
-  if (_prefObserverBridge) {
-    _prefChangeRegistrar.RemoveAll();
-    _prefObserverBridge.reset();
+  if (_tabResumptionHelper) {
+    _tabResumptionHelper->SetDelegate(nullptr);
+    _tabResumptionHelper = nil;
   }
-  SceneState* sceneState = self.browser->GetSceneState();
-  [sceneState.appState removeObserver:self];
   _localState = nullptr;
 }
 
@@ -414,7 +283,7 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 
 - (void)disableTabResumption {
   tab_resumption_prefs::DisableTabResumption(_localState);
-  [self hideTabResumption];
+  [self removeTabResumptionModule];
 }
 
 - (void)disableSafetyCheck:(ContentSuggestionsModuleType)type {
@@ -434,90 +303,7 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
                                           [self indexForMagicStackModule:type]];
 }
 
-#pragma mark - AppStateObserver
-
-// Conditionally starts the Safety Check if the upcoming init stage is
-// `InitStageFinal` and the Safety Check state indicates it's running.
-//
-// NOTE: It's safe to call `StartSafetyCheck()` multiple times, because calling
-// `StartSafetyCheck()` on an already-running Safety Check is a no-op.
-- (void)appState:(AppState*)appState
-    willTransitionToInitStage:(InitStage)nextInitStage {
-  if (IsSafetyCheckMagicStackEnabled() &&
-      !safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState) &&
-      nextInitStage == InitStageFinal && appState.firstSceneHasInitializedUI &&
-      _safetyCheckState.runningState == RunningSafetyCheckState::kRunning) {
-    IOSChromeSafetyCheckManager* safetyCheckManager =
-        IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
-            _browser->GetBrowserState());
-
-    safetyCheckManager->StartSafetyCheck();
-  }
-}
-
-#pragma mark - IdentityManagerObserverBridgeDelegate
-
-// Called when a user changes the syncing state.
-- (void)onPrimaryAccountChanged:
-    (const signin::PrimaryAccountChangeEvent&)event {
-  switch (event.GetEventTypeFor(signin::ConsentLevel::kSignin)) {
-    case signin::PrimaryAccountChangeEvent::Type::kCleared: {
-      if (IsTabResumptionEnabled()) {
-        // If the user is signed out, remove the tab resumption tile.
-        [self hideTabResumption];
-      }
-      break;
-    }
-    case signin::PrimaryAccountChangeEvent::Type::kSet:
-    case signin::PrimaryAccountChangeEvent::Type::kNone:
-      break;
-  }
-}
-
 #pragma mark - ContentSuggestionsCommands
-
-- (void)openMostVisitedItem:(NSObject*)item
-                    atIndex:(NSInteger)mostVisitedIndex {
-  // Checks if the item is a shortcut tile. Does not include Most Visited URL
-  // tiles.
-  if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
-    ContentSuggestionsMostVisitedActionItem* mostVisitedItem =
-        base::apple::ObjCCastStrict<ContentSuggestionsMostVisitedActionItem>(
-            item);
-    if (mostVisitedItem.disabled) {
-      return;
-    }
-    [self.NTPMetricsDelegate shortcutTileOpened];
-    if (IsMagicStackEnabled()) {
-      [self logMagicStackEngagementForType:ContentSuggestionsModuleType::
-                                               kShortcuts];
-    }
-    [self.contentSuggestionsMetricsRecorder
-        recordShortcutTileTapped:mostVisitedItem.collectionShortcutType];
-    switch (mostVisitedItem.collectionShortcutType) {
-      case NTPCollectionShortcutTypeBookmark:
-        LogBookmarkUseForDefaultBrowserPromo();
-        [self.dispatcher showBookmarksManager];
-        break;
-      case NTPCollectionShortcutTypeReadingList:
-        [self.dispatcher showReadingList];
-        break;
-      case NTPCollectionShortcutTypeRecentTabs:
-        [self.dispatcher showRecentTabs];
-        break;
-      case NTPCollectionShortcutTypeHistory:
-        [self.dispatcher showHistory];
-        break;
-      case NTPCollectionShortcutTypeWhatsNew:
-        [self.dispatcher showWhatsNew];
-        break;
-      case NTPCollectionShortcutTypeCount:
-        NOTREACHED();
-        break;
-    }
-    return;
-  }
-}
 
 - (void)openMostRecentTab {
   [self.NTPMetricsDelegate recentTabTileOpened];
@@ -535,14 +321,14 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
   webStateList->ActivateWebStateAt(index);
 }
 
-- (void)openTabResumptionItem {
+- (void)openTabResumptionItem:(TabResumptionItem*)item {
   [self.contentSuggestionsMetricsRecorder recordTabResumptionTabOpened];
   tab_resumption_prefs::SetTabResumptionLastOpenedTabURL(
-      _tabResumptionItem.tabURL, self.browser->GetBrowserState()->GetPrefs());
+      item.tabURL, self.browser->GetBrowserState()->GetPrefs());
   [self logMagicStackEngagementForType:ContentSuggestionsModuleType::
                                            kTabResumption];
 
-  switch (_tabResumptionItem.itemType) {
+  switch (item.itemType) {
     case TabResumptionItemType::kLastSyncedTab:
       [self.NTPMetricsDelegate distantTabResumptionOpened];
       _tabResumptionHelper->OpenDistantTab();
@@ -550,14 +336,14 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
     case TabResumptionItemType::kMostRecentTab: {
       [self.NTPMetricsDelegate recentTabTileOpened];
       web::NavigationManager::WebLoadParams webLoadParams =
-          web::NavigationManager::WebLoadParams(_tabResumptionItem.tabURL);
+          web::NavigationManager::WebLoadParams(item.tabURL);
       UrlLoadParams params = UrlLoadParams::SwitchToTab(webLoadParams);
       params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
       UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
       break;
     }
   }
-  [self hideTabResumption];
+  [self removeTabResumptionModule];
 }
 
 #pragma mark - ParcelTrackingMediatorDelegate
@@ -602,9 +388,7 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 #pragma mark - StartSurfaceRecentTabObserving
 
 - (void)mostRecentTabWasRemoved:(web::WebState*)webState {
-  if (IsTabResumptionEnabled() && _tabResumptionItem) {
-    [self hideTabResumption];
-  } else {
+  if (!IsTabResumptionEnabled()) {
     [self hideRecentTabTile];
   }
 }
@@ -634,123 +418,26 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
   }
 }
 
-#pragma mark - SyncedSessionsObserver
+#pragma mark - TabResumptionHelperDelegate
 
-- (void)onForeignSessionsChanged {
-  DCHECK(!IsTabResumptionEnabledForMostRecentTabOnly());
-  [self showTabResumptionTile];
+- (void)tabResumptionHelperDidReceiveItem {
+  CHECK(IsTabResumptionEnabled());
+  if (!self.consumer ||
+      tab_resumption_prefs::IsTabResumptionDisabled(_localState)) {
+    return;
+  }
+
+  [self showTabResumptionWithItem:_tabResumptionHelper->GetTabResumptionItem()];
+}
+
+- (void)removeTabResumptionModule {
+  [self.consumer hideTabResumption];
 }
 
 #pragma mark - Private
 
 - (NSArray<ParcelTrackingItem*>*)parcelTrackingItems {
   return [self.parcelTrackingMediator parcelTrackingItemsToShow];
-}
-
-// Creates the initial `SafetyCheckState` based on the previous check states
-// stored in Prefs, or (for development builds) the overridden check states via
-// Experimental settings.
-- (SafetyCheckState*)initialSafetyCheckState {
-  SafetyCheckState* state = [[SafetyCheckState alloc]
-      initWithUpdateChromeState:UpdateChromeSafetyCheckState::kDefault
-                  passwordState:PasswordSafetyCheckState::kDefault
-              safeBrowsingState:SafeBrowsingSafetyCheckState::kDefault
-                   runningState:RunningSafetyCheckState::kDefault];
-
-  IOSChromeSafetyCheckManager* safetyCheckManager =
-      IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
-          _browser->GetBrowserState());
-
-  // Update Chrome check.
-  std::optional<UpdateChromeSafetyCheckState> overrideUpdateChromeState =
-      experimental_flags::GetUpdateChromeSafetyCheckState();
-
-  state.updateChromeState = overrideUpdateChromeState.value_or(
-      safetyCheckManager->GetUpdateChromeCheckState());
-
-  // Password check.
-  std::optional<PasswordSafetyCheckState> overridePasswordState =
-      experimental_flags::GetPasswordSafetyCheckState();
-
-  state.passwordState = overridePasswordState.value_or(
-      safetyCheckManager->GetPasswordCheckState());
-
-  // Safe Browsing check.
-  std::optional<SafeBrowsingSafetyCheckState> overrideSafeBrowsingState =
-      experimental_flags::GetSafeBrowsingSafetyCheckState();
-
-  state.safeBrowsingState = overrideSafeBrowsingState.value_or(
-      safetyCheckManager->GetSafeBrowsingCheckState());
-
-  // Insecure credentials.
-  std::optional<int> overrideWeakPasswordsCount =
-      experimental_flags::GetSafetyCheckWeakPasswordsCount();
-
-  std::optional<int> overrideReusedPasswordsCount =
-      experimental_flags::GetSafetyCheckReusedPasswordsCount();
-
-  std::optional<int> overrideCompromisedPasswordsCount =
-      experimental_flags::GetSafetyCheckCompromisedPasswordsCount();
-
-  bool passwordCountsOverride = overrideWeakPasswordsCount.has_value() ||
-                                overrideReusedPasswordsCount.has_value() ||
-                                overrideCompromisedPasswordsCount.has_value();
-
-  // NOTE: If any password counts are overriden via Experimental
-  // settings, all password counts will be considered overriden.
-  if (passwordCountsOverride) {
-    state.weakPasswordsCount = overrideWeakPasswordsCount.value_or(0);
-    state.reusedPasswordsCount = overrideReusedPasswordsCount.value_or(0);
-    state.compromisedPasswordsCount =
-        overrideCompromisedPasswordsCount.value_or(0);
-  } else {
-    std::vector<password_manager::CredentialUIEntry> insecureCredentials =
-        safetyCheckManager->GetInsecureCredentials();
-
-    password_manager::InsecurePasswordCounts counts =
-        password_manager::CountInsecurePasswordsPerInsecureType(
-            insecureCredentials);
-
-    state.weakPasswordsCount = counts.weak_count;
-    state.reusedPasswordsCount = counts.reused_count;
-    state.compromisedPasswordsCount = counts.compromised_count;
-  }
-
-  state.lastRunTime = [self latestSafetyCheckRunTimestamp];
-
-  state.runningState = CanRunSafetyCheck(state.lastRunTime)
-                           ? RunningSafetyCheckState::kRunning
-                           : RunningSafetyCheckState::kDefault;
-
-  return state;
-}
-
-// Returns the last run time of the Safety Check, regardless if the check was
-// started from the Safety Check (Magic Stack) module, or the Safety Check
-// Settings UI.
-- (std::optional<base::Time>)latestSafetyCheckRunTimestamp {
-  IOSChromeSafetyCheckManager* safetyCheckManager =
-      IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
-          _browser->GetBrowserState());
-
-  base::Time lastRunTimeViaModule =
-      safetyCheckManager->GetLastSafetyCheckRunTime();
-
-  base::Time lastRunTimeViaSettings =
-      _localState->GetTime(prefs::kIosSettingsSafetyCheckLastRunTime);
-
-  // Use the most recent Last Run Time—regardless of where the Safety Check was
-  // run—to minimize user confusion.
-  base::Time lastRunTime = lastRunTimeViaModule > lastRunTimeViaSettings
-                               ? lastRunTimeViaModule
-                               : lastRunTimeViaSettings;
-
-  base::TimeDelta lastRunAge = base::Time::Now() - lastRunTime;
-
-  // Only return the Last Run Time if the run happened within the last 24hr.
-  return lastRunAge <= kSafetyCheckRunThreshold
-             ? std::optional<base::Time>(lastRunTime)
-             : std::nullopt;
 }
 
 - (void)configureConsumer {
@@ -766,8 +453,11 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
       _latestMagicStackOrder = [self magicStackOrder];
       [self.consumer setMagicStackOrder:_latestMagicStackOrder];
     }
-    if (IsTabResumptionEnabled()) {
-      [self showTabResumptionTile];
+    if (IsTabResumptionEnabled() &&
+        _tabResumptionHelper->GetTabResumptionItem()) {
+      TabResumptionItem* item = _tabResumptionHelper->GetTabResumptionItem();
+      item.commandHandler = self;
+      [self.consumer showTabResumptionWithItem:item];
     }
   }
   if (self.returnToRecentTabItem) {
@@ -786,17 +476,16 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
   // 2) The Set Up List and Magic Stack are not enabled (Set Up List replaced
   // Shortcuts).
   if ((IsMagicStackEnabled() || ![self shouldShowSetUpList])) {
-    _shortcutsConfig = [[ShortcutsConfig alloc] init];
-    _shortcutsConfig.shortcutItems = [self shortcutItems];
-    _shortcutsConfig.commandHandler = self;
-    [self.consumer setShortcutTilesConfig:_shortcutsConfig];
+    [self.consumer
+        setShortcutTilesConfig:self.shortcutsMediator.shortcutsConfig];
   }
 
   if (IsSafetyCheckMagicStackEnabled() &&
       !safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState) &&
-      _safetyCheckState.runningState == RunningSafetyCheckState::kDefault) {
-    _safetyCheckState.commandhandler = self.presentationDelegate;
-    [self.consumer showSafetyCheck:_safetyCheckState];
+      self.safetyCheckMediator.safetyCheckState.runningState ==
+          RunningSafetyCheckState::kDefault) {
+    //    _safetyCheckState.commandhandler = self.presentationDelegate;
+    [self.consumer showSafetyCheck:self.safetyCheckMediator.safetyCheckState];
   }
   if (IsIOSParcelTrackingEnabled() &&
       !IsParcelTrackingDisabled(GetApplicationContext()->GetLocalState())) {
@@ -824,37 +513,13 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
               URL));
 }
 
-- (BOOL)shouldShowWhatsNewActionItem {
-  if (WasWhatsNewUsed()) {
-    return NO;
-  }
-
-  // TODO(crbug.com/1510484): The FET is not ready upon app launch in the NTP.
-  // Consequently, we must load a URL first and then load the NTP where the FET
-  // becomes ready.
-  feature_engagement::Tracker* tracker =
-      feature_engagement::TrackerFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-  DCHECK(tracker);
-  if (!tracker->WouldTriggerHelpUI(
-          feature_engagement::kIPHWhatsNewUpdatedFeature)) {
-    return NO;
-  }
-
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-  BOOL isSignedIn =
-      authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
-
-  return !isSignedIn;
-}
-
 // Returns an array that represents the order of the modules to be shown in the
 // Magic Stack.
 - (NSArray<NSNumber*>*)magicStackOrder {
   NSMutableArray* magicStackModules = [NSMutableArray array];
-  if (IsTabResumptionEnabled() && _tabResumptionItem) {
+  if (IsTabResumptionEnabled() &&
+      !tab_resumption_prefs::IsTabResumptionDisabled(_localState) &&
+      _tabResumptionHelper->GetTabResumptionItem()) {
     [magicStackModules
         addObject:@(int(ContentSuggestionsModuleType::kTabResumption))];
   }
@@ -914,7 +579,7 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
       case ContentSuggestionsModuleType::kTabResumption:
         if (!IsTabResumptionEnabled() ||
             tab_resumption_prefs::IsTabResumptionDisabled(_localState) ||
-            !_tabResumptionItem) {
+            !_tabResumptionHelper->GetTabResumptionItem()) {
           break;
         }
         // If ShouldHideIrrelevantModules() is enabled and it is not ranked as
@@ -1064,7 +729,8 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 - (void)addSafetyCheckToMagicStackOrder:(NSMutableArray*)order {
   CHECK(IsSafetyCheckMagicStackEnabled());
 
-  int checkIssuesCount = CheckIssuesCount(_safetyCheckState);
+  int checkIssuesCount =
+      CheckIssuesCount(self.safetyCheckMediator.safetyCheckState);
 
   if (checkIssuesCount > 2) {
     [order addObject:@(int(ContentSuggestionsModuleType::
@@ -1105,33 +771,6 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
   [_setUpListMediator showSetUpList];
 }
 
-// Shows the tab resumption tile if there is a `_tabResumptionItem` to present.
-- (void)showTabResumptionTile {
-  if (!self.webState) {
-    return;
-  }
-
-  CHECK(IsTabResumptionEnabled());
-  if (!self.consumer ||
-      tab_resumption_prefs::IsTabResumptionDisabled(_localState)) {
-    return;
-  }
-
-  if (_tabResumptionItem) {
-    [self.consumer showTabResumptionWithItem:_tabResumptionItem];
-    return;
-  }
-
-  _tabResumptionHelper->SetCanSHowMostRecentItem(
-      NewTabPageTabHelper::FromWebState(self.webState)
-          ->ShouldShowStartSurface());
-
-  __weak __typeof(self) weakSelf = self;
-  _tabResumptionHelper->LastTabResumptionItem(^(TabResumptionItem* item) {
-    [weakSelf showTabResumptionWithItem:item];
-  });
-}
-
 // Shows the tab resumption tile with the given `item` configuration.
 - (void)showTabResumptionWithItem:(TabResumptionItem*)item {
   if (tab_resumption_prefs::IsLastOpenedURL(
@@ -1139,8 +778,7 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
     return;
   }
 
-  _tabResumptionItem = item;
-  _tabResumptionItem.commandHandler = self;
+  item.commandHandler = self;
   _latestMagicStackOrder =
       base::FeatureList::IsEnabled(
           segmentation_platform::features::kSegmentationPlatformIosModuleRanker)
@@ -1162,13 +800,7 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
     change.index = insertionIndex;
     [self.consumer updateMagicStackOrder:change];
   }
-  [self.consumer showTabResumptionWithItem:_tabResumptionItem];
-}
-
-// Hides the tab resumption tile.
-- (void)hideTabResumption {
-  [self.consumer hideTabResumption];
-  _tabResumptionItem = nil;
+  [self.consumer showTabResumptionWithItem:item];
 }
 
 // Returns the index rank of `moduleType`.
@@ -1199,26 +831,7 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
   return YES;
 }
 
-- (void)shortcutsTapped:(UIGestureRecognizer*)sender {
-  ContentSuggestionsShortcutTileView* shortcutView =
-      static_cast<ContentSuggestionsShortcutTileView*>(sender.view);
-  int index = static_cast<int>(shortcutView.config.index);
-  [self openMostVisitedItem:shortcutView.config atIndex:index];
-}
-
 #pragma mark - Properties
-
-- (NSArray<ContentSuggestionsMostVisitedActionItem*>*)shortcutItems {
-  self.readingListItem = ReadingListActionItem();
-  self.readingListItem.count = self.readingListUnreadCount;
-  self.readingListItem.disabled = !self.readingListModelIsLoaded;
-  NSArray<ContentSuggestionsMostVisitedActionItem*>* shortcuts = @[
-    [self shouldShowWhatsNewActionItem] ? WhatsNewActionItem()
-                                        : BookmarkActionItem(),
-    self.readingListItem, RecentTabsActionItem(), HistoryActionItem()
-  ];
-  return shortcuts;
-}
 
 - (void)setCommandHandler:(id<ContentSuggestionsCommands>)commandHandler {
   if (_commandHandler == commandHandler)
@@ -1234,6 +847,11 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
   _mostVisitedTilesMediator.snackbarHandler = _dispatcher;
 }
 
+- (void)setNTPMetricsDelegate:(id<NewTabPageMetricsDelegate>)delegate {
+  _NTPMetricsDelegate = delegate;
+  _mostVisitedTilesMediator.NTPMetricsDelegate = delegate;
+}
+
 - (void)setContentSuggestionsMetricsRecorder:
     (ContentSuggestionsMetricsRecorder*)contentSuggestionsMetricsRecorder {
   _contentSuggestionsMetricsRecorder = contentSuggestionsMetricsRecorder;
@@ -1242,112 +860,6 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 - (BOOL)contentSuggestionsEnabled {
   return self.articleForYouEnabled->GetValue()->GetBool() &&
          self.contentSuggestionsPolicyEnabled->GetValue()->GetBool();
-}
-
-#pragma mark - PrefObserverDelegate
-
-- (void)onPreferenceChanged:(const std::string&)preferenceName {
-  if (IsTabResumptionEnabled()) {
-    if (_tabResumptionItem &&
-        tab_resumption_prefs::IsTabResumptionDisabled(_localState)) {
-      [self hideTabResumption];
-    }
-  }
-
-  if (IsSafetyCheckMagicStackEnabled() &&
-      (preferenceName == prefs::kIosSettingsSafetyCheckLastRunTime ||
-       preferenceName ==
-           prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult)) {
-    _safetyCheckState.lastRunTime = [self latestSafetyCheckRunTimestamp];
-
-    _safetyCheckState.safeBrowsingState =
-        SafeBrowsingSafetyCheckStateForName(
-            _localState->GetString(
-                prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult))
-            .value_or(_safetyCheckState.safeBrowsingState);
-
-    // Trigger a module update when the Last Run Time, or Safe Browsing state,
-    // has changed.
-    [self runningStateChanged:_safetyCheckState.runningState];
-  }
-}
-
-#pragma mark - SafetyCheckManagerObserver
-
-- (void)passwordCheckStateChanged:(PasswordSafetyCheckState)state {
-  _safetyCheckState.passwordState = state;
-
-  IOSChromeSafetyCheckManager* safetyCheckManager =
-      IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-
-  std::vector<password_manager::CredentialUIEntry> insecureCredentials =
-      safetyCheckManager->GetInsecureCredentials();
-
-  password_manager::InsecurePasswordCounts counts =
-      password_manager::CountInsecurePasswordsPerInsecureType(
-          insecureCredentials);
-
-  _safetyCheckState.weakPasswordsCount = counts.weak_count;
-  _safetyCheckState.reusedPasswordsCount = counts.reused_count;
-  _safetyCheckState.compromisedPasswordsCount = counts.compromised_count;
-}
-
-- (void)safeBrowsingCheckStateChanged:(SafeBrowsingSafetyCheckState)state {
-  _safetyCheckState.safeBrowsingState = state;
-}
-
-- (void)updateChromeCheckStateChanged:(UpdateChromeSafetyCheckState)state {
-  _safetyCheckState.updateChromeState = state;
-}
-
-- (void)runningStateChanged:(RunningSafetyCheckState)state {
-  _safetyCheckState.runningState = state;
-  _safetyCheckState.shouldShowSeeMore = CheckIssuesCount(_safetyCheckState) > 2;
-
-  if (safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState)) {
-    // Safety Check can be disabled by long-pressing the module, so
-    // SafetyCheckManager can still be running and returning results even after
-    // disabling.
-    return;
-  }
-
-  // Ensures the consumer gets the latest Safety Check state only when the
-  // running state changes; this avoids calling the consumer every time an
-  // individual check state changes.
-  _safetyCheckState.commandhandler = self.presentationDelegate;
-  [self.consumer showSafetyCheck:_safetyCheckState];
-}
-
-- (void)safetyCheckManagerWillShutdown {
-  _safetyCheckManagerObserver.reset();
-}
-
-#pragma mark - ReadingListModelBridgeObserver
-
-- (void)readingListModelLoaded:(const ReadingListModel*)model {
-  [self readingListModelDidApplyChanges:model];
-}
-
-- (void)readingListModelDidApplyChanges:(const ReadingListModel*)model {
-  self.readingListUnreadCount = model->unread_size();
-  self.readingListModelIsLoaded = model->loaded();
-  if (self.readingListItem) {
-    _shortcutsConfig.shortcutItems = [self shortcutItems];
-    [self.consumer setShortcutTilesConfig:_shortcutsConfig];
-  }
-}
-
-#pragma mark - SyncObserverModelBridge
-
-- (void)onSyncStateChanged {
-  if (IsTabResumptionEnabled()) {
-    // If tabs are not synced, hide the tab resumption tile.
-    if (!_syncService->GetUserSettings()->GetSelectedTypes().Has(
-            syncer::UserSelectableType::kTabs)) {
-      [self hideTabResumption];
-    }
-  }
 }
 
 @end

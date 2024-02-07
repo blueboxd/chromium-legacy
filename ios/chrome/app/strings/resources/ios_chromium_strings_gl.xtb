@@ -41,9 +41,11 @@
 <translation id="2054703085270098503">Protexe a túa seguranza con Chromium</translation>
 <translation id="2098023844024447022">Abre a pestana máis recente en Chromium.</translation>
 <translation id="2109439615198500433">Consello de Chromium</translation>
+<translation id="2147210759439165826">Mantente ao día do contido e dos consellos útiles de Chromium.</translation>
 <translation id="2168108852149185974">Algúns complementos fan que Chromium falle. Desinstala:</translation>
 <translation id="2178608107313874732">Chromium non pode usar a cámara neste momento</translation>
 <translation id="2195025571279539885">Queres que a próxima vez Chromium che ofreza a posibilidade de traducir as páxinas en <ph name="LANGUAGE_NAME" /> deste sitio?</translation>
+<translation id="2216344354848599203">Mantén premida a icona de Chromium e fai clic en Editar a pantalla de inicio</translation>
 <translation id="2218146227246548550">A túa organización require que inicies sesión para usar Chromium. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="22313767259766852">Este enderezo está gardado en Chromium. Para usalo nos diferentes produtos de Google, gárdao na túa Conta de Google (<ph name="USER_EMAIL" />).</translation>
 <translation id="2236584955986023187">En consecuencia, Chromium sempre solicitará abrir o sitio para ordenadores.</translation>
@@ -197,10 +199,12 @@ Cuestións que debes ter en conta:
 <translation id="632825460376924298">Permitir inicio de sesión en Chromium</translation>
 <translation id="6337530241089703714">Indicar se queres borrar ou conservar os teus datos de Chromium neste dispositivo</translation>
 <translation id="6348483005826990855">3. Selecciona Chromium</translation>
+<translation id="6383607155624074112">Accede a Chromium máis rápido desde a barra de aplicacións da pantalla de inicio</translation>
 <translation id="6407399265324739055">Os enderezos e os métodos de pago non se encriptarán. Tampouco se sincronizará o historial de navegación de Chromium.
 
 Só poderá ler os teus datos encriptados quen teña a túa frase de acceso (Google non a recibirá nin a almacenará). Se esqueces a frase de acceso ou queres cambiar esta opción de configuración, <ph name="BEGIN_LINK" />borra os datos de Chromium da túa conta<ph name="END_LINK" />.</translation>
 <translation id="6424492062988593837">Chromium introduciu melloras. Está dispoñible unha nova versión.</translation>
+<translation id="6433172051771630690">Consellos para tirar o máximo proveito de Chromium.</translation>
 <translation id="6502321914804101924">Pechaches a sesión en Chromium</translation>
 <translation id="6563921047760808519">Máis información sobre <ph name="BEGIN_LINK" />como protexe Chromium a privacidade dos teus datos<ph name="END_LINK" /></translation>
 <translation id="6625409903340039086">Chromium xa admite políticas de usuario para a túa conta xestionada</translation>
@@ -253,6 +257,7 @@ Só poderá ler os teus datos encriptados quen teña a túa frase de acceso (Goo
 <translation id="7990085102929105708">Non se encriptarán os métodos de pago nin os enderezos de Google Pay. Tampouco se sincronizará o historial de navegación de Chromium.
 
 Só poderán ler os teus datos encriptados as persoas que coñezan a túa frase de acceso. Google non recibirá nin almacenará a frase de acceso. Se esqueces a frase de acceso ou queres cambiar esta opción de configuración, <ph name="BEGIN_LINK" />borra os datos de Chromium da túa conta<ph name="END_LINK" />.</translation>
+<translation id="7994322153108931467">Se queres recibir consellos útiles sobre Chromium, activa as notificacións na configuración de iOS.</translation>
 <translation id="7995166854192397899">As suxestións baséanse na túa actividade de navegación noutros dispositivos. Para recibir suxestións, inicia sesión en Chromium en todos os teus dispositivos.</translation>
 <translation id="800195749539500647">Tira o máximo proveito de Chromium</translation>
 <translation id="8013573822802650211">Para ver as túas pestanas desde calquera dispositivo no que utilices Chromium, inicia sesión en todos eles</translation>

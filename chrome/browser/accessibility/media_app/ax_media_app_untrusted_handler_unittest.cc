@@ -12,17 +12,18 @@
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/accessibility/media_app/ax_media_app.h"
 #include "chrome/browser/accessibility/media_app/test/fake_ax_media_app.h"
+#include "chrome/browser/accessibility/media_app/test/test_helpers.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/services/screen_ai/public/test/fake_screen_ai_annotator.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/scoped_accessibility_mode_override.h"
 #include "mojo/public/cpp/test_support/fake_message_dispatch_context.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_mode.h"
-#include "ui/accessibility/platform/ax_platform_node.h"
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 #include "chrome/browser/screen_ai/screen_ai_install_state.h"
@@ -47,19 +48,6 @@ class TestScreenAIInstallState : public screen_ai::ScreenAIInstallState {
   void DownloadComponentInternal() override {}
 };
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-
-class TestAXMediaAppUntrustedHandler : public AXMediaAppUntrustedHandler {
- public:
-  TestAXMediaAppUntrustedHandler(
-      content::BrowserContext& context,
-      mojo::PendingRemote<media_app_ui::mojom::OcrUntrustedPage> page)
-      : AXMediaAppUntrustedHandler(context, std::move(page)) {}
-
-  std::map<const std::string, AXMediaAppPageMetadata>
-  GetPageMetadataForTesting() {
-    return page_metadata_;
-  }
-};
 
 class AXMediaAppUntrustedHandlerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -117,16 +105,13 @@ TEST_F(AXMediaAppUntrustedHandlerTest, IsAccessibilityEnabled) {
   EXPECT_FALSE(fake_media_app_.IsAccessibilityEnabled());
 
   accessibility_state_utils::OverrideIsScreenReaderEnabledForTesting(true);
-  ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
+  content::ScopedAccessibilityModeOverride scoped_mode(ui::kAXModeComplete);
   EXPECT_TRUE(handler_->IsAccessibilityEnabled());
   EXPECT_TRUE(fake_media_app_.IsAccessibilityEnabled());
-  // Once enabled, accessibility cannot be disabled.
-  ui::AXPlatformNode::SetAXMode(ui::AXMode::kNone);
 }
 
 TEST_F(AXMediaAppUntrustedHandlerTest, PageMetadataDocumentFirstLoad) {
-  const std::vector<const std::string> kPageIds{"five", "page", "ids", "in",
-                                                "list"};
+  const std::vector<std::string> kPageIds{"five", "page", "ids", "in", "list"};
   const size_t kTestNumPages = kPageIds.size();
   std::vector<PageMetadataPtr> fakeMetadata;
   for (size_t i = 0; i < kTestNumPages; ++i) {
@@ -174,7 +159,7 @@ TEST_F(AXMediaAppUntrustedHandlerTest, PageMetadataNoDuplicatePageIds) {
 }
 
 TEST_F(AXMediaAppUntrustedHandlerTest, PageMetadataWithDeleteAndUndoDelete) {
-  const std::vector<const std::string> kPageIds{"pageX", "pageY", "pageZ"};
+  const std::vector<std::string> kPageIds{"pageX", "pageY", "pageZ"};
   const size_t kTestNumPages = kPageIds.size();
   std::vector<PageMetadataPtr> fakeMetadata;
   for (size_t i = 0; i < kTestNumPages; ++i) {
@@ -219,7 +204,7 @@ TEST_F(AXMediaAppUntrustedHandlerTest, PageMetadataWithDeleteAndUndoDelete) {
 TEST_F(AXMediaAppUntrustedHandlerTest, PageMetadataWithNewPages) {
   mojo::FakeMessageDispatchContext fake_dispatch_context;
   mojo::test::BadMessageObserver bad_message_observer;
-  const std::vector<const std::string> kPageIds{"pageX", "pageY"};
+  const std::vector<std::string> kPageIds{"pageX", "pageY"};
   const size_t kTestNumPages = kPageIds.size();
   std::vector<PageMetadataPtr> fakeMetadata;
   for (size_t i = 0; i < kTestNumPages; ++i) {
@@ -246,6 +231,40 @@ TEST_F(AXMediaAppUntrustedHandlerTest, PageMetadataWithNewPages) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(bad_message_observer.got_bad_message());
+}
+
+TEST_F(AXMediaAppUntrustedHandlerTest, DirtyPageOcrOrder) {
+  mojo::FakeMessageDispatchContext fake_dispatch_context;
+  mojo::test::BadMessageObserver bad_message_observer;
+
+  const std::vector<std::string> kPageIds{"pageW", "pageX", "pageY", "pageZ"};
+  const size_t kTestNumPages = kPageIds.size();
+  std::vector<PageMetadataPtr> fakeMetadata;
+  for (size_t i = 0; i < kTestNumPages; ++i) {
+    auto page = MojoPageMetadata::New();
+    page->id = std::move(kPageIds[i]);
+    auto rect = gfx::RectF(0, 0, 10, 15);
+    page->rect = std::move(rect);
+    fakeMetadata.push_back(std::move(page));
+  }
+  handler_->SetDelayCallingOcrNextDirtyPage(true);
+
+  handler_->PageMetadataUpdated(std::move(fakeMetadata));
+
+  // All pages should now be marked dirty, and OCRed in the order they were
+  // added.
+  EXPECT_EQ(handler_->PopDirtyPageForTesting(), "pageW");
+  EXPECT_EQ(handler_->PopDirtyPageForTesting(), "pageX");
+  EXPECT_EQ(handler_->PopDirtyPageForTesting(), "pageY");
+  EXPECT_EQ(handler_->PopDirtyPageForTesting(), "pageZ");
+
+  // Each time a page becomes dirty, it should be sent to the back of the queue.
+  handler_->PushDirtyPageForTesting("pageX");
+  handler_->PushDirtyPageForTesting("pageZ");
+  handler_->PushDirtyPageForTesting("pageX");
+
+  EXPECT_EQ(handler_->PopDirtyPageForTesting(), "pageZ");
+  EXPECT_EQ(handler_->PopDirtyPageForTesting(), "pageX");
 }
 
 }  // namespace ash::test

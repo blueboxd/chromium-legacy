@@ -103,7 +103,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::MEDIASTREAM_CAMERA, "media-stream-camera"},
     {ContentSettingsType::PROTOCOL_HANDLERS, "register-protocol-handler"},
     {ContentSettingsType::AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
-    {ContentSettingsType::MIDI, "midi"},
     {ContentSettingsType::MIDI_SYSEX, "midi-sysex"},
     {ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER, "protected-content"},
     {ContentSettingsType::BACKGROUND_SYNC, "background-sync"},
@@ -155,6 +154,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::IMPORTANT_SITE_INFO, nullptr},
     {ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA, nullptr},
     {ContentSettingsType::ADS_DATA, nullptr},
+    {ContentSettingsType::MIDI, nullptr},
     {ContentSettingsType::PASSWORD_PROTECTION, nullptr},
     {ContentSettingsType::MEDIA_ENGAGEMENT, nullptr},
     {ContentSettingsType::CLIENT_HINTS, nullptr},
@@ -211,6 +211,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::SMART_CARD_GUARD, nullptr},
     {ContentSettingsType::SMART_CARD_DATA, nullptr},
     {ContentSettingsType::TOP_LEVEL_TPCD_TRIAL, nullptr},
+    // TODO(crbug.com/1501130): Add WebUI for Automatic Fullscreen.
+    {ContentSettingsType::AUTOMATIC_FULLSCREEN, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -523,6 +525,7 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
       ContentSettingsType::LOCAL_FONTS,
       ContentSettingsType::MEDIASTREAM_CAMERA,
       ContentSettingsType::MEDIASTREAM_MIC,
+      ContentSettingsType::MIDI_SYSEX,
       ContentSettingsType::MIXEDSCRIPT,
       ContentSettingsType::JAVASCRIPT_JIT,
       ContentSettingsType::NOTIFICATIONS,
@@ -572,12 +575,6 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
     if (base::FeatureList::IsEnabled(
             blink::features::kMediaSessionEnterPictureInPicture)) {
       base_types->push_back(ContentSettingsType::AUTO_PICTURE_IN_PICTURE);
-    }
-
-    if (base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
-      base_types->push_back(ContentSettingsType::MIDI);
-    } else {
-      base_types->push_back(ContentSettingsType::MIDI_SYSEX);
     }
 
     if (base::FeatureList::IsEnabled(blink::features::kWebPrinting)) {
@@ -630,7 +627,7 @@ base::Value::Dict GetFileSystemExceptionForPage(
     bool is_embargoed) {
   base::Value::Dict exception;
   exception.Set(kOrigin, origin);
-  // TODO(crbug.com/1373962): Replace `LossyDisplayName` method with a
+  // TODO(crbug.com/1011533): Replace `LossyDisplayName` method with a
   // new method that returns the full file path in a human-readable format.
   exception.Set(kDisplayName, file_path.LossyDisplayName());
   std::string setting_string =

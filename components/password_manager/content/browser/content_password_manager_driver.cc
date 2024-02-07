@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_suggestion_generator.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/back_forward_cache.h"
@@ -463,20 +464,13 @@ void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
 }
 
 void ContentPasswordManagerDriver::ShowPasswordSuggestions(
-    autofill::FieldRendererId element_id,
-    const autofill::FormData& form,
-    uint64_t username_field_index,
-    uint64_t password_field_index,
-    base::i18n::TextDirection text_direction,
-    const std::u16string& typed_username,
-    int options,
-    const gfx::RectF& bounds) {
+    const autofill::PasswordSuggestionRequest& request) {
   if (!password_manager::bad_message::CheckFrameNotPrerendering(
           render_frame_host_))
     return;
 
-  if ((username_field_index > form.fields.size()) ||
-      (password_field_index > form.fields.size())) {
+  if ((request.username_field_index > request.form_data.fields.size()) ||
+      (request.password_field_index > request.form_data.fields.size())) {
     mojo::ReportBadMessage(
         "username_field_index or password_field_index cannot be greater than "
         "form.fields.size()!");
@@ -491,17 +485,20 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
     if (client_->ShowKeyboardReplacingSurface(
             this,
             SubmissionReadinessParams(
-                form, username_field_index, password_field_index,
+                request.form_data, request.username_field_index,
+                request.password_field_index,
                 autofill::mojom::SubmissionReadinessState::kNoInformation),
-            options & autofill::ACCEPTS_WEBAUTHN_CREDENTIALS)) {
+            request.show_webauthn_credentials)) {
       return;
     }
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
   GetPasswordAutofillManager()->OnShowPasswordSuggestions(
-      element_id, text_direction, typed_username, options,
-      TransformToRootCoordinates(render_frame_host_, bounds));
+      request.element_id, request.trigger_source, request.text_direction,
+      request.typed_username,
+      ShowWebAuthnCredentials(request.show_webauthn_credentials),
+      TransformToRootCoordinates(render_frame_host_, request.bounds));
 }
 
 #if BUILDFLAG(IS_ANDROID)

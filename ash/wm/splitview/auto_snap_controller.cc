@@ -34,12 +34,13 @@ std::optional<float> CalculateAutoSnapRatio(
     return split_view_controller->ComputeAutoSnapRatio(window);
   }
 
+  auto* window_state = WindowState::Get(window);
   if (auto* split_view_overview_session =
           RootWindowController::ForWindow(window)
               ->split_view_overview_session();
       split_view_overview_session &&
       split_view_overview_session->window() != window) {
-    if (!WindowState::Get(window)->CanSnap()) {
+    if (!window_state->CanSnap()) {
       return std::nullopt;
     }
 
@@ -50,7 +51,7 @@ std::optional<float> CalculateAutoSnapRatio(
     return std::make_optional<float>(snap_ratio);
   }
 
-  return std::nullopt;
+  return window_state->snap_ratio();
 }
 
 }  // namespace
@@ -239,11 +240,11 @@ bool AutoSnapController::AutoSnapWindowIfNeeded(aura::Window* window) {
     return false;
   }
 
-  const std::optional<float> snap_ratio =
+  const std::optional<float> auto_snap_ratio =
       CalculateAutoSnapRatio(split_view_controller, window);
   // If it's a user positionable window but can't be snapped, end split view
   // mode and show the cannot snap toast.
-  if (!snap_ratio) {
+  if (!auto_snap_ratio) {
     if (window_state->IsUserPositionable()) {
       split_view_controller->EndSplitView(
           SplitViewController::EndReason::kUnsnappableWindowActivated);
@@ -251,7 +252,6 @@ bool AutoSnapController::AutoSnapWindowIfNeeded(aura::Window* window) {
     }
     return false;
   }
-
   // Snap the window on the non-default side of the screen if split view mode
   // is active.
   split_view_controller->SnapWindow(
@@ -260,7 +260,7 @@ bool AutoSnapController::AutoSnapWindowIfNeeded(aura::Window* window) {
           ? SnapPosition::kSecondary
           : SnapPosition::kPrimary,
       WindowSnapActionSource::kAutoSnapInSplitView,
-      /*activate_window=*/false, *snap_ratio);
+      /*activate_window=*/false, *auto_snap_ratio);
   return true;
 }
 

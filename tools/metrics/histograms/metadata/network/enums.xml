@@ -55,11 +55,6 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Managed"/>
 </enum>
 
-<enum name="BooleanOriginHeaderSameAsRequestOrigin">
-  <int value="0" label="Headers differ"/>
-  <int value="1" label="Headers match"/>
-</enum>
-
 <enum name="CaptivePortalNetworkState">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="ONLINE"/>
@@ -575,6 +570,19 @@ chromium-metrics-reviews@google.com.
 <enum name="HotspotUpstreamStatus">
   <int value="0" label="kWifiWithCellularConnected"/>
   <int value="1" label="kWifiWithCellularNotConnected"/>
+</enum>
+
+<enum name="IpProtectionEligibility">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Ineligible"/>
+  <int value="2" label="Eligible"/>
+</enum>
+
+<enum name="IpProtectionProxyChainId">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Chain 1"/>
+  <int value="2" label="Chain 2"/>
+  <int value="3" label="Chain 3"/>
 </enum>
 
 <enum name="IpProtectionProxyLayer">
@@ -2384,6 +2392,11 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="Does not support 802.11r"/>
   <int value="1" label="Supports Over-the-Air FT Roaming"/>
   <int value="2" label="Supports Over-the-DS FT Roaming"/>
+</enum>
+
+<enum name="WiFiAp80211uANQPSupport">
+  <int value="0" label="Does not support 802.11u ANQP"/>
+  <int value="1" label="Supports ANQP"/>
 </enum>
 
 <enum name="WiFiAp80211vBSSMaxIdlePeriodSupport">

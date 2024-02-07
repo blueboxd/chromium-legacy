@@ -4576,6 +4576,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AvatarToolbarButtonHighlighted">
+  <obsolete>Removed in M123</obsolete>
   <owner>siyua@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <description>
@@ -34509,6 +34510,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromTipsNotification">
+  <owner>scottyoder@google.com</owner>
+  <description>
+    Recorded when sign-in is shown after the user interacts with a Tips
+    Notification on iOS.
+    (signin_metrics::AccessPoint::signin_metrics::AccessPoint)
+  </description>
+</action>
+
 <action name="Signin_Impression_FromUserManager" not_user_triggered="true">
   <owner>jkrcal@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -35289,6 +35299,14 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromTipsNotification">
+  <owner>scottyoder@google.com</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_TIPS_NOTIFICATION. iOS Only.
   </description>
 </action>
 

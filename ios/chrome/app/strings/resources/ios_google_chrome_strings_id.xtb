@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="1021782183249308751">Tekan dan tahan ikon Chrome, lalu klik "Edit Home Screen"</translation>
 <translation id="1066101356081285416">Chrome akan mendeteksi nomor pelacakan di situs yang Anda buka dan menampilkan info terbaru terkait paket di halaman Tab Baru. Nomor pelacakan paket dan nama situs akan dikirim ke Google untuk menyediakan fitur ini dan meningkatkan kualitas fitur belanja Google bagi semua orang. Anda dapat memperbaruinya kapan saja di <ph name="BEGIN_LINK" />Setelan Pelacakan Paket<ph name="END_LINK" />.</translation>
 <translation id="1085696779717592361">Gunakan Chrome secara Default</translation>
 <translation id="1105362920864247682">Menghapus Data Penjelajahan di Chrome.</translation>
@@ -74,7 +75,9 @@ Hal-hal yang perlu dipertimbangkan:
 <translation id="2689064829982324496">Untuk logout dari Akun Google Anda di semua situs, <ph name="BEGIN_LINK" />logout dari Chrome<ph name="END_LINK" />.</translation>
 <translation id="2695886661449553974">Chrome tidak dapat memeriksa update. Coba lagi nanti.</translation>
 <translation id="2702250627063295552">Tambahkan Item Daftar Bacaan ke Chrome</translation>
+<translation id="2703746758996815929">Untuk mendapatkan tips Chrome yang berguna, aktifkan notifikasi di setelan iOS.</translation>
 <translation id="2736805085127235148">Notifikasi Chrome saat ini dinonaktifkan di setelan perangkat.</translation>
+<translation id="2750626042242931740">Anda dapat memperbarui pilihan kapan saja di Setelan Chrome.</translation>
 <translation id="2767464022270041271">Tidak ada sandi tersimpan. Pengelola Sandi Google dapat memeriksa sandi Anda jika Anda menyimpannya.</translation>
 <translation id="2789947168960170215">Jika lupa frasa sandi atau ingin mengubah setelan ini, <ph name="BEGIN_LINK" />hapus data Chrome di akun Anda<ph name="END_LINK" />.</translation>
 <translation id="2868822340714096138">Hapus Data Penjelajahan di Chrome</translation>
@@ -96,6 +99,7 @@ Hanya orang yang memiliki frasa sandi Anda yang dapat membaca data terenkripsi A
 <translation id="3345341804167540816">Gunakan Chrome di Mana Saja</translation>
 <translation id="3360031466389132716">{THRESHOLD,plural, =1{Hal ini terjadi jika Chrome tidak digunakan selama {THRESHOLD} menit}other{Hal ini terjadi jika Chrome tidak digunakan selama {THRESHOLD} menit}}</translation>
 <translation id="3399930248910934354">Buka Setelan Chrome</translation>
+<translation id="344736123700721678">Akses Chrome lebih cepat dari Dock Layar Utama Anda</translation>
 <translation id="3472587960215700950">Chrome menggunakan Google Maps untuk memberikan rute dan info lokal di alamat yang terdeteksi.</translation>
 <translation id="3503014945441706099">Dapatkan juga Safe Browsing yang Disempurnakan untuk profil Chrome ini</translation>
 <translation id="3522659714780527202">Untuk melihat tab Chrome Anda dari perangkat lain, aktifkan sinkronisasi</translation>
@@ -220,6 +224,7 @@ Untuk setelan lainnya yang menggunakan data guna meningkatkan pengalaman Chrome 
 <translation id="7175129790242719365">Tips Chrome: Login ke Chrome</translation>
 <translation id="7187993566681480880">Memastikan Anda tetap aman di Chrome dan dapat digunakan untuk menyempurnakan keamanan Anda di aplikasi Google lainnya saat login.</translation>
 <translation id="7200524487407690471">Chrome otomatis menjalankan Pemeriksaan Keamanan setiap hari untuk membuat Anda tetap aman dari pelanggaran data, situs yang tidak aman, dan lainnya. Anda dapat menemukan informasi selengkapnya tentang Pemeriksaan Keamanan di Setelan.</translation>
+<translation id="7203324561587388418">Mendapatkan konten dan tips Chrome yang bermanfaat.</translation>
 <translation id="72119412072970160">Anda dapat menggunakan sandi yang Anda simpan ke Pengelola Sandi Google di aplikasi lain pada iPad.</translation>
 <translation id="723787869754590019">Gunakan Chrome untuk Isi Otomatis</translation>
 <translation id="7254380941803999489">Setel Chrome Sebagai Browser Default</translation>
@@ -294,6 +299,7 @@ Data Anda dienkripsi dengan frasa sandi pada <ph name="TIME" />. Masukkan frasa 
 Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />hapus data Chrome di akun Anda<ph name="END_LINK" />.</translation>
 <translation id="8857676124663337448">Pengelola Sandi Google tidak dapat memeriksa semua sandi. Coba lagi besok.</translation>
 <translation id="8865415417596392024">Data Chrome di akun Anda</translation>
+<translation id="8874688701962049679">Tips untuk mengoptimalkan penggunaan Chrome.</translation>
 <translation id="8891935667620843985">Anda dapat membuka link di Chrome secara otomatis dengan menjadikan Chrome sebagai Aplikasi Browser Default Anda.</translation>
 <translation id="8897749957032330183">Sandi disimpan ke Pengelola Sandi Google di perangkat ini.</translation>
 <translation id="8949681853939555434">Setel Chrome sebagai Browser Default Anda</translation>

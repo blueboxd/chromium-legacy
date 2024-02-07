@@ -205,6 +205,11 @@
           '--gtest_filter=-ConstructCompilerTest.DefaultParameters',
         ],
       },
+      'linux-chromeos-rel': {
+        # b/41493162: angle_unittests has a high failure rate.
+        # Re-enable cq when the issue is fixed.
+        'ci_only': True,
+      },
     },
   },
   'ash_crosapi_tests': {
@@ -1255,14 +1260,6 @@
           'shards': 20,  # crbug.com/1361887
         },
       },
-      'win-arm64-rel': {
-        # Some Win Arm64 bots aren't using 100% scaling, which some browser
-        # tests rely on. They also have touch enabled, which we need to disable.
-        'args': [
-          '--force-device-scale-factor=1',
-          '--top-chrome-touch-ui=disabled',
-        ],
-      },
       'win-asan': {
          # Tests shows tests run faster with fewer retries by using fewer jobs crbug.com/1411912
         'args': [
@@ -1317,7 +1314,6 @@
     'remove_from': [
       'win10-rel-no-external-ip',
       'win11-arm64-rel-tests',
-      'win-arm64-rel',
       'win-rel-cft',
       'Win11 Tests x64',
     ],
@@ -1741,7 +1737,6 @@
     'remove_from': [
       'win10-rel-no-external-ip',
       'win11-arm64-rel-tests',
-      'win-arm64-rel',
       'win-rel-cft',
       'Win11 Tests x64',
     ],
@@ -2300,7 +2295,14 @@
   },
   'context_lost_passthrough_tests': {
     'modifications': {
-      'win-arm64-rel': {
+      'Win10 FYI x64 Experimental Release (Intel)': {
+        'args': [
+          # TODO(crbug.com/41496675): Apply this via magic subustitutions if it
+          # helps with stability.
+          '--jobs=2',
+        ],
+      },
+      'Win11 FYI arm64 Release (Qualcomm Adreno 690)': {
         'args': [
           # These devices have issues running these tests in parallel.
           '--jobs=1',
@@ -2308,7 +2310,14 @@
       },
     },
     'replacements': {
-      'win-arm64-rel': {
+      'Win10 FYI x64 Experimental Release (Intel)': {
+        'args': {
+          # Magic substitution happens after regular replacement, so remove it
+          # now since we are manually applying the number of jobs above.
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs': None,
+        },
+      },
+      'Win11 FYI arm64 Release (Qualcomm Adreno 690)': {
         'args': {
           # Magic substitution happens after regular replacement, so remove it
           # now since we are manually applying the number of jobs above.
@@ -2981,6 +2990,12 @@
           '--gtest_filter=-DelegatedInkPointRendererGpuTest.DrawPointsAsTheyArrive:DelegatedInkPointRendererGpuTest.MaximumPointerIds:DelegatedInkPointRendererGpuTest.MultiplePointerIds:DelegatedInkPointRendererGpuTest.StoreAndRemovePointsAndTokens',
         ],
       },
+      'Win11 FYI arm64 Release (Qualcomm Adreno 690)': {
+        'args': [
+          # crbug.com/1523061
+          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win_arm64.gl_unittests.filter',
+        ],
+      },
       'android-12-x64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.gl_unittests.filter',
@@ -3268,14 +3283,6 @@
           'shards': 6,
         },
       },
-      'win-arm64-rel': {
-        # Some Win Arm64 bots have touch turned on, which makes some tests fail.
-        # Similarly, some have a non 1.0 device scale factor.
-        'args': [
-          '--force-device-scale-factor=1',
-          '--top-chrome-touch-ui=disabled',
-        ],
-      },
       'win-asan': {
          # Tests shows tests run faster with fewer retries by using fewer jobs crbug.com/1411912
         'args': [
@@ -3301,6 +3308,11 @@
             'ssd': '1',
           },
         }
+      },
+      'win11-arm64-dbg-tests': {
+        'swarming': {
+          'shards': 9,
+        },
       },
     },
   },
@@ -3352,7 +3364,6 @@
       'Win11 Tests x64',
       'win10-rel-no-external-ip',
       'win11-arm64-rel-tests',
-      'win-arm64-rel',
       'win-rel-cft',
     ],
   },
@@ -3530,7 +3541,6 @@
       'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
       'linux-exp-tsan-fyi-rel',  # The TSan bot sets enable_nacl=false
       'Mac ASan 64 Tests (1)',  # The mac asan bot sets enable_nacl=false
-      'win-arm64-rel',  # Not available on arm64.
       'linux-arm64-rel-cft',  # Not available on arm64.
     ],
   },
@@ -3644,6 +3654,7 @@
   'net_unittests BRYA_RELEASE_LKGM': {
     # TODO(b/319364912): vpython cannot be delivered via CIPD on skylab builders
     'remove_from': [
+      'chromeos-brya-chrome-dchecks-skylab',
       'chromeos-brya-chrome-skylab',
     ],
   },
@@ -3852,6 +3863,13 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
+      'Win10 FYI x64 Experimental Release (Intel)': {
+        'args': [
+          # TODO(crbug.com/41496675): Apply this via magic subustitutions if it
+          # helps with stability.
+          '--jobs=2',
+        ],
+      },
       'android_optional_gpu_tests_rel': {
         'args': [
           # See above.
@@ -3875,6 +3893,13 @@
       'Win V8 FYI Release (NVIDIA)': {
         'args': {
           '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Win10 FYI x64 Experimental Release (Intel)': {
+        'args': {
+          # Magic substitution happens after regular replacement, so remove it
+          # now since we are manually applying the number of jobs above.
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs': None,
         },
       },
     },
@@ -3951,7 +3976,6 @@
       'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
       'linux-exp-tsan-fyi-rel',  # The TSan bot sets enable_nacl=false
       'Mac ASan 64 Tests (1)',  # The mac asan bot sets enable_nacl=false
-      'win-arm64-rel',  # Not available on arm64.
     ],
   },
   'pthreadpool_unittests': {
@@ -4102,6 +4126,16 @@
       },
     }
   },
+  'services_webnn_unittests': {
+    'modifications': {
+      'Win11 FYI arm64 Release (Qualcomm Adreno 690)': {
+        'args': [
+          # crbug.com/1522972
+          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win_arm64.services_webnn_unittests.filter',
+        ],
+      },
+    },
+  },
   'snapshot_unittests': {
     'modifications': {
       'fuchsia-fyi-arm64-dbg': {
@@ -4227,7 +4261,6 @@
     'remove_from': [
       'win10-rel-no-external-ip',
       'win11-arm64-rel-tests',
-      'win-arm64-rel',
       'win-rel-cft',
       'Win11 Tests x64',
     ],
@@ -4414,6 +4447,22 @@
           'shards': 2,
         },
       },
+      'Win10 FYI x64 Experimental Release (Intel)': {
+        'args': [
+          # TODO(crbug.com/41496675): Apply this via magic subustitutions if it
+          # helps with stability.
+          '--jobs=2',
+        ],
+      },
+    },
+    'replacements': {
+      'Win10 FYI x64 Experimental Release (Intel)': {
+        'args': {
+          # Magic substitution happens after regular replacement, so remove it
+          # now since we are manually applying the number of jobs above.
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs': None,
+        },
+      },
     },
     'remove_from': [
       # crbug.com/1458020 for Mac Retina ASAN removal
@@ -4530,11 +4579,6 @@
         'swarming': {
           'shards': 2,
         }
-      },
-      'win-arm64-rel': {
-        'args': [
-          '--top-chrome-touch-ui=disabled',
-        ],
       },
       'win-asan': {
         'swarming': {
@@ -4710,6 +4754,26 @@
       'Mac FYI Retina ASAN (AMD)',
     ],
   },
+  'webcodecs_tests': {
+    'modifications': {
+      'Win10 FYI x64 Experimental Release (Intel)': {
+        'args': [
+          # TODO(crbug.com/41496675): Apply this via magic subustitutions if it
+          # helps with stability.
+          '--jobs=2',
+        ],
+      },
+    },
+    'replacements': {
+      'Win10 FYI x64 Experimental Release (Intel)': {
+        'args': {
+          # Magic substitution happens after regular replacement, so remove it
+          # now since we are manually applying the number of jobs above.
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs': None,
+        },
+      },
+    },
+  },
   'webdriver_wpt_tests': {
     'modifications': {
       'Linux Tests (dbg)(1)': {
@@ -4839,6 +4903,13 @@
       },
     },
   },
+  'webgl_conformance_d3d9_passthrough_tests': {
+    'remove_from': [
+      # Per discussion on crbug.com/1523698, we aren't interested in testing
+      # D3D9 on this newer hardware.
+      'Win11 FYI arm64 Release (Qualcomm Adreno 690)',
+    ],
+  },
   'webgl_conformance_gl_passthrough_ganesh_tests 1002:67ef': {
     'modifications': {
       'mac_optional_gpu_tests_rel': {
@@ -4901,6 +4972,12 @@
         },
       },
     },
+  },
+  'webgl_conformance_vulkan_passthrough_tests': {
+    'remove_from': [
+      # Vulkan is not supported on these devices.
+      'Win11 FYI arm64 Release (Qualcomm Adreno 690)',
+    ],
   },
   'webgpu_blink_web_tests': {
     'remove_from': [
@@ -5302,6 +5379,33 @@
         'args': [
           '--target',
           'Release_x64',
+        ],
+      },
+    },
+  },
+  'xr_browser_tests': {
+    'remove_from': [
+      # No Windows arm64 devices currently support XR features, so don't bother
+      # running related tests.
+      'Win11 FYI arm64 Release (Qualcomm Adreno 690)',
+    ],
+    'modifications': {
+      'Win10 FYI x64 Release (Intel)': {
+        'args': [
+          # TODO(crbug.com/40937024): Remove this once the flakes on Intel are
+          # resolved.
+          '--gtest_filter=-WebXrVrPermissionsBrowserTest.TestPermissionPersists',
+        ],
+      },
+    },
+  },
+  'xr_browser_tests 8086:9bc5': {
+    'modifications': {
+      'win_optional_gpu_tests_rel': {
+        'args': [
+          # TODO(crbug.com/40937024): Remove this once the flakes on Intel are
+          # resolved.
+          '--gtest_filter=-WebXrVrPermissionsBrowserTest.TestPermissionPersists',
         ],
       },
     },

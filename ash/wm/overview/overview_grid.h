@@ -473,6 +473,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   const gfx::Rect bounds_for_testing() const { return bounds_; }
   float scroll_offset_for_testing() const { return scroll_offset_; }
   views::Widget* pine_widget_for_testing() const { return pine_widget_.get(); }
+  views::Widget* faster_splitview_widget_for_testing() {
+    return faster_splitview_widget_.get();
+  }
 
  private:
   friend class DesksTemplatesTest;
@@ -588,6 +591,16 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // instead.
   void CreateAndShowPine(const gfx::ImageSkia& pine_image);
 
+  // Called when the faster splitview toast skip button is pressed.
+  void OnSkipButtonPressed();
+
+  // Called when the faster splitview settings button is pressed.
+  void OnSettingsButtonPressed();
+
+  // Updates the visibility of `faster_splitview_widget_`. The widget will
+  // only be shown if faster splitview setup is in session.
+  void UpdateFasterSplitViewWidget();
+
   // The drop target is created when a window or overview item is being dragged,
   // and is destroyed when the drag ends or overview mode is ended. The drop
   // target is hidden when a snap preview area is shown. You can drop a window
@@ -618,6 +631,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // The contents view of the above |desks_widget_| if created.
   raw_ptr<LegacyDeskBarView, DanglingUntriaged> desks_bar_view_ = nullptr;
+
+  // Widget that appears during faster splitview setup. Contains the faster
+  // splitview toast and the overview settings button.
+  std::unique_ptr<views::Widget> faster_splitview_widget_;
 
   // True if the overview grid should animate when exiting overview mode. Note
   // even if it's true, it doesn't mean all window items in the grid should

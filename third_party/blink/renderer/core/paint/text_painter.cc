@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/paint/applied_decoration_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
@@ -240,18 +241,45 @@ void TextPainter::Paint(const TextFragmentPaintInfo& fragment_paint_info,
   if (!fragment_paint_info.shape_result) {
     return;
   }
+  DCHECK_LE(fragment_paint_info.from, fragment_paint_info.text.length());
+  DCHECK_LE(fragment_paint_info.to, fragment_paint_info.text.length());
+
   GraphicsContextStateSaver state_saver(graphics_context_, false);
   UpdateGraphicsContext(graphics_context_, text_style, state_saver,
                         shadow_mode);
   // TODO(layout-dev): Handle combine text here or elsewhere.
-  PaintInternalFragment<kPaintText>(fragment_paint_info, node_id,
-                                    auto_dark_mode);
+  if (svg_text_paint_state_.has_value()) {
+    const AutoDarkMode svg_text_auto_dark_mode(
+        DarkModeFilter::ElementRole::kSVG,
+        auto_dark_mode.enabled &&
+            !svg_text_paint_state_->IsRenderingClipPathAsMaskImage());
+    PaintSvgTextFragment(fragment_paint_info, node_id, svg_text_auto_dark_mode);
+  } else {
+    graphics_context_.DrawText(font_, fragment_paint_info,
+                               gfx::PointF(text_origin_), node_id,
+                               auto_dark_mode);
+  }
 
   if (!emphasis_mark_.empty()) {
     if (text_style.emphasis_mark_color != text_style.fill_color)
       graphics_context_.SetFillColor(text_style.emphasis_mark_color);
-    PaintInternalFragment<kPaintEmphasisMark>(fragment_paint_info, node_id,
-                                              auto_dark_mode);
+    graphics_context_.DrawEmphasisMarks(
+        font_, fragment_paint_info, emphasis_mark_,
+        gfx::PointF(text_origin_) + gfx::Vector2dF(0, emphasis_mark_offset_),
+        auto_dark_mode);
+  }
+
+  // TODO(sohom): SubstringContainsOnlyWhitespaceOrEmpty() does not check
+  // for all whitespace characters as defined in the spec definition of
+  // whitespace. See https://w3c.github.io/paint-timing/#non-empty
+  // In particular 0xb and 0xc are not checked.
+  if (!fragment_paint_info.text.SubstringContainsOnlyWhitespaceOrEmpty(
+          fragment_paint_info.from, fragment_paint_info.to)) {
+    graphics_context_.GetPaintController().SetTextPainted();
+  }
+
+  if (!font_.ShouldSkipDrawing()) {
+    PaintTimingDetector::NotifyTextPaint(visual_rect_);
   }
 }
 
@@ -285,7 +313,7 @@ void TextPainter::PaintSelectedText(
   if (snapped_selection_rect.Contains(visual_rect_) ||
       (selection_start == fragment_paint_info.from &&
        selection_end == fragment_paint_info.to)) {
-    absl::optional<base::AutoReset<bool>> is_painting_selection_reset;
+    std::optional<base::AutoReset<bool>> is_painting_selection_reset;
     if (TextPainter::SvgTextPaintState* state = GetSvgState()) {
       is_painting_selection_reset.emplace(&state->is_painting_selection_, true);
     }
@@ -312,7 +340,7 @@ void TextPainter::PaintSelectedText(
   }
   // Then draw the glyphs inside the selection area, with the selection style.
   {
-    absl::optional<base::AutoReset<bool>> is_painting_selection_reset;
+    std::optional<base::AutoReset<bool>> is_painting_selection_reset;
     if (TextPainter::SvgTextPaintState* state = GetSvgState()) {
       is_painting_selection_reset.emplace(&state->is_painting_selection_, true);
     }
@@ -323,93 +351,39 @@ void TextPainter::PaintSelectedText(
   }
 }
 
-void TextPainter::PaintDecorationsExceptLineThrough(
-    const TextFragmentPaintInfo& fragment_paint_info,
-    const TextDecorationOffset& decoration_offset,
-    const PaintInfo& paint_info,
-    const TextPaintStyle& text_style,
-    TextDecorationInfo& decoration_info,
-    TextDecorationLine lines_to_paint) {
-  if (!decoration_info.HasAnyLine(lines_to_paint &
-                                  ~TextDecorationLine::kLineThrough))
-    return;
+void TextPainter::PaintDecorationLine(
+    const TextDecorationInfo& decoration_info,
+    const Color& line_color,
+    const TextFragmentPaintInfo* fragment_paint_info) {
+  AppliedDecorationPainter decoration_painter(graphics_context_,
+                                              decoration_info);
+  if (fragment_paint_info &&
+      decoration_info.TargetStyle().TextDecorationSkipInk() ==
+          ETextDecorationSkipInk::kAuto) {
+    // In order to ignore intersects less than 0.5px, inflate by -0.5.
+    gfx::RectF decoration_bounds = decoration_info.Bounds();
+    decoration_bounds.Inset(gfx::InsetsF::VH(0.5, 0));
+    ClipDecorationsStripe(
+        *fragment_paint_info,
+        decoration_info.InkSkipClipUpper(decoration_bounds.y()),
+        decoration_bounds.height(),
+        std::min(decoration_info.ResolvedThickness(),
+                 kDecorationClipMaxDilation));
+  }
 
   if (svg_text_paint_state_.has_value() &&
       !decoration_info.HasDecorationOverride()) {
-    GraphicsContextStateSaver state_saver(paint_info.context, false);
-    if (paint_info.IsRenderingResourceSubtree()) {
-      state_saver.SaveIfNeeded();
-      paint_info.context.Scale(1, decoration_info.ScalingFactor());
-    }
-    PaintSvgDecorationsExceptLineThrough(fragment_paint_info, decoration_offset,
-                                         decoration_info, lines_to_paint,
-                                         text_style);
+    SvgPaints paints;
+    const SvgTextPaintState& state = svg_text_paint_state_.value();
+    PrepareSvgPaints(state, SvgPaintMode::kTextDecoration, paints);
+
+    const OrderedPaints ordered_paints =
+        OrderPaints(paints, state.Style().PaintOrder());
+    DrawPaintOrderPasses(ordered_paints, [&](const cc::PaintFlags& flags) {
+      decoration_painter.Paint(line_color, &flags);
+    });
   } else {
-    TextPainterBase::PaintUnderOrOverLineDecorations(
-        fragment_paint_info, decoration_offset, decoration_info, lines_to_paint,
-        text_style, nullptr);
-  }
-}
-
-void TextPainter::PaintDecorationsOnlyLineThrough(
-    const PaintInfo& paint_info,
-    const TextPaintStyle& text_style,
-    TextDecorationInfo& decoration_info) {
-  if (!decoration_info.HasAnyLine(TextDecorationLine::kLineThrough))
-    return;
-
-  if (svg_text_paint_state_.has_value() &&
-      !decoration_info.HasDecorationOverride()) {
-    GraphicsContextStateSaver state_saver(paint_info.context, false);
-    if (paint_info.IsRenderingResourceSubtree()) {
-      state_saver.SaveIfNeeded();
-      paint_info.context.Scale(1, decoration_info.ScalingFactor());
-    }
-    PaintSvgDecorationsOnlyLineThrough(decoration_info, text_style);
-  } else {
-    TextPainterBase::PaintDecorationsOnlyLineThrough(decoration_info,
-                                                     text_style);
-  }
-}
-
-template <TextPainter::PaintInternalStep step>
-void TextPainter::PaintInternalFragment(
-    const TextFragmentPaintInfo& fragment_paint_info,
-    DOMNodeId node_id,
-    const AutoDarkMode& auto_dark_mode) {
-  DCHECK(fragment_paint_info.from <= fragment_paint_info.text.length());
-  DCHECK(fragment_paint_info.to <= fragment_paint_info.text.length());
-
-  if (step == kPaintEmphasisMark) {
-    graphics_context_.DrawEmphasisMarks(
-        font_, fragment_paint_info, emphasis_mark_,
-        gfx::PointF(text_origin_) + gfx::Vector2dF(0, emphasis_mark_offset_),
-        auto_dark_mode);
-  } else {
-    DCHECK(step == kPaintText);
-    if (svg_text_paint_state_.has_value()) {
-      const AutoDarkMode svg_text_auto_dark_mode(
-          DarkModeFilter::ElementRole::kSVG,
-          auto_dark_mode.enabled &&
-              !svg_text_paint_state_->IsRenderingClipPathAsMaskImage());
-      PaintSvgTextFragment(fragment_paint_info, node_id,
-                           svg_text_auto_dark_mode);
-    } else {
-      graphics_context_.DrawText(font_, fragment_paint_info,
-                                 gfx::PointF(text_origin_), node_id,
-                                 auto_dark_mode);
-    }
-
-    // TODO(sohom): SubstringContainsOnlyWhitespaceOrEmpty() does not check
-    // for all whitespace characters as defined in the spec definition of
-    // whitespace. See https://w3c.github.io/paint-timing/#non-empty
-    // In particular 0xb and 0xc are not checked.
-    if (!fragment_paint_info.text.SubstringContainsOnlyWhitespaceOrEmpty(
-            fragment_paint_info.from, fragment_paint_info.to))
-      graphics_context_.GetPaintController().SetTextPainted();
-
-    if (!font_.ShouldSkipDrawing())
-      PaintTimingDetector::NotifyTextPaint(visual_rect_);
+    decoration_painter.Paint(line_color, nullptr);
   }
 }
 
@@ -444,40 +418,6 @@ void TextPainter::PaintSvgTextFragment(
     graphics_context_.DrawText(font_, fragment_paint_info,
                                gfx::PointF(text_origin_), flags, node_id,
                                auto_dark_mode);
-  });
-}
-
-void TextPainter::PaintSvgDecorationsExceptLineThrough(
-    const TextFragmentPaintInfo& fragment_paint_info,
-    const TextDecorationOffset& decoration_offset,
-    TextDecorationInfo& decoration_info,
-    TextDecorationLine lines_to_paint,
-    const TextPaintStyle& text_style) {
-  SvgPaints paints;
-  const SvgTextPaintState& state = svg_text_paint_state_.value();
-  PrepareSvgPaints(state, SvgPaintMode::kTextDecoration, paints);
-
-  const OrderedPaints ordered_paints =
-      OrderPaints(paints, state.Style().PaintOrder());
-  DrawPaintOrderPasses(ordered_paints, [&](const cc::PaintFlags& flags) {
-    TextPainterBase::PaintUnderOrOverLineDecorations(
-        fragment_paint_info, decoration_offset, decoration_info, lines_to_paint,
-        text_style, &flags);
-  });
-}
-
-void TextPainter::PaintSvgDecorationsOnlyLineThrough(
-    TextDecorationInfo& decoration_info,
-    const TextPaintStyle& text_style) {
-  SvgPaints paints;
-  const SvgTextPaintState& state = svg_text_paint_state_.value();
-  PrepareSvgPaints(state, SvgPaintMode::kTextDecoration, paints);
-
-  const OrderedPaints ordered_paints =
-      OrderPaints(paints, state.Style().PaintOrder());
-  DrawPaintOrderPasses(ordered_paints, [&](const cc::PaintFlags& flags) {
-    TextPainterBase::PaintDecorationsOnlyLineThrough(decoration_info,
-                                                     text_style, &flags);
   });
 }
 

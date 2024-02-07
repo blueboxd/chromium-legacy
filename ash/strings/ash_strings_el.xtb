@@ -26,6 +26,7 @@
 <translation id="1087110696012418426">Καλό απόγευμα <ph name="GIVEN_NAME" />,</translation>
 <translation id="1088231044944504242">Αναζητήστε <ph name="CATEGORY" />, αρχεία, εφαρμογές και άλλα. Χρησιμοποιήστε πλήκτρα βέλους για να πλοηγηθείτε στις εφαρμογές σας.</translation>
 <translation id="1093645050124056515">ctrl + alt + κάτω βέλος</translation>
+<translation id="1094756674036064790">Να απενεργοποιηθεί το Bluetooth;</translation>
 <translation id="109942774857561566">Βαριέμαι</translation>
 <translation id="1104084341931202936">Εμφάνιση ρυθμίσεων προσβασιμότητας</translation>
 <translation id="1104621072296271835">Οι συσκευές σας λειτουργούν ακόμα καλύτερα συνδυαστικά</translation>
@@ -159,7 +160,6 @@
 <translation id="1586324912145647027">Μετάβαση στο γραφείο 1 έως 8</translation>
 <translation id="158838227375272121">Ιστότοπος Google Classroom</translation>
 <translation id="1589090746204042747">Αποκτήσει πρόσβαση σε όλη τη δραστηριότητά σας από αυτή την περίοδο λειτουργίας</translation>
-<translation id="1592682369233288537">Επόμενο γραφείο: <ph name="NEXT_DESK_NAME" />, χρησιμοποιήστε τη συντόμευση Αναζήτηση+Πλήκτρο διαστήματος για ενεργοποίηση.</translation>
 <translation id="1602874809115667351"><ph name="LAUNCHER_KEY_NAME" /> + κάτω βέλος</translation>
 <translation id="1604857178818051494">Παύση μέσων</translation>
 <translation id="1607312127821884567">Παράβλεψη ρύθμισης προβολής των εφαρμογών του τηλεφώνου σας</translation>
@@ -607,9 +607,11 @@
 <translation id="3526440770046466733">Άνοιγμα συνδέσμου σε νέα καρτέλα και παραμονή στην τρέχουσα καρτέλα</translation>
 <translation id="353086728817903341">Πραγματοποιήθηκε σύνδεση σε <ph name="NUM_DEVICES" /> συσκευές</translation>
 <translation id="3533126039236445965">Εφαρμογές στο ράφι</translation>
+<translation id="3537350467437346467">Το είδατε</translation>
 <translation id="3539957339480430241">Σημείο πρόσβασης Wi-Fi <ph name="DEVICE_NAME" /></translation>
 <translation id="3540893133818942399">Παράβλεψη ρύθμισης προβολής των πρόσφατων φωτογραφιών και μέσων του τηλεφώνου σας</translation>
 <translation id="3542066395059568317">Θα βλέπετε προτάσεις για να συνεχίσετε από εκεί που σταματήσατε. Μπορείτε να κάνετε δεξί κλικ για να καταργήσετε προτάσεις.</translation>
+<translation id="3547318469722231257">Τροποποιήσατε</translation>
 <translation id="3552189655002856821">Το Wi-Fi είναι απενεργοποιημένο</translation>
 <translation id="3554215588514239132">Εμφάνιση ή απόκρυψη του πλαισίου Εργαλείων για προγραμματιστές</translation>
 <translation id="3554637740840164787">Το στοιχείο <ph name="ITEM_TITLE" /> καρφιτσώθηκε</translation>
@@ -658,6 +660,7 @@
 <translation id="3660860940251915011">Εναλλαγή υψηλής ορατότητας στη λειτουργία <ph name="FEATURE_NAME" /></translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Διαχειριζόμενος χρήστης</translation>
 <translation id="3666266999138159418">Σύρετε για απόκρυψη του κινούμενου παραθύρου</translation>
+<translation id="3673898235958558034">Όταν απενεργοποιήσετε το Bluetooth, οι συσκευές "<ph name="DEVICE_NAME_1" />" και "<ph name="DEVICE_NAME_2" />" θα αποσυνδεθούν από το Chromebook.</translation>
 <translation id="367531336287639526">Επιλογή πρώτου εικονιδίου στα αριστερά της γραμμής διευθύνσεων</translation>
 <translation id="3677931086890821290">Αυτό επιτρέπει σε όλες τις εφαρμογές και τους ιστοτόπους με την άδεια τοποθεσίας και το ChromeOS να χρησιμοποιούν την τοποθεσία σε δίκτυα Wi-Fi και κινητής τηλεφωνίας.</translation>
 <translation id="3679827876008292680">Μετάβαση στην τελευταία καρτέλα στο παράθυρο</translation>
@@ -701,6 +704,7 @@
 <translation id="385300504083504382">Αρχή</translation>
 <translation id="3859364108019690">Δεν είναι δυνατή η ροή εφαρμογών</translation>
 <translation id="3861651314799684201">Press Enter για εγγραφή πλήρους οθόνης</translation>
+<translation id="3882323608730650973">Τροποποιήθηκε</translation>
 <translation id="3886872229787704059">Ανοίχτηκαν σήμερα</translation>
 <translation id="3891340733213178823">Πατήστε Ctrl + Shift + Q δύο φορές για να αποσυνδεθείτε.</translation>
 <translation id="3893630138897523026">ChromeVox (προφορικά σχόλια)</translation>
@@ -869,7 +873,6 @@
 <translation id="4491109536499578614">Εικόνα</translation>
 <translation id="450584155212756404">Κανάλι προγραμματιστών</translation>
 <translation id="4513946894732546136">Σχόλια</translation>
-<translation id="4516212064498225455">Τρέχον γραφείο: <ph name="CURRENT_DESK_NAME" />, χρησιμοποιήστε τη συντόμευση Αναζήτηση+Πλήκτρο διαστήματος για να ανοίξετε το μενού Όλα τα γραφεία.</translation>
 <translation id="4518404433291145981">Για να ξεκλειδώσετε το Chromebook, ξεκλειδώστε πρώτα το τηλέφωνό σας</translation>
 <translation id="4527045527269911712">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης.</translation>
 <translation id="4533343294786968049">Επέκταση της διάρκειας ζωής της μπαταρίας. Η μπαταρία θα φορτιστεί πλήρως έως τις <ph name="FULLY_CHARGE_TIME" />.</translation>
@@ -894,6 +897,7 @@
 <translation id="4582666543382004902">Το σημείο πρόσβασης Wi-Fi απενεργοποιήθηκε για να χρησιμοποιηθεί το Wi-Fi. Για να χρησιμοποιήσετε το σημείο πρόσβασης Wi-Fi, απενεργοποιήστε το Wi-Fi.</translation>
 <translation id="4585337515783392668">Διακοπή μετάδοσης σε άγνωστο δέκτη</translation>
 <translation id="4596144739579517758">Το Σκούρο θέμα είναι απενεργοποιημένο.</translation>
+<translation id="4596442969149038771">Ο χρήστης <ph name="USER" /> μοιράστηκε</translation>
 <translation id="4611292653554630842">Σύνδεση</translation>
 <translation id="462160925400706389">Η συσκευή <ph name="NAME" /> συνδέθηκε.</translation>
 <translation id="4623167406982293031">Επαλήθευση λογαριασμού</translation>
@@ -911,6 +915,7 @@
 <translation id="4666911709726371538">Περισσότερες εφαρμογές</translation>
 <translation id="4667099493359681081">Λήψη <ph name="FILENAME" /></translation>
 <translation id="4672539464599646374">Η Εξοικονόμηση μπαταρίας ενεργοποιήθηκε</translation>
+<translation id="4673427585974421255">Να διατηρηθεί ενεργό</translation>
 <translation id="468293128311738995">Εφαρμογές από το τηλέφωνό σας</translation>
 <translation id="4690510401873698237">Ράφι στο κάτω μέρος</translation>
 <translation id="4696813013609194136">Ξεκλείδωμα συσκευής με κωδικό γονέα</translation>
@@ -1049,7 +1054,6 @@
 <translation id="5207949376430453814">Επισήμανση δρομέα κειμένου</translation>
 <translation id="5208059991603368177">Ενεργό</translation>
 <translation id="5216991270656129561">Ανενεργή έως τις <ph name="TIME" /></translation>
-<translation id="5217646019792206018">Επόμενο γραφείο: <ph name="NEXT_DESK_NAME" />, χρησιμοποιήστε τη συντόμευση Αναζήτηση+Πλήκτρο διαστήματος ή τη συντόμευση πληκτρολογίου: Shift+Αναζήτηση+<ph name="NEXT_DESK_INDEX" /> για ενεργοποίηση.</translation>
 <translation id="5218064144558110424">Επισήμανση ως μη ολοκληρωμένης</translation>
 <translation id="5222676887888702881">Έξοδος</translation>
 <translation id="5229343007215035173">Ενεργοποίηση/απενεργοποίηση οθόνης απορρήτου</translation>
@@ -1211,6 +1215,7 @@
 <translation id="5802516411616338943">Άνοιγμα Γρήγορων ρυθμίσεων</translation>
 <translation id="5804651031882187592">Απενεργοποίηση ρύθμισης Κλείδωμα SIM</translation>
 <translation id="5805809050170488595">Κλικ για ενεργοποίηση <ph name="NETWORK_NAME" /></translation>
+<translation id="5816222150329690597">Όταν απενεργοποιήσετε το Bluetooth, οι συσκευές "<ph name="DEVICE_NAME_1" />", "<ph name="DEVICE_NAME_2" />" και <ph name="DEVICE_COUNT" /> ακόμη συσκευές θα αποσυνδεθούν από το Chromebook.</translation>
 <translation id="5823239091726045201">Google Tasks στον ιστό</translation>
 <translation id="5825969630400862129">Ρυθμίσεις συνδεδεμένων συσκευών</translation>
 <translation id="5837036133683224804">Διακοπή <ph name="ROUTE_TITLE" /> σε <ph name="RECEIVER_NAME" /></translation>
@@ -1337,6 +1342,7 @@
 <translation id="6298183524022479114">Προσαρμογή αυτής της συσκευής στην εφαρμογή</translation>
 <translation id="6309219492973062892">Κλικ ή πάτημα των εικονιδίων ραφιού 1 έως 8</translation>
 <translation id="6315170314923504164">Φωνή</translation>
+<translation id="6319058840130157106">Μετακίνηση προς τα πίσω μεταξύ της κάτω δεξιάς γωνίας, της Εφαρμογής εκκίνησης, της γραμμής διευθύνσεων, της γραμμής σελιδοδεικτών, του ανοιχτού ιστοτόπου και των λήψεων</translation>
 <translation id="6324916366299863871">Επεξεργασία συντόμευσης</translation>
 <translation id="6330012934079202188">Εμφανίζονται παράθυρα από όλα τα γραφεία. Πατήστε το πάνω βέλος για την εμφάνιση παραθύρων από το τρέχον γραφείο</translation>
 <translation id="6338485349199627913">Το <ph name="DISPLAY_NAME" /> είναι μια διαχειριζόμενη περίοδος σύνδεσης την οποία διαχειρίζεται ο τομέας <ph name="MANAGER" />.</translation>
@@ -1390,6 +1396,7 @@
 <translation id="6539852571005954999">Σάρωση του αρχείου <ph name="FILENAME" /> για λήψη</translation>
 <translation id="6542521951477560771">Μετάδοση στη συσκευή <ph name="RECEIVER_NAME" /></translation>
 <translation id="6546062506073634094">Αναζήτηση εικόνων κατά περιεχόμενο και προεπισκοπήσεις εικόνων</translation>
+<translation id="6547795021703527064">Όταν απενεργοποιήσετε το Bluetooth, η συσκευή "<ph name="DEVICE_NAME" />" θα αποσυνδεθεί από το Chromebook.</translation>
 <translation id="6555373427270923730">Πληκτρολογήστε μια διεύθυνση ιστού στη γραμμή διευθύνσεων και έπειτα πατήστε <ph name="MODIFIER" /><ph name="KEY" /></translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Νέα εγκατάσταση</translation>
@@ -1815,6 +1822,7 @@
 <translation id="8314772463905284467">Το Caps Lock είναι ενεργοποιημένο</translation>
 <translation id="8315514906653279104">Ενεργοποίηση…</translation>
 <translation id="8331351032546853669">Λήψη σε εκκρεμότητα</translation>
+<translation id="8339706171276328417"><ph name="ACTION_DESCRIPTION" /> · <ph name="TIME" /></translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8345019317483336363">Επιλέχτηκε το παράθυρο <ph name="WINDOW_TITLE" />.</translation>
 <translation id="8349826889576450703">εφαρμογή εκκίνησης</translation>
@@ -1863,7 +1871,6 @@
 <translation id="8517041960877371778">Δεν είναι δυνατή η φόρτιση της συσκευής <ph name="DEVICE_TYPE" /> ενώ είναι ενεργοποιημένη.</translation>
 <translation id="852060496139946719">{NUM_APPS,plural, =1{Η είσοδος μικροφώνου ελέγχεται από την εφαρμογή <ph name="APP_NAME" />}other{Η είσοδος μικροφώνου ελέγχεται από # εφαρμογές}}</translation>
 <translation id="8535393432370007982">Αναίρεση σειράς ταξινόμησης κατά χρώμα</translation>
-<translation id="853768060447955562">Προηγούμενο γραφείο: <ph name="PREVIOUS_DESK_NAME" />, χρησιμοποιήστε τη συντόμευση Αναζήτηση+Πλήκτρο διαστήματος ή τη συντόμευση πληκτρολογίου: Shift+Αναζήτηση+<ph name="PREVIOUS_DESK_INDEX" /> για ενεργοποίηση.</translation>
 <translation id="8541078764854166027">Καδράρισμα</translation>
 <translation id="8542053257095774575">Δεν υπάρχουν αποθηκευμένα γραφεία ή πρότυπα.</translation>
 <translation id="8546059259582788728">Η αναίρεση ταξινόμησης ήταν επιτυχής</translation>
@@ -1921,6 +1928,7 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, Εγκατεστημένη εφαρμογή, Αποκλείστηκε</translation>
 <translation id="8785070478575117577">Σύνδεση στο δίκτυο <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790632710469941716">Μετακίνηση προς τα εμπρός μεταξύ της κάτω δεξιάς γωνίας, της Εφαρμογής εκκίνησης, της γραμμής διευθύνσεων, της γραμμής σελιδοδεικτών, του ανοιχτού ιστοτόπου και των λήψεων</translation>
 <translation id="8792626944327216835">μικρόφωνο</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">Φάκελος <ph name="FOLDER_NAME" /></translation>
@@ -2027,13 +2035,13 @@
 <translation id="925832987464884575">Απόκρυψη προεπισκοπήσεων</translation>
 <translation id="937214777182567951">Ο τομέας <ph name="MANAGER" /> απαιτεί να ενημερώσετε άμεσα τη συσκευή <ph name="DEVICE_TYPE" /></translation>
 <translation id="938963181863597773">Τι υπάρχει στο ημερολόγιό μου;</translation>
-<translation id="943067377221312471">Προηγούμενο γραφείο: <ph name="PREVIOUS_DESK_NAME" />, χρησιμοποιήστε τη συντόμευση Αναζήτηση+Πλήκτρο διαστήματος για ενεργοποίηση.</translation>
 <translation id="945383118875625837">Σύρετε τον σύνδεσμο στη γραμμή σελιδοδεικτών</translation>
 <translation id="945522503751344254">Αποστολή σχολίων</translation>
 <translation id="951991426597076286">Απόρριψη</translation>
 <translation id="953431725143473984">Να τερματιστεί η λειτουργία της συσκευής;</translation>
 <translation id="954052413789300507">Ο χώρος δεν επαρκεί για το αρχείο <ph name="FILENAME" />. Ελευθερώστε χώρο.</translation>
 <translation id="954520015070501466">30 λεπτά</translation>
+<translation id="954786879461589145">Τροποποιήθηκε από <ph name="USER" /></translation>
 <translation id="974545358917229949">Εμφάνιση <ph name="RESULT_COUNT" /> αποτελεσμάτων για την αναζήτηση <ph name="QUERY" /></translation>
 <translation id="981011780479609956">Χωρίς ημερομηνία λήξης</translation>
 <translation id="98120814841227350">Μετάβαση στο τέλος του εγγράφου</translation>

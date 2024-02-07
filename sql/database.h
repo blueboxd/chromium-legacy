@@ -23,8 +23,8 @@
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -960,9 +960,7 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // The actual sqlite database. Will be null before Init has been called or if
   // Init resulted in an error.
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION sqlite3* db_ = nullptr;
+  raw_ptr<sqlite3> db_ = nullptr;
 
   // TODO(shuagga@microsoft.com): Make `options_` const after removing all
   // setters.
@@ -1025,6 +1023,9 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // Stores the dump provider object when db is open.
   std::unique_ptr<DatabaseMemoryDumpProvider> memory_dump_provider_;
+
+  // Vends WeakPtr<Database> for internal scoping helpers.
+  base::WeakPtrFactory<Database> weak_factory_{this};
 };
 
 }  // namespace sql

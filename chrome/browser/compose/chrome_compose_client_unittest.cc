@@ -37,6 +37,7 @@
 #include "components/optimization_guide/proto/model_quality_service.pb.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/unified_consent/pref_names.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -306,6 +307,12 @@ class ChromeComposeClientTest : public BrowserWithTestWindowTest {
 
   void SetSelection(const std::u16string& selection) {
     field_data().selected_text = selection;
+  }
+
+  // Emulate selected text truncation performed by Autofill.
+  void SetSelectionWithTruncation(const std::u16string& selection,
+                                  size_t max_length) {
+    field_data().selected_text = selection.substr(0, max_length);
   }
 
  protected:
@@ -1117,6 +1124,21 @@ TEST_F(ChromeComposeClientTest, TestCloseUIAtChromeCompose) {
   client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton);
 }
 
+// Tests that an unpaired high surrogate resulting from truncation by substr is
+// properly removed.
+TEST_F(ChromeComposeClientTest, TestOpenDialogWithTruncatedSelectedText) {
+  std::u16string input(u".🦄🦄🦄");
+  field_data().value = input;
+  SetSelectionWithTruncation(input, 6);
+  ShowDialogAndBindMojo();
+
+  base::test::TestFuture<compose::mojom::OpenMetadataPtr> open_test_future;
+  page_handler()->RequestInitialState(open_test_future.GetCallback());
+
+  compose::mojom::OpenMetadataPtr result = open_test_future.Take();
+  EXPECT_EQ(".🦄🦄", result->initial_input);
+}
+
 // Tests that opening the dialog with user selected text will return that text
 // when the WebUI requests initial state.
 TEST_F(ChromeComposeClientTest, TestOpenDialogWithSelectedText) {
@@ -1392,12 +1414,13 @@ TEST_F(ChromeComposeClientTest, BugReportOpensCorrectURL) {
   // Check that the new foreground tab is opened.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  // This test uses GetVisibleURL as it only  verifies that a navigation has
-  // started, regardless of whether it commits or not.
-  // TODO(b/317240589): Refactor to check GetLastCommittedURL.
+  // This test uses web_contents->GetController()->GetPendingEntry() as it only
+  // verifies that a navigation has started, regardless of whether it commits or
+  // not.
   content::WebContents* new_tab_webcontents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_EQ(bug_url, new_tab_webcontents->GetVisibleURL());
+  EXPECT_EQ(bug_url,
+            new_tab_webcontents->GetController().GetPendingEntry()->GetURL());
 }
 
 TEST_F(ChromeComposeClientTest, LearnMoreLinkOpensCorrectURL) {
@@ -1413,12 +1436,13 @@ TEST_F(ChromeComposeClientTest, LearnMoreLinkOpensCorrectURL) {
   // Check that the new foreground tab is opened.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  // This test uses GetVisibleURL as it only verifies that a navigation has
-  // started, regardless of whether it commits or not.
-  // TODO(b/317240589): Refactor to check GetLastCommittedURL.
+  // This test uses web_contents->GetController()->GetPendingEntry() as it only
+  // verifies that a navigation has started, regardless of whether it commits or
+  // not.
   content::WebContents* new_tab_webcontents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_EQ(learn_more_url, new_tab_webcontents->GetVisibleURL());
+  EXPECT_EQ(learn_more_url,
+            new_tab_webcontents->GetController().GetPendingEntry()->GetURL());
 }
 
 TEST_F(ChromeComposeClientTest, SurveyLinkOpensCorrectURL) {
@@ -1434,12 +1458,13 @@ TEST_F(ChromeComposeClientTest, SurveyLinkOpensCorrectURL) {
   // Check that the new foreground tab is opened.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  // This test uses GetVisibleURL as it only verifies that a navigation has
-  // started, regardless of whether it commits or not.
-  // TODO(b/317240589): Refactor to check GetLastCommittedURL.
+  // This test uses web_contents->GetController()->GetPendingEntry() as it only
+  // verifies that a navigation has started, regardless of whether it commits or
+  // not.
   content::WebContents* new_tab_webcontents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_EQ(survey_url, new_tab_webcontents->GetVisibleURL());
+  EXPECT_EQ(survey_url,
+            new_tab_webcontents->GetController().GetPendingEntry()->GetURL());
 }
 
 TEST_F(ChromeComposeClientTest, ResetClientOnNavigation) {
@@ -1449,7 +1474,7 @@ TEST_F(ChromeComposeClientTest, ResetClientOnNavigation) {
   page_handler()->Compose("", false);
 
   autofill::FormFieldData field_2;
-  field_2.unique_renderer_id = autofill::FieldRendererId(2);
+  field_2.renderer_id = autofill::FieldRendererId(2);
   ShowDialogAndBindMojoWithFieldData(field_2);
 
   // There should be two sessions.
@@ -2172,6 +2197,14 @@ TEST_F(ChromeComposeClientTest, TestComposeQualityLoggedOnSubsequentError) {
       base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds(),
       quality_result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
           ->request_latency_ms());
+
+  // Check that histogram was sent for Compose State removed from undo stack.
+  histograms().ExpectBucketCount("Compose.Server.Request.Feedback",
+                                 compose::ComposeRequestFeedback::kNoFeedback,
+                                 0);
+  histograms().ExpectBucketCount("Compose.Server.Request.Feedback",
+                                 compose::ComposeRequestFeedback::kRequestError,
+                                 2);
 }
 
 TEST_F(ChromeComposeClientTest, TestComposeQualityLatency) {
@@ -2283,6 +2316,92 @@ TEST_F(ChromeComposeClientTest,
                 ->final_status());
 }
 
+TEST_F(ChromeComposeClientTest, TestComposeQualityFeedbackPositive) {
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
+  EXPECT_CALL(session(), ExecuteModel(_, _)).Times(1);
+
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future;
+
+  EXPECT_CALL(model_quality_logs_uploader(), UploadModelQualityLogs(_))
+      .WillRepeatedly(testing::Invoke(
+          [&](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
+                  response) {
+            quality_test_future.SetValue(std::move(response));
+          }));
+
+  ShowDialogAndBindMojo();
+  client().GetSessionForActiveComposeField()->SetAllowFeedbackForTesting(true);
+
+  page_handler()->Compose("a user typed this", false);
+  ASSERT_TRUE(compose_future.Take());
+
+  page_handler()->SetUserFeedback(
+      compose::mojom::UserFeedback::kUserFeedbackPositive);
+
+  // Close UI to submit remaining quality logs.
+  client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  // Get quality logs sent for the Compose Request
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> result =
+      quality_test_future.Take();
+
+  EXPECT_EQ(optimization_guide::proto::UserFeedback::USER_FEEDBACK_THUMBS_UP,
+            result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                ->user_feedback());
+
+  // Check that the histogram was sent for request feedback.
+  histograms().ExpectUniqueSample(
+      "Compose.Server.Request.Feedback",
+      compose::ComposeRequestFeedback::kPositiveFeedback, 1);
+}
+
+TEST_F(ChromeComposeClientTest, TestComposeQualityFeedbackNegative) {
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
+  EXPECT_CALL(session(), ExecuteModel(_, _)).Times(1);
+
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future;
+
+  EXPECT_CALL(model_quality_logs_uploader(), UploadModelQualityLogs(_))
+      .WillRepeatedly(testing::Invoke(
+          [&](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
+                  response) {
+            quality_test_future.SetValue(std::move(response));
+          }));
+
+  ShowDialogAndBindMojo();
+  client().GetSessionForActiveComposeField()->SetAllowFeedbackForTesting(true);
+
+  page_handler()->Compose("a user typed this", false);
+  ASSERT_TRUE(compose_future.Take());
+
+  page_handler()->SetUserFeedback(
+      compose::mojom::UserFeedback::kUserFeedbackNegative);
+
+  // Close UI to submit remaining quality logs.
+  client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  // Get quality logs sent for the Compose Request
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> result =
+      quality_test_future.Take();
+
+  EXPECT_EQ(optimization_guide::proto::UserFeedback::USER_FEEDBACK_THUMBS_DOWN,
+            result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                ->user_feedback());
+
+  // Check that the histogram was sent for request feedback.
+  histograms().ExpectUniqueSample(
+      "Compose.Server.Request.Feedback",
+      compose::ComposeRequestFeedback::kNegativeFeedback, 1);
+}
+
 TEST_F(ChromeComposeClientTest, TestComposeQualityWasEdited) {
   ShowDialogAndBindMojo();
 
@@ -2335,6 +2454,14 @@ TEST_F(ChromeComposeClientTest, TestComposeQualityWasEdited) {
   histograms().ExpectBucketCount(compose::kComposeRequestReason,
                                  compose::ComposeRequestReason::kUpdateRequest,
                                  1);
+
+  EXPECT_EQ(optimization_guide::proto::FinalStatus::STATUS_UNSPECIFIED,
+            result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                ->final_status());
+  // Check that the histogram was sent for request feedback.
+  histograms().ExpectUniqueSample("Compose.Server.Request.Feedback",
+                                  compose::ComposeRequestFeedback::kNoFeedback,
+                                  2);
 }
 
 TEST_F(ChromeComposeClientTest, TestRegenerate) {

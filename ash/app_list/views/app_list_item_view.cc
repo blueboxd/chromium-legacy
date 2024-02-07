@@ -1380,7 +1380,7 @@ bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-void AppListItemView::Layout() {
+void AppListItemView::Layout(PassKey) {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty()) {
     return;
@@ -1837,7 +1837,7 @@ void AppListItemView::AnimateInFromPromiseApp(
   // Set up the app list item view so it appears as a promise icon - add a
   // progress ring (in completed state), scale the icon down, and hide the title
   // and the new install indicator.
-  forced_progress_indicator_value_ = 0.999999f;
+  forced_progress_indicator_value_ = ProgressIndicator::kForcedShow;
   UpdateProgressIndicatorState();
 
   prefer_fallback_icon_ = true;
@@ -2313,7 +2313,7 @@ bool AppListItemView::AlwaysPaintsToLayer() {
   return is_promise_app_ || progress_indicator_;
 }
 
-BEGIN_METADATA(AppListItemView, views::Button)
+BEGIN_METADATA(AppListItemView)
 END_METADATA
 
 }  // namespace ash

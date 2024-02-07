@@ -33,6 +33,7 @@ const CGFloat kSeparatorCornerRadius = 1;
 const CGFloat kSeparatorHeight = 18;
 const CGFloat kSeparatorHorizontalInset = 2;
 const CGFloat kSeparatorGradientWidth = 4;
+const CGFloat kSeparatorBackgroundAlpha = 0.3;
 
 // Content view constants.
 const CGFloat kFaviconLeadingMargin = 10;
@@ -41,6 +42,7 @@ const CGFloat kTitleInset = 10;
 const CGFloat kFontSize = 14;
 const CGFloat kFaviconSize = 16;
 const CGFloat kTitleGradientWidth = 16;
+const CGFloat kContentViewBottomInset = 4;
 
 // Selected border background view constants.
 const CGFloat kSelectedBorderBackgroundViewWidth = 8;
@@ -63,11 +65,10 @@ UIImage* DefaultFavicon() {
   GradientView* _titleGradientView;
   UIImageView* _faviconView;
 
-  // Rounded decoration views, visible when the cell is selected.
+  // Decoration views, visible when the cell is selected.
   UIView* _leftTailView;
   UIView* _rightTailView;
-  UIView* _topLeftCornerView;
-  UIView* _topRightCornerView;
+  UIView* _bottomTailView;
 
   // Cell separator.
   UIView* _leadingSeparatorView;
@@ -96,22 +97,24 @@ UIImage* DefaultFavicon() {
   // Separator height constraints.
   NSArray<NSLayoutConstraint*>* _separatorHeightConstraints;
   CGFloat _separatorHeight;
+
+  // whether the view is hovered.
+  BOOL _hovered;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
   if ((self = [super initWithFrame:frame])) {
     self.layer.masksToBounds = NO;
     _decorationLayersUpdated = NO;
+    _hovered = NO;
     _separatorHeight = 0;
+
+    [self addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
 
     UIView* contentView = self.contentView;
     contentView.layer.masksToBounds = YES;
-
-    _topLeftCornerView = [self createTopCornerView];
-    [contentView addSubview:_topLeftCornerView];
-
-    _topRightCornerView = [self createTopCornerView];
-    [contentView addSubview:_topRightCornerView];
+    contentView.layer.cornerRadius = kCornerSize;
+    contentView.translatesAutoresizingMaskIntoConstraints = NO;
 
     _faviconView = [self createFaviconView];
     [contentView addSubview:_faviconView];
@@ -133,11 +136,14 @@ UIImage* DefaultFavicon() {
         [self createSelectedBorderBackgroundView];
     [self addSubview:_rightSelectedBorderBackgroundView];
 
-    _leftTailView = [self createTailView];
+    _leftTailView = [self createDecorationView];
     [self addSubview:_leftTailView];
 
-    _rightTailView = [self createTailView];
+    _rightTailView = [self createDecorationView];
     [self addSubview:_rightTailView];
+
+    _bottomTailView = [self createDecorationView];
+    [self insertSubview:_bottomTailView belowSubview:contentView];
 
     _leadingSeparatorView = [self createSeparatorView];
     [self addSubview:_leadingSeparatorView];
@@ -177,7 +183,7 @@ UIImage* DefaultFavicon() {
 
 - (UIDragPreviewParameters*)dragPreviewParameters {
   UIBezierPath* visiblePath =
-      [UIBezierPath bezierPathWithRoundedRect:self.bounds
+      [UIBezierPath bezierPathWithRoundedRect:self.contentView.bounds
                                  cornerRadius:kCornerSize];
   UIDragPreviewParameters* params = [[UIDragPreviewParameters alloc] init];
   params.visiblePath = visiblePath;
@@ -261,8 +267,7 @@ UIImage* DefaultFavicon() {
   // Update decoration views visibility.
   _leftTailView.hidden = !selected;
   _rightTailView.hidden = !selected;
-  _topLeftCornerView.hidden = !selected;
-  _topRightCornerView.hidden = !selected;
+  _bottomTailView.hidden = !selected;
   [self setLeftSelectedBorderBackgroundViewHidden:YES];
   [self setRightSelectedBorderBackgroundViewHidden:YES];
 
@@ -301,10 +306,53 @@ UIImage* DefaultFavicon() {
   [self setFaviconImage:nil];
 }
 
+- (void)setHighlighted:(BOOL)highlighted {
+  [super setHighlighted:highlighted];
+  [self updateColors];
+}
+
+- (void)dragStateDidChange:(UICollectionViewCellDragState)dragState {
+  [super dragStateDidChange:dragState];
+  [self updateColors];
+}
+
 #pragma mark - UITraitEnvironment
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+  [self updateColors];
+}
+
+#pragma mark - UIPointerInteractionDelegate
+
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region {
+  UIPointerHoverEffect* effect = [UIPointerHoverEffect
+      effectWithPreview:[[UITargetedPreview alloc]
+                            initWithView:self.contentView
+                              parameters:[self dragPreviewParameters]]];
+  effect.prefersScaledContent = NO;
+  effect.prefersShadow = NO;
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+
+- (void)pointerInteraction:(UIPointerInteraction*)interaction
+           willEnterRegion:(UIPointerRegion*)region
+                  animator:(id<UIPointerInteractionAnimating>)animator {
+  _hovered = YES;
+  [self updateColors];
+}
+
+- (void)pointerInteraction:(UIPointerInteraction*)interaction
+            willExitRegion:(UIPointerRegion*)region
+                  animator:(id<UIPointerInteractionAnimating>)animator {
+  _hovered = NO;
   [self updateColors];
 }
 
@@ -334,18 +382,6 @@ UIImage* DefaultFavicon() {
   _rightTailView.layer.mask = rightTailMaskLayer;
   _rightTailView.transform = CGAffineTransformMakeScale(-1, 1);
 
-  // Round the top left corner.
-  CAShapeLayer* topLeftCornerLayer = [CAShapeLayer layer];
-  topLeftCornerLayer.path = cornerPath.CGPath;
-  _topLeftCornerView.layer.mask = topLeftCornerLayer;
-  _topLeftCornerView.transform = CGAffineTransformMakeScale(-1, -1);
-
-  // Round the top right corner.
-  CAShapeLayer* topRightCornerLayer = [CAShapeLayer layer];
-  topRightCornerLayer.path = cornerPath.CGPath;
-  _topRightCornerView.layer.mask = topRightCornerLayer;
-  _topRightCornerView.transform = CGAffineTransformMakeScale(1, -1);
-
   // Setup and mirror separator gradient views if needed.
   _leadingSeparatorGradientView.hidden = YES;
   _trailingSeparatorGradientView.hidden = YES;
@@ -362,9 +398,21 @@ UIImage* DefaultFavicon() {
 
 // Updates view colors.
 - (void)updateColors {
-  UIColor* backgroundColor = self.selected
-                                 ? [UIColor colorNamed:kPrimaryBackgroundColor]
-                                 : [UIColor colorNamed:kGrey200Color];
+  UIColor* backgroundColor;
+  if (self.isHighlighted || self.configurationState.cellDragState !=
+                                UICellConfigurationDragStateNone) {
+    // Before a cell is dragged, it is highlighted.
+    // The cell's background color must be updated at this moment, otherwise it
+    // will not be applied correctly.
+    backgroundColor = [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
+  } else if (_hovered) {
+    backgroundColor = [UIColor colorNamed:kTertiaryBackgroundColor];
+  } else {
+    backgroundColor =
+        self.isSelected ? [UIColor colorNamed:kGroupedSecondaryBackgroundColor]
+                        : [UIColor colorNamed:kTabStripBackgroundColor];
+  }
+
   // Needed to correctly update the `_titleGradientView` colors in incognito.
   backgroundColor =
       [backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
@@ -436,6 +484,15 @@ UIImage* DefaultFavicon() {
 
   UIView* contentView = self.contentView;
 
+  /// `contentView` constraints.
+  [NSLayoutConstraint activateConstraints:@[
+    [contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [contentView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [contentView.topAnchor constraintEqualToAnchor:self.topAnchor],
+    [contentView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
+                                             constant:-kContentViewBottomInset]
+  ]];
+
   /// `leadingImageGuide` constraints.
   [NSLayoutConstraint activateConstraints:@[
     [leadingImageGuide.leadingAnchor
@@ -502,22 +559,6 @@ UIImage* DefaultFavicon() {
         constraintEqualToAnchor:_titleContainer.centerYAnchor],
   ]];
 
-  /// `_topLeftCornerView` and `_topRightCornerView` constraints.
-  [NSLayoutConstraint activateConstraints:@[
-    [_topLeftCornerView.leftAnchor
-        constraintEqualToAnchor:contentView.leftAnchor],
-    [_topLeftCornerView.topAnchor
-        constraintEqualToAnchor:contentView.topAnchor],
-    [_topLeftCornerView.widthAnchor constraintEqualToConstant:kCornerSize],
-    [_topLeftCornerView.heightAnchor constraintEqualToConstant:kCornerSize],
-
-    [_topRightCornerView.rightAnchor
-        constraintEqualToAnchor:contentView.rightAnchor],
-    [_topRightCornerView.topAnchor
-        constraintEqualToAnchor:contentView.topAnchor],
-    [_topRightCornerView.widthAnchor constraintEqualToConstant:kCornerSize],
-    [_topRightCornerView.heightAnchor constraintEqualToConstant:kCornerSize],
-  ]];
 
   /// `_leftSelectedBorderBackgroundView` and
   /// `_rightSelectedBorderBackgroundView constraints.
@@ -541,19 +582,24 @@ UIImage* DefaultFavicon() {
         constraintEqualToAnchor:contentView.centerYAnchor],
   ]];
 
-  /// `_leftTailView` and `_rightTailView` constraints.
+  /// `_leftTailView`, `_rightTailView` and `_bottomTailView` constraints.
   [NSLayoutConstraint activateConstraints:@[
     [_leftTailView.rightAnchor constraintEqualToAnchor:contentView.leftAnchor],
-    [_leftTailView.bottomAnchor
-        constraintEqualToAnchor:contentView.bottomAnchor],
+    [_leftTailView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
     [_leftTailView.widthAnchor constraintEqualToConstant:kCornerSize],
     [_leftTailView.heightAnchor constraintEqualToConstant:kCornerSize],
 
     [_rightTailView.leftAnchor constraintEqualToAnchor:contentView.rightAnchor],
-    [_rightTailView.bottomAnchor
-        constraintEqualToAnchor:contentView.bottomAnchor],
+    [_rightTailView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
     [_rightTailView.widthAnchor constraintEqualToConstant:kCornerSize],
     [_rightTailView.heightAnchor constraintEqualToConstant:kCornerSize],
+
+    [_bottomTailView.leadingAnchor
+        constraintEqualToAnchor:contentView.leadingAnchor],
+    [_bottomTailView.trailingAnchor
+        constraintEqualToAnchor:contentView.trailingAnchor],
+    [_bottomTailView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+    [_bottomTailView.heightAnchor constraintEqualToConstant:kCornerSize],
   ]];
 
   /// `_leadingSeparatorView` constraints.
@@ -622,7 +668,7 @@ UIImage* DefaultFavicon() {
 // Returns a new close button.
 - (UIButton*)createCloseButton {
   UIImage* closeSymbol =
-      DefaultSymbolWithPointSize(kXMarkCircleFillSymbol, kCloseButtonSize);
+      DefaultSymbolWithPointSize(kXMarkSymbol, kCloseButtonSize);
   UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
   closeButton.translatesAutoresizingMaskIntoConstraints = NO;
   [closeButton
@@ -637,6 +683,7 @@ UIImage* DefaultFavicon() {
   [closeButton addTarget:self
                   action:@selector(closeButtonTapped:)
         forControlEvents:UIControlEventTouchUpInside];
+  closeButton.pointerInteractionEnabled = YES;
   return closeButton;
 }
 
@@ -655,9 +702,9 @@ UIImage* DefaultFavicon() {
 // Returns a new gradient view.
 - (GradientView*)createGradientView {
   GradientView* gradientView = [[GradientView alloc]
-      initWithStartColor:[[UIColor colorNamed:kGrey200Color]
+      initWithStartColor:[[UIColor colorNamed:kTabStripBackgroundColor]
                              colorWithAlphaComponent:0]
-                endColor:[UIColor colorNamed:kGrey200Color]
+                endColor:[UIColor colorNamed:kTabStripBackgroundColor]
               startPoint:CGPointMake(0.0f, 0.5f)
                 endPoint:CGPointMake(1.0f, 0.5f)];
   gradientView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -687,37 +734,38 @@ UIImage* DefaultFavicon() {
   return activityIndicator;
 }
 
-// Returns a new tail view.
-- (UIView*)createTailView {
+// Returns a new decoration view.
+- (UIView*)createDecorationView {
   UIView* tailView = [[UIView alloc] init];
-  tailView.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
+  tailView.backgroundColor =
+      [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
   tailView.translatesAutoresizingMaskIntoConstraints = NO;
+  tailView.clipsToBounds = NO;
   tailView.hidden = YES;
   return tailView;
-}
-
-// Returns a new top corner view.
-- (UIView*)createTopCornerView {
-  UIView* topCornerView = [[UIView alloc] init];
-  topCornerView.backgroundColor = [UIColor colorNamed:kGrey200Color];
-  topCornerView.translatesAutoresizingMaskIntoConstraints = NO;
-  topCornerView.hidden = YES;
-  return topCornerView;
 }
 
 // Returns a new separator view.
 - (UIView*)createSeparatorView {
   UIView* separatorView = [[UIView alloc] init];
-  separatorView.backgroundColor = [UIColor colorNamed:kGrey400Color];
+  separatorView.backgroundColor = [UIColor colorNamed:kTabStripBackgroundColor];
   separatorView.translatesAutoresizingMaskIntoConstraints = NO;
   separatorView.layer.cornerRadius = kSeparatorCornerRadius;
+
+  UIView* backgroundView = [[UIView alloc] init];
+  backgroundView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  backgroundView.backgroundColor = [[UIColor colorNamed:kTextSecondaryColor]
+      colorWithAlphaComponent:kSeparatorBackgroundAlpha];
+  [separatorView addSubview:backgroundView];
   return separatorView;
 }
 
 // Returns a new selected border background view.
 - (UIView*)createSelectedBorderBackgroundView {
   UIView* backgroundView = [[UIView alloc] init];
-  backgroundView.backgroundColor = [UIColor colorNamed:kGrey200Color];
+  backgroundView.backgroundColor =
+      [UIColor colorNamed:kTabStripBackgroundColor];
   backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
   backgroundView.hidden = YES;
   return backgroundView;

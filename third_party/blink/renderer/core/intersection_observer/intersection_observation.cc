@@ -38,8 +38,8 @@ IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
 int64_t IntersectionObservation::ComputeIntersection(
     unsigned compute_flags,
     gfx::Vector2dF accumulated_scroll_delta_since_last_update,
-    absl::optional<base::TimeTicks>& monotonic_time,
-    absl::optional<IntersectionGeometry::RootGeometry>& root_geometry) {
+    std::optional<base::TimeTicks>& monotonic_time,
+    std::optional<IntersectionGeometry::RootGeometry>& root_geometry) {
   DCHECK(Observer());
   cached_rects_.min_scroll_delta_to_update -=
       accumulated_scroll_delta_since_last_update;
@@ -70,10 +70,18 @@ int64_t IntersectionObservation::ComputeIntersection(
   }
 
   unsigned geometry_flags = GetIntersectionGeometryFlags(compute_flags);
+  // The policy for honoring margins is the same as that for reporting root
+  // bounds, so this flag can be used for both.
+  bool honor_margins =
+      geometry_flags & IntersectionGeometry::kShouldReportRootBounds;
+  Vector<Length> empty_margin;
   IntersectionGeometry geometry(
-      observer_->root(), *Target(), observer_->RootMargin(),
-      observer_->thresholds(), observer_->TargetMargin(),
-      observer_->ScrollMargin(), geometry_flags, root_geometry, &cached_rects_);
+      observer_->root(), *Target(),
+      honor_margins ? observer_->RootMargin() : empty_margin,
+      observer_->thresholds(),
+      honor_margins ? observer_->TargetMargin() : empty_margin,
+      honor_margins ? observer_->ScrollMargin() : empty_margin, geometry_flags,
+      root_geometry, &cached_rects_);
 
 #if CHECK_SKIPPED_UPDATE_ON_SCROLL()
   if (cached_rects_backup) {
@@ -177,7 +185,7 @@ bool IntersectionObservation::CanUseCachedRectsForTesting() const {
   // This is to avoid the side effects of IntersectionGeometry.
   IntersectionGeometry::CachedRects cached_rects_copy = cached_rects_;
 
-  absl::optional<IntersectionGeometry::RootGeometry> root_geometry;
+  std::optional<IntersectionGeometry::RootGeometry> root_geometry;
   IntersectionGeometry geometry(observer_->root(), *target_,
                                 /* root_margin */ {},
                                 /* thresholds */ {0},

@@ -190,6 +190,11 @@
     "expiry_milestone": 125
   },
   {
+    "name": "android-tab-group-stable-ids",
+    "owners": [ "ckitagawa@chromium.org", "clank-tab-dev@google.com" ],
+    "expiry_milestone": 130
+  },
+  {
     "name": "animated-image-drag-shadow",
     "owners": [ "shuyng@google.com", "wenyufu@chromium.org", "clank-app-team@google.com" ],
     "expiry_milestone": 124
@@ -757,6 +762,11 @@
     "expiry_milestone": 125
   },
   {
+    "name": "automatic-fullscreen-content-setting",
+    "owners": [ "msw@chromium.org", "web-windowing-team@google.com" ],
+    "expiry_milestone": 140
+  },
+  {
     "name": "auxiliary-search-donation",
     "owners": [ "gangwu@chromium.org", "chrome-mobile-search@google.com" ],
     "expiry_milestone": 140
@@ -1038,6 +1048,22 @@
       "openscreen-eng@chromium.org"
     ],
     "expiry_milestone": 140
+  },
+  {
+    "name": "campbell-glyph",
+    "owners": [
+      "tbarzic@chromiu.org",
+      "chromeos-launcher@google.com"
+    ],
+    "expiry_milestone": 124
+  },
+  {
+    "name": "campbell-key",
+    "owners": [
+      "tbarzic@chromiu.org",
+      "chromeos-launcher@google.com"
+    ],
+    "expiry_milestone": 124
   },
   {
     "name": "canvas-2d-layers",
@@ -1542,6 +1568,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "css-gamut-mapping",
+    "owners": ["ccameron@google.com", "aaronhk@google.com", "chrome-canvas-team@google.com"],
+    "expiry_milestone": 126
+  },
+  {
     "name": "cups-ipp-printing-backend",
     "owners": [ "awscreen@chromium.org", "//printing/OWNERS" ],
     "expiry_milestone": 124
@@ -1582,6 +1613,11 @@
     "name": "darken-websites-checkbox-in-themes-setting",
     "owners": [ "nemco@google.com", "wenyufu@google.com", "twellington@chromium.org" ],
     "expiry_milestone": 125
+  },
+  {
+    "name": "data-sharing-android",
+    "owners": [ "haileywang@google.com" ],
+    "expiry_milestone": 140
   },
   {
     "name": "dcheck-is-fatal",
@@ -1763,6 +1799,11 @@
     "name": "disable-lacros-tts-support",
     "owners": [ "dtseng@chromium.org" ],
     "expiry_milestone": 120
+  },
+  {
+    "name": "disable-lens-camera",
+    "owners": [ "hujasonx@google.com" ],
+    "expiry_milestone": 130
   },
   {
     "name": "disable-office-editing-component-app",
@@ -2207,6 +2248,11 @@
     "name": "enable-cast-streaming-av1",
     "owners": [ "jophba@chromium.org", "openscreen-eng@chromium.org" ],
     "expiry_milestone": 135
+  },
+  {
+    "name": "enable-cast-streaming-mac-hardware-h264",
+    "owners": [ "jophba@chromium.org", "openscreen-eng@chromium.org" ],
+    "expiry_milestone": 148
   },
   {
     "name": "enable-cast-streaming-vp9",
@@ -2685,7 +2731,7 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-experimental-webassembly-stack-switching",
+    "name": "enable-experimental-webassembly-jspi",
     "owners": [ "fgm@chromium.org", "thibaudm@chromium.org", "wasm-team@google.com" ],
     // This flag is used by developers and partners to test
     // stack switching features in WebAssembly.
@@ -2917,6 +2963,11 @@
       "xhwang@chromium.org", "media-dev@chromium.org"
     ],
     "expiry_milestone": 130
+  },
+  {
+    "name": "enable-heatmap-palm-detection",
+    "owners": [ "jiwan@chromium.org", "robsc@chromium.org", "hbarnor@chromium.org" ],
+    "expiry_milestone": 140
   },
   {
     "name": "enable-heavy-ad-intervention",
@@ -3315,11 +3366,6 @@
     "name": "enable-policy-test-page-ios",
     "owners": [ "scobici@google.com", "ydago@google.com", "//components/policy/OWNERS" ],
     "expiry_milestone": 128
-  },
-  {
-    "name": "enable-power-sounds",
-    "owners": [ "afakhry@chromium.org", "bicioglu@chromium.org", "hongyulong@chromium.org", "nupurjain@chromium.org" ],
-    "expiry_milestone": 130
   },
   {
     "name": "enable-preferences-account-storage",
@@ -3820,27 +3866,12 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-webassembly-garbage-collection",
-    "owners": [ "adamk@chromium.org", "jkummerow@chromium.org", "wasm-team@google.com" ],
-    "expiry_milestone": 122
-  },
-  {
     "name": "enable-webassembly-lazy-compilation",
     "owners": [ "clemensb@chromium.org", "wasm-team@google.com" ],
     // This flag is often used by developers and partners to test
     // impact on performance or startup time if lazy compilation is
     // disabled and thus all code is compiled ahead of time.
     "expiry_milestone": -1
-  },
-  {
-    "name": "enable-webassembly-relaxed-simd",
-    "owners": [ "gdeepti@chromium.org", "wasm-team@google.com" ],
-    "expiry_milestone": 120
-  },
-  {
-    "name": "enable-webassembly-stringref",
-    "owners": [ "adamk@chromium.org", "jkummerow@chromium.org", "wasm-team@google.com" ],
-    "expiry_milestone": 122
   },
   {
     "name": "enable-webassembly-tiering",
@@ -4960,11 +4991,6 @@
     "expiry_milestone": 140
   },
   {
-    "name": "ios-payments-bottom-sheet",
-    "owners": ["veronguyen@chromium.org", "sugoi@chromium.org", "tmartino@chromium.org", "bling-integrations-team@google.com"],
-    "expiry_milestone": 120
-  },
-  {
     "name": "ios-shared-highlighting-color-change",
     "owners": [ "cheickcisse@google.com" ],
     "expiry_milestone": 95
@@ -5451,6 +5477,11 @@
     "expiry_milestone": 125
   },
   {
+    "name": "minor-mode-restrictions-for-history-sync-opt-in",
+    "owners": [ "tju@chromium.org", "chrome-kids-team@google.com"],
+    "expiry_milestone": 127
+  },
+  {
     "name": "minutes-delay-to-restore-gaia-cookies-if-deleted",
     "owners": ["jlebel@chromium.org", "chrome-signin-team@google.com"],
     // Used for automated testing of Gaia cookie restoration in iOS.
@@ -5526,15 +5557,6 @@
     "name": "new-overflow-menu",
     "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 115
-  },
-  {
-    "name": "notification-interaction-history",
-    "owners": [
-      "sideyilmaz@chromium.org",
-      "msramek@chromium.org",
-      "chrome-privacy-controls@google.com"
-    ],
-    "expiry_milestone": 120
   },
   {
     "name": "notification-one-tap-unsubscribe",
@@ -5965,6 +5987,14 @@
   {
     "name": "omnibox-keyword-mode-refresh",
     "owners": [ "orinj@chromium.org", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 130
+  },
+  {
+    "name": "omnibox-limit-keyword-mode-suggestions",
+    "owners": [
+      "yoangela@chromium.org",
+      "chrome-omnibox-team@google.com"
+    ],
     "expiry_milestone": 130
   },
   {
@@ -6507,6 +6537,15 @@
     "expiry_milestone": 123
   },
   {
+    "name": "prerender2",
+    "owners": [
+      "//content/browser/preloading/prerender/OWNERS"
+    ],
+    // This flag is used for QA & debugging on ChromeOS, which has no way to
+    // customize switches. See https://crbug.com/1494471.
+    "expiry_milestone": -1
+  },
+  {
     "name": "price-change-module",
     "owners": [ "yuezhanggg@chromium.org", "chrome-shopping-eng@google.com" ],
     "expiry_milestone": 125
@@ -6531,6 +6570,13 @@
   },
   {
     "name": "print-management-setup-assistance",
+    "owners": [
+      "//ash/webui/print_management/OWNERS"
+    ],
+    "expiry_milestone": 130
+  },
+  {
+    "name": "print-preview-cros-app",
     "owners": [
       "//ash/webui/print_management/OWNERS"
     ],
@@ -7121,7 +7167,7 @@
       "xinghuilu@chromium.org",
       "chrome-counter-abuse-alerts@google.com"
     ],
-    "expiry_milestone": 123
+    "expiry_milestone": 126
   },
   {
     "name": "safety-check-extensions",
@@ -7372,11 +7418,6 @@
     "name": "shopping-page-types",
     "owners": [ "yuezhanggg@chromium.org", "chrome-shopping-eng@google.com" ],
     "expiry_milestone": 120
-  },
-  {
-    "name": "shortcut-customization-jelly",
-    "owners": [ "jimmyxgong@chromium.org", "zentaro@chromium.org", "cros-peripherals@google.com" ],
-    "expiry_milestone": 122
   },
   {
     "name": "show-autofill-type-predictions",
@@ -7823,11 +7864,6 @@
     "expiry_milestone": 120
   },
   {
-    "name": "theora-video-codec",
-    "owners": ["dalecurtis@chromium.org"],
-    "expiry_milestone": 123
-  },
-  {
     "name": "third-party-cookie-deprecation-trial",
     "owners": [
       "//chrome/browser/tpcd/OWNERS"
@@ -8259,13 +8295,8 @@
   },
   {
     "name": "video-conference",
-    "owners": [ "shafron@chromium.org", "newcomer@chromium.org", "charleszhao@chromium.org", "jmpollock@chromium.org" ],
-    "expiry_milestone": 120
-  },
-  {
-    "name": "video-toolbox-av1-decoding",
-    "owners": [ "dalecurtis@chromium.org", "sandersd@chromium.org" ],
-    "expiry_milestone": 123
+    "owners": [ "newcomer@chromium.org", "charleszhao@chromium.org", "jmpollock@chromium.org", "chromeos-camera-eng@google.com" ],
+    "expiry_milestone": 129
   },
   {
     "name": "view-transition-on-navigation",

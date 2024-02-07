@@ -178,6 +178,8 @@ void QuickStartController::ForceEnableQuickStart() {
   }
 
   InitTargetDeviceBootstrapController();
+  QS_LOG(INFO) << "Force enabling LocalPasswordsForConsumers!";
+  ash::features::ForceEnableLocalPasswordsForConsumers();
 }
 
 void QuickStartController::DetermineEntryPointVisibility(
@@ -361,6 +363,8 @@ void QuickStartController::OnStatusChanged(
       }
       AbortFlow(AbortFlowReason::ERROR);
       return;
+    case Step::FLOW_ABORTED:
+      [[fallthrough]];
     case Step::SETUP_COMPLETE:
       return;
   }
@@ -494,6 +498,7 @@ void QuickStartController::HandleTransitionToQuickStartScreen() {
     // show the last step of the flow.
     if (controller_state_ == ControllerState::SETUP_COMPLETE) {
       UpdateUiState(UiState::SETUP_COMPLETE);
+      SavePhoneInstanceID();
       bootstrap_controller_->OnSetupComplete();
       return;
     }
@@ -560,7 +565,6 @@ void QuickStartController::FinishAccountCreation() {
   CHECK(!gaia_creds_.email.empty());
   CHECK(!gaia_creds_.gaia_id.empty());
 
-  SavePhoneInstanceID();
   UpdateUiState(UiState::CREATING_ACCOUNT);
   controller_state_ = ControllerState::SETUP_COMPLETE;
 

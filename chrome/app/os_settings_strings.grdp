@@ -2449,8 +2449,8 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_CROSTINI_LABEL" desc="The text associated with the primary section setting. This contains settings for a Linux container running in a virtual machine for use by software developers.">
     Linux development environment
   </message>
-  <message name="IDS_OS_SETTINGS_REVAMP_CROSTINI_SET_UP" desc="Crostini Set up button label.">
-    Set Up
+  <message name="IDS_OS_SETTINGS_REVAMP_CROSTINI_SET_UP" desc="The label for the button that, when clicked, opens the Crostini setup flow.">
+    Set up
   </message>
   <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_LOCATE" desc="Instructions for how to locate shared folders in Crostini.">
     Shared folders are available in Linux at <ph name="BASE_DIR">$1<ex>/mnt/chromeos</ex></ph>.
@@ -6573,14 +6573,14 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
   <message name="IDS_OS_SETTINGS_SYSTEM_PREFERENCES_MENU_ITEM_DESCRIPTION" desc="Description for the System Preferences menu item in the left menu. This static list describes device storage, battery/energy saver, and language settings.">
     Storage, power, language
   </message>
-  <message name="IDS_OS_SETTINGS_SYSTEM_PREFERENCES_MULTITASKING_TITLE" desc="The title of the Multitasking settings card in the System Preferences page." translateable="false">
-    Multitasking
+  <message name="IDS_OS_SETTINGS_SYSTEM_PREFERENCES_MULTITASKING_TITLE" desc="The title of the Multitasking settings card in the System Preferences page.">
+    Windows and desks
   </message>
-  <message name="IDS_OS_SETTINGS_SYSTEM_PREFERENCES_MULTITASKING_SNAP_WINDOW_LABEL" desc="The title of the Multitasking settings card in the System Preferences page." translateable="false">
-    Show window snap suggestions
+  <message name="IDS_OS_SETTINGS_SYSTEM_PREFERENCES_MULTITASKING_SNAP_WINDOW_LABEL" desc="The title of the Multitasking settings card in the System Preferences page.">
+    Show window suggestions when starting split-screen
   </message>
-  <message name="IDS_OS_SETTINGS_SYSTEM_PREFERENCES_MULTITASKING_SNAP_WINDOW_DESCRIPTION" desc="The title of the Multitasking settings card in the System Preferences page." translateable="false">
-    If you snap a window, you'll see window suggestions for the other side
+  <message name="IDS_OS_SETTINGS_SYSTEM_PREFERENCES_MULTITASKING_SNAP_WINDOW_DESCRIPTION" desc="The title of the Multitasking settings card in the System Preferences page.">
+    If you snap a window to one side to use split-screen, you'll see window suggestions for the other side
   </message>
   <message name="IDS_OS_SETTINGS_SYSTEM_PREFERENCES_STORAGE_AND_POWER_TITLE" desc="The title of the Storage and Power settings card in the System Preferences page.">
     Storage and power

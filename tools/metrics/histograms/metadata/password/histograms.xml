@@ -52,6 +52,11 @@ chromium-metrics-reviews@google.com.
   <variant name="PasswordFieldOnFocus" summary="on focus event"/>
 </variants>
 
+<variants name="PasswordStoreAndroidBackendType">
+  <variant name="Account" summary="account store"/>
+  <variant name="Local" summary="local store"/>
+</variants>
+
 <variants name="PasswordStoreBackendFunction">
   <variant name="AddLoginAsync" summary="AddLoginAsync()"/>
   <variant name="DisableAutoSignInForOriginsAsync"
@@ -84,6 +89,13 @@ chromium-metrics-reviews@google.com.
 <variants name="ProfileType">
   <variant name="Account"/>
   <variant name="LocalProfile"/>
+</variants>
+
+<variants name="RetriedOperation">
+  <variant name=""/>
+  <variant name=".GetAllLoginsAsync" summary="GetAllLoginsAsync"/>
+  <variant name=".GetAutofillableLoginsAsync"
+      summary="GetAutofillableLoginsAsync"/>
 </variants>
 
 <variants name="Scheme">
@@ -301,7 +313,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordGeneration.EditsInGeneratedPassword.AlteredLengthIncreased"
-    enum="GeneratedPasswordAlteredLengthIncreased" expires_after="2024-05-26">
+    enum="GeneratedPasswordAlteredLengthIncreased" expires_after="2024-08-04">
   <owner>kazinova@google.com</owner>
   <owner>shaikhitdin@google.com</owner>
   <summary>
@@ -634,7 +646,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AddCredentialFromSettings.AccountStoreUsed2"
-    enum="Boolean" expires_after="2024-04-12">
+    enum="Boolean" expires_after="2024-08-04">
   <owner>mamir@google.com</owner>
   <summary>
     Tracks which store is used when the user adds a new credential from
@@ -714,7 +726,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationFetcher.FailedToParseResponse"
-    enum="Boolean" expires_after="M123">
+    enum="Boolean" expires_after="M126">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -771,7 +783,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationFetcher.ResponseSize.{Status}"
-    units="bytes" expires_after="M123">
+    units="bytes" expires_after="M126">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -950,7 +962,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.InsecureCredentials.Count"
-    units="credentials" expires_after="2024-06-02">
+    units="credentials" expires_after="2024-08-04">
   <owner>eic@google.com</owner>
   <owner>noemies@google.com</owner>
   <summary>
@@ -1035,7 +1047,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.UserAction.IOS.General"
-    enum="PasswordCheckInteractionIOSWithoutContext" expires_after="2024-06-02">
+    enum="PasswordCheckInteractionIOSWithoutContext" expires_after="2024-08-04">
   <owner>eic@google.com</owner>
   <owner>noemies@google.com</owner>
   <summary>
@@ -1356,7 +1368,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.FilledCredentialWasFromAndroidApp2"
-    enum="PasswordManagerFilledAndroidCredentials" expires_after="M126">
+    enum="PasswordManagerFilledAndroidCredentials" expires_after="2024-08-04">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1417,7 +1429,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.FillingSuccessIOS" enum="BooleanSuccess"
-    expires_after="2024-06-02">
+    expires_after="2024-08-04">
   <owner>theocristea@google.com</owner>
   <owner>kazinova@google.com</owner>
   <owner>vsemeniuk@google.com</owner>
@@ -1508,7 +1520,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.HttpPasswordMigrationCount2"
-    units="saved credentials" expires_after="2024-06-02">
+    units="saved credentials" expires_after="2024-08-04">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2058,7 +2070,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MoveUIDismissalReason{UserSyncingType}"
-    enum="PasswordManagerUIDismissalReason" expires_after="2024-06-02">
+    enum="PasswordManagerUIDismissalReason" expires_after="2024-08-04">
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -2236,7 +2248,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PasswordManager.PasswordGenerationBottomSheet.InteractionResult"
     enum="PasswordManager.PasswordGenerationBottomSheet.InteractionResult"
-    expires_after="2024-06-02">
+    expires_after="2024-08-04">
   <owner>atsvirchkova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2297,7 +2309,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.PasswordMigrationWarning.SheetStateAtClosing"
     enum="PasswordMigrationWarningSheetStateAtClosing"
-    expires_after="2024-06-02">
+    expires_after="2024-08-04">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2307,7 +2319,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordMigrationWarning.Trigger"
-    enum="PasswordMigrationWarningTriggers" expires_after="2024-06-02">
+    enum="PasswordMigrationWarningTriggers" expires_after="2024-08-04">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2317,7 +2329,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordMigrationWarning.UserAction"
-    enum="PasswordMigrationWarningUserActions" expires_after="2024-06-02">
+    enum="PasswordMigrationWarningUserActions" expires_after="2024-08-04">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2658,24 +2670,7 @@ chromium-metrics-reviews@google.com.
     asynchronous call comes back with an error and it is checked that operation
     could be retried. This is only recorded for GMS API errors on Android.
   </summary>
-  <token key="Operation">
-    <variant name=""/>
-    <variant name=".AddLoginAsync" summary="AddLogin"/>
-    <variant name=".DisableAutoSignInForOriginsAsync"
-        summary="DisableAutoSignInForOrigins"/>
-    <variant name=".FillMatchingLoginsAsync" summary="FillMatchingLogins"/>
-    <variant name=".GetAllLoginsAsync" summary="GetAllLogins"/>
-    <variant name=".GetAllLoginsForAccountAsync"
-        summary="GetAllLoginsForAccount"/>
-    <variant name=".GetAutofillableLoginsAsync"
-        summary="GetAutofillableLogins"/>
-    <variant name=".RemoveLoginAsync" summary="RemoveLogin"/>
-    <variant name=".RemoveLoginsByURLAndTimeAsync"
-        summary="RemoveLoginsByURLAndTime"/>
-    <variant name=".RemoveLoginsCreatedBetweenAsync"
-        summary="RemoveLoginsCreatedBetween"/>
-    <variant name=".UpdateLoginAsync" summary="UpdateLogin"/>
-  </token>
+  <token key="Operation" variants="RetriedOperation"/>
 </histogram>
 
 <histogram
@@ -2691,24 +2686,67 @@ chromium-metrics-reviews@google.com.
     API errors on Android. Note: This histogram expired after M120. Data might
     be incomplete before M122, Jan 4 2023.
   </summary>
-  <token key="Operation">
-    <variant name=""/>
-    <variant name=".AddLoginAsync" summary="AddLoginAsync"/>
-    <variant name=".DisableAutoSignInForOriginsAsync"
-        summary="DisableAutoSignInForOriginsAsync"/>
-    <variant name=".FillMatchingLoginsAsync" summary="FillMatchingLoginsAsync"/>
-    <variant name=".GetAllLoginsAsync" summary="GetAllLoginsAsync"/>
-    <variant name=".GetAllLoginsForAccountAsync"
-        summary="GetAllLoginsForAccountAsync"/>
-    <variant name=".GetAutofillableLoginsAsync"
-        summary="GetAutofillableLoginsAsync"/>
-    <variant name=".RemoveLoginAsync" summary="RemoveLoginAsync"/>
-    <variant name=".RemoveLoginsByURLAndTimeAsync"
-        summary="RemoveLoginsByURLAndTimeAsync"/>
-    <variant name=".RemoveLoginsCreatedBetweenAsync"
-        summary="RemoveLoginsCreatedBetweenAsync"/>
-    <variant name=".UpdateLoginAsync" summary="UpdateLoginAsync"/>
-  </token>
+  <token key="Operation" variants="RetriedOperation"/>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.Retry{Operation}.CancelledAtAttempt"
+    units="Times" expires_after="2024-07-07">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records which attempt was ongoing when the posted retry was cancelled for
+    {Operation}. Recorded when the sync state changes and the callback which was
+    supposed to be invoked after the attempt's delay is invalidated. Note that
+    the original attempt to call the method counts as attempt 1, so the first
+    retry would be attempt 2, etc.
+  </summary>
+  <token key="Operation" variants="RetriedOperation"/>
+</histogram>
+
+<histogram name="PasswordManager.PasswordStoreAndroidBackend.{Type}.{Function}"
+    enum="PasswordStoreAndroidBackendRequestStatus" expires_after="2025-01-30">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records each {Function} call by the PasswordStoreAndroidBackend for the
+    {Type}. Recorded twice: 1) when the store issues the request, and 2) as the
+    asynchronous job has finished or times out. The first bucket may exceed
+    others if Chrome closes before the request finishes. This histogram is
+    recording the metric separately for local and account store.
+  </summary>
+  <token key="Type" variants="PasswordStoreAndroidBackendType"/>
+  <token key="Function" variants="PasswordStoreBackendFunction"/>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.{Type}.{Function}.Latency"
+    units="ms" expires_after="2025-01-30">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Real-time duration of the asynchronous call to {Function} in
+    PasswordStoreAndroidBackend. Recorded when the asynchronous job has
+    returned. This histogram is recording the metric separately for local and
+    account store.
+  </summary>
+  <token key="Type" variants="PasswordStoreAndroidBackendType"/>
+  <token key="Function" variants="PasswordStoreBackendFunction"/>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.{Type}.{Function}.Success"
+    enum="BooleanSuccess" expires_after="2025-01-30">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records whether {Function} succeeded in AndroidBackend. Recorded when the
+    asynchronous job has returned. False is emitted if an error occurs;
+    otherwise true is emitted. This histogram is recording the metric separately
+    for local and account store.
+  </summary>
+  <token key="Type" variants="PasswordStoreAndroidBackendType"/>
+  <token key="Function" variants="PasswordStoreBackendFunction"/>
 </histogram>
 
 <histogram
@@ -2720,7 +2758,8 @@ chromium-metrics-reviews@google.com.
   <owner>fhorschig@chromium.org</owner>
   <summary>
     The error codes returned by the GMS Core ChromeSync 1P API{Function}.
-    Recorded when the asynchronous job has returned.
+    Recorded when the asynchronous job has returned. This is an overall
+    histogram that includes records for both local and account store.
   </summary>
   <token key="Function">
     <variant name=""/>
@@ -2747,7 +2786,8 @@ chromium-metrics-reviews@google.com.
   <summary>
     The connection result status code returned by the GMS Core ChromeSync 1P
     API{Function}. Recorded when the asynchronous job has returned with error
-    and only if ConnectionResult was set on the returned error.
+    and only if ConnectionResult was set on the returned error. This is an
+    overall histogram that includes records for both local and account store.
   </summary>
   <token key="Function">
     <variant name=""/>
@@ -2795,6 +2835,36 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="PasswordManager.PasswordStoreAndroidBackend{Function}.{Type}.APIError"
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="2025-01-30">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    The error codes returned by the GMS Core ChromeSync 1P API{Function}.
+    Recorded when the asynchronous job has returned. This histogram is recording
+    the metric separately for local and account store.
+  </summary>
+  <token key="Type" variants="PasswordStoreAndroidBackendType"/>
+  <token key="Function" variants="PasswordStoreBackendFunction"/>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend{Function}.{Type}.ConnectionResultCode"
+    enum="PasswordStoreAndroidBackendConnectionResultCode"
+    expires_after="2025-01-30">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    The connection result status code returned by the GMS Core ChromeSync 1P
+    API{Function}. Recorded when the asynchronous job has returned with error
+    and only if ConnectionResult was set on the returned error. This histogram
+    is recording the metric separately for local and account store.
+  </summary>
+  <token key="Type" variants="PasswordStoreAndroidBackendType"/>
+  <token key="Function" variants="PasswordStoreBackendFunction"/>
+</histogram>
+
+<histogram
     name="PasswordManager.PasswordStoreBuiltInBackend.RemoveLoginsCreatedBetween.KeychainLatency"
     units="ms" expires_after="M125">
   <owner>vasilii@chromium.org</owner>
@@ -2829,7 +2899,8 @@ chromium-metrics-reviews@google.com.
     Records each {Function} call by the PasswordStore {Backend}. Recorded twice:
     1) when the store issues the request, and 2) as the asynchronous job has
     finished or times out. The first bucket may exceed others if Chrome closes
-    before the request finishes.
+    before the request finishes. In case of Android backend, this is an overall
+    histogram that includes records for both local and account store.
   </summary>
   <token key="Backend">
     <variant name="AndroidBackend" summary="Android backend"/>
@@ -2847,7 +2918,9 @@ chromium-metrics-reviews@google.com.
   <owner>fhorschig@chromium.org</owner>
   <summary>
     Real-time duration of the asynchronous call to {Function} in {Backend}.
-    Recorded when the asynchronous job has returned.
+    Recorded when the asynchronous job has returned. In case of Android backend,
+    this is an overall histogram that includes records for both local and
+    account store.
   </summary>
   <token key="Backend">
     <variant name="AndroidBackend" summary="Android backend"/>
@@ -2866,7 +2939,8 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records whether {Function} succeeded in {Backend}. Recorded when the
     asynchronous job has returned. False is emitted if an error occurs;
-    otherwise true is emitted.
+    otherwise true is emitted. In case of Android backend, this is an overall
+    histogram that includes records for both local and account store.
   </summary>
   <token key="Backend">
     <variant name="AndroidBackend" summary="Android backend"/>
@@ -3225,7 +3299,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SingleUsername.PasswordFormHadUsernameField"
-    enum="PasswordFormHadUsernameField" expires_after="2024-06-02">
+    enum="PasswordFormHadUsernameField" expires_after="2024-08-04">
   <owner>kazinova@google.com</owner>
   <owner>shaikhitdin@google.com</owner>
   <summary>
@@ -3324,7 +3398,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SuccessfulSubmissionIndicatorEvent"
-    enum="SubmissionIndicatorEvent" expires_after="2024-06-02">
+    enum="SubmissionIndicatorEvent" expires_after="2024-08-04">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3448,7 +3522,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.TouchToFill.PasswordGeneration.TriggerOutcome"
     enum="TouchToFillPasswordGenerationTriggerOutcome"
-    expires_after="2024-06-02">
+    expires_after="2024-08-04">
   <owner>atsvirchkova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -3463,7 +3537,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.TouchToFill.PasswordGeneration.UserChoice"
-    enum="GenerationDialogChoice" expires_after="2024-06-01">
+    enum="GenerationDialogChoice" expires_after="2024-08-04">
   <owner>atsvirchkova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -3621,7 +3695,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.UPMUpdateSignInCredentialsSucces"
-    enum="Boolean" expires_after="2024-06-02">
+    enum="Boolean" expires_after="2024-08-04">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -3799,7 +3873,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.{Store}PasswordNotes.CountCredentialsWithNonEmptyNotes2"
-    units="count" expires_after="2024-06-02">
+    units="count" expires_after="2024-08-04">
   <owner>derinel@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -3810,7 +3884,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.{Store}PasswordNotes.CountNotesPerCredential3"
-    units="count" expires_after="2024-06-02">
+    units="count" expires_after="2024-08-04">
   <owner>derinel@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <summary>

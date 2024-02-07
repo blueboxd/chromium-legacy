@@ -26,10 +26,6 @@ BASE_FEATURE(kIOSKeyboardAccessoryUpgrade,
              "kIOSKeyboardAccessoryUpgrade",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kIOSPaymentsBottomSheet,
-             "IOSPaymentsBottomSheet",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kTestFeature, "TestFeature", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafetyCheckMagicStack,
@@ -394,6 +390,10 @@ BASE_FEATURE(kIOSExternalActionURLs,
              "IOSExternalActionURLs",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDisableLensCamera,
+             "DisableLensCamera",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Key for NSUserDefaults containing a bool indicating whether the next run
 // should enable feed background refresh capability. This is used because
 // registering for background refreshes must happen early in app initialization
@@ -430,7 +430,7 @@ DockingPromoDisplayTriggerArm DockingPromoExperimentTypeEnabled() {
 }
 
 bool IsWebChannelsEnabled() {
-  std::string launched_countries[5] = {"AU", "GB", "NZ", "US", "ZA"};
+  std::string launched_countries[6] = {"AU", "CA", "GB", "NZ", "US", "ZA"};
   if (base::Contains(launched_countries,
                      country_codes::GetCurrentCountryCode())) {
     return true;

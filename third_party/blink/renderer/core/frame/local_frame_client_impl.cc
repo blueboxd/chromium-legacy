@@ -33,6 +33,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/types/optional_util.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -101,6 +102,7 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -426,29 +428,20 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
       WebFrameWidgetImpl* frame_widget = web_frame_->FrameWidgetImpl();
       // The outermost mainframe must have a frame widget.
       CHECK(frame_widget);
-      bool should_increment_id = base::FeatureList::IsEnabled(
-          features::kIncrementLocalSurfaceIdForMainframeSameDocNavigation);
-      if (should_increment_id) {
+      if (base::FeatureList::IsEnabled(
+              features::
+                  kIncrementLocalSurfaceIdForMainframeSameDocNavigation)) {
         frame_widget->RequestNewLocalSurfaceId();
       }
       frame_widget->NotifyPresentationTime(WTF::BindOnce(
-          [](bool incremented, base::TimeTicks start, base::TimeTicks finish) {
+          [](base::TimeTicks start, base::TimeTicks finish) {
             base::TimeDelta duration = finish - start;
-            if (incremented) {
-              UMA_HISTOGRAM_TIMES(
-                  "Navigation."
-                  "MainframeSameDocumentNavigationCommitToPresentFirstFrame."
-                  "LocalSurfaceIdUpdated",
-                  duration);
-            } else {
-              UMA_HISTOGRAM_TIMES(
-                  "Navigation."
-                  "MainframeSameDocumentNavigationCommitToPresentFirstFrame."
-                  "LocalSurfaceIdNotUpdated",
-                  duration);
-            }
+            base::UmaHistogramTimes(
+                "Navigation."
+                "MainframeSameDocumentNavigationCommitToPresentFirstFrame",
+                duration);
           },
-          should_increment_id, base::TimeTicks::Now()));
+          base::TimeTicks::Now()));
     }
   }
 
@@ -565,7 +558,7 @@ void LocalFrameClientImpl::BeginNavigation(
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
     base::TimeTicks input_start_time,
     const String& href_translate,
-    const absl::optional<Impression>& impression,
+    const std::optional<Impression>& impression,
     const LocalFrameToken* initiator_frame_token,
     std::unique_ptr<SourceLocation> source_location,
     mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
@@ -600,12 +593,14 @@ void LocalFrameClientImpl::BeginNavigation(
       base::OptionalFromPtr(initiator_frame_token);
   navigation_info->initiator_policy_container_keep_alive_handle =
       std::move(initiator_policy_container_keep_alive_handle);
-  if (origin_window && origin_window->GetFrame()) {
+  LocalFrame* origin_frame =
+      origin_window ? origin_window->GetFrame() : nullptr;
+  if (origin_frame) {
     // Many navigation paths do not pass an |initiator_frame_token|, so we need
     // to compute it here.
     if (!navigation_info->initiator_frame_token) {
       navigation_info->initiator_frame_token =
-          origin_window->GetFrame()->GetLocalFrameToken();
+          origin_frame->GetLocalFrameToken();
     }
     // Similarly, many navigation paths do not pass an
     // |initiator_policy_container_keep_alive_handle|.
@@ -622,6 +617,14 @@ void LocalFrameClientImpl::BeginNavigation(
 
   navigation_info->impression = impression;
   navigation_info->is_fullscreen_requested = is_fullscreen_requested;
+  // TODO(crbug.com/1142516): Enforce requirements here, before IPC to browser?
+  if (is_fullscreen_requested && !request.HasUserGesture() && origin_frame &&
+      origin_frame->GetSettings() &&
+      !origin_frame->GetSettings()
+           ->GetRequireTransientActivationForHtmlFullscreen()) {
+    UseCounter::Count(origin_frame->GetDocument(),
+                      WebFeature::kFullscreenAllowedByContentSetting);
+  }
 
   // Allow cookie access via Storage Access API during the navigation, if the
   // initiator has obtained storage access. Note that the network service still
@@ -654,15 +657,14 @@ void LocalFrameClientImpl::BeginNavigation(
   if (form)
     navigation_info->form = WebFormElement(form);
 
-  LocalFrame* frame = origin_window ? origin_window->GetFrame() : nullptr;
-  if (frame) {
+  if (origin_frame) {
     navigation_info->is_opener_navigation =
-        frame->Opener() == ToCoreFrame(web_frame_);
+        origin_frame->Opener() == ToCoreFrame(web_frame_);
     navigation_info->initiator_frame_has_download_sandbox_flag =
         origin_window->IsSandboxed(
             network::mojom::blink::WebSandboxFlags::kDownloads);
-    navigation_info->initiator_frame_is_ad = frame->IsAdFrame();
-    navigation_info->is_ad_script_in_stack = frame->IsAdScriptInStack();
+    navigation_info->initiator_frame_is_ad = origin_frame->IsAdFrame();
+    navigation_info->is_ad_script_in_stack = origin_frame->IsAdScriptInStack();
   }
 
   // The frame has navigated either by itself or by the action of the
@@ -749,7 +751,7 @@ void LocalFrameClientImpl::DidStopLoading() {
 
 bool LocalFrameClientImpl::NavigateBackForward(
     int offset,
-    absl::optional<scheduler::TaskAttributionId>
+    std::optional<scheduler::TaskAttributionId>
         soft_navigation_heuristics_task_id) const {
   WebViewImpl* webview = web_frame_->ViewImpl();
   DCHECK(webview->Client());
@@ -872,10 +874,10 @@ String LocalFrameClientImpl::UserAgent() {
   return user_agent_;
 }
 
-absl::optional<UserAgentMetadata> LocalFrameClientImpl::UserAgentMetadata() {
+std::optional<UserAgentMetadata> LocalFrameClientImpl::UserAgentMetadata() {
   bool ua_override_on = web_frame_->Client() &&
                         !web_frame_->Client()->UserAgentOverride().IsEmpty();
-  absl::optional<blink::UserAgentMetadata> user_agent_metadata =
+  std::optional<blink::UserAgentMetadata> user_agent_metadata =
       ua_override_on ? web_frame_->Client()->UserAgentMetadataOverride()
                      : Platform::Current()->UserAgentMetadata();
 

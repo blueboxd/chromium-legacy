@@ -576,7 +576,7 @@ def VerifyZStdSupport():
     print('OK')
 
 
-def DownloadDebianSysroot(platform_name, skip_download):
+def DownloadDebianSysroot(platform_name, skip_download=False):
   # Download sysroots. This uses basically Chromium's sysroots, but with
   # minor changes:
   # - glibc version bumped to 2.18 to make __cxa_thread_atexit_impl
@@ -720,11 +720,6 @@ def main():
   args = parser.parse_args()
 
   global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
-
-  # TODO(crbug.com/1517549): Remove in next Clang roll.
-  if args.llvm_force_head_revision:
-    global RELEASE_VERSION
-    RELEASE_VERSION = '19'
 
   if (args.pgo or args.thinlto) and not args.bootstrap:
     print('--pgo/--thinlto requires --bootstrap')

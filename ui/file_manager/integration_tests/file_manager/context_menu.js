@@ -7,8 +7,7 @@ import {testcase} from '../testcase.js';
 
 import {openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
 import {DirectoryTreePageObject} from './page_objects/directory_tree.js';
-import {FakeTask} from './tasks.js';
-import {COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET, COMPLEX_DRIVE_ENTRY_SET, RECENT_ENTRY_SET} from './test_data.js';
+import {COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET, COMPLEX_DRIVE_ENTRY_SET, FakeTask, RECENT_ENTRY_SET} from './test_data.js';
 
 /**
  * Tests that check the context menu displays the right options (enabled and
@@ -571,8 +570,6 @@ testcase.checkContextMenuForRenameInput = async () => {
   // Check: The rename input should be still be visible and with the same
   // content.
   const inputElement = await remoteCall.waitForElement(appId, textInput);
-  // @ts-ignore: error TS2339: Property 'value' does not exist on type
-  // 'ElementObject'.
   chrome.test.assertEq('NEW NAME', inputElement.value);
 
   // Check: The rename input should be the focused element.

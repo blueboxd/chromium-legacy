@@ -896,7 +896,7 @@
     {
       // crbug.com/1447058
       name: "CssFieldSizing",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Don't allow new line as preceding character for ::first-letter.
@@ -1490,10 +1490,10 @@
       base_feature: "none",
     },
     // Controls whether DOMParser.parseFromString() attempts to use the
-    // html fast path parser. This is a kill switch.
+    // html fast path parser.
     {
       name: "DOMParserUsesHTMLFastPathParser",
-      status: "stable"
+      status: "test"
     },
     {
       name: "DOMPartsAPI",
@@ -2501,7 +2501,7 @@
     },
     {
       name: "NavigationActivation",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "NavigationId",
@@ -2647,10 +2647,6 @@
       // Android does not yet support SystemMonitor.
       status: {"Android": "", "default": "stable"},
       base_feature: "none",
-    },
-    {
-      name: "OnePassRasterInvalidation",
-      status: "stable",
     },
     // This flag is a killswitch. It was only exists as a way for us to turn
     // the feature off in the emergency that it breaks websites.
@@ -2820,7 +2816,7 @@
     },
     {
       name: "PageRevealEvent",
-      status: "experimental",
+      status: "stable",
       implied_by: ["ViewTransitionOnNavigation"],
     },
     {
@@ -3014,7 +3010,11 @@
       status: "stable",
     },
     {
-      // https://crbug.com/1126305
+      // Used to allow chrome://flags to turn off prerendering. (Without using
+      // the user-facing preloading settings page to turn off other
+      // preloading.) See https://crbug.com/1494471.
+      //
+      // It also has some feature params defined throughout the codebase.
       name: "Prerender2",
       status: "stable",
     },
@@ -3120,7 +3120,7 @@
     },
     {
       name: "ReduceCookieIPCs",
-      status: "test",
+      status: "stable",
     },
     {
       // If enabled, the deviceModel will be reduced to "K" and the
@@ -3178,11 +3178,6 @@
       public: true,
       status: "stable",
       base_feature: "none",
-    },
-    {
-      // See https://github.com/w3c/csswg-drafts/issues/9398
-      name: "RemoveZoomAdjustmentOfBoundingBox",
-      status: "test",
     },
     {
       // See https://github.com/whatwg/html/issues/10034
@@ -3503,6 +3498,11 @@
       public: true,
     },
     {
+      name: "SharedStorageAPIM123",
+      base_feature: "none",
+      public: true,
+    },
+    {
       name: "SharedWorker",
       public: true,
       // Android does not yet support SharedWorker. crbug.com/154571
@@ -3671,6 +3671,11 @@
       name: "StableBlinkFeatures",
       status: "stable",
       base_feature: "none",
+    },
+    {
+      // See https://github.com/w3c/csswg-drafts/issues/9398
+      name: "StandardizedBrowserZoom",
+      status: "test",
     },
     {
       name: "StorageAccessAPIBeyondCookies",
@@ -4122,6 +4127,14 @@
       origin_trial_os: ["win", "mac", "linux"],
     },
     {
+      // WebAssembly JS Promise Integration,
+      // https://github.com/WebAssembly/js-promise-integration/blob/main/proposals/js-promise-integration
+      name: "WebAssemblyJSPromiseIntegration",
+      origin_trial_feature_name: "WebAssemblyJSPromiseIntegration",
+      status: "experimental",
+      base_feature: "none",
+    },
+    {
       name: "WebAssemblyJSStringBuiltins",
       origin_trial_feature_name: "WebAssemblyJSStringBuiltins",
       status: "experimental",
@@ -4288,6 +4301,8 @@
     },
     {
       name: "WebIdentityDigitalCredentials",
+      origin_trial_feature_name: "WebIdentityDigitalCredentials",
+      origin_trial_os: ["android"],
       depends_on: ["FedCm"],
       public: true,
       status: "test",

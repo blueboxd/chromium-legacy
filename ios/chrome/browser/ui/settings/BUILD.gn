@@ -298,7 +298,9 @@ source_set("unit_tests") {
   sources = [
     "about_chrome_table_view_controller_unittest.mm",
     "import_data_table_view_controller_unittest.mm",
-    "search_engine_table_view_controller_choice_screen_unittest.mm",
+    "search_engine_table_view_controller_eea_unittest.mm",
+    "search_engine_table_view_controller_non_eea_unittest.mm",
+    "search_engine_table_view_controller_unittest.h",
     "search_engine_table_view_controller_unittest.mm",
     "settings_navigation_controller_unittest.mm",
     "settings_root_table_view_controller_unittest.mm",
@@ -405,7 +407,6 @@ source_set("eg_app_support+eg2") {
     "//components/search_engines",
     "//components/supervised_user/core/browser",
     "//components/supervised_user/core/browser:mocked",
-    "//components/supervised_user/core/browser:supervised_user_preferences",
     "//components/supervised_user/core/common",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/browser/content_settings/model",
@@ -435,7 +436,6 @@ source_set("eg_test_support+eg2") {
   deps = [
     "//base",
     "//components/supervised_user/core/browser",
-    "//components/supervised_user/core/browser:supervised_user_preferences",
     "//components/supervised_user/core/common",
     "//ios/testing/earl_grey:eg_test_support+eg2",
   ]

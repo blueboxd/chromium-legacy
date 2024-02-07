@@ -398,7 +398,7 @@ void FrameCaptionButtonContainerView::UpdateBorderlessModeEnabled(
   // so similarly to hiding the title bar, also the caption button container
   // containing them will be hidden.
   is_borderless_mode_enabled_ = enabled;
-  SetVisible(enabled);
+  SetVisible(!enabled);
 }
 
 void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
@@ -513,7 +513,7 @@ void FrameCaptionButtonContainerView::ClearOnSizeButtonPressedCallback() {
   on_size_button_pressed_callback_.Reset();
 }
 
-void FrameCaptionButtonContainerView::Layout() {
+void FrameCaptionButtonContainerView::Layout(PassKey) {
   LayoutSuperclass<views::View>(this);
 
   // This ensures that the first frame of the animation to show the size button

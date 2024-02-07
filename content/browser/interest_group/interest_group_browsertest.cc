@@ -14574,6 +14574,66 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionWithLargeExperimentGroupId) {
+  // https://crbug.com/1523625 --- make sure all 16 bits go through.
+  const char kPublisher[] = "a.test";
+  const char kBidder[] = "b.test";
+  const char kSeller[] = "c.test";
+
+  // Navigate to bidder site, and add an interest group.
+  GURL bidder_url = embedded_https_test_server().GetURL(kBidder, "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), bidder_url));
+  url::Origin bidder_origin = url::Origin::Create(bidder_url);
+  EXPECT_EQ(
+      kSuccess,
+      JoinInterestGroupAndVerify(
+          blink::TestInterestGroupBuilder(
+              /*owner=*/bidder_origin,
+              /*name=*/"cars")
+              .SetBiddingUrl(embedded_https_test_server().GetURL(
+                  kBidder, "/interest_group/bidding_logic.js"))
+              .SetTrustedBiddingSignalsUrl(embedded_https_test_server().GetURL(
+                  kBidder, "/interest_group/trusted_bidding_signals.json"))
+              .SetTrustedBiddingSignalsKeys({{"key1"}})
+              .SetAds({{{GURL("https://example.com/render"),
+                         R"({"ad":"metadata","here":[1,2]})"}}})
+              .Build()));
+
+  // Navigate to publisher.
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_https_test_server().GetURL(kPublisher, "/echo")));
+  GURL seller_logic_url = embedded_https_test_server().GetURL(
+      kSeller, "/interest_group/decision_logic.js");
+
+  const char kAuctionConfigTemplate[] = R"({
+    seller: $1,
+    decisionLogicURL: $2,
+    trustedScoringSignalsURL: $3,
+    interestGroupBuyers: [$4],
+    sellerExperimentGroupId: 50000,
+    perBuyerExperimentGroupIds: {'*': 40000},
+  })";
+
+  EXPECT_EQ("https://example.com/render",
+            RunAuctionAndWaitForUrl(JsReplace(
+                kAuctionConfigTemplate, url::Origin::Create(seller_logic_url),
+                seller_logic_url,
+                embedded_https_test_server().GetURL(
+                    kSeller, "/interest_group/trusted_scoring_signals.json"),
+                bidder_origin)));
+
+  // Make sure that the right trusted signals URLs got fetched, incorporating
+  // the experiment group ID.
+  WaitForUrl(embedded_https_test_server().GetURL(
+      "/interest_group/trusted_bidding_signals.json?hostname=a.test&keys=key1"
+      "&interestGroupNames=cars&experimentGroupId=40000"));
+  WaitForUrl(embedded_https_test_server().GetURL(
+      "/interest_group/trusted_scoring_signals.json?hostname=a.test"
+      "&renderUrls=https%3A%2F%2Fexample.com%2Frender&experimentGroupId="
+      "50000"));
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                        RunAdAuctionWithPerBuyerExperimentGroupId) {
   const char kPublisher[] = "a.test";
   const char kBidder[] = "b.test";
@@ -15404,6 +15464,10 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
 // the kAdInterestGroupAPIRestrictedPolicyByDefault runtime flag is disabled by
 // default and in that case the default value for those features are
 // EnableForAll.
+//
+// This test both makes sure that's the case, and that a warning is displayed
+// exactly when calls would fail if the default Permissions Policies were
+// changed to EnableForSelf.
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                        FeaturesEnabledForAllByPermissionsPolicy) {
   // clang-format off
@@ -15413,9 +15477,15 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           "a.test,"
           "b.test("
               "c.test{allow-join-ad-interest-group;run-ad-auction},"
-              "a.test{allow-join-ad-interest-group;run-ad-auction},"
               "a.test{allow-join-ad-interest-group;run-ad-auction}"
-          ")"
+          "),"
+          "b.test{allow-join-ad-interest-group;run-ad-auction}("
+            "b.test,"
+            "a.test{allow-join-ad-interest-group;run-ad-auction},"
+            "a.test"
+          "),"
+          "b.test{allow-join-ad-interest-group},"
+          "b.test{allow-run-ad-auction}"
        ")");
   // clang-format on
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
@@ -15427,8 +15497,16 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       ChildFrameAt(cross_origin_iframe, 0);
   RenderFrameHost* same_origin_iframe_in_cross_origin_iframe =
       ChildFrameAt(cross_origin_iframe, 1);
+  RenderFrameHost* cross_origin_iframe_with_permissions =
+      ChildFrameAt(main_frame, 2);
+  RenderFrameHost* nested_cross_origin_iframe_with_permissions =
+      ChildFrameAt(cross_origin_iframe_with_permissions, 0);
+  RenderFrameHost* same_origin_iframe_in_cross_origin_iframe_with_permissions =
+      ChildFrameAt(cross_origin_iframe_with_permissions, 1);
   RenderFrameHost* same_origin_iframe_in_cross_origin_iframe2 =
-      ChildFrameAt(cross_origin_iframe, 2);
+      ChildFrameAt(cross_origin_iframe_with_permissions, 2);
+  RenderFrameHost* cross_origin_join_only = ChildFrameAt(main_frame, 3);
+  RenderFrameHost* cross_origin_run_auction_only = ChildFrameAt(main_frame, 4);
 
   // The server JSON updates all fields that can be updated.
   constexpr char kUpdateUrlPath[] = "/interest_group/update_partial.json";
@@ -15440,6 +15518,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   }
                                                   )"));
 
+  base::RunLoop().RunUntilIdle();
+
   GURL url;
   url::Origin origin;
   std::string host;
@@ -15449,14 +15529,43 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       cross_origin_iframe,
       inner_cross_origin_iframe,
       same_origin_iframe_in_cross_origin_iframe,
-      same_origin_iframe_in_cross_origin_iframe2};
+      cross_origin_iframe_with_permissions,
+      nested_cross_origin_iframe_with_permissions,
+      same_origin_iframe_in_cross_origin_iframe_with_permissions,
+      same_origin_iframe_in_cross_origin_iframe2,
+      cross_origin_join_only,
+      cross_origin_run_auction_only};
 
-  for (auto* execution_target : execution_targets) {
+  // The execution targets that are expected to have permissions warnings.
+  RenderFrameHost* execution_targets_with_all_warnings[] = {
+      cross_origin_iframe, inner_cross_origin_iframe,
+      same_origin_iframe_in_cross_origin_iframe,
+      same_origin_iframe_in_cross_origin_iframe2};
+  RenderFrameHost* execution_targets_with_join_warnings[] = {
+      cross_origin_run_auction_only};
+  RenderFrameHost* execution_targets_with_run_auction_warnings[] = {
+      cross_origin_join_only};
+
+  for (size_t i = 0; i < std::size(execution_targets); ++i) {
+    SCOPED_TRACE(i);
+    auto* execution_target = execution_targets[i];
     url = execution_target->GetLastCommittedURL();
     origin = url::Origin::Create(url);
     host = url.host();
     WebContentsConsoleObserver console_observer(shell()->web_contents());
     console_observer.SetPattern(WarningPermissionsPolicy("*", "*"));
+    // Use a second observer to wait until the last message is received.
+    WebContentsConsoleObserver last_message_console_observer(
+        shell()->web_contents());
+    if (base::Contains(execution_targets_with_all_warnings, execution_target) ||
+        base::Contains(execution_targets_with_join_warnings,
+                       execution_target)) {
+      last_message_console_observer.SetPattern(WarningPermissionsPolicy(
+          "join-ad-interest-group", "leaveAdInterestGroup"));
+    } else {
+      last_message_console_observer.SetPattern(
+          WarningPermissionsPolicy("run-ad-auction", "runAdAuction"));
+    }
 
     EXPECT_EQ(kSuccess,
               JoinInterestGroupAndVerify(
@@ -15488,28 +15597,12 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                   execution_target));
 
     EXPECT_EQ("done", UpdateInterestGroupsInJS(execution_target));
-    // The second UpdateInterestGroupsInJS will not add a warning message, since
-    // the same message has already been added and redundant messages will be
-    // discarded.
-    EXPECT_EQ("done", UpdateInterestGroupsInJS(execution_target));
     EXPECT_EQ(kSuccess, LeaveInterestGroup(origin, "cars", execution_target));
 
-    // It seems discard_duplicates of AddConsoleMessage works differently on
-    // Android and other platforms. On Android, a message will be discarded if
-    // it's not unique across all frames in a page. On other platforms, a
-    // message will be discarded if it's not unique per origin (e.g., iframe
-    // a.test and iframe b.test can have the same message, while the same
-    // message from another a.test will be discarded).
+    if (base::Contains(execution_targets_with_all_warnings, execution_target)) {
+      EXPECT_TRUE(last_message_console_observer.Wait());
+      ASSERT_EQ(4u, console_observer.messages().size());
 
-#if BUILDFLAG(IS_ANDROID)
-    RenderFrameHost* execution_targets_with_message[] = {cross_origin_iframe};
-#else
-    RenderFrameHost* execution_targets_with_message[] = {
-        cross_origin_iframe, inner_cross_origin_iframe,
-        same_origin_iframe_in_cross_origin_iframe};
-#endif  // BUILDFLAG(IS_ANDROID)
-
-    if (base::Contains(execution_targets_with_message, execution_target)) {
       EXPECT_EQ(WarningPermissionsPolicy("join-ad-interest-group",
                                          "joinAdInterestGroup"),
                 console_observer.GetMessageAt(0));
@@ -15521,6 +15614,27 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       EXPECT_EQ(WarningPermissionsPolicy("join-ad-interest-group",
                                          "leaveAdInterestGroup"),
                 console_observer.GetMessageAt(3));
+    } else if (base::Contains(execution_targets_with_join_warnings,
+                              execution_target)) {
+      EXPECT_TRUE(last_message_console_observer.Wait());
+      ASSERT_EQ(3u, console_observer.messages().size());
+
+      EXPECT_EQ(WarningPermissionsPolicy("join-ad-interest-group",
+                                         "joinAdInterestGroup"),
+                console_observer.GetMessageAt(0));
+      EXPECT_EQ(WarningPermissionsPolicy("join-ad-interest-group",
+                                         "updateAdInterestGroups"),
+                console_observer.GetMessageAt(1));
+      EXPECT_EQ(WarningPermissionsPolicy("join-ad-interest-group",
+                                         "leaveAdInterestGroup"),
+                console_observer.GetMessageAt(2));
+    } else if (base::Contains(execution_targets_with_run_auction_warnings,
+                              execution_target)) {
+      EXPECT_TRUE(last_message_console_observer.Wait());
+      ASSERT_EQ(1u, console_observer.messages().size());
+
+      EXPECT_EQ(WarningPermissionsPolicy("run-ad-auction", "runAdAuction"),
+                console_observer.GetMessageAt(0));
     } else {
       EXPECT_TRUE(console_observer.messages().empty());
     }
@@ -18372,16 +18486,18 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
   // TODO(behamilton): Merge with
   // InterestGroupBrowserTest.FeaturesEnabledForAllByPermissionsPolicy once this
   // feature has been released.
+
+  // clang-format off
   GURL test_url = embedded_https_test_server().GetURL(
       "a.test",
       "/cross_site_iframe_factory.html?a.test("
-      "a.test,"
-      "b.test("
-      "c.test{allow-join-ad-interest-group;run-ad-auction},"
-      "a.test{allow-join-ad-interest-group;run-ad-auction},"
-      "a.test{allow-join-ad-interest-group;run-ad-auction}"
-      ")"
+        "a.test,"
+        "b.test("
+          "c.test{allow-join-ad-interest-group;run-ad-auction},"
+          "a.test{allow-join-ad-interest-group;run-ad-auction}"
+        ")"
       ")");
+  // clang-format on
   url::Origin test_origin = url::Origin::Create(test_url);
   ProvideKeys();
 
@@ -18394,16 +18510,10 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
       ChildFrameAt(cross_origin_iframe, 0);
   RenderFrameHost* same_origin_iframe_in_cross_origin_iframe =
       ChildFrameAt(cross_origin_iframe, 1);
-  RenderFrameHost* same_origin_iframe_in_cross_origin_iframe2 =
-      ChildFrameAt(cross_origin_iframe, 2);
 
   RenderFrameHost* execution_targets[] = {
-      main_frame,
-      same_origin_iframe,
-      cross_origin_iframe,
-      inner_cross_origin_iframe,
-      same_origin_iframe_in_cross_origin_iframe,
-      same_origin_iframe_in_cross_origin_iframe2};
+      main_frame, same_origin_iframe, cross_origin_iframe,
+      inner_cross_origin_iframe, same_origin_iframe_in_cross_origin_iframe};
 
   base::HistogramTester histogram_tester;
   for (auto* execution_target : execution_targets) {
@@ -18415,14 +18525,11 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
               GetInterestGroupAdAuctionData(
                   test_origin, kDefaultBiddingAndAuctionGCPCoordinatorOrigin,
                   execution_target));
-#if BUILDFLAG(IS_ANDROID)
-    RenderFrameHost* execution_targets_with_message[] = {cross_origin_iframe};
-#else
     RenderFrameHost* execution_targets_with_message[] = {
         cross_origin_iframe, inner_cross_origin_iframe,
         same_origin_iframe_in_cross_origin_iframe};
-#endif  // BUILDFLAG(IS_ANDROID)
     if (base::Contains(execution_targets_with_message, execution_target)) {
+      EXPECT_TRUE(console_observer.Wait());
       EXPECT_EQ(WarningPermissionsPolicy("run-ad-auction",
                                          "getInterestGroupAdAuctionData"),
                 console_observer.GetMessageAt(0));
@@ -18432,7 +18539,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
   }
   content::FetchHistogramsFromChildProcesses();
   histogram_tester.ExpectTotalCount(
-      "Ads.InterestGroup.GetInterestGroupAdAuctionData.TimeToResolve", 6);
+      "Ads.InterestGroup.GetInterestGroupAdAuctionData.TimeToResolve", 5);
 }
 
 // Check that the renderer doesn't crash if we don't have a decision logic URL.

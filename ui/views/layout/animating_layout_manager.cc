@@ -24,6 +24,7 @@
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/layout/normalized_geometry.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 
 namespace views {
 
@@ -512,7 +513,7 @@ bool AnimatingLayoutManager::OnViewAdded(View* host, View* view) {
   // Handle a case where we add a visible view that shouldn't be visible in the
   // layout. In this case, there is no animation, no invalidation, and we just
   // set the view to not be visible.
-  if (view->GetVisible() && cached_layout_size() && !is_animating_) {
+  if (IsChildIncludedInLayout(view) && cached_layout_size() && !is_animating_) {
     const gfx::Size target_size = GetAvailableTargetLayoutSize();
     ProposedLayout proposed_layout =
         target_layout_manager()->GetProposedLayout(target_size);
@@ -523,7 +524,7 @@ bool AnimatingLayoutManager::OnViewAdded(View* host, View* view) {
     }
   }
 
-  return RecalculateTarget();
+  return LayoutManagerBase::OnViewAdded(host, view);
 }
 
 void AnimatingLayoutManager::OnLayoutChanged() {
@@ -945,7 +946,8 @@ void AnimatingLayoutManager::ResolveFades() {
     View* const child = fade_info.child_view;
     if (fade_info.fade_type == LayoutFadeType::kFadingOut &&
         host_view()->GetIndexOf(child).has_value() &&
-        !IsChildViewIgnoredByLayout(child) && !IsChildIncludedInLayout(child)) {
+        !child->GetProperty(kViewIgnoredByLayoutKey) &&
+        !IsChildIncludedInLayout(child)) {
       SetViewVisibility(child, false);
     }
   }

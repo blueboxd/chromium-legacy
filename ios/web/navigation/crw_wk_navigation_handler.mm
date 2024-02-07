@@ -628,8 +628,10 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
   if (!context)
     return;
 
-  if (webViewURL.SchemeIs(url::kDataScheme)) {
-    // Redirecting to a data url is always unsafe.
+  // Redirecting to a data url is always unsafe.
+  if (webViewURL.SchemeIs(url::kDataScheme) ||
+      // Block redirects to JavaScript schemes. Ref: crbug.com/1509267
+      webViewURL.SchemeIs(url::kJavaScriptScheme)) {
     self.pendingNavigationInfo.unsafeRedirect = YES;
   } else {
     context->SetUrl(webViewURL);
@@ -2307,7 +2309,7 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
     return web::Referrer();
 
   web::NavigationItem* item = self.currentNavItem;
-  GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  GURL navigationURL = item ? item->GetVirtualURL() : GURL();
   NSString* previousURLString = base::SysUTF8ToNSString(navigationURL.spec());
   // Check if the referrer is equal to the previous URL minus the hash symbol.
   // L'#' is used to convert the char '#' to a unichar.

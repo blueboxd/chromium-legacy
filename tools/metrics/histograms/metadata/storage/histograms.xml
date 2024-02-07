@@ -50,6 +50,7 @@ chromium-metrics-reviews@google.com.
   <variant name="Thumbnail" summary="Thumbnail"/>
   <variant name="TopSites" summary="TopSites"/>
   <variant name="TrustTokens" summary="TrustTokens"/>
+  <variant name="UKMMetrics" summary="UKMMetrics"/>
   <variant name="UserNotes" summary="UserNotes"/>
   <variant name="Web" summary="Web"/>
 </variants>
@@ -431,7 +432,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.ClearSiteDataHeader.Parameters"
-    enum="ClearSiteDataParameters" expires_after="2024-06-02">
+    enum="ClearSiteDataParameters" expires_after="2024-08-04">
   <owner>estade@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>

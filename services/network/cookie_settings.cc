@@ -80,7 +80,7 @@ net::CookieInclusionStatus::ExemptionReason GetExemptionReason(
       return net::CookieInclusionStatus::ExemptionReason::
           kTopLevelStorageAccess;
     case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowByCORSException:
-      return net::CookieInclusionStatus::ExemptionReason::kBrowserHeuristics;
+      return net::CookieInclusionStatus::ExemptionReason::kCorsOptIn;
     case CookieSettings::ThirdPartyCookieAllowMechanism::kNone:
       return net::CookieInclusionStatus::ExemptionReason::kNone;
   }
@@ -403,13 +403,11 @@ ContentSetting CookieSettings::GetContentSetting(
       "ContentSettings.GetContentSetting.Network.Duration");
   if (base::FeatureList::IsEnabled(
           content_settings::features::kHostIndexedMetadataGrants)) {
-#if DCHECK_IS_ON()
-    DCHECK(GetHostIndexedContentSettings(content_type)
-               .IsSameResultAsLinearLookup(primary_url, secondary_url,
-                                           GetContentSettings(content_type)))
-        << "Different result in index lookup: " << primary_url.spec() << " "
-        << secondary_url.spec();
-#endif
+    if constexpr (DCHECK_IS_ON()) {
+      GetHostIndexedContentSettings(content_type)
+          .DcheckSameResultAsLinearLookup(primary_url, secondary_url,
+                                          GetContentSettings(content_type));
+    }
     const content_settings::RuleEntry* result =
         GetHostIndexedContentSettings(content_type)
             .Find(primary_url, secondary_url);

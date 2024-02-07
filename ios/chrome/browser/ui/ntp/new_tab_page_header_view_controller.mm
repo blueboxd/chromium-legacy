@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -53,6 +52,9 @@ using base::UserMetricsAction;
 namespace {
 
 NSString* const kScribbleFakeboxElementId = @"fakebox";
+
+// Height margin of the fake location bar.
+const CGFloat kFakeLocationBarHeightMargin = 2;
 
 }  // namespace
 
@@ -344,6 +346,11 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
                              forKeyPath:@"highlighted"
                                 options:NSKeyValueObservingOptionNew
                                 context:NULL];
+
+  CGFloat fakeOmniboxHeight = content_suggestions::FakeOmniboxHeight();
+  self.accessibilityButton.layer.cornerRadius =
+      (fakeOmniboxHeight - kFakeLocationBarHeightMargin) / 2;
+  self.accessibilityButton.clipsToBounds = YES;
   self.accessibilityButton.isAccessibilityElement = YES;
   self.accessibilityButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);

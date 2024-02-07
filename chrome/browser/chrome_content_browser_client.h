@@ -844,10 +844,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       ClipboardPasteData clipboard_paste_data,
       IsClipboardPasteAllowedCallback callback) override;
 
-  bool IsClipboardCopyAllowed(content::BrowserContext* browser_context,
-                              const GURL& url,
-                              size_t data_size_in_bytes,
-                              std::u16string& replacement_data) override;
+  void IsClipboardCopyAllowedByPolicy(
+      const content::ClipboardEndpoint& source,
+      const content::ClipboardMetadata& metadata,
+      const std::u16string& data,
+      IsClipboardCopyAllowedCallback callback) override;
 
 #if BUILDFLAG(ENABLE_VR)
   content::XrIntegrationClient* GetXrIntegrationClient() override;
@@ -951,6 +952,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool IsTransientActivationRequiredForShowFileOrDirectoryPicker(
       content::WebContents* web_contents) override;
+
+  bool IsTransientActivationRequiredForHtmlFullscreen(
+      content::RenderFrameHost* render_frame_host) override;
 
   bool ShouldUseFirstPartyStorageKey(const url::Origin& origin) override;
 

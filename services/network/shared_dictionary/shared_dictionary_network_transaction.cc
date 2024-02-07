@@ -32,9 +32,12 @@
 #include "net/filter/source_stream.h"
 #include "net/filter/zstd_source_stream.h"
 #include "net/http/http_request_info.h"
+#include "net/http/structured_headers.h"
 #include "net/ssl/ssl_private_key.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/shared_dictionary_encoding_names.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/shared_dictionary/shared_dictionary.h"
 #include "services/network/shared_dictionary/shared_dictionary_constants.h"
 #include "services/network/shared_dictionary/shared_dictionary_manager.h"
@@ -213,8 +216,22 @@ void SharedDictionaryNetworkTransaction::ModifyRequestHeaders(
   // `shared_dictionary_` may have been already set if this transaction was
   // restarted
   if (!shared_dictionary_) {
-    shared_dictionary_ =
-        shared_dictionary_storage_->GetDictionarySync(request_url);
+    // This method is called via net/ layer where we can't get
+    // mojom::RequestDestination from the request. So retrieves the destination
+    // from the request headers.
+    std::optional<mojom::RequestDestination> destination;
+    std::string destination_string;
+    if (request_headers->GetHeader("sec-fetch-dest", &destination_string)) {
+      destination = RequestDestinationFromString(
+          destination_string,
+          EmptyRequestDestinationOption::kUseFiveCharEmptyString);
+    }
+    if (destination) {
+      shared_dictionary_ = shared_dictionary_storage_->GetDictionarySync(
+          request_url, *destination);
+    } else {
+      shared_dictionary_.reset();
+    }
   }
   if (!shared_dictionary_) {
     return;
@@ -266,6 +283,14 @@ void SharedDictionaryNetworkTransaction::ModifyRequestHeaders(
                                     GetSharedZstdContentEncodingName()}));
   } else {
     AddAcceptEncoding(request_headers, GetSharedBrotliContentEncodingName());
+  }
+
+  if (!shared_dictionary_->id().empty()) {
+    absl::optional<std::string> serialized_id =
+        net::structured_headers::SerializeItem(shared_dictionary_->id());
+    if (serialized_id) {
+      request_headers->SetHeader("Dictionary-ID", *serialized_id);
+    }
   }
 
   if (dictionary_status_ == DictionaryStatus::kNoDictionary) {

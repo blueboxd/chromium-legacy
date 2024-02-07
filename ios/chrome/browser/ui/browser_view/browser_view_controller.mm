@@ -32,8 +32,10 @@
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/help_commands.h"
+#import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
+#import "ios/chrome/browser/shared/public/commands/settings_commands.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
@@ -1295,7 +1297,12 @@ enum HeaderBehaviour {
   [_fakeStatusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     if (base::FeatureList::IsEnabled(kModernTabStrip)) {
-      _fakeStatusBarView.backgroundColor = [UIColor colorNamed:kGrey200Color];
+      _fakeStatusBarView.backgroundColor =
+          [UIColor colorNamed:kTabStripBackgroundColor];
+      // Force the UserInterfaceStyle update in incognito.
+      _fakeStatusBarView.overrideUserInterfaceStyle =
+          _isOffTheRecord ? UIUserInterfaceStyleDark
+                          : UIUserInterfaceStyleUnspecified;
     } else {
       _fakeStatusBarView.backgroundColor = UIColor.blackColor;
     }

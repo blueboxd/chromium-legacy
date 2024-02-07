@@ -89,6 +89,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.HomeSurfaceTracker;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
@@ -472,10 +473,6 @@ public class NewTabPage
                             mJankTracker.finishTrackingScenario(JankScenario.NEW_TAB_PAGE);
                         }
                     }
-
-                    @Override
-                    public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
-                    }
                 };
         mTab.addObserver(mTabObserver);
 
@@ -611,7 +608,8 @@ public class NewTabPage
                         BookmarkModel.getForProfile(profile),
                         BrowserUiUtils.HostSurface.NEW_TAB_PAGE,
                         mTabModelSelector,
-                        profile) {
+                        profile,
+                        mBottomSheetController) {
                     @Override
                     public void openHelpPage() {
                         NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
@@ -1287,21 +1285,36 @@ public class NewTabPage
                                                 R.id.home_modules_recycler_view_stub))
                                 .inflate();
         updateSingleTabCardContainerMargins(mHomeModulesContainer);
+        ObservableSupplier<Profile> profileSupplier =
+                new ObservableSupplierImpl<>(mTab.getProfile());
         mHomeModulesCoordinator =
                 new HomeModulesCoordinator(
                         mActivity,
                         this,
                         mNewTabPageLayout,
-                        ChromeHomeModulesConfigManager.getInstance());
+                        ChromeHomeModulesConfigManager.getInstance(),
+                        profileSupplier);
     }
 
     private void onMagicStackShown(boolean isVisible) {
         mHomeModulesContainer.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
-    private void onSingleTabCardClicked() {
+    private void onSingleTabCardClicked(int tabId) {
+        onTabClicked(tabId);
+    }
+
+    /**
+     * Opens the selected Tab and closes the current NTP. If the single Tab card which tracks the
+     * last active Tab is selected, updates the mHomeSurfaceTracker too.
+     */
+    private void onTabClicked(int tabId) {
+        TabModelUtils.selectTabById(
+                mTabModelSelector, tabId, TabSelectionType.FROM_USER, /* skipLoadingTab= */ false);
+
         mTabModelSelector.getModel(false).closeTab(mTab);
         if (mHomeSurfaceTracker != null) {
+            // Updates the mHomeSurfaceTracker since the Tab of the NTP is closed.
             mHomeSurfaceTracker.updateHomeSurfaceAndTrackingTabs(null, null);
         }
     }
@@ -1384,8 +1397,8 @@ public class NewTabPage
     }
 
     @Override
-    public void onTabSelected(int tabid) {
-        onSingleTabCardClicked();
+    public void onTabSelected(int tabId) {
+        onTabClicked(tabId);
     }
 
     @Override

@@ -64,7 +64,13 @@ bool NativeWindowOcclusionTracker::IsNativeWindowOcclusionTrackingAlwaysEnabled(
       features::kApplyNativeOcclusionToCompositor,
       features::kApplyNativeOcclusionToCompositorType);
   return type == features::kApplyNativeOcclusionToCompositorTypeRelease ||
-         type == features::kApplyNativeOcclusionToCompositorTypeThrottle;
+         type == features::kApplyNativeOcclusionToCompositorTypeThrottle ||
+         type ==
+             features::kApplyNativeOcclusionToCompositorTypeThrottleAndRelease;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // We always enable native occlusion tracking for lacros. Occlusion
+  // information is plumbed via ozone through PlatformWindow, not here.
+  return true;
 #else
   return false;
 #endif

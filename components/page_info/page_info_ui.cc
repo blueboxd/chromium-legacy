@@ -156,17 +156,8 @@ base::span<const PageInfoUI::PermissionUIInfo> GetContentSettingsUIInfo() {
       {ContentSettingsType::AUTOMATIC_DOWNLOADS,
        IDS_SITE_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
        IDS_SITE_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS_MID_SENTENCE},
-      {ContentSettingsType::MIDI, IDS_SITE_SETTINGS_TYPE_MIDI,
-       IDS_SITE_SETTINGS_TYPE_MIDI_MID_SENTENCE},
-      {
-          ContentSettingsType::MIDI_SYSEX,
-          base::FeatureList::IsEnabled(features::kBlockMidiByDefault)
-              ? IDS_SITE_SETTINGS_TYPE_MIDI_SYSEX
-              : IDS_SITE_SETTINGS_TYPE_MIDI,
-          base::FeatureList::IsEnabled(features::kBlockMidiByDefault)
-              ? IDS_SITE_SETTINGS_TYPE_MIDI_SYSEX_MID_SENTENCE
-              : IDS_SITE_SETTINGS_TYPE_MIDI_MID_SENTENCE,
-      },
+      {ContentSettingsType::MIDI_SYSEX, IDS_SITE_SETTINGS_TYPE_MIDI_SYSEX,
+       IDS_SITE_SETTINGS_TYPE_MIDI_SYSEX_MID_SENTENCE},
       {ContentSettingsType::BACKGROUND_SYNC,
        IDS_SITE_SETTINGS_TYPE_BACKGROUND_SYNC,
        IDS_SITE_SETTINGS_TYPE_BACKGROUND_SYNC_MID_SENTENCE},
@@ -217,6 +208,9 @@ base::span<const PageInfoUI::PermissionUIInfo> GetContentSettingsUIInfo() {
       {ContentSettingsType::STORAGE_ACCESS,
        IDS_SITE_SETTINGS_TYPE_STORAGE_ACCESS,
        IDS_SITE_SETTINGS_TYPE_STORAGE_ACCESS_MID_SENTENCE},
+      {ContentSettingsType::AUTOMATIC_FULLSCREEN,
+       IDS_SITE_SETTINGS_TYPE_AUTOMATIC_FULLSCREEN,
+       IDS_SITE_SETTINGS_TYPE_AUTOMATIC_FULLSCREEN_MID_SENTENCE},
 #if !BUILDFLAG(IS_ANDROID)
       // Page Info Permissions that are not defined in Android.
       {ContentSettingsType::AUTO_PICTURE_IN_PICTURE,
@@ -333,9 +327,6 @@ std::u16string GetPermissionAskStateString(ContentSettingsType type) {
       break;
     case ContentSettingsType::NOTIFICATIONS:
       message_id = IDS_PAGE_INFO_STATE_TEXT_NOTIFICATIONS_ASK;
-      break;
-    case ContentSettingsType::MIDI:
-      message_id = IDS_PAGE_INFO_STATE_TEXT_MIDI_ASK;
       break;
     case ContentSettingsType::MIDI_SYSEX:
       message_id = IDS_PAGE_INFO_STATE_TEXT_MIDI_SYSEX_ASK;

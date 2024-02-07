@@ -691,6 +691,18 @@ BASE_FEATURE(kDedicatedMediaServiceThread,
 #endif
 );
 
+// Defer requesting persistent audio focus until the WebContents is audible.
+// The goal is to prevent silent playback from taking audio focus from
+// background apps on android, where focus is typically exclusive.
+BASE_FEATURE(kDeferAudioFocusUntilAudible,
+             "DeferAudioFocusUntilAudible",
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
+
 // Allows document picture-in-picture pages to request capture.
 BASE_FEATURE(kDocumentPictureInPictureCapture,
              "DocumentPictureInPictureCapture",
@@ -896,12 +908,17 @@ BASE_FEATURE(kVideoToolboxVideoDecoder,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_APPLE)
 
-// A video encoder is enabled to drop a frame in cast mirroring.
+// A video encoder is allowed to drop a frame in cast mirroring.
 BASE_FEATURE(kCastVideoEncoderFrameDrop,
              "CastVideoEncoderFrameDrop",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// A hardware video encoder is enabled to drop a frame in WebRTC.
+// A video encoder is allowed to drop a frame in WebCodecs.
+BASE_FEATURE(kWebCodecsVideoEncoderFrameDrop,
+             "WebCodecsVideoEncoderFrameDrop",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// A hardware video encoder is allowed to drop a frame in WebRTC.
 BASE_FEATURE(kWebRTCHardwareVideoEncoderFrameDrop,
              "WebRTCHardwareVideoEncoderFrameDrop",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1675,6 +1692,13 @@ BASE_FEATURE(kCastStreamingPerformanceOverlay,
 BASE_FEATURE(kCastStreamingVp9,
              "CastStreamingVp9",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_MAC)
+// Controls whether hardware H264 is default enabled on macOS.
+BASE_FEATURE(kCastStreamingMacHardwareH264,
+             "CastStreamingMacHardwareH264",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
 #if BUILDFLAG(IS_FUCHSIA)
 // Enables use of Fuchsia's Mediacodec service for encoding.

@@ -20,6 +20,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync/base/features.h"
 #include "components/sync/service/sync_service.h"
 #include "components/sync/test/test_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -143,13 +144,20 @@ class PasswordReceiverServiceImplTest
     profile_password_store_->Init(/*prefs=*/nullptr,
                                   /*affiliated_match_helper=*/nullptr);
 
-    feature_list_.InitWithFeatureState(features::kEnablePasswordsAccountStorage,
-                                       GetEnableAccountStoreTestParam());
     if (GetEnableAccountStoreTestParam()) {
       account_password_store_ = base::MakeRefCounted<TestPasswordStore>();
       account_password_store_->Init(/*prefs=*/nullptr,
                                     /*affiliated_match_helper=*/nullptr);
     }
+#if BUILDFLAG(IS_ANDROID)
+    const auto upm_pref_value =
+        GetEnableAccountStoreTestParam()
+            ? password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOn
+            : password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff;
+    pref_service_.registry()->RegisterIntegerPref(
+        prefs::kPasswordsUseUPMLocalAndSeparateStores,
+        static_cast<int>(upm_pref_value));
+#endif  // BUILDFLAG(IS_ANDROID)
 
     password_receiver_service_ = std::make_unique<PasswordReceiverServiceImpl>(
         &pref_service_,
@@ -378,7 +386,10 @@ TEST_P(
   ASSERT_TRUE(profile_password_store().stored_passwords().empty());
   ASSERT_TRUE(account_password_store().stored_passwords().empty());
 
-  // Setup an account store user:
+  // Set up an account store user (a non-syncing one, but that doesn't really
+  // matter).
+  base::test::ScopedFeatureList feature_list(
+      syncer::kEnablePasswordsAccountStorageForNonSyncingUsers);
   sync_service().SetHasSyncConsent(false);
 #if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
   pref_service().registry()->RegisterDictionaryPref(

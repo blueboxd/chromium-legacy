@@ -293,6 +293,11 @@ extern const char kEnableFriendlierSafeBrowsingSettingsStandardProtectionName[];
 extern const char
     kEnableFriendlierSafeBrowsingSettingsStandardProtectionDescription[];
 
+// Title and description for the flag to disable the Lens input selection
+// and camera experience.
+extern const char kDisableLensCameraName[];
+extern const char kDisableLensCameraDescription[];
+
 // Title and description for the flag to enable red interstitial facelift UI
 // changes.
 extern const char kEnableRedInterstitialFaceliftName[];
@@ -467,10 +472,6 @@ extern const char kIOSPasswordBottomSheetAutofocusDescription[];
 // username forms in sign-in UFF.
 extern const char kIOSPasswordSignInUffName[];
 extern const char kIOSPasswordSignInUffDescription[];
-
-// Title and description for the flag to enable payments bottom sheet on IOS.
-extern const char kIOSPaymentsBottomSheetName[];
-extern const char kIOSPaymentsBottomSheetDescription[];
 
 // Title and description for the flag to enable the Save to Drive feature.
 extern const char kIOSSaveToDriveName[];

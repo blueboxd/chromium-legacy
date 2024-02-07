@@ -1065,8 +1065,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     if (world_ && world_->IsMainWorld()) {
       if (auto* tracker =
               ThreadScheduler::Current()->GetTaskAttributionTracker()) {
-        parent_task_ =
-            tracker->RunningTask(ToScriptStateForMainWorld(&execution_context));
+        parent_task_ = tracker->RunningTask(execution_context.GetIsolate());
       }
     }
     async_task_context_.Schedule(&execution_context, "XMLHttpRequest.send");
@@ -1598,7 +1597,7 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
 }
 
 AtomicString XMLHttpRequest::FinalResponseMIMETypeInternal() const {
-  absl::optional<std::string> overridden_type =
+  std::optional<std::string> overridden_type =
       net::ExtractMimeTypeFromMediaType(mime_type_override_.Utf8(),
                                         /*accept_comma_separated=*/false);
   if (overridden_type.has_value()) {
@@ -1607,7 +1606,7 @@ AtomicString XMLHttpRequest::FinalResponseMIMETypeInternal() const {
 
   if (response_.IsHTTP()) {
     AtomicString header = response_.HttpHeaderField(http_names::kContentType);
-    absl::optional<std::string> extracted_type =
+    std::optional<std::string> extracted_type =
         net::ExtractMimeTypeFromMediaType(header.Utf8(),
                                           /*accept_comma_separated=*/true);
     if (extracted_type.has_value()) {
@@ -2146,7 +2145,7 @@ XMLHttpRequest::MaybeCreateTaskAttributionScope() {
   //
   // TODO(crbug.com/1439971): Make this safe to do or move the logic into the
   // task attribution implementation.
-  if (tracker->RunningTask(script_state) == parent_task_.Get()) {
+  if (tracker->RunningTask(script_state->GetIsolate()) == parent_task_.Get()) {
     return nullptr;
   }
   return tracker->CreateTaskScope(

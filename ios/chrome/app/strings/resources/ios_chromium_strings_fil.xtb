@@ -41,9 +41,11 @@
 <translation id="2054703085270098503">Manatiling Ligtas sa Chromium</translation>
 <translation id="2098023844024447022">Buksan ang Aking Pinakabagong Tab sa Chromium.</translation>
 <translation id="2109439615198500433">Tip sa Chromium</translation>
+<translation id="2147210759439165826">Maging updated sa content at mga kapaki-pakinabang na tip sa Chromium.</translation>
 <translation id="2168108852149185974">Nagiging dahilan ng pag-crash ng Chromium ang ilang add-on. Paki-uninstall.</translation>
 <translation id="2178608107313874732">Di magamit ng Chromium ang camera mo ngayon</translation>
 <translation id="2195025571279539885">Gusto mo bang mag-alok ang Chromium na isalin ang mga <ph name="LANGUAGE_NAME" /> page mula sa site na ito sa susunod na pagkakataon?</translation>
+<translation id="2216344354848599203">Pindutin nang matagal ang icon ng Chromium at i-click ang "I-edit ang Home Screen"</translation>
 <translation id="2218146227246548550">Hinihiling sa iyo ng organisasyon mo na mag-sign in para magamit ang Chromium. <ph name="BEGIN_LINK" />Matuto Pa<ph name="END_LINK" /></translation>
 <translation id="22313767259766852">Kasalukuyang naka-save ang address na ito sa Chromium. Para magamit ito sa mga produkto ng Google, i-save ito sa iyong Google Account,<ph name="USER_EMAIL" />.</translation>
 <translation id="2236584955986023187">Nangangahulugan itong hihilingin ng Chromium ang pang-desktop na site sa lahat ng pagkakataon.</translation>
@@ -98,6 +100,7 @@ Para sa higit pang setting na gumagamit ng data para pahusayin ang iyong experie
 <translation id="3833326979834193417">Awtomatikong pinapatakbo ng Chromium ang Pag-check sa Kaligtasan araw-araw para panatilihin kang ligtas laban sa mga paglabag sa data, hindi ligtas na website, at higit pa. Makakakita ka ng higit pa tungkol sa Pag-check sa Kaligtasan sa Mga Setting.</translation>
 <translation id="3855938650519180865">Ano'ng Bago sa Chromium</translation>
 <translation id="3886689467633467988">Mag-sign in sa site na ito at sa Chromium para makuha mo ang iyong mga bookmark at higit pa sa lahat ng device mo.</translation>
+<translation id="3904484643286601695">Puwede mong i-update ang iyong mga pinili anumang oras sa Mga Setting ng Chromium.</translation>
 <translation id="394413318816989199">Hindi kasama sa pag-encrypt ng passphrase ang mga paraan ng pagbabayad at address.
 
 Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-clear ang data sa Chromium sa iyong account<ph name="END_LINK" />.</translation>
@@ -197,10 +200,12 @@ Mga bagay na dapat isaalang-alang:
 <translation id="632825460376924298">Payagan ang Pag-sign In sa Chromium</translation>
 <translation id="6337530241089703714">Piliin kung iki-clear ang iyong data sa Chromium sa device na ito o kung papanatilihin ito</translation>
 <translation id="6348483005826990855">3. Piliin ang Chromium</translation>
+<translation id="6383607155624074112">Mas mabilis na i-access ang Chromium mula sa Dock ng iyong Home Screen</translation>
 <translation id="6407399265324739055">Hindi mae-encrypt ang mga paraan ng pagbabayad at address. Hindi masi-sync ang history ng pag-browse mula sa Chromium.
 
 Ang taong may passphrase mo lang ang makakapagbasa sa iyong naka-encrypt na data. Hindi ipinapadala sa o sino-store ng Google ang passphrase. Kung makalimutan mo ang iyong passphrase o gusto mong baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-clear ang data sa Chromium sa iyong account<ph name="END_LINK" />.</translation>
 <translation id="6424492062988593837">Naging mas mahusay na ang Chromium! Available na ang bagong bersyon.</translation>
+<translation id="6433172051771630690">Mga tip para masulit ang Chromium.</translation>
 <translation id="6502321914804101924">Naka-sign out ang Chromium</translation>
 <translation id="6563921047760808519">Matuto pa tungkol sa kung <ph name="BEGIN_LINK" />paano pinapanatiling pribado ng Chromium ang iyong data<ph name="END_LINK" /></translation>
 <translation id="6625409903340039086">Suportado na ngayon ng Chromium ang mga patakaran ng user para sa iyong pinamamahalaang account</translation>
@@ -253,6 +258,7 @@ Ang taong may passphrase mo lang ang makakapagbasa sa iyong naka-encrypt na data
 <translation id="7990085102929105708">Hindi mae-encrypt ang mga paraan ng pagbabayad at address mula sa Google Pay. Hindi masi-sync ang history ng pag-browse mula sa Chromium.
 
 Ang taong may passphrase mo lang ang makakapagbasa sa iyong naka-encrypt na data. Hindi ipinapadala sa o sino-store ng Google ang passphrase. Kung makakalimutan mo ang iyong passphrase o gusto mong baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-clear ang data sa Chromium sa iyong account<ph name="END_LINK" />.</translation>
+<translation id="7994322153108931467">Para makakuha ng mga kapaki-pakinabang na tip sa Chromium, i-on ang mga notification sa iyong mga setting ng iOS.</translation>
 <translation id="7995166854192397899">Batay ang mga suhestyon sa iyong aktibidad sa pag-browse sa iba mo pang device. Para makatanggap ng mga suhestyon, mag-sign in sa Chromium sa lahat ng iyong device.</translation>
 <translation id="800195749539500647">Sulitin ang Chromium</translation>
 <translation id="8013573822802650211">Para makita ang iyong mga tab sa kahit saan ka man gumagamit ng Chromium, mag-sign in sa lahat ng device mo</translation>

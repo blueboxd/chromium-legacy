@@ -95,13 +95,18 @@ SoftNavigationHeuristics::SoftNavigationHeuristics(LocalDOMWindow& window)
 
 SoftNavigationHeuristics* SoftNavigationHeuristics::From(
     LocalDOMWindow& window) {
-  // TODO(yoav): Ensure all callers don't have spurious IsMainFrame checks.
   if (!window.GetFrame()->IsMainFrame()) {
     return nullptr;
   }
   SoftNavigationHeuristics* heuristics =
       Supplement<LocalDOMWindow>::From<SoftNavigationHeuristics>(window);
   if (!heuristics) {
+    if (Document* document = window.document()) {
+      // Don't measure soft navigations in devtools.
+      if (document->Url().ProtocolIs("devtools")) {
+        return nullptr;
+      }
+    }
     heuristics = MakeGarbageCollected<SoftNavigationHeuristics>(window);
     ProvideTo(window, heuristics);
   }
@@ -126,7 +131,7 @@ void SoftNavigationHeuristics::ResetHeuristic() {
   interaction_task_id_to_interaction_data_.clear();
   soft_navigation_interaction_data_ = nullptr;
   last_interaction_task_id_ = scheduler::TaskAttributionId();
-  last_soft_navigation_ancestor_task_ = absl::nullopt;
+  last_soft_navigation_ancestor_task_ = std::nullopt;
   soft_navigation_descendant_cache_.clear();
   SetIsTrackingSoftNavigationHeuristicsOnDocument(false);
   did_reset_paints_ = false;
@@ -177,28 +182,28 @@ void SoftNavigationHeuristics::UserInitiatedInteraction() {
   ResetPaintsIfNeeded();
 }
 
-absl::optional<scheduler::TaskAttributionId>
-SoftNavigationHeuristics::GetUserInteractionAncestorTaskIfAny(
-    ScriptState* script_state) {
+std::optional<scheduler::TaskAttributionId>
+SoftNavigationHeuristics::GetUserInteractionAncestorTaskIfAny() {
   using IterationStatus = scheduler::TaskAttributionTracker::IterationStatus;
 
   if (potential_soft_navigation_tasks_.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   ThreadScheduler* scheduler = ThreadScheduler::Current();
   DCHECK(scheduler);
   if (scheduler::TaskAttributionTracker* tracker =
           scheduler->GetTaskAttributionTracker()) {
-    scheduler::TaskAttributionInfo* task = tracker->RunningTask(script_state);
+    scheduler::TaskAttributionInfo* task =
+        tracker->RunningTask(GetExecutionContext()->GetIsolate());
     if (!task) {
-      return absl::nullopt;
+      return std::nullopt;
     }
     auto cached_result =
         soft_navigation_descendant_cache_.find(task->Id().value());
     if (cached_result != soft_navigation_descendant_cache_.end()) {
       return cached_result->value;
     }
-    absl::optional<scheduler::TaskAttributionId> ancestor_task_id;
+    std::optional<scheduler::TaskAttributionId> ancestor_task_id;
     // Check if any of `potential_soft_navigation_tasks_` is an ancestor of
     // `task`.
     tracker->ForEachAncestor(
@@ -213,37 +218,34 @@ SoftNavigationHeuristics::GetUserInteractionAncestorTaskIfAny(
                                              ancestor_task_id);
     return ancestor_task_id;
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<scheduler::TaskAttributionId>
-SoftNavigationHeuristics::SetFlagIfDescendantAndCheck(ScriptState* script_state,
-                                                      FlagType type) {
-  absl::optional<scheduler::TaskAttributionId> result =
-      GetUserInteractionAncestorTaskIfAny(script_state);
+std::optional<scheduler::TaskAttributionId>
+SoftNavigationHeuristics::SetFlagIfDescendantAndCheck(FlagType type) {
+  std::optional<scheduler::TaskAttributionId> result =
+      GetUserInteractionAncestorTaskIfAny();
   if (!result) {
     // A non-descendent URL change should not set the flag.
-    return absl::nullopt;
+    return std::nullopt;
   }
   PerInteractionData* data = GetCurrentInteractionData(result.value());
   if (!data) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   data->flag_set.Put(type);
-  CheckSoftNavigationConditions(*data, script_state);
+  CheckSoftNavigationConditions(*data);
   return result;
 }
 
-void SoftNavigationHeuristics::SameDocumentNavigationStarted(
-    ScriptState* script_state) {
+void SoftNavigationHeuristics::SameDocumentNavigationStarted() {
   last_soft_navigation_ancestor_task_ =
-      SetFlagIfDescendantAndCheck(script_state, FlagType::kURLChange);
+      SetFlagIfDescendantAndCheck(FlagType::kURLChange);
   TRACE_EVENT1("scheduler",
                "SoftNavigationHeuristics::SameDocumentNavigationStarted",
                "descendant", !!last_soft_navigation_ancestor_task_);
 }
 void SoftNavigationHeuristics::SameDocumentNavigationCommitted(
-    ScriptState* script_state,
     const String& url) {
   if (!last_soft_navigation_ancestor_task_) {
     return;
@@ -256,24 +258,22 @@ void SoftNavigationHeuristics::SameDocumentNavigationCommitted(
   // This is overriding the URL, which is required to support history
   // modifications inside a popstate event.
   data->url = url;
-  CheckSoftNavigationConditions(*data, script_state);
+  CheckSoftNavigationConditions(*data);
   TRACE_EVENT1("scheduler",
                "SoftNavigationHeuristics::SameDocumentNavigationCommitted",
                "url", url);
 }
 
-bool SoftNavigationHeuristics::ModifiedDOM(ScriptState* script_state) {
+bool SoftNavigationHeuristics::ModifiedDOM() {
   bool descendant =
-      SetFlagIfDescendantAndCheck(script_state, FlagType::kMainModification)
-          .has_value();
+      SetFlagIfDescendantAndCheck(FlagType::kMainModification).has_value();
   TRACE_EVENT1("scheduler", "SoftNavigationHeuristics::ModifiedDOM",
                "descendant", descendant);
   return descendant;
 }
 
 void SoftNavigationHeuristics::CheckSoftNavigationConditions(
-    const SoftNavigationHeuristics::PerInteractionData& data,
-    ScriptState* script_state) {
+    const SoftNavigationHeuristics::PerInteractionData& data) {
   if (data.flag_set != FlagTypeSet::All()) {
     return;
   }
@@ -287,9 +287,7 @@ void SoftNavigationHeuristics::CheckSoftNavigationConditions(
   soft_navigation_conditions_met_ = true;
   soft_navigation_interaction_data_ = &data;
 
-  v8::HandleScope handle_scope(script_state->GetIsolate());
-  LocalFrame* frame = ToLocalFrameIfNotDetached(script_state->GetContext());
-  EmitSoftNavigationEntryIfAllConditionsMet(frame);
+  EmitSoftNavigationEntryIfAllConditionsMet(GetLocalFrameIfNotDetached());
 }
 
 void SoftNavigationHeuristics::EmitSoftNavigationEntryIfAllConditionsMet(
@@ -347,6 +345,16 @@ void SoftNavigationHeuristics::RecordPaint(
     LocalFrame* frame,
     uint64_t painted_area,
     bool is_modified_by_soft_navigation) {
+  if (!initial_interaction_encountered_ && is_modified_by_soft_navigation) {
+    // TODO(crbug.com/41496928): Paints can be reported for Nodes which had
+    // is_modified... flag set but a different instance of a
+    // SoftNavigationHeuristics class.  This happens when Nodes are re-parented
+    // into a new document, e.g. into an open() window.
+    // Instead of just ignoring the worst case of this issue as we do here, we
+    // should support this use case.  Either by clearing the flag on nodes, or,
+    // by staring an interaction/navigation id on Node, rathan than boolean.
+    return;
+  }
   if (!initial_interaction_encountered_) {
     // We haven't seen an interaction yet, so we are still measuring initial
     // paint area.
@@ -443,9 +451,7 @@ void SoftNavigationHeuristics::SetCurrentTimeAsStartTime() {
     // nested event scope).
     data->user_interaction_timestamp = base::TimeTicks::Now();
   }
-  LocalDOMWindow* window = GetSupplementable();
-  LocalFrame* frame =
-      window->IsCurrentlyDisplayedInFrame() ? window->GetFrame() : nullptr;
+  LocalFrame* frame = GetLocalFrameIfNotDetached();
   EmitSoftNavigationEntryIfAllConditionsMet(frame);
 }
 
@@ -485,17 +491,14 @@ void SoftNavigationHeuristics::ReportSoftNavigationToMetrics(
 }
 
 void SoftNavigationHeuristics::ResetPaintsIfNeeded() {
-  LocalDOMWindow* window = GetSupplementable();
-  LocalFrame* frame =
-      window->IsCurrentlyDisplayedInFrame() ? window->GetFrame() : nullptr;
+  LocalFrame* frame = GetLocalFrameIfNotDetached();
   if (!frame || !frame->IsOutermostMainFrame()) {
     return;
   }
   if (!did_reset_paints_) {
     LocalFrameView* local_frame_view = frame->View();
-
     CHECK(local_frame_view);
-
+    LocalDOMWindow* window = GetSupplementable();
     if (RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled(window)) {
       if (Document* document = window->document();
           document &&
@@ -550,9 +553,7 @@ void SoftNavigationHeuristics::Trace(Visitor* visitor) const {
 }
 
 void SoftNavigationHeuristics::OnCreateTaskScope(
-    scheduler::TaskAttributionInfo& task,
-    ScriptState* script_state) {
-  CHECK(script_state);
+    scheduler::TaskAttributionInfo& task) {
   ThreadScheduler* scheduler = ThreadScheduler::Current();
   CHECK(scheduler);
   auto* tracker = scheduler->GetTaskAttributionTracker();
@@ -582,7 +583,7 @@ void SoftNavigationHeuristics::OnCreateTaskScope(
                             current_event_parameters_->is_new_interaction);
   if (current_event_parameters_->type ==
       SoftNavigationHeuristics::EventScopeType::kNavigate) {
-    SameDocumentNavigationStarted(script_state);
+    SameDocumentNavigationStarted();
   }
 }
 
@@ -603,6 +604,11 @@ void SoftNavigationHeuristics::ProcessCustomWeakness(
 
 ExecutionContext* SoftNavigationHeuristics::GetExecutionContext() {
   return GetSupplementable();
+}
+
+LocalFrame* SoftNavigationHeuristics::GetLocalFrameIfNotDetached() const {
+  LocalDOMWindow* window = GetSupplementable();
+  return window->IsCurrentlyDisplayedInFrame() ? window->GetFrame() : nullptr;
 }
 
 // SoftNavigationEventScope implementation

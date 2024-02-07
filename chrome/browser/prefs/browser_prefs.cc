@@ -515,9 +515,12 @@
 #include "chrome/browser/ui/startup/first_run_service.h"
 #endif
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/downgrade/downgrade_prefs.h"
+#endif
+
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/device_identity/device_oauth2_token_store_desktop.h"
-#include "chrome/browser/downgrade/downgrade_prefs.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #endif
 
@@ -994,6 +997,16 @@ constexpr char kUpdateNotificationLastShownMilestone[] =
     "update_notification_last_shown_milestone";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Deprecated 02/2024.
+#if BUILDFLAG(IS_ANDROID)
+constexpr char kSavePasswordsSuspendedByError[] =
+    "profile.save_passwords_suspended_by_error";
+#endif
+constexpr char kSafeBrowsingDeepScanPromptSeen[] =
+    "safebrowsing.deep_scan_prompt_seen";
+constexpr char kSafeBrowsingEsbEnabledTimestamp[] =
+    "safebrowsing.esb_enabled_timestamp";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1412,6 +1425,13 @@ void RegisterProfilePrefsForMigration(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterIntegerPref(kUpdateNotificationLastShownMilestone, -10);
 #endif
+
+  // Deprecated 02/2024.
+#if BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(kSavePasswordsSuspendedByError, false);
+#endif
+  registry->RegisterBooleanPref(kSafeBrowsingDeepScanPromptSeen, false);
+  registry->RegisterTimePref(kSafeBrowsingEsbEnabledTimestamp, base::Time());
 }
 
 void ClearSyncRequestedPrefAndMaybeMigrate(PrefService* profile_prefs) {
@@ -1672,9 +1692,12 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // BUILDFLAG(IS_WIN)
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+  downgrade::RegisterPrefs(registry);
+#endif
+
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   RegisterDefaultBrowserPromptPrefs(registry);
-  downgrade::RegisterPrefs(registry);
   DeviceOAuth2TokenStoreDesktop::RegisterPrefs(registry);
 #endif
 
@@ -1924,6 +1947,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterListPref(prefs::kDeskAPIThirdPartyAllowlist);
   registry->RegisterBooleanPref(prefs::kInsightsExtensionEnabled, false);
   registry->RegisterBooleanPref(prefs::kEssentialSearchEnabled, false);
+  registry->RegisterBooleanPref(prefs::kLastEssentialSearchValue, false);
   // By default showing Sync Consent is set to true. It can changed by policy.
   registry->RegisterBooleanPref(prefs::kEnableSyncConsent, true);
   registry->RegisterListPref(
@@ -2673,6 +2697,15 @@ void MigrateObsoleteProfilePrefs(PrefService* profile_prefs,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   profile_prefs->ClearPref(kUpdateNotificationLastShownMilestone);
 #endif
+
+  // Deprecated 01/2024.
+#if BUILDFLAG(IS_ANDROID)
+  profile_prefs->ClearPref(kSavePasswordsSuspendedByError);
+#endif
+
+  // Deprecated 02/2024
+  profile_prefs->ClearPref(kSafeBrowsingDeepScanPromptSeen);
+  profile_prefs->ClearPref(kSafeBrowsingEsbEnabledTimestamp);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

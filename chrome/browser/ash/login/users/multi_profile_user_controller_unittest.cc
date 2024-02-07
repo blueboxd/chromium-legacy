@@ -30,6 +30,7 @@
 #include "components/user_manager/multi_user/multi_user_sign_in_policy.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_manager_pref_names.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/x509_certificate.h"
@@ -39,15 +40,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
-namespace {
 
 // TODO(b/278643115) Remove the using when moved.
-using user_manager::kMultiProfileUserBehaviorPref;
+namespace prefs {
+using user_manager::prefs::kCachedMultiProfileUserBehavior;
+using user_manager::prefs::kMultiProfileUserBehaviorPref;
+}  // namespace prefs
 using user_manager::MultiUserSignInPolicy;
 using user_manager::MultiUserSignInPolicyToPrefValue;
 using user_manager::ParseMultiUserSignInPolicyPref;
 
-const char* const kUsers[] = {"a@gmail.com", "b@gmail.com"};
+namespace {
+
+constexpr const char* kUsers[] = {"a@gmail.com", "b@gmail.com"};
 
 struct BehaviorTestCase {
   MultiUserSignInPolicy primary;
@@ -170,6 +175,9 @@ class MultiProfileUserControllerTest : public testing::Test {
     // freeing the network::CertVerifierWithTrustAnchors (see
     // PolicyCertService::OnTrustAnchorsChanged() which is called from
     // PolicyCertService::Shutdown()).
+    for (const auto& account_id : test_users_) {
+      fake_user_manager_->OnUserProfileWillBeDestroyed(account_id);
+    }
     controller_.reset();
     profile_manager_.reset();
     base::RunLoop().RunUntilIdle();
@@ -177,8 +185,11 @@ class MultiProfileUserControllerTest : public testing::Test {
 
   void LoginUser(size_t user_index) {
     ASSERT_LT(user_index, test_users_.size());
-    fake_user_manager_->LoginUser(test_users_[user_index]);
-    controller_->StartObserving(user_profiles_[user_index]);
+    fake_user_manager_->LoginUser(test_users_[user_index], false);
+    auto* user = fake_user_manager_->FindUserAndModify(test_users_[user_index]);
+    fake_user_manager_->OnUserProfileCreated(
+        test_users_[user_index], user_profiles_[user_index]->GetPrefs());
+    controller_->StartObserving(user);
   }
 
   void SetOwner(size_t user_index) {
@@ -191,7 +202,7 @@ class MultiProfileUserControllerTest : public testing::Test {
 
   void SetPrefBehavior(size_t user_index, MultiUserSignInPolicy policy) {
     GetUserPrefs(user_index)
-        ->SetString(prefs::kMultiProfileUserBehavior,
+        ->SetString(prefs::kMultiProfileUserBehaviorPref,
                     MultiUserSignInPolicyToPrefValue(policy));
   }
 

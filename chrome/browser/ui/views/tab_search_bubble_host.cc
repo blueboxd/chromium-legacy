@@ -7,6 +7,8 @@
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -102,15 +104,23 @@ void TabSearchBubbleHost::OnWidgetVisibilityChanged(views::Widget* widget,
         base::BindOnce(
             [](base::TimeTicks bubble_created_time,
                bool bubble_using_cached_web_contents,
+               WebUIBubbleWarmUpLevel bubble_warmup_level,
                base::TimeTicks presentation_timestamp) {
+              base::TimeDelta time_to_show =
+                  presentation_timestamp - bubble_created_time;
               base::UmaHistogramMediumTimes(
                   bubble_using_cached_web_contents
                       ? "Tabs.TabSearch.WindowTimeToShowCachedWebView2"
                       : "Tabs.TabSearch.WindowTimeToShowUncachedWebView2",
-                  presentation_timestamp - bubble_created_time);
+                  time_to_show);
+              base::UmaHistogramMediumTimes(
+                  base::StrCat({"Tabs.TabSearch.TimeToShow.",
+                                ToString(bubble_warmup_level)}),
+                  time_to_show);
             },
             *bubble_created_time_,
-            webui_bubble_manager_.bubble_using_cached_web_contents()));
+            webui_bubble_manager_.bubble_using_cached_web_contents(),
+            webui_bubble_manager_.bubble_warmup_level()));
     bubble_created_time_.reset();
   }
 }
@@ -149,6 +159,7 @@ void TabSearchBubbleHost::OnUserInvokedFeature(const Browser* browser) {
 bool TabSearchBubbleHost::ShowTabSearchBubble(
     bool triggered_by_keyboard_shortcut,
     int tab_index) {
+  TRACE_EVENT0("ui", "TabSearchBubbleHost::ShowTabSearchBubble");
   if (tab_index >= 0) {
     profile_->GetPrefs()->SetInteger(tab_search_prefs::kTabSearchTabIndex,
                                      tab_index);

@@ -458,45 +458,6 @@ TEST_F(ChromePasswordManagerClientTest, LogEntryNotifyRenderer) {
   EXPECT_FALSE(logging_active);
 }
 
-TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
-  sync_service()->GetUserSettings()->SetSelectedTypes(
-      /*sync_everything=*/false,
-      /*types=*/{syncer::UserSelectableType::kPasswords});
-  sync_service()->SetIsUsingExplicitPassphrase(false);
-
-  ChromePasswordManagerClient* client = GetClient();
-
-  // Passwords are syncing and custom passphrase isn't used.
-  EXPECT_EQ(password_manager::SyncState::kSyncingNormalEncryption,
-            client->GetPasswordSyncState());
-
-  // Sync paused due to a persistent auth error.
-  sync_service()->SetPersistentAuthError();
-  EXPECT_EQ(password_manager::SyncState::kNotSyncing,
-            client->GetPasswordSyncState());
-
-  // Again, using a custom passphrase.
-  sync_service()->ClearAuthError();
-  sync_service()->SetIsUsingExplicitPassphrase(true);
-
-  EXPECT_EQ(password_manager::SyncState::kSyncingWithCustomPassphrase,
-            client->GetPasswordSyncState());
-
-  // Report correctly if we aren't syncing passwords.
-  sync_service()->GetUserSettings()->SetSelectedTypes(
-      /*sync_everything=*/false,
-      /*types=*/{syncer::UserSelectableType::kBookmarks});
-
-  EXPECT_EQ(password_manager::SyncState::kNotSyncing,
-            client->GetPasswordSyncState());
-
-  // Again, without a custom passphrase.
-  sync_service()->SetIsUsingExplicitPassphrase(false);
-
-  EXPECT_EQ(password_manager::SyncState::kNotSyncing,
-            client->GetPasswordSyncState());
-}
-
 TEST_F(ChromePasswordManagerClientTest,
        SavingPasswordsTrueDeterminedByService) {
   // Test that saving passwords depends on querying the settings service.
@@ -1311,6 +1272,7 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
       static_cast<MockPasswordStoreInterface*>(
           GetClient()->GetProfilePasswordStore());
   base::WeakPtr<PasswordStoreConsumer> store_consumer;
+  EXPECT_CALL(*mock_store, IsAbleToSavePasswords).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_store, GetLogins(_, _))
       .WillOnce(SaveArg<1>(&store_consumer));
   driver->GetPasswordManager()->OnPasswordFormsParsed(driver.get(),
@@ -1471,14 +1433,10 @@ class ChromePasswordManagerClientWithAccountStoreAndroidTest
     // Using the account store on Android also requires UPM support for local
     // passwords.
     feature_list_.InitWithFeatures(
-        {password_manager::features::kEnablePasswordsAccountStorage,
-         password_manager::features::
+        {password_manager::features::
              kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
          password_manager::features::kSharedPasswordNotificationUI},
         {});
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        password_manager_android_util::
-            kSkipLocalUpmGmsCoreVersionCheckForTesting);
 
     ChromePasswordManagerClientAndroidTest::SetUp();
 

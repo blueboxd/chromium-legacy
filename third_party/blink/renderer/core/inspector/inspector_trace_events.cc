@@ -395,6 +395,8 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoMultiSelectFocus)
     DEFINE_STRING_MAPPING(PseudoOpen)
     DEFINE_STRING_MAPPING(PseudoClosed)
+    DEFINE_STRING_MAPPING(PseudoSelectAuthorButton)
+    DEFINE_STRING_MAPPING(PseudoSelectAuthorDatalist)
     DEFINE_STRING_MAPPING(PseudoDialogInTopLayer)
     DEFINE_STRING_MAPPING(PseudoPopoverInTopLayer)
     DEFINE_STRING_MAPPING(PseudoPopoverOpen)
@@ -718,6 +720,14 @@ static void CreateLayoutRoot(perfetto::TracedValue context,
   }
 }
 
+static void SetHeaders(perfetto::TracedValue context,
+                       const HTTPHeaderMap& headers) {
+  auto dict = std::move(context).WriteDictionary();
+  for (auto& header : headers) {
+    dict.Add(perfetto::DynamicString(header.key.Ascii()), header.value);
+  }
+}
+
 void inspector_layout_event::EndData(
     perfetto::TracedValue context,
     const HeapVector<LayoutObjectWithDepth>& layout_roots) {
@@ -971,6 +981,8 @@ void inspector_receive_response_event::Data(perfetto::TracedValue context,
     info.Add("ruleIdMatched",
              response.GetServiceWorkerRouterInfo()->RuleIdMatched());
   }
+
+  SetHeaders(dict.AddItem("headers"), response.HttpHeaderFields());
 }
 
 void inspector_receive_data_event::Data(perfetto::TracedValue context,
@@ -1257,7 +1269,7 @@ void inspector_compile_script_event::Data(
     perfetto::TracedValue context,
     const String& url,
     const TextPosition& text_position,
-    absl::optional<V8ConsumeCacheResult> consume_cache_result,
+    std::optional<V8ConsumeCacheResult> consume_cache_result,
     bool eager,
     bool streamed,
     ScriptStreamer::NotStreamingReason not_streaming_reason) {

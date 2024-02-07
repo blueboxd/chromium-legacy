@@ -53,6 +53,10 @@
 #include "content/browser/media/captured_surface_controller.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "media/capture/video/chromeos/system_event_monitor_impl.h"
+#endif
+
 namespace media {
 class AudioSystem;
 }
@@ -429,13 +433,6 @@ class CONTENT_EXPORT MediaStreamManager
       blink::mojom::CapturedWheelActionPtr action,
       base::OnceCallback<void(blink::mojom::CapturedSurfaceControlResult)>
           callback);
-
-  void GetZoomLevel(
-      GlobalRenderFrameHostId capturer_rfh_id,
-      const base::UnguessableToken& session_id,
-      base::OnceCallback<
-          void(std::optional<int> zoom_level,
-               blink::mojom::CapturedSurfaceControlResult result)> callback);
 
   void SetZoomLevel(
       GlobalRenderFrameHostId capturer_rfh_id,
@@ -846,6 +843,10 @@ class CONTENT_EXPORT MediaStreamManager
   mojo::UniqueReceiverSet<media::mojom::VideoCaptureHost> video_capture_hosts_;
 
   GenerateStreamTestCallback generate_stream_test_callback_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  std::unique_ptr<media::SystemEventMonitorImpl> system_event_monitor_;
+#endif
 };
 
 }  // namespace content

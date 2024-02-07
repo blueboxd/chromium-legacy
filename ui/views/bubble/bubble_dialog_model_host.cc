@@ -149,7 +149,7 @@ class CheckboxControl : public Checkbox {
     AddChildView(std::move(label));
   }
 
-  void Layout() override {
+  void Layout(PassKey) override {
     // Skip LabelButton to use LayoutManager.
     LayoutSuperclass<View>(this);
   }
@@ -1067,15 +1067,6 @@ void BubbleDialogModelHost::UpdateSpacingAndMargins() {
       layout_provider->GetInsetsMetric(InsetsMetric::INSETS_DIALOG);
   dialog_side_insets.set_top(0);
   dialog_side_insets.set_bottom(0);
-
-  // If there is a Main Image, the left dialog inset value is no longer the
-  // correct metric. Use the related control metric instead.
-  // TODO(kylixrd): Investigate whether this should be a unique distance metric
-  // or if the related control metric is valid.
-  if (!GetMainImage().IsEmpty()) {
-    dialog_side_insets.set_left(layout_provider->GetDistanceMetric(
-        DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  }
 
   ui::DialogModelField* first_field = nullptr;
   ui::DialogModelField* last_field = nullptr;

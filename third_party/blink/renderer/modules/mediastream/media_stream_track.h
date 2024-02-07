@@ -73,7 +73,7 @@ class MODULES_EXPORT MediaStreamTrack
     MediaStreamSource::ReadyState ready_state;
     // Set only if
     // track_impl_subtype->IsSubclass(BrowserCaptureMediaStreamTrack::GetStaticWrapperTypeInfo())
-    absl::optional<uint32_t> sub_capture_target_version;
+    std::optional<uint32_t> sub_capture_target_version;
   };
 
   // See SetFromTransferredStateImplForTesting in ./test/transfer_test_utils.h.
@@ -162,17 +162,6 @@ class MODULES_EXPORT MediaStreamTrack
                          int wheel_delta_y,
                          base::OnceCallback<void(DOMException*)> callback) = 0;
 
-  // When called on a "live" video track associated with tab-capture,
-  // returns the zoom level of the capture tab's viewport.
-  // This is subject to a permission policy on the capturing origin.
-  //
-  // If successful, |callback| is invoked with the zoom level in percentage
-  // points and an empty string.
-  // If unsuccessful, it is invoked with `absl::nullopt` and an error message.
-  virtual void GetZoomLevel(
-      base::OnceCallback<void(absl::optional<int>, const String&)>
-          callback) = 0;
-
   // When called on a "live" video track associated with tab-capture, asks to
   // set the zoom level on the captured tab's viewport.  This is subject to a
   // permission policy on the capturing origin.
@@ -190,7 +179,7 @@ class MODULES_EXPORT MediaStreamTrack
       uint32_t context_buffer_size) = 0;
 
   virtual ImageCapture* GetImageCapture() = 0;
-  virtual absl::optional<const MediaStreamDevice> device() const = 0;
+  virtual std::optional<const MediaStreamDevice> device() const = 0;
   // This function is called on the track by the serializer once it has been
   // serialized for transfer to another context.
   // Prepares the track for a potentially cross-renderer transfer. After this

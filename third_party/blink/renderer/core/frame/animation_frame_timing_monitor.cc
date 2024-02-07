@@ -168,7 +168,7 @@ void AnimationFrameTimingMonitor::OnTaskCompleted(
     }
   }
   entry_point_depth_ = 0;
-  pending_script_info_ = absl::nullopt;
+  pending_script_info_ = std::nullopt;
 
   // If we already need an update and a new task is processed, count its
   // duration towards blockingTime.
@@ -373,7 +373,7 @@ ScriptTimingInfo* AnimationFrameTimingMonitor::PopScriptEntryPoint(
     return nullptr;
   }
 
-  absl::optional<PendingScriptInfo> script_info;
+  std::optional<PendingScriptInfo> script_info;
   std::swap(script_info, pending_script_info_);
 
   if (!enabled_ || !context || !context->IsWindow() ||
@@ -464,7 +464,7 @@ void AnimationFrameTimingMonitor::Will(
                           ? ScriptTimingInfo::InvokerType::kModuleScript
                           : ScriptTimingInfo::InvokerType::kClassicScript,
       .start_time = probe_data.CaptureStartTime(),
-      .source_location = {.url = url}};
+      .source_location = {.url = url, .char_position = 0}};
   if (probe_data.sanitize) {
     pending_script_info_->execution_start_time =
         pending_script_info_->start_time;
@@ -526,7 +526,7 @@ ScriptTimingInfo::ScriptSourceLocation CaptureScriptSourceLocation(
       .url = ToCoreStringWithUndefinedOrNullCheck(isolate, source_location),
       .function_name =
           ToCoreStringWithUndefinedOrNullCheck(isolate, function->GetName()),
-      .start_position = function->GetScriptStartPosition()};
+      .char_position = function->GetScriptStartPosition()};
 }
 
 }  // namespace

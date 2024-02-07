@@ -34,7 +34,8 @@ class CrxDownloaderFactoryChromium : public CrxDownloaderFactory {
       std::optional<base::FilePath> background_downloader_cache_path)
       : network_fetcher_factory_(network_fetcher_factory) {
 #if BUILDFLAG(IS_MAC)
-    if (background_downloader_cache_path) {
+    if (__builtin_available(macOS 10.11, *) &&
+        background_downloader_cache_path) {
       background_sequence_ = base::ThreadPool::CreateSequencedTaskRunner(
           kTaskTraitsBackgroundDownloader);
       background_downloader_shared_session_ =

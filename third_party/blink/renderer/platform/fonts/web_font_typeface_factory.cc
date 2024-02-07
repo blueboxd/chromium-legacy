@@ -51,7 +51,7 @@ sk_sp<SkTypeface> MakeTypefaceDefaultFontMgr(sk_sp<SkData> data) {
   if (!CoreTextVersionSupportsVariations()) {
     font_manager = sk_sp<SkFontMgr>(SkFontMgr_New_Custom_Empty());
   } else {
-    font_manager = SkFontMgr::RefDefault();
+    font_manager = skia::DefaultFontMgr();
   }
 #else
   font_manager = skia::DefaultFontMgr();

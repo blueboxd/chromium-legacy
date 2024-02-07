@@ -732,10 +732,9 @@ void BackgroundContentsService::HandleExtensionCrashed(
       extensions::Manifest::IsPolicyLocation(extension->location());
   if (!force_installed) {
     ShowBalloon(extension);
-  } else {
-    // Restart the extension.
-    RestartForceInstalledExtensionOnCrash(extension);
   }
+
+  RestartForceInstalledExtensionOnCrash(extension);
 }
 
 void BackgroundContentsService::NotificationImageReady(

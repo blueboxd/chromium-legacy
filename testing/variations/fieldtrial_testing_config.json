@@ -9202,6 +9202,21 @@
             ]
         }
     ],
+    "IOSTabGridAlwaysBounce": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabGridAlwaysBounce"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSTabGridCompositionalLayout": [
         {
             "platforms": [
@@ -10170,6 +10185,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "LeakSkiaEventTracerAtExit"
+                    ]
+                }
+            ]
+        }
+    ],
+    "LegacyTechReportEnableCookieIssueReports": [
+        {
+            "platforms": [
+                "android",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LegacyTechReportEnableCookieIssueReports"
                     ]
                 }
             ]

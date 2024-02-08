@@ -1069,7 +1069,7 @@ Los permisos que hayas dado a aplicaciones se pueden aplicar a esta cuenta. Pued
 <translation id="1810070166657251157">Si quieres usar las contraseñas que tienes guardadas en tu teléfono, escanea el código QR, descarga Chrome para iOS e inicia sesión en tu cuenta de Google.</translation>
 <translation id="1810366086647840386">Servidor de imágenes</translation>
 <translation id="1811908311154949291">Marco delimitado de incógnito: <ph name="FENCEDFRAME_SITE" /></translation>
-<translation id="1812027881030482584"><ph name="SITE_ETLD_PLUS_ONE" /> no puede seguir usando <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
+<translation id="1812027881030482584"><ph name="SITE_ETLD_PLUS_ONE" /> no puede seguir usando <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />.</translation>
 <translation id="1812284620455788548">Enviando <ph name="TAB_NAME" /></translation>
 <translation id="1813278315230285598">Servicios</translation>
 <translation id="18139523105317219">Nombre de parte EDI</translation>
@@ -3604,7 +3604,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3776508619697147021">Los sitios pueden solicitar permiso para descargar varios archivos automáticamente</translation>
 <translation id="3776796446459804932">Esta extensión infringe la política de Chrome Web Store.</translation>
 <translation id="3777483481409781352">No se ha podido activar el dispositivo móvil</translation>
-<translation id="3777796259512476958">Cierra tu sesión en la mayoría de los sitios</translation>
+<translation id="3777796259512476958">Cierra tu sesión en la mayoría de los sitios.</translation>
 <translation id="3778208826288864398">La llave de seguridad está bloqueada porque se ha introducido el PIN de forma incorrecta demasiadas veces. Tendrás que restablecer la llave de seguridad.</translation>
 <translation id="3778740492972734840">&amp;Herramientas para desarrolladores</translation>
 <translation id="3778868487658107119">Puedes hacerle preguntas e indicarle tareas para que las realice. Esta función, siempre lista para ayudarte, te permite utilizar Google de forma personalizada.</translation>
@@ -4576,7 +4576,6 @@ Puede tratarse de información sobre el software instalado, los archivos, tu nav
 <translation id="4546345569117159016">Botón derecho</translation>
 <translation id="4546509872654834602"><ph name="SUPERVISED_USER_NAME" /> quiere usar esta extensión:</translation>
 <translation id="4546692474302123343">Entrada de voz del Asistente de Google</translation>
-<translation id="4547538408998421970">Has alcanzado tu límite de hoy.</translation>
 <translation id="4547659257713117923">No hay pestañas de otros dispositivos</translation>
 <translation id="4547672827276975204">Definir automáticamente</translation>
 <translation id="4548858987594081919">Para ayudar al Gestor de contraseñas de Google a guardar tu información de inicio de sesión, añade tu nombre de usuario para este sitio</translation>
@@ -5182,7 +5181,6 @@ Usa Ctrl + Alt + Reducir el brillo para reducir la pantalla.</translation>
 <translation id="5032430150487044192">No se puede crear el código QR</translation>
 <translation id="5033137252639132982">No puede usar sensores de movimiento</translation>
 <translation id="5033266061063942743">Formas geométricas</translation>
-<translation id="5033646801355533305">Inténtalo de nuevo mañana.</translation>
 <translation id="5035846135112863536">Selecciona el botón Más detalles para consultar más información de <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />.</translation>
 <translation id="5037676449506322593">Seleccionar todo</translation>
 <translation id="5038818366306248416">Anteriormente elegiste no permitir ninguna extensión en <ph name="ORIGIN" /></translation>

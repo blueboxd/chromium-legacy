@@ -993,7 +993,7 @@ Izin yang telah Anda berikan ke aplikasi dapat berlaku untuk akun ini. Anda dapa
 <translation id="1749733017156547309">Sandi wajib diisi</translation>
 <translation id="1750172676754093297">Kunci keamanan Anda tidak dapat menyimpan sidik jari</translation>
 <translation id="1751262127955453661"><ph name="ORIGIN" /> akan dapat mengedit file di <ph name="FOLDERNAME" /> hingga Anda menutup semua tab untuk situs ini</translation>
-<translation id="17513872634828108">Buka tab</translation>
+<translation id="17513872634828108">Tab terbuka</translation>
 <translation id="175196451752279553">Buka k&amp;embali tab yang tertutup</translation>
 <translation id="1753067873202720523">Chromebook Anda mungkin tidak mengisi daya ketika sedang dinyalakan.</translation>
 <translation id="1753905327828125965">Sering Dibuka</translation>
@@ -4592,7 +4592,6 @@ Informasi ini dapat mencakup informasi tentang software yang diinstal, file, bro
 <translation id="4546345569117159016">Tombol kanan</translation>
 <translation id="4546509872654834602"><ph name="SUPERVISED_USER_NAME" /> ingin menggunakan ekstensi ini:</translation>
 <translation id="4546692474302123343">Masukan suara Asisten Google</translation>
-<translation id="4547538408998421970">Anda telah mencapai batas untuk hari ini.</translation>
 <translation id="4547659257713117923">Tidak Ada Tab dari Perangkat Lainnya</translation>
 <translation id="4547672827276975204">Setel otomatis</translation>
 <translation id="4548858987594081919">Untuk membantu Pengelola Sandi Google menyimpan info login Anda, tambahkan nama pengguna Anda untuk situs ini</translation>
@@ -5198,7 +5197,6 @@ Gunakan Ctrl + Alt + Kurangi kecerahan untuk memperkecil.</translation>
 <translation id="5032430150487044192">Tidak dapat membuat Kode QR</translation>
 <translation id="5033137252639132982">Tidak diizinkan menggunakan sensor gerakan</translation>
 <translation id="5033266061063942743">Bentuk geometris</translation>
-<translation id="5033646801355533305">Coba lagi besok.</translation>
 <translation id="5035846135112863536">Pilih "Detail selengkapnya" di bawah untuk mendapatkan informasi selengkapnya dari <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />.</translation>
 <translation id="5037676449506322593">Pilih Semua</translation>
 <translation id="5038818366306248416">Anda sebelumnya memilih untuk tidak mengizinkan ekstensi di <ph name="ORIGIN" /></translation>

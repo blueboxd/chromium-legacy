@@ -302,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'src_internal_revision': '72da1507d1bc1e98569c5e79c259344dfd6cfd1d',
+  'src_internal_revision': '50ce6cc2b9e9dd64a4b86cbcc35dbfa88c9277fb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
@@ -397,7 +397,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'dcf32e98a4de4e6faa5dba45b71a1863bf903a23',
+  'devtools_frontend_revision': '09b09ec03d2fc168046840a2edb8ba667a6008ff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -821,7 +821,7 @@ deps = {
 
   'src/clank': {
     'url': Var('chrome_git') + '/clank/internal/apps.git' + '@' +
-    '844fd8643c299bc3af2c6bcc856549146e20e552',
+    '1f9c83bfd64760a3291af37def431467b423db7a',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -1199,7 +1199,7 @@ deps = {
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/devtools-frontend-internal': {
-      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + '5565821babee622cf4b6ce723f1d5df92c114220',
+      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + 'fe3bc2c2f77138aba71fc8b6b384a60ccabf2422',
     'condition': 'checkout_src_internal',
   },
 
@@ -1983,7 +1983,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'aUaAg7jykLDUyuPzQu03wy1Pwq_0cheLJKQdt2OuHu8C',
+        'version': 'hvRYxBx8lP9xe-CorvykBSOnYvyUP-4W4Ma257T4HsUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4012,7 +4012,7 @@ deps = {
 
   'src/ios_internal':  {
       'url': Var('chrome_git') + '/chrome/ios_internal.git' + '@' +
-        '1f11f0029d89e34cda96121751e69333ab3429b7',
+        '6313dbc9cde058ea7212755c2e33b6ff31f4345b',
       'condition': 'checkout_ios and checkout_src_internal',
   },
 

@@ -4558,7 +4558,6 @@ Mogą one obejmować informacje o zainstalowanym oprogramowaniu, plikach, przeg
 <translation id="4546345569117159016">Prawy przycisk</translation>
 <translation id="4546509872654834602"><ph name="SUPERVISED_USER_NAME" /> chce używać tego rozszerzenia:</translation>
 <translation id="4546692474302123343">Głosowe wprowadzanie tekstu w Asystencie Google</translation>
-<translation id="4547538408998421970">Dzisiejszy limit został wykorzystany.</translation>
 <translation id="4547659257713117923">Brak kart z innych urządzeń</translation>
 <translation id="4547672827276975204">Ustaw automatycznie</translation>
 <translation id="4548858987594081919">Aby pomóc Menedżerowi haseł Google zapisać dane logowania, dodaj nazwę użytkownika dla tej strony</translation>
@@ -5164,7 +5163,6 @@ Aby pomniejszyć, naciśnij Ctrl + Alt + zmniejsz jasność.</translation>
 <translation id="5032430150487044192">Nie udało się utworzyć kodu QR</translation>
 <translation id="5033137252639132982">Nie zezwolono na używanie czujników ruchu</translation>
 <translation id="5033266061063942743">Kształty geometryczne</translation>
-<translation id="5033646801355533305">Spróbuj jeszcze raz jutro.</translation>
 <translation id="5035846135112863536">Aby dowiedzieć się więcej od firmy <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />, kliknij „Więcej szczegółów” poniżej.</translation>
 <translation id="5037676449506322593">Wybierz wszystko</translation>
 <translation id="5038818366306248416">Poprzednio nie zezwoliłeś(-aś) na żadne rozszerzenia na <ph name="ORIGIN" /></translation>
@@ -7873,7 +7871,7 @@ Masz jeszcze # przejętego hasła. Menedżer haseł Google zaleca, aby jak najs
 <translation id="7222204278952406003">Chrome jest domyślną przeglądarką</translation>
 <translation id="7222232353993864120">Adres e-mail</translation>
 <translation id="7222235798733126207">Ograniczone udostępnianie treści między witrynami</translation>
-<translation id="7222335051802562841">Zakończ aktualizację</translation>
+<translation id="7222335051802562841">Dokończ aktualizację</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="722408235435815623">{MEMBERS,plural, =1{1 witryna w grupie, którą zarządza <ph name="FPS_OWNER" />}few{{MEMBERS} witryny w grupie, którą zarządza <ph name="FPS_OWNER" />}many{{MEMBERS} witryn w grupie, którą zarządza <ph name="FPS_OWNER" />}other{{MEMBERS} witryny w grupie, którą zarządza <ph name="FPS_OWNER" />}}</translation>
 <translation id="7225082563376899794">Podczas wypełniania haseł używaj Windows Hello</translation>

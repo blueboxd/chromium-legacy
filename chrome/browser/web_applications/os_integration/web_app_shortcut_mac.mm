@@ -854,10 +854,10 @@ static const LSCopyApplicationURLsForBundleIdentifierPtr LSCopyApplicationURLsFo
             base::SysUTF8ToCFStringRef(bundle_id).get(), /*outError=*/nullptr));
   } else {
     base::apple::ScopedCFTypeRef<CFURLRef> cf_url;
-    LSFindApplicationForInfo(kLSUnknownCreator, base::SysUTF8ToCFStringRef(bundle_id), NULL, NULL,
+    LSFindApplicationForInfo(kLSUnknownCreator, base::SysUTF8ToCFStringRef(bundle_id).get(), NULL, NULL,
                              cf_url.InitializeInto());
     if (cf_url)
-      bundle_urls = (@[ base::apple::CFToNSPtrCast(cf_url) ]);
+      bundle_urls = (@[ base::apple::CFToNSPtrCast(cf_url.get()) ]);
   }
   for (NSURL* url : bundle_urls) {
     base::FilePath bundle_path = base::apple::NSURLToFilePath(url);
@@ -2143,7 +2143,7 @@ void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
 Result UpdatePlatformShortcuts(
     const base::FilePath& app_data_path,
     const std::u16string& old_app_title,
-    absl::optional<ShortcutLocations> user_specified_locations,
+    std::optional<ShortcutLocations> user_specified_locations,
     const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);

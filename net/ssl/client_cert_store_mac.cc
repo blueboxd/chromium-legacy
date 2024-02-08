@@ -81,7 +81,7 @@ OSStatus CopyCertChain(
       // The return value is intentionally ignored since we only care about
       // building a cert chain, not whether it is trusted (the server is the
       // only one that can decide that.)
-      std::ignore = SecTrustEvaluateWithError(trust, nullptr);
+      std::ignore = SecTrustEvaluateWithError(trust.get(), nullptr);
     } else {
       SecTrustResultType status;
       result = SecTrustEvaluate(trust.get(), &status);

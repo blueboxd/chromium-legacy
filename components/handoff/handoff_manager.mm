@@ -77,9 +77,8 @@
       self.userActivity = nil;
       return;
     }
-
-    // No change to the user activity.
-    const GURL userActivityURL = net::GURLWithNSURL(self.userActivity.webpageURL);
+    const GURL userActivityURL =
+        net::GURLWithNSURL(self.userActivity.webpageURL);
     if (userActivityURL == _activeURL) {
       return;
     }
@@ -90,9 +89,6 @@
     self.userActivity = [[NSUserActivity alloc]
         initWithActivityType:*NSUserActivityTypeBrowsingWebStr];
     self.userActivity.webpageURL = net::NSURLWithGURL(_activeURL);
-    NSString* origin = handoff::StringFromOrigin(_origin);
-    DCHECK(origin);
-    self.userActivity.userInfo = @{handoff::kOriginKey : origin};
     [self.userActivity becomeCurrent];
   }
 }

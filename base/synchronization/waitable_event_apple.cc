@@ -228,10 +228,10 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
       const bool auto_reset =
           raw_waitables[i]->policy_ == WaitableEvent::ResetPolicy::AUTOMATIC;
       // The block will copy a reference to |right|.
-      scoped_refptr<WaitableEvent::ReceiveRight> right =
-          raw_waitables[i]->receive_right_;
+      scoped_refptr<WaitableEvent::ReceiveRight> right(
+          raw_waitables[i]->receive_right_);
       auto source = std::make_unique<base::apple::DispatchSourceMach>(
-          queue, right->Name(), ^{
+          queue.get(), right->Name(), ^{
             // After the semaphore is signaled, another event be signaled and
             // the source may have its block put on the |queue|. WaitMany
             // should only report (and auto-reset) one event, so the first
@@ -248,7 +248,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
       sources.push_back(std::move(source));
     }
 
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(semaphore.get(), DISPATCH_TIME_FOREVER);
     DCHECK_NE(signaled, kUnsignaled);
     return signaled;
   } else {

@@ -199,10 +199,10 @@ bool DoDeleteWebAuthnCredentials(const std::string& keychain_access_group,
         CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                   &kCFTypeDictionaryKeyCallBacks,
                                   &kCFTypeDictionaryValueCallBacks));
-    CFDictionarySetValue(delete_query, kSecClass, kSecClassKey);
-    CFDictionarySetValue(delete_query, kSecAttrApplicationLabel,
+    CFDictionarySetValue(delete_query.get(), kSecClass, kSecClassKey);
+    CFDictionarySetValue(delete_query.get(), kSecAttrApplicationLabel,
                          sec_attr_app_label);
-    OSStatus status = Keychain::GetInstance().ItemDelete(delete_query);
+    OSStatus status = Keychain::GetInstance().ItemDelete(delete_query.get());
     if (status != errSecSuccess) {
       OSSTATUS_DLOG(ERROR, status) << "SecItemDelete failed";
       result = false;

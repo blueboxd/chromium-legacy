@@ -155,7 +155,7 @@ CreateAppShimRequirement() {
   if(kSecCodeInfoFlagsStr) {
     framework_signing_info_flags =
         base::apple::GetValueFromDictionary<CFNumberRef>(
-            framework_signing_info.get(), kSecCodeInfoFlags);
+            framework_signing_info.get(), *kSecCodeInfoFlagsStr);
   } else {
     framework_signing_info_flags = nullptr;
   }

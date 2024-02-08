@@ -255,12 +255,14 @@ void SelectFileDialogBridge::Show(
       panel_.canSelectHiddenExtension = YES;
     }
 
-    // The tag autosetter in macOS is not reliable (see
-    // https://crbug.com/1510399). Explicitly set the `showsTagField` property
-    // as a signal to macOS that we will handle all the file tagging; a
-    // side-effect of setting the property to any value is that it turns off
-    // the tag autosetter.
-    panel_.showsTagField = YES;
+    if (@available(macOS 10.9, *)) {
+      // The tag autosetter in macOS is not reliable (see
+      // https://crbug.com/1510399). Explicitly set the `showsTagField` property
+      // as a signal to macOS that we will handle all the file tagging; a
+      // side-effect of setting the property to any value is that it turns off
+      // the tag autosetter.
+      panel_.showsTagField = YES;
+    }
   } else {
     // This does not use ObjCCast because the underlying object could be a
     // non-exported AppKit type (https://crbug.com/995476).
@@ -439,10 +441,12 @@ void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {
         index = 1;
       }
 
-      // The tag autosetter was turned off when `showsTagField` was set above.
-      // Retrieve the tags for assignment later.
-      for (NSString* tag in panel_.tagNames) {
-        file_tags.push_back(base::SysNSStringToUTF8(tag));
+      if (@available(macOS 10.9, *)) {
+        // The tag autosetter was turned off when `showsTagField` was set above.
+        // Retrieve the tags for assignment later.
+        for (NSString* tag in panel_.tagNames) {
+          file_tags.push_back(base::SysNSStringToUTF8(tag));
+        }
       }
     } else {
       // This does not use ObjCCast because the underlying object could be a

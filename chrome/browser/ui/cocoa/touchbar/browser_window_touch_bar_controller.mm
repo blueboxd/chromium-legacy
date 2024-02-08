@@ -17,7 +17,7 @@
 #import "ui/base/cocoa/touch_bar_util.h"
 
 @interface BrowserWindowTouchBarController () {
-  NSWindow* __weak _window;
+  NSWindow* __unsafe_unretained _window;
 
   BrowserWindowDefaultTouchBar* __strong _defaultTouchBar;
 

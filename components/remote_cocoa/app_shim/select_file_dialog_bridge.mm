@@ -94,7 +94,7 @@ NSView* CreateAccessoryView() {
   return view;
 }
 
-NSSavePanel* __weak g_last_created_panel_for_testing = nil;
+NSSavePanel* __unsafe_unretained g_last_created_panel_for_testing = nil;
 
 }  // namespace
 

@@ -712,7 +712,8 @@ void ClipboardHostImpl::OnCopyHtmlAllowedResult(
     clipboard_writer_->SetDataSourceURL(
         render_frame_host().GetMainFrame()->GetLastCommittedURL(),
         render_frame_host().GetLastCommittedURL());
-    clipboard_writer_->WriteHTML(markup, source_url.spec());
+    clipboard_writer_->WriteHTML(markup, source_url.spec(),
+                                 ui::ClipboardContentType::kUnsanitized);
   }
 }
 

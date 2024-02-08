@@ -178,6 +178,6 @@
       (syscall-number SYS_write)
       (syscall-number SYS_write_nocancel)
 )))
-
-(if (not (maybe-disable-metal-shader-cache))
-  (maybe-allow-metal-shader-cache-access))
+(if (>= os-version 1015)
+  (if (not (maybe-disable-metal-shader-cache))
+    (maybe-allow-metal-shader-cache-access)))

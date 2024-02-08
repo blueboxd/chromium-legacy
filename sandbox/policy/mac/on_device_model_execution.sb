@@ -72,6 +72,7 @@
   (subpath (param darwin-user-temp-dir))
 )
 
-(if (not (maybe-disable-metal-shader-cache))
-  (maybe-allow-metal-shader-cache-access))
+(if (>= os-version 1015)
+  (if (not (maybe-disable-metal-shader-cache))
+    (maybe-allow-metal-shader-cache-access)))
 

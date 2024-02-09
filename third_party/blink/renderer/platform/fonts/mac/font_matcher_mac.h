@@ -56,6 +56,12 @@ base::apple::ScopedCFTypeRef<CTFontRef> MatchSystemUIFont(
 // Converts a blink::FontSelectionValue to the nearest AppKit font weight if
 // possible, otherwise returns the default font weight.
 int ToAppKitFontWeight(FontSelectionValue);
+
+PLATFORM_EXPORT
+int ToCSSFontWeight(float ct_font_weight);
+
+float ToCTFontWeight(int css_weight);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_MATCHER_MAC_H_

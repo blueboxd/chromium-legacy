@@ -108,6 +108,22 @@ BOOL BetterChoice(NSFontTraitMask desired_traits,
   return candidate_weight_delta_magnitude < chosen_weight_delta_magnitude;
 }
 
+NSFontWeight ToFontWeight(blink::FontSelectionValue font_weight) {
+  if (font_weight <= 50 || font_weight >= 950) {
+    return NSFontWeightRegular;
+  }
+
+  const NSFontWeight ns_font_weights[] = {
+      NSFontWeightUltraLight, NSFontWeightThin,   NSFontWeightLight,
+      NSFontWeightRegular,    NSFontWeightMedium, NSFontWeightSemibold,
+      NSFontWeightBold,       NSFontWeightHeavy,  NSFontWeightBlack,
+  };
+  size_t select_weight = roundf(font_weight / 100) - 1;
+  DCHECK_GE(select_weight, 0ul);
+  DCHECK_LE(select_weight, std::size(ns_font_weights));
+  return ns_font_weights[select_weight];
+}
+
 }  // namespace
 
 ScopedCFTypeRef<CTFontRef> MatchUniqueFont(const AtomicString& unique_font_name,
@@ -145,6 +161,9 @@ void ClampVariationValuesToFontAcceptableRange(
     FontSelectionValue& weight,
     FontSelectionValue& width) {
   ScopedCFTypeRef<CFArrayRef> all_axes(CTFontCopyVariationAxes(ct_font.get()));
+  if (!all_axes) {
+    return;
+  }
   for (CFIndex i = 0; i < CFArrayGetCount(all_axes.get()); ++i) {
     CFDictionaryRef axis = base::apple::CFCast<CFDictionaryRef>(
         CFArrayGetValueAtIndex(all_axes.get(), i));

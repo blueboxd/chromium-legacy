@@ -671,8 +671,8 @@ class MapFileParserLld:
 def _DetectLto(lines):
   """Scans LLD linker map file and returns whether LTO was used."""
   # It's assumed that the first line in |lines| was consumed to determine that
-  # LLD was used. Seek 'thinlto-cache' prefix within an "indicator section" as
-  # indicator for LTO.
+  # LLD was used. Seek 'thinlto-cache' prefix or the string '.lto' within an
+  # "indicator section" as indicator for LTO.
   found_indicator_section = False
   # Potential names of "main section". Only one gets used.
   indicator_section_set = set(['.rodata', '.ARM.exidx'])
@@ -696,7 +696,7 @@ def _DetectLto(lines):
         found_indicator_section = True
     elif indent_size == 8:
       if found_indicator_section:
-        if tok.startswith('thinlto-cache'):
+        if tok.startswith('thinlto-cache') or '.lto.' in tok:
           return True
   return False
 

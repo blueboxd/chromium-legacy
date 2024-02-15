@@ -8,6 +8,7 @@
 #include <string_view>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "ash/constants/ash_switches.h"
 #include "ash/picker/model/picker_search_results.h"
@@ -34,6 +35,9 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
+
+enum class AppListSearchResultType;
+
 namespace {
 
 // The hash value for the feature key of the Picker feature, used for
@@ -125,10 +129,50 @@ PickerInsertMediaRequest::MediaData ResultToInsertMediaData(
       result.data());
 }
 
+PickerSearchResults::Section GetFakeExpressionsSection() {
+  return PickerSearchResults::Section(
+      u"Matching expressions",
+      {{PickerSearchResult::Emoji(u"👍"), PickerSearchResult::Emoji(u"😊"),
+        PickerSearchResult::Symbol(u"⊃"), PickerSearchResult::Symbol(u"⊇"),
+        PickerSearchResult::Symbol(u"♬"),
+        PickerSearchResult::Emoticon(u"¯\\_(ツ)_/¯"),
+        PickerSearchResult::Gif(
+            GURL("https://media.tenor.com/BzfS_9uPq_AAAAAd/cat-bonfire.gif"),
+            gfx::Size(140, 140), u"gif")}});
+}
+
+PickerSearchResults::Section GetFakeLinksSection() {
+  return PickerSearchResults::Section(
+      u"Matching links",
+      {{
+          PickerSearchResult::BrowsingHistory(
+              GURL("http://www.foo.com"), u"Foo",
+              ui::ImageModel::FromVectorIcon(kPlaceholderIcon)),
+          PickerSearchResult::BrowsingHistory(
+              GURL("http://crbug.com"), u"Crbug",
+              ui::ImageModel::FromVectorIcon(kPlaceholderIcon)),
+      }});
+}
+
+PickerSearchResults::Section GetFakeFilesSection() {
+  return PickerSearchResults::Section(
+      u"Matching files", {{PickerSearchResult::Text(u"my file"),
+                           PickerSearchResult::Text(u"my other file")}});
+}
+
+void HandleSearchResults(PickerViewDelegate::SearchResultsCallback callback,
+                         ash::AppListSearchResultType type,
+                         std::vector<PickerSearchResult> results) {
+  callback.Run(PickerSearchResults({{
+      GetFakeExpressionsSection(),
+      PickerSearchResults::Section(u"Matching links", results),
+      GetFakeFilesSection(),
+  }}));
+}
+
 }  // namespace
 
-PickerController::PickerController()
-    : should_paint_(MatchPickerFeatureKeyHash() == PickerFeatureKeyType::kDev) {
+PickerController::PickerController() {
   asset_fetcher_ = std::make_unique<PickerAssetFetcherImpl>(base::BindRepeating(
       &PickerController::DownloadGifToString, weak_ptr_factory_.GetWeakPtr()));
   if (auto* manager = ash::input_method::InputMethodManager::Get()) {
@@ -191,32 +235,15 @@ void PickerController::GetResultsForCategory(PickerCategory category,
 void PickerController::StartSearch(const std::u16string& query,
                                    std::optional<PickerCategory> category,
                                    SearchResultsCallback callback) {
-  // TODO(b/310088338): Do a real search.
+  // Show fake results while we wait for a response from CrOS Search.
+  // TODO: b/324154537 - Show a loading animation instead.
   callback.Run(PickerSearchResults({{
-      PickerSearchResults::Section(
-          u"Matching expressions",
-          {{PickerSearchResult::Emoji(u"👍"), PickerSearchResult::Emoji(u"😊"),
-            PickerSearchResult::Symbol(u"⊃"), PickerSearchResult::Symbol(u"⊇"),
-            PickerSearchResult::Symbol(u"♬"),
-            PickerSearchResult::Emoticon(u"¯\\_(ツ)_/¯"),
-            PickerSearchResult::Gif(
-                GURL(
-                    "https://media.tenor.com/BzfS_9uPq_AAAAAd/cat-bonfire.gif"),
-                gfx::Size(140, 140))}}),
-      PickerSearchResults::Section(
-          u"Matching links",
-          {{
-              PickerSearchResult::BrowsingHistory(
-                  GURL("http://www.foo.com"),
-                  ui::ImageModel::FromVectorIcon(kPlaceholderIcon)),
-              PickerSearchResult::BrowsingHistory(
-                  GURL("http://crbug.com"),
-                  ui::ImageModel::FromVectorIcon(kPlaceholderIcon)),
-          }}),
-      PickerSearchResults::Section(
-          u"Matching files", {{PickerSearchResult::Text(u"my file"),
-                               PickerSearchResult::Text(u"my other file")}}),
+      GetFakeExpressionsSection(),
+      GetFakeLinksSection(),
+      GetFakeFilesSection(),
   }}));
+  client_->StartCrosSearch(
+      query, base::BindRepeating(&HandleSearchResults, std::move(callback)));
 }
 
 void PickerController::InsertResultOnNextFocus(
@@ -233,10 +260,6 @@ void PickerController::InsertResultOnNextFocus(
   // This cancels the previous request if there was one.
   insert_media_request_ = std::make_unique<PickerInsertMediaRequest>(
       input_method, ResultToInsertMediaData(result), kInsertMediaTimeout);
-}
-
-bool PickerController::ShouldPaint() {
-  return should_paint_;
 }
 
 PickerAssetFetcher* PickerController::GetAssetFetcher() {

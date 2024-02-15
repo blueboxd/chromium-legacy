@@ -246,6 +246,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="1428729058023778569">Vous voyez cet avertissement, car ce site n'est pas HTTPS. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1429080515485835353">Pellicule auto-adhésive</translation>
 <translation id="1430915738399379752">Imprimer</translation>
+<translation id="1431021750861456539">Plein écran automatique</translation>
 <translation id="1432187715652018471">Cette page veut installer un gestionnaire de services.</translation>
 <translation id="1432581352905426595">Gérer les moteurs de recherche</translation>
 <translation id="1433225466058025572">Réessayez de déplacer vos fichiers</translation>
@@ -585,6 +586,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2075497153347571252">Votre administrateur a bloqué <ph name="PERMISSION" /> sur <ph name="ORIGIN" /></translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="2080021694978766903">Cette règle ne peut pas contenir plus de <ph name="MAX_ITEMS_LIMIT" /> entrées.</translation>
+<translation id="2081482239432306393">Option "Numéro de la maison" sélectionnée</translation>
 <translation id="20817612488360358">Les paramètres de proxy du système sont configurés pour être utilisés, mais une configuration de proxy explicite est également spécifiée.</translation>
 <translation id="2082238445998314030">Résultat <ph name="RESULT_NUMBER" /> sur <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2083256696566019397">Autoriser à chaque visite</translation>
@@ -1409,6 +1411,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3723663469265383848">Pendant la mise à jour, vous ne pourrez pas utiliser votre appareil pendant 10 minutes maximum.</translation>
 <translation id="372429172604983730">Les antivirus, les pare-feu et les logiciels de filtrage Web ou de proxy font partie des applications qui peuvent être à l'origine du problème.</translation>
 <translation id="3727101516080730231"><ph name="CREATE_GOOGLE_SLIDE_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur Tabulation, puis sur Entrée pour créer rapidement une présentation Google dans Slides</translation>
+<translation id="3727309136762649052">Espace de noms</translation>
 <translation id="3727850735097852673">Pour utiliser le Gestionnaire de mots de passe de Google avec le trousseau macOS, relancez Chrome et autorisez l'accès au trousseau. Vos onglets s'ouvriront alors de nouveau.</translation>
 <translation id="3733139489341305600">Véhicules autonomes</translation>
 <translation id="3736520371357197498">Si vous avez compris les risques auxquels vous vous exposez, vous pouvez <ph name="BEGIN_LINK" />consulter ce site dangereux<ph name="END_LINK" /> avant que les programmes malveillants n'aient été supprimés.</translation>
@@ -1573,6 +1576,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4089152113577680600">Bac 14</translation>
 <translation id="4092349052316400070">Remplir le champ de l'adresse</translation>
 <translation id="4096237801206588987">11 x 15 pouces</translation>
+<translation id="4098306082496067348">Appuyez sur les informations relatives à la carte virtuelle pour les ajouter au paiement.</translation>
 <translation id="4098354747657067197">Le site Web que vous allez ouvrir est trompeur</translation>
 <translation id="4099048595830172239">Une règle de l'administrateur déconseille de partager votre écran avec <ph name="APPLICATION_TITLE" /> lorsque du contenu confidentiel est visible :</translation>
 <translation id="4099391883283080991"><ph name="CUSTOMIZE_CHROME_FONTS_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur Tabulation, puis sur Entrée pour personnaliser la taille des polices et des polices de caractères dans Chrome</translation>
@@ -1896,6 +1900,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4729147136006144950">Organisations caritatives et philanthropie</translation>
 <translation id="4730977633786878901">Avis</translation>
 <translation id="4731638775147756694">Cette application a été bloquée par votre administrateur</translation>
+<translation id="4732860731866514038">Téléchargement du module linguistique <ph name="LANGUAGE" /> (<ph name="PERCENT" /> %)...</translation>
 <translation id="4733082559415072992"><ph name="URL" /> souhaite utiliser la position de votre appareil</translation>
 <translation id="4736491186715342415">Véhicules à moteur</translation>
 <translation id="4736825316280949806">Relancez Chromium</translation>
@@ -1917,7 +1922,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4757022425116568383">Clé d'accès de votre profil Chrome</translation>
 <translation id="4757993714154412917">Vous venez de saisir votre mot de passe sur un site trompeur. Pour sécuriser vos comptes, Chromium vous recommande de vérifier vos mots de passe enregistrés.</translation>
 <translation id="4758311279753947758">Ajouter des coordonnées</translation>
-<translation id="4761104368405085019">Utiliser votre micro</translation>
 <translation id="4761326898079498987">Consulter les détails</translation>
 <translation id="4761869838909035636">Effectuer un contrôle de sécurité de Chrome</translation>
 <translation id="4763196677855776703">Conditions d'utilisation fournies par <ph name="URL" /></translation>
@@ -2255,7 +2259,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
             <ph name="LIST_ITEM" />Les cookies et les données des sites
             <ph name="LIST_ITEM" />Les informations saisies dans formulaires
           <ph name="END_LIST" /></translation>
-<translation id="54430913453805768"><ph name="URL" /> souhaite contrôler et reprogrammer vos appareils MIDI (SysEx)</translation>
 <translation id="5443468954631487277">Ordre inverse, face vers le haut</translation>
 <translation id="5447235695608032700">Autoriser <ph name="SITE" /> à utiliser les informations qu'il a enregistrées vous concernant</translation>
 <translation id="5447765697759493033">Ce site ne sera pas traduit</translation>
@@ -2282,6 +2285,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
     <ph name="LINE_BREAK" />
     Essayez de contacter votre administrateur système.</translation>
 <translation id="549333378215107354">Taille 3</translation>
+<translation id="5501712702042287009">plein écran automatique</translation>
 <translation id="550365051221576010">Tout indiquer</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Favoris gérés</translation>
@@ -2376,7 +2380,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5666606186680807225">Plages et îles</translation>
 <translation id="5667827081946850877">Livres audio</translation>
 <translation id="5675650730144413517">Cette page ne fonctionne pas</translation>
-<translation id="5677928146339483299">Bloqué</translation>
+<translation id="5677928146339483299">Bloqués</translation>
 <translation id="5678007133659493065">Papier métallisé</translation>
 <translation id="568292603005599551">Position X de l'image</translation>
 <translation id="5684277895745049190">Liste</translation>
@@ -2468,7 +2472,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5877831137320480913">Soins du corps et remise en forme</translation>
 <translation id="5879989559903563723">Non accordée en mode Invité</translation>
 <translation id="5880050725127890683">Accéder au contrôle de sécurité de Chrome</translation>
-<translation id="5883861433316751031">Contrôler et reprogrammer des appareils MIDI ?</translation>
 <translation id="5884465125445718607">Enveloppe chinoise n°6</translation>
 <translation id="5887400589839399685">Carte enregistrée</translation>
 <translation id="5887687176710214216">Dernière visite : hier</translation>
@@ -2819,7 +2822,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6556866813142980365">Rétablir</translation>
 <translation id="6557715786897013164">14 x 17 pouces</translation>
 <translation id="6560786330438719938">Applis installées ou désinstallées et leur fréquence d'utilisation</translation>
-<translation id="6567084950885568327">Contrôle et reprogrammation des appareils MIDI</translation>
 <translation id="6568793038316600992">Bouton "Gérer les modes de paiement" à activer pour gérer vos paiements et informations sur vos cartes de crédit dans les paramètres Chrome</translation>
 <translation id="6569060085658103619">Vous consultez actuellement une page d'extension</translation>
 <translation id="6569366777234823130">Drames</translation>
@@ -3203,6 +3205,7 @@ Informations supplémentaires :
 <translation id="733354035281974745">Ignorer le compte local de l'appareil</translation>
 <translation id="7334320624316649418">&amp;Rétablir la réorganisation</translation>
 <translation id="7335157162773372339">Peut demander à utiliser votre appareil photo</translation>
+<translation id="7336636595549675416">Numéro de la maison</translation>
 <translation id="7337248890521463931">Afficher plus de lignes</translation>
 <translation id="7337706099755338005">Non disponible sur votre plate-forme</translation>
 <translation id="733923710415886693">Le certificat du serveur n'a pas été communiqué tel que le prévoient les règles de transparence des certificats.</translation>
@@ -3909,7 +3912,6 @@ Informations supplémentaires :
 <translation id="8671519637524426245">La valeur <ph name="SECURE_DNS_SALT" /> ne répond pas aux exigences de taille.</translation>
 <translation id="867224526087042813">Signature</translation>
 <translation id="8672264262457010862">Entreprise et industrie</translation>
-<translation id="8673776281896298303">Contrôler et reprogrammer vos appareils MIDI (SysEx)</translation>
 <translation id="8676424191133491403">Sans délai</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, réponse, <ph name="ANSWER" /></translation>
 <translation id="8681531050781943054">Impossible de charger la page Web <ph name="PAGE" /> pour la raison suivante :</translation>
@@ -4149,7 +4151,6 @@ Informations supplémentaires :
 <translation id="9148507642005240123">&amp;Annuler la modification</translation>
 <translation id="9148599396704355100">Prix bas</translation>
 <translation id="9150025764986957246">Exemples de ce que vous pouvez saisir :</translation>
-<translation id="9150045010208374699">Utiliser votre caméra</translation>
 <translation id="9150685862434908345">Votre administrateur peut modifier sa configuration à distance. Il se peut que l'activité sur cet appareil soit gérée en dehors de Chrome. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="9154194610265714752">Mis à jour</translation>
 <translation id="9155211586651734179">Périphériques audio connectés</translation>

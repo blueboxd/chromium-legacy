@@ -1797,7 +1797,6 @@ chromium-metrics-reviews@google.com.
   <int value="979" label="LocalFontsBlockedForUrls"/>
   <int value="980" label="ProjectorDogfoodForFamilyLinkEnabled"/>
   <int value="981" label="UrlParamFilterEnabled"/>
-  <int value="982" label="ScreenTimeEnabled"/>
   <int value="983" label="DefaultClipboardSetting"/>
   <int value="984" label="ClipboardAllowedForUrls"/>
   <int value="985" label="ClipboardBlockedForUrls"/>
@@ -2027,6 +2026,11 @@ chromium-metrics-reviews@google.com.
   <int value="1210" label="RemoteAccessHostAllowUrlForwarding"/>
   <int value="1211" label="ScreenCaptureLocation"/>
   <int value="1212" label="AllowDomainsForAppsList"/>
+  <int value="1213" label="ChromeForTestingAllowed"/>
+  <int value="1214" label="GoogleLocationServicesEnabled"/>
+  <int value="1215" label="ProvisionManagedClientCertificateForUser"/>
+  <int value="1216" label="LocalUserFilesAllowed"/>
+  <int value="1217" label="DevToolsGenAiSettings"/>
 </enum>
 
 <enum name="EnterprisePoliciesSources">

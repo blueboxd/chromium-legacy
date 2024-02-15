@@ -3261,6 +3261,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   GLint alpha_bits = 0;
 
   if (offscreen) {
+    // NOTE: `attrib_helper.need_alpha` is defined only on Android.
 #if BUILDFLAG(IS_ANDROID)
     offscreen_buffer_should_have_alpha_ = attrib_helper.need_alpha;
 #else
@@ -3414,14 +3415,12 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   UpdateFramebufferSRGB(nullptr);
 
   bool call_gl_clear = !surfaceless_ && !offscreen;
-#if BUILDFLAG(IS_ANDROID)
   // Temporary workaround for Android WebView because this clear ignores the
   // clip and corrupts that external UI of the App. Not calling glClear is ok
   // because the system already clears the buffer before each draw. Proper
   // fix might be setting the scissor clip properly before initialize. See
   // crbug.com/259023 for details.
   call_gl_clear = surface_->GetHandle();
-#endif
   if (call_gl_clear) {
     // On configs where we report no alpha, if the underlying surface has
     // alpha, clear the surface alpha to 1.0 to be correct on ReadPixels/etc.
@@ -5129,15 +5128,6 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
       cmd_data += size;
     }
   }
-
-#if BUILDFLAG(IS_MAC)
-  // Aggressively call glFlush on macOS. This is the only fix that has been
-  // found so far to avoid crashes on Intel drivers. The workaround
-  // isn't needed for WebGL contexts, though.
-  // https://crbug.com/863817
-  if (!feature_info_->IsWebGLContext())
-    context_->FlushForDriverCrashWorkaround();
-#endif
 
   *entries_processed = process_pos;
 
@@ -12900,10 +12890,6 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
   // https://crbug.com/848952 (slow uploads on macOS)
   // https://crbug.com/883276 (buggy clears on Android)
   bool prefer_use_gl_clear = false;
-#if BUILDFLAG(IS_MAC)
-  const uint32_t kMinSizeForGLClear = 4 * 1024;
-  prefer_use_gl_clear = size > kMinSizeForGLClear;
-#endif
   if (must_use_gl_clear || prefer_use_gl_clear) {
     if (ClearLevelUsingGL(texture, channels, target, level, xoffset, yoffset,
                           width, height)) {
@@ -16780,18 +16766,6 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
       source_type, dest_binding_target, dest_level, dest_internal_format,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
       unpack_unmultiply_alpha == GL_TRUE);
-#if BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
-  // although opposite in Android.
-  // TODO(dshwang): After Mesa fixes this issue, remove this hack.
-  // https://bugs.freedesktop.org/show_bug.cgi?id=98478,
-  // https://crbug.com/535198.
-  if (Texture::ColorRenderable(GetFeatureInfo(), dest_internal_format,
-                               dest_texture->IsImmutable()) &&
-      method == CopyTextureMethod::DIRECT_COPY) {
-    method = CopyTextureMethod::DIRECT_DRAW;
-  }
-#endif
 
   // Use DRAW instead of COPY if the workaround is enabled.
   if (method == CopyTextureMethod::DIRECT_COPY &&

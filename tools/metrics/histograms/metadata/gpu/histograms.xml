@@ -561,7 +561,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.Dawn.InfoCollectionTimeMS" units="ms"
-    expires_after="2024-02-25">
+    expires_after="2024-06-25">
   <owner>enga@chromium.org</owner>
   <owner>mdb.webgpu-dev-team@google.com</owner>
   <summary>
@@ -814,7 +814,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Gpu.FenceHandle.CloneCountsPerSubmit" units="clones"
-    expires_after="2024-06-09">
+    expires_after="2024-08-11">
   <owner>petermcneeley@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1133,7 +1133,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.PaintOpReader.DeserializationError"
-    enum="PaintOpDeserializationError" expires_after="2024-06-09">
+    enum="PaintOpDeserializationError" expires_after="2024-08-11">
   <owner>junov@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1303,6 +1303,18 @@ chromium-metrics-reviews@google.com.
     format on Ozone based platforms. Result is a bool that reports if RG88
     format is supported for creating shared images with hardware GMBs. This is
     logged once per gpu process launch.
+  </summary>
+</histogram>
+
+<histogram name="GPU.SkiaBackendType" enum="SkiaBackendType"
+    expires_after="2025-02-01">
+  <owner>kylechar@chromium.org</owner>
+  <owner>chrome-gpu-metrics@google.com</owner>
+  <summary>
+    Records what backend Skia is initialized with for compositing/rasterization
+    in the GPU process. This is only recorded the first time Skia is initialized
+    per GPU process launch, in case it's initialized on more than one thread or
+    reinitialized on context loss.
   </summary>
 </histogram>
 
@@ -1573,7 +1585,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.{GraphiteDawnOrWebGPU}.Support.{FeatureName}"
-    enum="Boolean" expires_after="2024-06-09">
+    enum="Boolean" expires_after="2024-08-11">
   <owner>enga@chromium.org</owner>
   <owner>mdb.webgpu-dev-team@google.com</owner>
   <summary>
@@ -1664,7 +1676,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.BeginFrameSource.Accuracy.AverageDelta2"
-    units="microseconds" expires_after="2024-06-09">
+    units="microseconds" expires_after="2024-08-11">
   <owner>magchen@chromium.org</owner>
   <owner>ccameron@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -1794,7 +1806,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.FileDescriptorTracking.{FdStat}" units="units"
-    expires_after="2024-06-09">
+    expires_after="2024-08-11">
   <owner>petermcneeley@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

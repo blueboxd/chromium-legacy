@@ -21,7 +21,7 @@
 # "ios_chrome_ui_eg2tests_module_iPhone 6s 14.0"
 
 # The goal is to drive the number of exceptions to zero, to make all
-# the bots behave similarly.
+# the bots behave similarly. whitespace
 {
   'accessibility_unittests': {
     'modifications': {
@@ -1318,6 +1318,13 @@
       'Win11 Tests x64',
     ],
   },
+  'browser_tests_require_lacros': {
+    'modifications': {
+      'linux-chromeos-rel': {
+        'retry_only_failed_tests': True
+      }
+    }
+  },
   'capture_unittests': {
     'modifications': {
       'WebRTC Chromium Linux Tester': {
@@ -1413,6 +1420,15 @@
       'chromeos-betty-pi-arc-chrome': {
         'swarming': {
           'shards': 15,
+        },
+        'args': [
+          '--tast-shard-method=hash',
+        ],
+      },
+      'chromeos-betty-pi-arc-chrome-dchecks': {
+        'swarming': {
+          # DCHECK builder is slower than non-DCHECK one.
+          'shards': 20,
         },
         'args': [
           '--tast-shard-method=hash',
@@ -1664,15 +1680,6 @@
             'os': 'Ubuntu-22.04',
           },
         },
-      },
-    },
-  },
-  'chrome_wpt_tests': {
-    'modifications': {
-      'linux-wpt-chromium-rel': {
-        'args': [
-          '--additional-driver-flag=--headless=new'
-        ],
       },
     },
   },
@@ -2983,13 +2990,6 @@
       'linux-exp-msan-fyi-rel',
     ],
     'modifications': {
-      'Win10 FYI x64 Exp Release (NVIDIA)': {
-        'args': [
-          # TODO(crbug.com/1505895): Remove this filter when these tests no
-          # longer crash on the newer driver.
-          '--gtest_filter=-DelegatedInkPointRendererGpuTest.DrawPointsAsTheyArrive:DelegatedInkPointRendererGpuTest.MaximumPointerIds:DelegatedInkPointRendererGpuTest.MultiplePointerIds:DelegatedInkPointRendererGpuTest.StoreAndRemovePointsAndTokens',
-        ],
-      },
       'Win11 FYI arm64 Release (Qualcomm Adreno 690)': {
         'args': [
           # crbug.com/1523061
@@ -3697,6 +3697,33 @@
       'ToTWin64(dbg)',
       'ToTWin64(dll)',
     ],
+  },
+  'ondevice_stability_tests AMD Radeon RX 5500 XT': {
+    'modifications': {
+      'optimization_guide-win32': {
+        'args': [
+          '--target-platform=win32',
+        ],
+      },
+    },
+  },
+  'ondevice_stability_tests Intel UHD 630': {
+    'modifications': {
+      'optimization_guide-win32': {
+        'args': [
+          '--target-platform=win32',
+        ],
+      },
+    },
+  },
+  'ondevice_stability_tests NVIDIA GeForce GTX 1660': {
+    'modifications': {
+      'optimization_guide-win32': {
+        'args': [
+          '--target-platform=win32',
+        ],
+      },
+    },
   },
   'ozone_unittests': {
     'modifications': {

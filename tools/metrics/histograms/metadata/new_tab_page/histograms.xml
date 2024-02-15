@@ -46,15 +46,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.AppsPageDragSource" enum="AppsPageDragSource"
-    expires_after="2018-08-30">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Histogram for the source of app page drags. For any succesful drop onto an
-    apps pane of the NTP, this logs where the drag originated.
-  </summary>
-</histogram>
-
 <histogram name="NewTabPage.AsHomeSurface" enum="Boolean"
     expires_after="2024-06-30">
   <owner>hanxi@chromium.org</owner>
@@ -1956,7 +1947,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.WallpaperSearch.SetRecentThemeProcessingLatency"
-    units="ms" expires_after="2024-04-28">
+    units="ms" expires_after="2024-08-11">
   <owner>tiborg@chromium.org</owner>
   <owner>rtatum@google.com</owner>
   <owner>chrome-desktop-ntp@google.com</owner>

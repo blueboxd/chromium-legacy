@@ -48,6 +48,7 @@
 #include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/templates/saved_desk_save_desk_button.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
 #include "ash/wm/gestures/wm_gesture_handler.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -3212,7 +3213,7 @@ TEST_P(OverviewSessionTest, AccessibilityFocusAnnotator) {
   // flip for Save & Recall has truly landed, remove the `NoSavedDesks` variant
   // of this test below and remove the Save & Recall feature check at the start
   // of this test.
-  if (GetParam() || !saved_desk_util::IsSavedDesksEnabled()) {
+  if (GetParam() || !saved_desk_util::ShouldShowSavedDesksButtons()) {
     return;
   }
 
@@ -3265,7 +3266,7 @@ TEST_P(OverviewSessionTest, AccessibilityFocusAnnotator) {
 TEST_P(OverviewSessionTest, AccessibilityFocusAnnotatorNoSavedDesks) {
   // If saved desk is enabled, the a11y order changes. This is tested in
   // the saved desk test suite.
-  if (GetParam() || saved_desk_util::IsSavedDesksEnabled()) {
+  if (GetParam() || saved_desk_util::ShouldShowSavedDesksButtons()) {
     return;
   }
 
@@ -6944,6 +6945,31 @@ TEST_F(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
   EXPECT_FALSE(GetOverviewController()->InOverviewSession());
 }
 
+// Regression test for http://b/323136574, where a floated window should not
+// have an unclipped size when it's in a partial overview session.
+TEST_F(SplitViewOverviewSessionTest, FloatedWindowsHaveNoUnclippedSize) {
+  std::unique_ptr<aura::Window> window1 = CreateAppWindow();
+  std::unique_ptr<aura::Window> window2 = CreateAppWindow();
+
+  // Float `window1` and then snap `window2`. A partial overview session should
+  // start.
+  Shell::Get()->float_controller()->ToggleFloat(window1.get());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsFloated());
+
+  const WindowSnapWMEvent event(
+      WM_EVENT_CYCLE_SNAP_SECONDARY,
+      WindowSnapActionSource::kKeyboardShortcutToSnap);
+  auto* window2_state = WindowState::Get(window2.get());
+  window2_state->OnWMEvent(&event);
+  EXPECT_TRUE(window2_state->IsSnapped());
+
+  ASSERT_TRUE(GetOverviewController()->InOverviewSession());
+  auto* window1_item = GetOverviewItemForWindow(window1.get());
+  ASSERT_TRUE(window1_item);
+
+  EXPECT_FALSE(window1_item->unclipped_size_for_testing());
+}
+
 // Verify the correct behavior when dragging windows in overview mode.
 TEST_F(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
   ui::GestureConfiguration* gesture_config =
@@ -7819,18 +7845,9 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
 
 // Verify that when in overview mode, the selector items unsnappable indicator
 // shows up when expected.
-// TODO(crbug.com/324024580): Re-enable this test. Causes build failures on
-// MSAN/ASAN on CrOS.
-#if BUILDFLAG(IS_CHROMEOS) && \
-    (defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
-#define MAYBE_OverviewUnsnappableIndicatorVisibility \
-  DISABLED_OverviewUnsnappableIndicatorVisibility
-#else
-#define MAYBE_OverviewUnsnappableIndicatorVisibility \
-  OverviewUnsnappableIndicatorVisibility
-#endif
+// TODO(crbug.com/324024580): Re-enable this flaky test.
 TEST_F(SplitViewOverviewSessionTest,
-       MAYBE_OverviewUnsnappableIndicatorVisibility) {
+       DISABLED_OverviewUnsnappableIndicatorVisibility) {
   // Create three windows; two normal and one unsnappable, so that when after
   // snapping |window1| to enter split view we can test the state of each normal
   // and unsnappable windows.
@@ -8279,18 +8296,9 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsWithMinimumSizeTest) {
 // Verify that if the split view divider is dragged all the way to the edge, the
 // window being dragged gets returned to the overview list, if overview mode is
 // still active.
-// TODO(crbug.com/324024580): Re-enable this test. Causes build failures on
-// MSAN/ASAN on CrOS.
-#if BUILDFLAG(IS_CHROMEOS) && \
-    (defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
-#define MAYBE_DividerDraggedToEdgeReturnsWindowToOverviewList \
-  DISABLED_DividerDraggedToEdgeReturnsWindowToOverviewList
-#else
-#define MAYBE_DividerDraggedToEdgeReturnsWindowToOverviewList \
-  DividerDraggedToEdgeReturnsWindowToOverviewList
-#endif
+// TODO(crbug.com/324024580): Re-enable this flaky test.
 TEST_F(SplitViewOverviewSessionTest,
-       MAYBE_DividerDraggedToEdgeReturnsWindowToOverviewList) {
+       DISABLED_DividerDraggedToEdgeReturnsWindowToOverviewList) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -8335,19 +8343,10 @@ TEST_F(SplitViewOverviewSessionTest,
 // all the way to the opposite edge, then the split view window is reinserted
 // into the overview grid at the correct position according to MRU order, and
 // the stacking order is also correct.
-// TODO(crbug.com/324024580): Re-enable this test. Causes build failures on
-// MSAN/ASAN on CrOS.
-#if BUILDFLAG(IS_CHROMEOS) && \
-    (defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
-#define MAYBE_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded \
-  DISABLED_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded
-#else
-#define MAYBE_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded \
-  SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded
-#endif
+// TODO(crbug.com/324024580): Re-enable this flaky test.
 TEST_F(
     SplitViewOverviewSessionTest,
-    MAYBE_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded) {
+    DISABLED_SplitViewWindowReinsertedToOverviewAtCorrectPositionWhenSplitViewIsEnded) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -9328,6 +9327,53 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
                                            1);
   EXPECT_TRUE(GetOverviewController()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+}
+
+// Tests that there will be no crash when dragging a snapped window in overview
+// toward the edge. In this case, the overview components will become too small
+// to meet the minimum requirement of the fundamental UI layers such as virtual
+// desk bar, shadow. See the regression behavior in http://b/324478757.
+TEST_F(SplitViewOverviewSessionInClamshellTest,
+       NoCrashWhenDraggingSnappedWindowToEdge) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+
+  // Create another desk to ensure the desk bar shows in overview.
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+
+  ToggleOverview();
+  WaitForOverviewEnterAnimation();
+  EXPECT_TRUE(IsInOverviewSession());
+  std::unique_ptr<aura::Window> window1(
+      CreateAppWindow(gfx::Rect(0, 0, 200, 100)));
+  std::unique_ptr<aura::Window> window2(
+      CreateAppWindow(gfx::Rect(100, 100, 200, 100)));
+  const WindowSnapWMEvent event(
+      WM_EVENT_SNAP_PRIMARY, chromeos::kDefaultSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  auto* window1_state = WindowState::Get(window1.get());
+  window1_state->OnWMEvent(&event);
+  WaitForOverviewEntered();
+  EXPECT_TRUE(window1_state->IsSnapped());
+  EXPECT_TRUE(IsInOverviewSession());
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(
+      window1.get()->GetBoundsInScreen().right_center());
+  gfx::Point drag_end_point = GetWorkAreaInScreen(window1.get()).right_center();
+  drag_end_point.Offset(/*delta_x=*/-10, 0);
+  event_generator->PressLeftButton();
+  event_generator->MoveMouseTo(drag_end_point);
+  EXPECT_TRUE(IsInOverviewSession());
+  EXPECT_TRUE(WindowState::Get(window1.get())->is_dragged());
+
+  // Verify that shadow is applied on the overview item.
+  auto* overview_item2 = GetOverviewItemForWindow(window2.get());
+  const auto shadow_content_bounds =
+      overview_item2->get_shadow_content_bounds_for_testing();
+  EXPECT_FALSE(shadow_content_bounds.IsEmpty());
 }
 
 // Tests that when a split view window carries over to clamshell split view
@@ -10506,11 +10552,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
 // larger.)
 TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
        SnapWindowWithMinimumSizeTest) {
-  // The divider is 8 thick. For the default divider position, the remaining 792
-  // of the work area on the first root window is divided into 396 on each side,
-  // and the remaining 791 of the work area on the second root window is divided
-  // into 395 on the left and 396 on the right (the left side is what matters).
-  UpdateDisplay("800x600,799x600");
+  UpdateDisplay("800x600,750x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
   const gfx::Rect bounds_within_root1(0, 0, 400, 400);
@@ -10531,8 +10573,9 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
                     ->CanSnapWindow(window.get(), chromeos::kDefaultSnapRatio));
     EXPECT_TRUE(SplitViewController::Get(root_windows[1])
                     ->CanSnapWindow(window.get(), chromeos::kDefaultSnapRatio));
-    // Either root window can accommodate a minimum size 395 wide.
-    delegate->set_minimum_size(gfx::Size(395, 0));
+    // Either root window can accommodate a minimum size < 1/2 of the
+    // work area width.
+    delegate->set_minimum_size(gfx::Size(375, 0));
     EXPECT_TRUE(SplitViewController::Get(root_windows[0])
                     ->CanSnapWindow(window.get(), chromeos::kDefaultSnapRatio));
     EXPECT_TRUE(SplitViewController::Get(root_windows[1])
@@ -10544,8 +10587,9 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
     EXPECT_FALSE(
         SplitViewController::Get(root_windows[1])
             ->CanSnapWindow(window.get(), chromeos::kDefaultSnapRatio));
-    // Neither root window can accommodate a minimum size 397 wide.
-    delegate->set_minimum_size(gfx::Size(397, 0));
+    // Neither root window can accommodate a minimum size > 1/2 of the work area
+    // width.
+    delegate->set_minimum_size(gfx::Size(401, 0));
     EXPECT_FALSE(
         SplitViewController::Get(root_windows[0])
             ->CanSnapWindow(window.get(), chromeos::kDefaultSnapRatio));

@@ -509,9 +509,6 @@ public final class ProductionSupportedFlagList {
                 ContentFeatures.SURFACE_SYNC_FULLSCREEN_KILLSWITCH,
                 "Disable to turn off the new SurfaceSync Fullscreen path."),
         Flag.baseFeature(
-                ContentFeatures.SYNCHRONOUS_COMPOSITOR_BACKGROUND_SIGNAL,
-                "Send foreground / background signal to GPU stack."),
-        Flag.baseFeature(
                 ContentFeatures.PERSISTENT_ORIGIN_TRIALS,
                 "If enabled, servers will be able to use persistent origin trials "
                         + "on this device."),
@@ -887,6 +884,10 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 BlinkFeatures.BACK_FORWARD_CACHE_SEND_NOT_RESTORED_REASONS,
                 "Expose NotRestoredReasons via PerformanceNavigationTiming API."),
+        Flag.baseFeature("SkipUnnecessaryThreadHopsForParseHeaders"),
+        Flag.commandLine(
+                AwSwitches.WEBVIEW_FPS_COMPONENT,
+                "Enables installing the first party sets component to WebViews."),
         // Add new commandline switches and features above. The final entry should have a
         // trailing comma for cleaner diffs.
     };

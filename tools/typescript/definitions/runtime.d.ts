@@ -10,9 +10,10 @@ import {ChromeEvent} from './chrome_event.js';
 declare global {
   export namespace chrome {
     export namespace runtime {
-      export let lastError: {
-        message?: string,
-      }|undefined;
+      export interface Error {
+        message?: string;
+      }
+      export let lastError: Error|undefined;
 
       export let id: string;
 
@@ -26,11 +27,24 @@ declare global {
         origin?: string;
       }
 
+      export interface Port {
+        name: string;
+        disconnect: () => void;
+        postMessage: (message: any) => void;
+        sender?: MessageSender;
+        onDisconnect: ChromeEvent<(port: Port) => void>;
+        onMessage: ChromeEvent<(message: any, port: Port) => void>;
+      }
+
       export interface ExtensionMessageEvent extends ChromeEvent<
           (message: any, sender: MessageSender,
            sendResponse: (response?: any) => void) => void> {}
 
       export const onMessageExternal: ExtensionMessageEvent;
+
+      export interface PortEvent extends ChromeEvent<(port: Port) => void> {}
+
+      export const onConnectNative: PortEvent;
 
       export function getURL(path: string): string;
 

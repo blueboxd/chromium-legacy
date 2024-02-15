@@ -49,11 +49,16 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
     // Width and height of the GIF at `url`.
     gfx::Size dimensions;
 
+    // A textual description of the content, primarily used for accessibility
+    // features.
+    std::u16string content_description;
+
     bool operator==(const GifData&) const;
   };
 
   struct BrowsingHistoryData {
     GURL url;
+    std::u16string title;
     ui::ImageModel icon;
 
     bool operator==(const BrowsingHistoryData&) const;
@@ -71,12 +76,15 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
   ~PickerSearchResult();
 
   static PickerSearchResult BrowsingHistory(const GURL& url,
+                                            std::u16string title,
                                             ui::ImageModel icon);
   static PickerSearchResult Text(std::u16string_view text);
   static PickerSearchResult Emoji(std::u16string_view emoji);
   static PickerSearchResult Symbol(std::u16string_view symbol);
   static PickerSearchResult Emoticon(std::u16string_view emoticon);
-  static PickerSearchResult Gif(const GURL& url, const gfx::Size& dimensions);
+  static PickerSearchResult Gif(const GURL& url,
+                                const gfx::Size& dimensions,
+                                std::u16string content_description);
 
   const Data& data() const;
 

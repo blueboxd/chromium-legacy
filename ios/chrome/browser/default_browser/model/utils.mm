@@ -32,10 +32,6 @@ extern NSString* const kDefaultBrowserUtilsKey;
 
 namespace {
 
-// Key in storage containing an NSDate corresponding to the last time
-// an HTTP(S) link was sent and opened by the app.
-NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
-
 // Key in storage containing an array of dates. Each date correspond to
 // a general event of interest for Default Browser Promo modals.
 NSString* const kLastSignificantUserEventGeneral = @"lastSignificantUserEvent";
@@ -463,12 +459,20 @@ void StoreCurrentTimestampForKey(NSString* key) {
 }
 
 std::string GetVideoPromoVariant() {
-  return base::GetFieldTrialParamValueByFeature(
-      kDefaultBrowserVideoPromo, "default_browser_video_promo_variant");
+  if (!IsDefaultBrowserVideoPromoEnabled()) {
+    return "";
+  }
+  std::string variant = base::GetFieldTrialParamValueByFeature(
+      kDefaultBrowserVideoPromo, kDefaultBrowserVideoPromoVariant);
+  if (variant != "") {
+    return variant;
+  }
+  return kVideoFullscreenPromo;
 }
 
 }  // namespace
 
+NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
 NSString* const kLastTimeUserInteractedWithNonModalPromo =
     @"lastTimeUserInteractedWithNonModalPromo";
 NSString* const kLastTimeUserInteractedWithFullscreenPromo =

@@ -27,7 +27,7 @@ class API_AVAILABLE(macosx(10.12.2)) COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentia
  public:
   using Callback = base::OnceCallback<void(
       CtapDeviceResponseCode,
-      absl::optional<AuthenticatorMakeCredentialResponse>)>;
+      std::optional<AuthenticatorMakeCredentialResponse>)>;
 
   MakeCredentialOperation(CtapMakeCredentialRequest request,
                           TouchIdCredentialStore* credential_store,

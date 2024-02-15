@@ -204,16 +204,14 @@ bool ClipsSelf(const LayoutObject& object) {
          object.IsSVGChild();
 }
 
-bool ClipsContents(const LayoutObject& object, bool has_target_margin) {
+bool ClipsContents(const LayoutObject& object) {
   // An objects that clips itself also clips contents.
   if (ClipsSelf(object)) {
     return true;
   }
-  if (object.ShouldClipOverflowAlongEitherAxis()) {
-    // Clippers that don't actually clip anything are ignored.
-    return has_target_margin || To<LayoutBox>(object).HasScrollableOverflow();
-  }
-  return false;
+  // TODO(wangxianzhu): Ideally we should ignore clippers that don't have
+  // a scrollable overflow, but that caused crbug.com/41492283. Investigate.
+  return object.ShouldClipOverflowAlongEitherAxis();
 }
 
 static const unsigned kConstructorFlagsMask =
@@ -482,7 +480,7 @@ void IntersectionGeometry::RootAndTarget::ComputeRelationship(
     }
 
     if (!has_intermediate_clippers && !have_crossed_frame_boundary &&
-        container != root && ClipsContents(*container, has_target_margin)) {
+        container != root && ClipsContents(*container)) {
       has_intermediate_clippers = true;
     }
 
@@ -530,6 +528,11 @@ void IntersectionGeometry::UpdateShouldUseCachedRects(
 
   cached_rects->valid = false;
 
+  if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+    // TODO(crbug.com/40883761): Evaluate performance.
+    return;
+  }
+
   if (root_and_target.relationship == RootAndTarget::kInvalid) {
     return;
   }
@@ -541,34 +544,21 @@ void IntersectionGeometry::UpdateShouldUseCachedRects(
     return;
   }
 
-  if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
-    // Cached rects can only be used if there are no scrollable objects in the
-    // hierarchy between target and root (a scrollable root is ok). The reason
-    // is that a scroll change in an intermediate scroller would change the
-    // intersection geometry, but we intentionally don't invalidate cached
-    // rects and schedule intersection update to enable the minimul-scroll-
-    // delta-to-update optimization.
-    if (root_and_target.relationship != RootAndTarget::kNotScrollable &&
-        root_and_target.relationship != RootAndTarget::kScrollableByRootOnly) {
-      return;
-    }
-  } else {
-    if (RootIsImplicit()) {
-      return;
-    }
-    // Cached rects can only be used if there are no scrollable objects in the
-    // hierarchy between target and root (a scrollable root is ok). The reason
-    // is that a scroll change in an intermediate scroller would change the
-    // intersection geometry, but it would not properly trigger an invalidation
-    // of the cached rects.
-    PaintLayer* root_layer = root_and_target.target->View()->Layer();
-    if (!root_layer) {
-      return;
-    }
-    if (root_and_target.target->DeprecatedEnclosingScrollableBox() !=
-        root_and_target.root) {
-      return;
-    }
+  if (RootIsImplicit()) {
+    return;
+  }
+  // Cached rects can only be used if there are no scrollable objects in the
+  // hierarchy between target and root (a scrollable root is ok). The reason
+  // is that a scroll change in an intermediate scroller would change the
+  // intersection geometry, but it would not properly trigger an invalidation
+  // of the cached rects.
+  PaintLayer* root_layer = root_and_target.target->View()->Layer();
+  if (!root_layer) {
+    return;
+  }
+  if (root_and_target.target->DeprecatedEnclosingScrollableBox() !=
+      root_and_target.root) {
+    return;
   }
 
   flags_ |= kShouldUseCachedRects;
@@ -723,6 +713,32 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
     cached_rects->valid = true;
 
 #if CHECK_SKIPPED_UPDATE_ON_SCROLL()
+    // TODO(wangxianzhu): Remove or clean up this code after fixing
+    // crbug.com/41492283.
+    if (!cached_rects->min_scroll_delta_to_update.IsZero() &&
+        root_and_target.relationship == RootAndTarget::kScrollableByRootOnly &&
+        CanUseGeometryMapper(*root_and_target.target) &&
+        cached_rects->local_target_rect.size() !=
+            cached_rects->unscrolled_unclipped_intersection_rect.size()) {
+      // There are no intermediate clippers, no non-2d-translation transforms.
+      // Why is unscrolled_unclipped_intersection_rect.size() different?
+      PropertyTreeStateOrAlias container_properties =
+          PropertyTreeState::Uninitialized();
+      root_and_target.target->GetPropertyContainer(nullptr,
+                                                   &container_properties);
+      auto root_state =
+          root_and_target.root->FirstFragment().ContentsProperties();
+      StringBuilder sb;
+      for (const auto* clip = &container_properties.Clip();
+           clip != &root_state.Clip(); clip = clip->Parent()) {
+        sb.Append('\n');
+        sb.Append(clip->ToString());
+      }
+      NOTREACHED()
+          << cached_rects->local_target_rect.ToString() << " "
+          << cached_rects->unscrolled_unclipped_intersection_rect.ToString()
+          << sb.ToString().Utf8();
+    }
     cached_rects->computed_min_scroll_delta_to_update =
         cached_rects->min_scroll_delta_to_update;
     cached_rects->local_root_rect = root_geometry.local_root_rect;

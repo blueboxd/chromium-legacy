@@ -23,7 +23,6 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/browser/webid/digital_credentials/digital_credential_provider.h"
 #include "content/browser/webid/fake_identity_request_dialog_controller.h"
 #include "content/browser/webid/federated_auth_disconnect_request.h"
 #include "content/browser/webid/federated_auth_request_page_data.h"
@@ -602,87 +601,10 @@ FederatedAuthRequestImpl& FederatedAuthRequestImpl::CreateForTesting(
       permission_context, identity_registry, std::move(receiver));
 }
 
-void FederatedAuthRequestImpl::CompleteDigitalCredentialRequest(
-    std::string response) {
-  if (!digital_credential_provider_) {
-    std::move(digital_credential_request_callback_)
-        .Run(RequestTokenStatus::kError, std::nullopt, "", /*error=*/nullptr,
-             /*is_auto_selected=*/false);
-    return;
-  }
-
-  if (!response.empty()) {
-    std::move(digital_credential_request_callback_)
-        .Run(RequestTokenStatus::kSuccess, std::nullopt, response,
-             /*error=*/nullptr,
-             /*is_auto_selected=*/false);
-  } else {
-    std::move(digital_credential_request_callback_)
-        .Run(RequestTokenStatus::kError, std::nullopt, "", /*error=*/nullptr,
-             /*is_auto_selected=*/false);
-  }
-}
-
-base::Value::Dict BuildDigitalCredentialRequest(
-    blink::mojom::DigitalCredentialProviderPtr provider) {
-  auto result = Value::Dict();
-
-  if (provider->params) {
-    auto params = Value::Dict();
-    for (const auto& pair : *provider->params) {
-      params.Set(pair.first, pair.second);
-    }
-    result.Set("params", std::move(params));
-  }
-
-  if (provider->selector) {
-    auto formats = Value::List();
-    for (auto& format : provider->selector->format) {
-      formats.Append(format);
-    }
-
-    auto fields = Value::List();
-
-    if (provider->selector->doctype) {
-      auto doctype = Value::Dict();
-      doctype.Set("name", "doctype");
-      doctype.Set("equals", provider->selector->doctype.value());
-      fields.Append(std::move(doctype));
-    }
-
-    for (auto& value : provider->selector->fields) {
-      auto field = Value::Dict();
-      field.Set("name", value->name);
-      if (value->equals) {
-        field.Set("equals", value->equals.value());
-      }
-      fields.Append(std::move(field));
-    }
-
-    result.Set("selector", Value::Dict().Set("fields", std::move(fields)));
-    result.Set("responseFormat", std::move(formats));
-  }
-
-  if (provider->protocol) {
-    result.Set("protocol", *provider->protocol);
-  }
-
-  if (provider->request) {
-    result.Set("request", *provider->request);
-  }
-
-  if (provider->publicKey) {
-    result.Set("publicKey", *provider->publicKey);
-  }
-
-  return Value::Dict().Set("providers",
-                           Value::List().Append(std::move(result)));
-}
-
-std::vector<blink::mojom::IdentityProviderPtr>
+std::vector<blink::mojom::IdentityProviderRequestOptionsPtr>
 FederatedAuthRequestImpl::MaybeAddRegisteredProviders(
-    std::vector<blink::mojom::IdentityProviderPtr>& providers) {
-  std::vector<blink::mojom::IdentityProviderPtr> result;
+    std::vector<blink::mojom::IdentityProviderRequestOptionsPtr>& providers) {
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> result;
 
   std::vector<GURL> registered_config_urls =
       permission_delegate_->GetRegisteredIdPs();
@@ -695,16 +617,15 @@ FederatedAuthRequestImpl::MaybeAddRegisteredProviders(
   std::reverse(registered_config_urls.begin(), registered_config_urls.end());
 
   for (auto& provider : providers) {
-    if (!provider->is_federated() ||
-        !provider->get_federated()->config->use_registered_config_urls) {
+    if (!provider->config->use_registered_config_urls) {
       result.emplace_back(provider->Clone());
       continue;
     }
 
     for (auto& configURL : registered_config_urls) {
-      blink::mojom::IdentityProviderPtr idp = provider->Clone();
-      idp->get_federated()->config->use_registered_config_urls = false;
-      idp->get_federated()->config->config_url = configURL;
+      blink::mojom::IdentityProviderRequestOptionsPtr idp = provider->Clone();
+      idp->config->use_registered_config_urls = false;
+      idp->config->config_url = configURL;
       result.emplace_back(std::move(idp));
     }
   }
@@ -723,7 +644,7 @@ void FederatedAuthRequestImpl::RequestToken(
   // Expand the providers list with registered providers.
   if (IsFedCmIdPRegistrationEnabled()) {
     for (auto& idp_get_params_ptr : idp_get_params_ptrs) {
-      std::vector<blink::mojom::IdentityProviderPtr> providers =
+      std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> providers =
           MaybeAddRegisteredProviders(idp_get_params_ptr->providers);
       idp_get_params_ptr->providers = std::move(providers);
     }
@@ -799,60 +720,6 @@ void FederatedAuthRequestImpl::RequestToken(
     return;
   }
 
-  if (idp_get_params_ptrs[0]->providers[0]->is_holder()) {
-    if (!IsWebIdentityDigitalCredentialsEnabled() ||
-        IsFedCmMultipleIdentityProvidersEnabled()) {
-      // TODO(https://crbug.com/1416939): Support calling the Digital
-      // Credentials
-      //  API with the Multi IdP API support.
-      std::move(callback).Run(RequestTokenStatus::kError, std::nullopt, "",
-                              /*error=*/nullptr,
-                              /*is_auto_selected=*/false);
-      return;
-    }
-
-    if (digital_credential_request_callback_) {
-      // Similar to the token request, only allow one in-flight wallet request.
-      // TODO(https://crbug.com/1416939): Reconcile with federated identity
-      // requests.
-      std::move(callback).Run(RequestTokenStatus::kErrorTooManyRequests,
-                              std::nullopt, "", /*error=*/nullptr,
-                              /*is_auto_selected=*/false);
-      return;
-    }
-
-    digital_credential_request_callback_ = std::move(callback);
-    // digital_credential_provider_ is not destroyed after a successful wallet
-    // request so we need to have the nullcheck to avoid duplicated creation.
-    if (!digital_credential_provider_) {
-      digital_credential_provider_ = CreateDigitalCredentialProvider();
-    }
-    if (!digital_credential_provider_) {
-      std::move(digital_credential_request_callback_)
-          .Run(RequestTokenStatus::kError, std::nullopt, "", /*error=*/nullptr,
-               /*is_auto_selected=*/false);
-      return;
-    }
-
-    auto digital_credential =
-        std::move(idp_get_params_ptrs[0]->providers[0]->get_holder());
-
-    auto request = BuildDigitalCredentialRequest(std::move(digital_credential));
-
-    digital_credential_provider_->RequestDigitalCredential(
-        WebContents::FromRenderFrameHost(&render_frame_host()), origin(),
-        request,
-        base::BindOnce(
-            &FederatedAuthRequestImpl::CompleteDigitalCredentialRequest,
-            weak_ptr_factory_.GetWeakPtr()));
-
-    // TODO(https://crbug.com/1416939): rather than returning early,
-    // we would ultimately like to make the wallet response reconcile with the
-    // federated identities, so that they can be presented to the user in an
-    // unified manner.
-    return;
-  }
-
   if (!fedcm_metrics_) {
     // Ensure the lifecycle state as GetPageUkmSourceId doesn't support the
     // prerendering page. As FederatedAithRequest runs behind the
@@ -865,7 +732,6 @@ void FederatedAuthRequestImpl::RequestToken(
     fedcm_metrics_ =
         CreateFedCmMetrics(idp_get_params_ptrs[0]
                                ->providers[0]
-                               ->get_federated()
                                ->config->config_url,
                            render_frame_host().GetPageUkmSourceId(),
                            /*is_disabled=*/idp_get_params_ptrs.size() > 1);
@@ -953,8 +819,7 @@ void FederatedAuthRequestImpl::RequestToken(
     for (auto& idp_ptr : idp_get_params_ptr->providers) {
       // Throw an error if duplicate IDPs are specified.
       const bool is_unique_idp =
-          unique_idps.insert(idp_ptr->get_federated()->config->config_url)
-              .second;
+          unique_idps.insert(idp_ptr->config->config_url).second;
       if (!is_unique_idp) {
         CompleteRequestWithError(FederatedAuthRequestResult::kError,
                                  /*token_status=*/std::nullopt,
@@ -963,8 +828,7 @@ void FederatedAuthRequestImpl::RequestToken(
         return;
       }
 
-      url::Origin idp_origin =
-          url::Origin::Create(idp_ptr->get_federated()->config->config_url);
+      url::Origin idp_origin = url::Origin::Create(idp_ptr->config->config_url);
       if (!network::IsOriginPotentiallyTrustworthy(idp_origin)) {
         CompleteRequestWithError(FederatedAuthRequestResult::kError,
                                  TokenStatus::kIdpNotPotentiallyTrustworthy,
@@ -977,15 +841,14 @@ void FederatedAuthRequestImpl::RequestToken(
 
   for (auto& idp_get_params_ptr : idp_get_params_ptrs) {
     for (auto& idp_ptr : idp_get_params_ptr->providers) {
-      idp_order_.push_back(idp_ptr->get_federated()->config->config_url);
+      idp_order_.push_back(idp_ptr->config->config_url);
 
       bool has_failing_idp_signin_status =
           webid::ShouldFailAccountsEndpointRequestBecauseNotSignedInWithIdp(
-              render_frame_host(), idp_ptr->get_federated()->config->config_url,
+              render_frame_host(), idp_ptr->config->config_url,
               permission_delegate_);
 
-      url::Origin idp_origin =
-          url::Origin::Create(idp_ptr->get_federated()->config->config_url);
+      url::Origin idp_origin = url::Origin::Create(idp_ptr->config->config_url);
       if (has_failing_idp_signin_status &&
           webid::GetIdpSigninStatusMode(render_frame_host(), idp_origin) ==
               FedCmIdpSigninStatusMode::ENABLED) {
@@ -994,7 +857,7 @@ void FederatedAuthRequestImpl::RequestToken(
             // In the multi IDP case, we do not want to complete the request
             // right away as there are other IDPs which may be logged in. But we
             // also do not want to fetch this IDP.
-            unique_idps.erase(idp_ptr->get_federated()->config->config_url);
+            unique_idps.erase(idp_ptr->config->config_url);
             continue;
           }
           // If the user is known to be signed-out and the RP is request
@@ -1024,13 +887,12 @@ void FederatedAuthRequestImpl::RequestToken(
           }
         }
       }
-      if (ShouldFailBeforeFetchingAccounts(
-              idp_ptr->get_federated()->config->config_url)) {
+      if (ShouldFailBeforeFetchingAccounts(idp_ptr->config->config_url)) {
         if (IsFedCmMultipleIdentityProvidersEnabled()) {
           // In the multi IDP case, we do not want to complete the request right
           // away as there are other IDPs which may be logged in. But we also do
           // not want to fetch this IDP.
-          unique_idps.erase(idp_ptr->get_federated()->config->config_url);
+          unique_idps.erase(idp_ptr->config->config_url);
           continue;
         }
         CompleteRequestWithError(
@@ -1043,11 +905,10 @@ void FederatedAuthRequestImpl::RequestToken(
 
       blink::mojom::RpContext rp_context = idp_get_params_ptr->context;
       blink::mojom::RpMode rp_mode = idp_get_params_ptr->mode;
-      const GURL& idp_config_url = idp_ptr->get_federated()->config->config_url;
+      const GURL& idp_config_url = idp_ptr->config->config_url;
       token_request_get_infos_.emplace(
           idp_config_url,
-          IdentityProviderGetInfo(std::move(idp_ptr->get_federated()),
-                                  rp_context, rp_mode));
+          IdentityProviderGetInfo(std::move(idp_ptr), rp_context, rp_mode));
     }
   }
 
@@ -1355,6 +1216,27 @@ void FederatedAuthRequestImpl::OnClientMetadataResponseReceived(
     IdpNetworkRequestManager::ClientMetadata client_metadata) {
   // TODO(yigu): Clean up the client metadata related errors for metrics and
   // console logs.
+  if (!idp_info->metadata.brand_background_color &&
+      idp_info->metadata.brand_text_color) {
+    idp_info->metadata.brand_text_color = std::nullopt;
+    render_frame_host().AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning,
+        "The FedCM text color is ignored because background color was not "
+        "provided");
+  }
+  if (idp_info->metadata.brand_background_color &&
+      idp_info->metadata.brand_text_color) {
+    float text_contrast_ratio = color_utils::GetContrastRatio(
+        *idp_info->metadata.brand_background_color,
+        *idp_info->metadata.brand_text_color);
+    if (text_contrast_ratio < color_utils::kMinimumReadableContrastRatio) {
+      idp_info->metadata.brand_text_color = std::nullopt;
+      render_frame_host().AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "The FedCM text color is ignored because it does not contrast enough "
+          "with the provided background color");
+    }
+  }
   OnFetchDataForIdpSucceeded(std::move(idp_info), accounts, client_metadata);
 }
 
@@ -1465,12 +1347,32 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
   // Account" flow or the IDP login mismatch in multiple IDP case.
   idp_data_for_display_.clear();
 
+  // If this method call occurs after a login, we'd like to show the account
+  // that was logged in.
+  std::optional<IdentityProviderData> new_account_idp;
   for (const auto& idp : idp_order_) {
     auto idp_info_it = idp_infos_.find(idp);
     if (idp_info_it != idp_infos_.end() && idp_info_it->second->data) {
       idp_data_for_display_.push_back(*idp_info_it->second->data);
     }
+    if (IsFedCmAddAccountEnabled()) {
+      if (!login_url_.is_empty() &&
+          login_url_ == idp_info_it->second->metadata.idp_login_url) {
+        new_account_idp = idp_info_it->second->data;
+        new_account_idp->accounts.clear();
+        for (const auto& account : idp_info_it->second->data->accounts) {
+          if (!account_ids_before_login_.contains(account.id)) {
+            // Even though it is theoretically possible for more than one
+            // account to be new, just show the first one we encounter.
+            new_account_idp->accounts = {account};
+            break;
+          }
+        }
+        account_ids_before_login_.clear();
+      }
+    }
   }
+
   // We want to show IDPs in the following order in the UI:
   // 1. IDPs for which there was a mismatch.
   // 2. IDPs for which there were returning accounts.
@@ -1648,6 +1550,8 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
 
   // TODO(crbug.com/1382863): Handle UI where some IDPs are successful and some
   // IDPs are failing in the multi IDP case.
+  // TODO(crbug.com/41490360): pass `new_account_idp` so that the UI code may
+  // show the newly signed in account, if applicable.
   request_dialog_controller_->ShowAccountsDialog(
       GetTopFrameOriginForDisplay(GetEmbeddingOrigin()), iframe_for_display,
       idp_data_for_display_,
@@ -2536,6 +2440,7 @@ void FederatedAuthRequestImpl::CleanUp() {
   idp_login_infos_.clear();
   idp_infos_.clear();
   idp_data_for_display_.clear();
+  account_ids_before_login_.clear();
   fetch_data_ = FetchData();
   idp_order_.clear();
   metrics_endpoints_.clear();
@@ -2649,18 +2554,6 @@ FederatedAuthRequestImpl::CreateDialogController() {
 
   return GetContentClient()->browser()->CreateIdentityRequestDialogController(
       web_contents);
-}
-
-std::unique_ptr<DigitalCredentialProvider>
-FederatedAuthRequestImpl::CreateDigitalCredentialProvider() {
-  // A provider may only be created in browser tests by this moment.
-  std::unique_ptr<DigitalCredentialProvider> provider =
-      GetContentClient()->browser()->CreateDigitalCredentialProvider();
-
-  if (!provider) {
-    return DigitalCredentialProvider::Create();
-  }
-  return provider;
 }
 
 void FederatedAuthRequestImpl::SetNetworkManagerForTests(
@@ -2904,6 +2797,20 @@ void FederatedAuthRequestImpl::LoginToIdP(bool can_append_hints,
     MaybeAppendQueryParameters(it->second, &login_url);
   }
   permission_delegate_->AddIdpSigninStatusObserver(this);
+
+  if (IsFedCmAddAccountEnabled()) {
+    account_ids_before_login_.clear();
+    for (const auto& idp_data : idp_data_for_display_) {
+      if (idp_data.idp_metadata.idp_login_url == login_url) {
+        for (const auto& account : idp_data.accounts) {
+          account_ids_before_login_.insert(account.id);
+        }
+        break;
+      }
+    }
+  }
+
+  login_url_ = login_url;
   ShowModalDialog(idp_config_url, login_url);
 }
 

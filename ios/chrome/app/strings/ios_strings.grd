@@ -424,6 +424,12 @@
       <message name="IDS_IOS_BACK_FORWARD_SWIPE_IPH" desc="The text for the full screen in-product help for side swipe on the current tab to navigate.">
         You can swipe the edge to go back or forward.
       </message>
+      <message name="IDS_IOS_BACK_FORWARD_SWIPE_IPH_BACK_ONLY" desc="The text for the full screen in-product help for side swipe on the current tab to navigate.">
+        You can swipe the edge to go back.
+      </message>
+      <message name="IDS_IOS_BACK_FORWARD_SWIPE_IPH_FORWARD_ONLY" desc="The text for the full screen in-product help for side swipe on the current tab to navigate.">
+        You can swipe the edge to go forward.
+      </message>
       <message name="IDS_IOS_BADGE_INCOGNITO_HINT" desc="Button displayed when the user is in Incognito mode. [iOS only]">
         Current Webpage is on Incognito
       </message>
@@ -2217,7 +2223,7 @@ See your search engine’s instructions for deleting your search history, if app
         Add Language
       </message>
       <message name="IDS_IOS_LANGUAGE_SETTINGS_HEADER" desc="Header for the fluent languages section in the language settings page. [Length: unlimited] [iOS only]">
-        Websites will show text in your preferred language, when possible.
+        Let websites know the languages you speak. They'll show content in those languages, when possible.
       </message>
       <message name="IDS_IOS_LANGUAGE_SETTINGS_NEVER_TRANSLATE_TITLE" desc="Label shown next to a language for which translation is not offered. [Length: 25em] [iOS only]">
         Never Translate
@@ -4826,8 +4832,14 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SWIPE_LEFT_TO_INCOGNITO_IPH" desc="The text for the full screen in-product help for swipe right to see incognito tabs on regular tabs grid for RTL devices.">
         You can swipe left to browse in Incognito.
       </message>
+      <message name="IDS_IOS_SWIPE_LEFT_TO_INCOGNITO_IPH_VOICEOVER" desc="The voice over announcement for the full screen in-product help for swipe right to see incognito tabs on regular tabs grid for RTL devices.">
+        You can scroll right to browse in Incognito.
+      </message>
       <message name="IDS_IOS_SWIPE_RIGHT_TO_INCOGNITO_IPH" desc="The text for the full screen in-product help for swipe right to see incognito tabs on regular tabs grid.">
         You can swipe right to browse in Incognito.
+      </message>
+      <message name="IDS_IOS_SWIPE_RIGHT_TO_INCOGNITO_IPH_VOICEOVER" desc="The voice over announcement for the full screen in-product help for swipe right to see incognito tabs on regular tabs grid.">
+        You can scroll left to browse in Incognito.
       </message>
       <message name="IDS_IOS_SYNC_ADDRESSES_DIALOG_CONTINUE" desc="Action of a dialog to enable saving addresses to the Google Account. If the user chose to continue, addresses will start syncing.">
         Continue
@@ -4939,6 +4951,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_TABS_SEARCH_OPEN_TABS_SECTION_HEADER_TITLE" desc="Section header for the section that contains all the open tabs from the search results.">
         Open Tabs
+      </message>
+      <message name="IDS_IOS_TABS_SEARCH_TAB_GROUPS_SECTION_HEADER_TITLE" desc="Section header for the section that contains all the tab groups from the search results.">
+        Tab Groups
       </message>
       <message name="IDS_IOS_TABS_SEARCH_SUGGESTED_ACTIONS" desc="Section header for the suggested actions section shown in the tab grid at the bottom of search results.">
         Suggested
@@ -5856,6 +5871,18 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_DOCKING_PROMO_SECONDARY_BUTTON_TITLE" desc="Title of the secondary button in the Docking Promo, which schedules the Docking Promo for display at a later time, i.e. Remind Me Later functionality.">
         Remind Me Later
+      </message>
+      <message name="IDS_IOS_EXPANDED_MANUAL_FILL_CLOSE_BUTTON_ACCESSIBILITY_LABEL" desc="Accessibility label of the expanded manual fill view's close button.">
+        Dismiss expanded view
+      </message>
+      <message name="IDS_IOS_EXPANDED_MANUAL_FILL_PASSWORD_TAB_ACCESSIBILITY_LABEL" desc="Accessibility label of the expanded manual fill view's password tab.">
+        Google Password Manager
+      </message>
+            <message name="IDS_IOS_EXPANDED_MANUAL_FILL_PAYMENT_TAB_ACCESSIBILITY_LABEL" desc="Accessibility label of the expanded manual fill view's payment method tab.">
+        Payment methods
+      </message>
+            <message name="IDS_IOS_EXPANDED_MANUAL_FILL_ADDRESS_TAB_ACCESSIBILITY_LABEL" desc="Accessibility label of the expanded manual fill view's address tab.">
+        Addresses and more
       </message>
     </messages>
   </release>

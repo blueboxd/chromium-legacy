@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -44,7 +45,6 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
 #include "net/ssl/ssl_cert_request_info.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
@@ -308,7 +308,7 @@ base::TimeDelta HttpProxyConnectJob::AlternateNestedConnectionTimeout(
     return default_alternate_timeout;
   }
 
-  absl::optional<base::TimeDelta> http_rtt_estimate =
+  std::optional<base::TimeDelta> http_rtt_estimate =
       network_quality_estimator->GetHttpRTT();
   if (!http_rtt_estimate) {
     return default_alternate_timeout;
@@ -600,7 +600,7 @@ int HttpProxyConnectJob::DoHttpProxyConnectComplete(int result) {
   }
 
   if (result == OK) {
-    SetSocket(std::move(transport_socket_), /*dns_aliases=*/absl::nullopt);
+    SetSocket(std::move(transport_socket_), /*dns_aliases=*/std::nullopt);
   }
 
   return result;
@@ -864,10 +864,15 @@ SpdySessionKey HttpProxyConnectJob::CreateSpdySessionKey() const {
   if (params_->proxy_chain_index() == 0) {
     DCHECK(session_key_proxy_chain.is_direct());
   }
+
+  // Note that `disable_cert_network_fetches` must be true for proxies to avoid
+  // deadlock. See comment on
+  // `SSLConfig::disable_cert_verification_network_fetches`.
   return SpdySessionKey(
       params_->proxy_server().host_port_pair(), PRIVACY_MODE_DISABLED,
       session_key_proxy_chain, SessionUsage::kProxy, socket_tag(),
-      params_->network_anonymization_key(), params_->secure_dns_policy());
+      params_->network_anonymization_key(), params_->secure_dns_policy(),
+      /*disable_cert_verification_network_fetches=*/true);
 }
 
 }  // namespace net

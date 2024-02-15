@@ -2316,6 +2316,8 @@ inline constexpr char kDevToolsSyncedPreferencesSyncEnabled[] =
 inline constexpr char kDevToolsSyncedPreferencesSyncDisabled[] =
     "devtools.synced_preferences_sync_disabled";
 
+inline constexpr char kDevToolsGenAiSettings[] = "devtools.gen_ai_settings";
+
 #if !BUILDFLAG(IS_ANDROID)
 // Tracks the number of times the dice signin promo has been shown in the user
 // menu.
@@ -2890,6 +2892,10 @@ inline constexpr char
 // set for child users only, and kept on the known user storage.
 inline constexpr char kKnownUserParentAccessCodeConfig[] =
     "child_user.parent_access_code.config";
+
+// Pref that contains the value of the LocalUserFilesAllowed policy.
+inline constexpr char kLocalUserFilesAllowed[] =
+    "filebrowser.local_user_files_allowed";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // String which specifies where to store the disk cache.
@@ -3016,6 +3022,11 @@ inline constexpr char kDeviceWeeklyScheduledSuspend[] =
     "device_weekly_scheduled_suspend";
 
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+// Defines administrator-set availability of Chrome for Testing.
+inline constexpr char kChromeForTestingAllowed[] = "chrome_for_testing.allowed";
+#endif
 
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.

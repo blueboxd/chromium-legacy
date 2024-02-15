@@ -420,14 +420,14 @@ ui::PageTransition GetTransitionType(blink::WebDocumentLoader* document_loader,
 bool IsValidCommitUrl(const GURL& url) {
   // Invalid URLs are not accepted by the browser process.
   if (!url.is_valid()) {
-    base::UmaHistogramEnumeration("Navigation.Renderer.BlockedByFilterURL",
+    base::UmaHistogramEnumeration("Navigation.Renderer.BlockedForFilterURL",
                                   RendererBlockedURLReason::kInvalidURL);
     return false;
   }
 
   // Do not send a URL longer than Mojo will serialize.
   if (url.possibly_invalid_spec().length() > url::kMaxURLChars) {
-    base::UmaHistogramEnumeration("Navigation.Renderer.BlockedByFilterURL",
+    base::UmaHistogramEnumeration("Navigation.Renderer.BlockedForFilterURL",
                                   RendererBlockedURLReason::kTooLongURL);
     return false;
   }
@@ -436,7 +436,7 @@ bool IsValidCommitUrl(const GURL& url) {
   // fragments).
   if (url.SchemeIs(url::kAboutScheme) &&
       (!url.IsAboutBlank() && !url.IsAboutSrcdoc())) {
-    base::UmaHistogramEnumeration("Navigation.Renderer.BlockedByFilterURL",
+    base::UmaHistogramEnumeration("Navigation.Renderer.BlockedForFilterURL",
                                   RendererBlockedURLReason::kBadAboutURL);
     return false;
   }
@@ -449,6 +449,15 @@ bool IsValidCommitUrl(const GURL& url) {
 bool MaybeGetOverriddenURL(WebDocumentLoader* document_loader, GURL* output) {
   DocumentState* document_state =
       DocumentState::FromDocumentLoader(document_loader);
+  // `document_state` may be null if it was taken from the loader, e.g. when
+  // committing the result of evaluating a javascript: URL,
+  // `FrameLoader::CommitNavigation()` takes the `DocumentState`. Early
+  // returning here means the answer may be inaccurate, but this can only
+  // happen when the replaced `Document` is being detached and about to go
+  // away.
+  if (!document_state) {
+    return false;
+  }
 
   // If this document is loaded by a loadDataWithBaseURL request, then the URLs
   // saved in the DocumentLoader will be the user-supplied base URL (used as the
@@ -2346,7 +2355,7 @@ void RenderFrameImpl::DidCommitAndDrawCompositorFrame() {
   // ViewFlushedPaint regarding instances closing themselves, so we take
   // similar precautions.
   PepperPluginSet plugins = active_pepper_instances_;
-  for (auto* plugin : plugins) {
+  for (PepperPluginInstanceImpl* plugin : plugins) {
     if (base::Contains(active_pepper_instances_, plugin)) {
       plugin->ViewInitiatedPaint();
     }
@@ -4758,8 +4767,9 @@ void RenderFrameImpl::WasHidden() {
     observer.WasHidden();
 
 #if BUILDFLAG(ENABLE_PPAPI)
-  for (auto* plugin : active_pepper_instances_)
+  for (PepperPluginInstanceImpl* plugin : active_pepper_instances_) {
     plugin->PageVisibilityChanged(false);
+  }
 #endif  // BUILDFLAG(ENABLE_PPAPI)
 }
 
@@ -4769,8 +4779,9 @@ void RenderFrameImpl::WasShown() {
     observer.WasShown();
 
 #if BUILDFLAG(ENABLE_PPAPI)
-  for (auto* plugin : active_pepper_instances_)
+  for (PepperPluginInstanceImpl* plugin : active_pepper_instances_) {
     plugin->PageVisibilityChanged(true);
+  }
 #endif  // BUILDFLAG(ENABLE_PPAPI)
 }
 
@@ -4876,7 +4887,12 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   // get the base url from it too.
   if (blink::features::IsNewBaseUrlInheritanceBehaviorEnabled() &&
       (params->url.IsAboutBlank() || params->url.IsAboutSrcdoc())) {
-    params->initiator_base_url = frame_document.BaseURL();
+    GURL base_url = frame_document.BaseURL();
+    // Only pass the base URL if it is valid and can be serialized by Mojo.
+    if (base_url.is_valid() &&
+        base_url.possibly_invalid_spec().length() <= url::kMaxURLChars) {
+      params->initiator_base_url = base_url;
+    }
   }
 
   // Don't send commit URLs to the browser that are known to be unsupported

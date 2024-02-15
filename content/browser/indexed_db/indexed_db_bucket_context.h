@@ -13,6 +13,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -46,7 +47,6 @@ class IndexedDBBackingStore;
 class IndexedDBBucketContextHandle;
 class IndexedDBDatabase;
 class IndexedDBDataItemReader;
-class IndexedDBFactory;
 class IndexedDBPreCloseTaskQueue;
 
 constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
@@ -56,9 +56,9 @@ constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
 //
 // IndexedDBBucketContext will keep its backing store around while any of these
 // is true:
-// * There are handles referencing the factory,
+// * There are handles referencing the bucket context,
 // * There are outstanding blob references to this database's blob files, or
-// * The factory is in-memory (i.e. an incognito profile).
+// * The bucket context is in-memory (i.e. an incognito profile).
 //
 // When these qualities are no longer true, `RunTasks()` will invoke
 // `ResetBackingStore()`, which returns `this` to an uninitialized state.
@@ -67,7 +67,7 @@ constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
 // IndexedDB task runner. To facilitate IndexedDB code running on multiple task
 // runners, `IndexedDBBucketContext` is in the process of becoming the single
 // point of communication between classes running on the main task runner, such
-// as `IndexedDBFactory`, and those that pertain to a specific bucket and
+// as `IndexedDBContextImpl`, and those that pertain to a specific bucket and
 // therefore run on a bucket's IDB task runner, such as `IndexedDBDatabase` or
 // `IndexedDBCursor`.
 class CONTENT_EXPORT IndexedDBBucketContext
@@ -135,16 +135,6 @@ class CONTENT_EXPORT IndexedDBBucketContext
     Delegate(const Delegate&) = delete;
     Delegate& operator=(const Delegate&) = delete;
 
-    // Called when a fatal error has occurred that should result in tearing down
-    // the backing store. `IndexedDBBucketContext` *may* be synchronously
-    // destroyed after this is invoked. The string, if non-empty, is used as an
-    // error message.
-    base::RepeatingCallback<void(leveldb::Status, const std::string&)>
-        on_fatal_error;
-
-    // Called when the backing store has been corrupted.
-    base::RepeatingCallback<void(const IndexedDBDatabaseError&)> on_corruption;
-
     // Called when the bucket context is ready to be destroyed.
     base::RepeatingCallback<void()> on_ready_for_destruction;
 
@@ -156,11 +146,10 @@ class CONTENT_EXPORT IndexedDBBucketContext
                                  const std::u16string& /*object_store_name*/)>
         on_content_changed;
 
-    // Called to inform the quota system that a transaction which may have
-    // updated the amount of disk space used has completed. The parameter is
-    // true for transactions that caused the backing store to flush.
-    base::RepeatingCallback<void(bool /*did_sync*/)>
-        on_writing_transaction_complete;
+    // Called to inform the quota system that an action which may have updated
+    // the amount of disk space used has completed. The parameter is true for
+    // transactions that caused the backing store to flush.
+    base::RepeatingCallback<void(bool /*did_sync*/)> on_files_written;
 
     // Called to run a given callback on every bucket context (including the one
     // in the current sequence and those in other sequences/associated with
@@ -197,6 +186,8 @@ class CONTENT_EXPORT IndexedDBBucketContext
   // Normally, in-memory bucket contexts never self-close. If this is called
   // with `doom` set to true, they will self-close.
   void ForceClose(bool doom);
+
+  int64_t GetInMemorySize();
 
   bool IsClosing() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -306,25 +297,37 @@ class CONTENT_EXPORT IndexedDBBucketContext
       base::OnceCallback<void(storage::mojom::IdbBucketMetadataPtr)> result);
 
   void CompactBackingStoreForTesting();
+  void WriteToIndexedDBForTesting(const std::string& key,
+                                  const std::string& value,
+                                  base::OnceClosure callback);
+
+  // Called when a fatal error has occurred that should result in tearing down
+  // the backing store. `IndexedDBBucketContext` *may* be synchronously
+  // destroyed after this is invoked. The string, if non-empty, is used as an
+  // error message.
+  void OnDatabaseError(leveldb::Status status, const std::string& message);
+
+  // Called when the backing store has been corrupted.
+  void HandleBackingStoreCorruption(const IndexedDBDatabaseError& error);
 
   // base::trace_event::MemoryDumpProvider:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  bool force_close_called_for_testing() const { return skip_closing_sequence_; }
+
  private:
-  friend IndexedDBFactory;
   friend IndexedDBBucketContextHandle;
   friend class IndexedDBBackingStoreTest;
   friend class IndexedDBDatabaseTest;
-  friend class IndexedDBFactoryTest;
+  friend class IndexedDBTest;
   friend class IndexedDBTransactionTest;
 
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, CompactionKillSwitchWorks);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, CompactionTaskTiming);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, TombstoneSweeperTiming);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, TooLongOrigin);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTestWithStoragePartitioning,
-                           BasicFactoryCreationAndTearDown);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, CompactionKillSwitchWorks);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, CompactionTaskTiming);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, TombstoneSweeperTiming);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, TooLongOrigin);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, BasicFactoryCreationAndTearDown);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBBucketContextTest, BucketSpaceDecay);
 
   // The data structure that stores everything bound to the receiver. This will
@@ -360,8 +363,8 @@ class CONTENT_EXPORT IndexedDBBucketContext
   void OnHandleCreated();
   void OnHandleDestruction();
 
-  // Returns true if this factory can be closed (no references, no blobs, and
-  // not persisting for incognito).
+  // Returns true if this bucket context can be closed (no references, no blobs,
+  // and not persisting for incognito).
   bool CanClose();
 
   void MaybeStartClosing();
@@ -448,8 +451,8 @@ class CONTENT_EXPORT IndexedDBBucketContext
   // have not yet been loaded.
   DBMap databases_;
   // This is the refcount for the number of IndexedDBBucketContextHandle's
-  // given out for this factory using OpenReference. This is used as closing
-  // criteria for this object, see CanClose.
+  // given out for this bucket context using OpenReference. This is used as
+  // closing criteria for this object, see CanClose.
   int64_t open_handles_ = 0;
 
   // A queue of callbacks representing `CheckCanUseDiskSpace()` requests.

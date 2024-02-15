@@ -1367,8 +1367,7 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
   if (AccessibilityIsIgnored()) {
     node_data->AddState(ax::mojom::blink::State::kIgnored);
     // Early return for ignored, unfocusable nodes, avoiding unnecessary work.
-    if (!is_focusable &&
-        !RuntimeEnabledFeatures::AccessibilityExposeIgnoredNodesEnabled()) {
+    if (!is_focusable) {
       // The name is important for exposing the selection around ignored nodes.
       // TODO(accessibility) Remove this and still pass this
       // content_browsertest:
@@ -1889,15 +1888,17 @@ void AXObject::SerializeOtherScreenReaderAttributes(
     node_data->SetDefaultActionVerb(Action());
   }
 
-  if (NextOnLine() && !NextOnLine()->IsDetached()) {
+  if (AXObject* next_on_line = NextOnLine()) {
+    CHECK(!next_on_line->IsDetached());
     node_data->AddIntAttribute(ax::mojom::blink::IntAttribute::kNextOnLineId,
-                               NextOnLine()->AXObjectID());
+                               next_on_line->AXObjectID());
   }
 
-  if (PreviousOnLine() && !PreviousOnLine()->IsDetached()) {
+  if (AXObject* prev_on_line = PreviousOnLine()) {
+    CHECK(!prev_on_line->IsDetached());
     node_data->AddIntAttribute(
         ax::mojom::blink::IntAttribute::kPreviousOnLineId,
-        PreviousOnLine()->AXObjectID());
+        prev_on_line->AXObjectID());
   }
 
   AXObjectVector error_messages = ErrorMessage();
@@ -3095,7 +3096,18 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   // before the included in tree computation, which depends on focusability.
   cached_can_set_focus_attribute_ = ComputeCanSetFocusAttribute();
 
-  // This depends on cached_can_set_focus_attribute_.
+  // Must be computed before is_used_for_label_or_description computation.
+  bool was_included_in_tree = LastKnownIsIncludedInTreeValue();
+  bool is_ignored = ComputeAccessibilityIsIgnored();
+  if (is_ignored != LastKnownIsIgnoredValue()) {
+    // Presence of inline text children depends on ignored state.
+    if (ui::CanHaveInlineTextBoxChildren(RoleValue())) {
+      is_changing_inherited_values = true;
+    }
+    cached_is_ignored_ = is_ignored;
+  }
+
+  // This depends on cached_is_ignored_ and cached_can_set_focus_attribute_.
   bool is_used_for_label_or_description = ComputeIsUsedForLabelOrDescription();
   if (is_used_for_label_or_description !=
       cached_is_used_for_label_or_description_) {
@@ -3103,12 +3115,11 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     cached_is_used_for_label_or_description_ = is_used_for_label_or_description;
   }
 
-  bool is_ignored = ComputeAccessibilityIsIgnored();
+  // This depends on cached_is_used_for_label_or_description_.
   bool is_ignored_but_included_in_tree =
       is_ignored && ComputeAccessibilityIsIgnoredButIncludedInTree();
   bool is_included_in_tree = !is_ignored || is_ignored_but_included_in_tree;
-  bool included_in_tree_changed =
-      is_included_in_tree != LastKnownIsIncludedInTreeValue();
+  bool included_in_tree_changed = is_included_in_tree != was_included_in_tree;
   bool notify_included_in_tree_changed = false;
   if (included_in_tree_changed) {
     // If the inclusion bit is changing, we need to repair the
@@ -3138,12 +3149,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     if (notify_parent_of_ignored_changes) {
       notify_included_in_tree_changed = true;
     }
-  }
-
-  // Presence of inline text children depends on ignored state.
-  if (is_ignored != LastKnownIsIgnoredValue() &&
-      ui::CanHaveInlineTextBoxChildren(RoleValue())) {
-    is_changing_inherited_values = true;
   }
 
   // If the child's "included in tree" state changes, we will be notifying the
@@ -3756,10 +3761,6 @@ bool AXObject::IsExcludedByFormControlsFilter() const {
 }
 
 bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
-  // TODO(accessibility) Remove this flag, we never want to expose all nodes.
-  if (RuntimeEnabledFeatures::AccessibilityExposeIgnoredNodesEnabled())
-    return true;
-
   // If an inline text box is ignored, it is never included in the tree.
   if (IsAXInlineTextBox()) {
     return false;
@@ -4554,7 +4555,9 @@ bool AXObject::ComputeIsUsedForLabelOrDescription() const {
     // in a name or description in the relation case. Note: objects that are
     // visible and focused but aria-hidden can still compute their name from
     // contents as a repair.
-    if (CanSetFocusAttribute() && !IsHiddenViaStyle() &&
+    // Note: this must match the SupportsNameFromContents() rule in
+    // AXRelationCache::UpdateRelatedText().
+    if ((!AccessibilityIsIgnored() || CanSetFocusAttribute()) &&
         SupportsNameFromContents(/*recursive*/ false)) {
       // Descendants of nodes that label themselves via their inner contents
       // and are visible are effectively part of the label for that node.
@@ -7962,8 +7965,9 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
     if (!cached_values_only && !CanHaveChildren()) {
       string_builder = string_builder + " cannotHaveChildren";
     }
-    if (!GetLayoutObject())
+    if (!GetLayoutObject() && !IsAXInlineTextBox()) {
       string_builder = string_builder + " missingLayout";
+    }
 
     if (cached_values_only ? cached_is_used_for_label_or_description_
                            : IsUsedForLabelOrDescription()) {

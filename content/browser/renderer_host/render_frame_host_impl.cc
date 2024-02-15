@@ -152,6 +152,7 @@
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/webauth/webauth_request_security_checker.h"
+#include "content/browser/webid/digital_credentials/digital_identity_request_impl.h"
 #include "content/browser/webid/federated_auth_request_impl.h"
 #include "content/browser/webid/flags.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
@@ -186,6 +187,7 @@
 #include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/secure_payment_confirmation_utils.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/sms_fetcher.h"
@@ -1074,6 +1076,22 @@ bool ValidateUnfencedTopNavigation(
         "flag, but has no user activation (aka gesture). See "
         "https://www.chromestatus.com/feature/5629582019395584.");
     return false;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kFencedFramesLocalUnpartitionedDataAccess)) {
+    const std::optional<FencedFrameProperties>&
+        initiator_fenced_frame_properties =
+            render_frame_host->frame_tree_node()->GetFencedFrameProperties(
+                FencedFramePropertiesNodeSource::kFrameTreeRoot);
+    if (initiator_fenced_frame_properties.has_value() &&
+        initiator_fenced_frame_properties->has_disabled_untrusted_network()) {
+      render_frame_host->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kError,
+          "_unfencedTop navigations are not allowed after the fenced frame's "
+          "network has been disabled.");
+      return false;
+    }
   }
 
   return true;
@@ -9487,12 +9505,11 @@ void RenderFrameHostImpl::HandleAXEvents(
   }
 
   if (!accessibility_reset_start_.is_null()) {
-    base::UmaHistogramCustomMicrosecondsTimes(
+    base::UmaHistogramTimes(
         is_first_accessibility_request_
-            ? "Accessibility.EventProcessingTime.First"
-            : "Accessibility.EventProcessingTime.NotFirst",
-        base::TimeTicks::Now() - accessibility_reset_start_,
-        base::Microseconds(1), base::Seconds(1), 50);
+            ? "Accessibility.EventProcessingTime2.First"
+            : "Accessibility.EventProcessingTime2.NotFirst",
+        base::TimeTicks::Now() - accessibility_reset_start_);
     accessibility_reset_start_ = base::TimeTicks();
   }
 }
@@ -9931,7 +9948,7 @@ RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForFrame(
   // innermost frame, as Blink will walk all same-site (local)
   // descendants. Detect cases like this and skip them.
   bool has_same_site_ancestor = false;
-  for (auto* added_rfh : beforeunload_pending_replies_) {
+  for (RenderFrameHostImpl* added_rfh : beforeunload_pending_replies_) {
     if (rfh->IsDescendantOfWithinFrameTree(added_rfh) &&
         rfh->GetSiteInstance() == added_rfh->GetSiteInstance()) {
       has_same_site_ancestor = true;
@@ -10261,7 +10278,7 @@ void RenderFrameHostImpl::CommitNavigation(
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::optional<SubresourceLoaderParams> subresource_loader_params,
+    SubresourceLoaderParams subresource_loader_params,
     std::optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
@@ -10570,10 +10587,9 @@ void RenderFrameHostImpl::CommitNavigation(
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerObject>
         remote_object;
     blink::mojom::ServiceWorkerState sent_state;
-    if (subresource_loader_params &&
-        subresource_loader_params->controller_service_worker_info) {
+    if (subresource_loader_params.controller_service_worker_info) {
       controller =
-          std::move(subresource_loader_params->controller_service_worker_info);
+          std::move(subresource_loader_params.controller_service_worker_info);
       if (controller->object_info) {
         controller->object_info->receiver =
             remote_object.InitWithNewEndpointAndPassReceiver();
@@ -10764,7 +10780,7 @@ void RenderFrameHostImpl::CommitNavigation(
     // it until its request endpoint is sent. Now that the request endpoint was
     // sent, it can be used, so add it to ServiceWorkerObjectHost.
     if (remote_object.is_valid()) {
-      subresource_loader_params->controller_service_worker_object_host
+      subresource_loader_params.controller_service_worker_object_host
           ->AddRemoteObjectPtrAndUpdateState(std::move(remote_object),
                                              sent_state);
     }
@@ -11717,10 +11733,10 @@ void RenderFrameHostImpl::CreatePaymentManager(
 
 void RenderFrameHostImpl::CreatePaymentCredential(
     mojo::PendingReceiver<payments::mojom::PaymentCredential> receiver) {
-  // TODO(crbug.com/1512605): Move the 'is SPC allowed' check from
-  // payments::CreatePaymentCredential to here.
-  GetContentClient()->browser()->CreatePaymentCredential(this,
-                                                         std::move(receiver));
+  if (IsFrameAllowedToUseSecurePaymentConfirmation(this)) {
+    GetContentClient()->browser()->CreatePaymentCredential(this,
+                                                           std::move(receiver));
+  }
 }
 
 void RenderFrameHostImpl::CreateWebUsbService(
@@ -12207,6 +12223,11 @@ void RenderFrameHostImpl::BindWebOTPServiceReceiver(
   auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext());
   if (WebOTPService::Create(fetcher, this, std::move(receiver)))
     document_used_web_otp_ = true;
+}
+
+void RenderFrameHostImpl::BindDigitalIdentityRequestReceiver(
+    mojo::PendingReceiver<blink::mojom::DigitalIdentityRequest> receiver) {
+  DigitalIdentityRequestImpl::Create(*this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindFederatedAuthRequestReceiver(
@@ -12768,6 +12789,19 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     bad_message::ReceivedBadMessage(
         process, bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE_AT_COMMIT);
     return false;
+  }
+
+  // An initiator base URL should either be nullopt or non-empty, to satisfy
+  // checks later in the navigation.
+  if (params->initiator_base_url.has_value() &&
+      params->initiator_base_url->is_empty()) {
+    // For now, replace the empty URL with nullopt.
+    // TODO(https://crbug.com/324772617): Upgrade this DumpWithoutCrashing to a
+    // renderer kill once we confirm there aren't reports of it happening.
+    SCOPED_CRASH_KEY_STRING32("ValidateDidCommit_empty_baseurl", "url",
+                              params->url.possibly_invalid_spec());
+    base::debug::DumpWithoutCrashing();
+    params->initiator_base_url = absl::nullopt;
   }
 
   // A cross-document navigation requires an embedding token. Navigations
@@ -13556,11 +13590,6 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   accessibility_fatal_error_count_ = 0;
 
   UpdateIsolatableSandboxedIframeTracking(navigation_request);
-
-  // After commit, the browser process's access of the features' state becomes
-  // read-only. (i.e. It can only get feature state, not set)
-  RuntimeFeatureStateDocumentData::CreateForCurrentDocument(
-      this, navigation_request->GetRuntimeFeatureStateContext());
 }
 
 // TODO(arthursonzogni): Below, many NavigationRequest's objects are passed from
@@ -13587,6 +13616,8 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   // this frame embeds a subframe when that subframe navigates).
   required_csp_ = navigation_request->TakeRequiredCSP();
 
+  // After commit, the browser process's access of the features' state becomes
+  // read-only. (i.e. It can only get feature state, not set)
   RuntimeFeatureStateDocumentData::CreateForCurrentDocument(
       this, navigation_request->GetRuntimeFeatureStateContext());
 

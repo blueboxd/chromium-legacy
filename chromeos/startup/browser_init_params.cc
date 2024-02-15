@@ -59,7 +59,9 @@ bool BrowserInitParams::IsCrosapiEnabled() {
 
 void BrowserInitParams::DisableCrosapiForTesting() {
   CHECK_IS_TEST();
-  CHECK(!is_crosapi_enabled_.has_value())
+  // TODO(crbug.com/324508902): Strengthen this CHECK condition to
+  // `!is_crosapi_enabled_.has_value()` when the bug is fixed.
+  CHECK(!is_crosapi_enabled_.value_or(false))
       << "You are calling DisableCrosapiForTesting too late.";
   is_crosapi_enabled_ = false;
 }

@@ -150,7 +150,7 @@ Sadece parolanıza sahip olan kişiler şifrelenmiş verilerinizi okuyabilir. Pa
 <translation id="1807246157184219062">Açık</translation>
 <translation id="1807709131360304325">Yeni pencere aç</translation>
 <translation id="1810845389119482123">İlk senkronizasyon kurulumu tamamlanmadı</translation>
-<translation id="1812027881030482584"><ph name="SITE_ETLD_PLUS_ONE" />, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> kullanımına devam edemiyor</translation>
+<translation id="1812027881030482584"><ph name="SITE_ETLD_PLUS_ONE" />, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> kullanarak devam edemiyor</translation>
 <translation id="1829244130665387512">Sayfada bul</translation>
 <translation id="185383612275551373">Google'daki en alakalı içeriklere ulaşmak için senkronize edin</translation>
 <translation id="1871098866036088250">Chrome tarayıcıda aç</translation>
@@ -169,7 +169,6 @@ Sadece parolanıza sahip olan kişiler şifrelenmiş verilerinizi okuyabilir. Pa
 <translation id="1933845786846280168">Seçili Sekme</translation>
 <translation id="1943432128510653496">Şifreleri kaydet</translation>
 <translation id="1944535645109964458">Geçiş anahtarı yok</translation>
-<translation id="1952172573699511566">Web siteleri, mümkün olduğunda metni tercih ettiğiniz dilde gösterir.</translation>
 <translation id="1959679933317802873">İçerik bekleniyor</translation>
 <translation id="1960290143419248813">Chrome güncellemeleri Android'in bu sürümü için artık desteklenmiyor</translation>
 <translation id="1963976881984600709">Standart koruma</translation>
@@ -204,6 +203,7 @@ Sadece parolanıza sahip olan kişiler şifrelenmiş verilerinizi okuyabilir. Pa
 <translation id="2132122640199389833">Tüm bağlı cihazları kaldır</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> kapatıldı</translation>
 <translation id="2139186145475833000">Ana ekrana ekle</translation>
+<translation id="2139414603196655536">Page Insights'taki etkinliğiniz Google Hesabınıza kaydedilir. <ph name="BEGIN_LINK" />Bunu nasıl yöneteceğinizi öğrenin<ph name="END_LINK" /></translation>
 <translation id="2141396931810938595">Kullanımınıza göre</translation>
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
 <translation id="2155214902713132423">Bu doğrulama yöntemi bu cihazda kullanılamıyor. Diğer cihazınızda farklı bir seçenek belirtin.</translation>
@@ -379,7 +379,6 @@ Sadece parolanıza sahip olan kişiler şifrelenmiş verilerinizi okuyabilir. Pa
 <translation id="3027644380269727216">Bir sitedeki etkinliğinize dayalı. Bu ayar açık.</translation>
 <translation id="3029276696788198026">Önceden yükleme kapalı</translation>
 <translation id="3029704984691124060">Parolalar eşleşmiyor</translation>
-<translation id="303514781271618814">Chrome, sitelerin daha az veri kullanarak aynı tarama deneyimini sunmasını sağlayan yeni özellikleri deniyor</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Fiyat takip ediliyor</translation>
 <translation id="3037517125981011456">Chrome'da oturum açmak için istekleri gösterir</translation>
@@ -873,6 +872,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5698878456427040674">Seçilen hesabın desteklenip desteklenmediğini kontrol edin.</translation>
 <translation id="570347048394355941">Sekmeye Geç</translation>
 <translation id="5715150588940290235">Kayıtlı güvenlik kodları silinsin mi?</translation>
+<translation id="571930967925877633">Yer işaretleri, geçmiş ve diğer Chrome verileriniz artık Google Hesabınız ile senkronize edilmeyecek.</translation>
 <translation id="572328651809341494">Son sekmeler</translation>
 <translation id="5726692708398506830">Sayfadaki her şeyi büyütür</translation>
 <translation id="5744751019568455640">Web sayfalarınızı sesli okuması için seçebileceğiniz sesleri burada bulabilirsiniz. Bu sesi beğendiyseniz ve kullanmaya devam etmemi istiyorsanız sesin adına dokunmanız yeterli.</translation>
@@ -1081,6 +1081,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="670498945988402717">Dün kontrol edildi</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="671481426037969117"><ph name="FQDN" /> zamanlayıcınızın süresi doldu. Yarın tekrar başlatılacak.</translation>
+<translation id="6714850225831215156">{BOOKMARK_COUNT,plural, =1{Yer işareti <ph name="FOLDER_NAME" /> hedefine kaydedildi. Yalnızca bu cihaza kaydedilir.}other{Yer işaretleri <ph name="FOLDER_NAME" /> hedefine kaydedildi. Yalnızca bu cihaza kaydedilir.}}</translation>
 <translation id="6715020873764921614"><ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) dosyasını yine de indirmek istiyor musunuz?</translation>
 <translation id="6719634564325948108">QR koduyla bağlanılsın mı?</translation>
 <translation id="6723740634201835758">Google Hesabınızda</translation>
@@ -1105,7 +1106,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6828070228333235514">Fiyat takibini durdur</translation>
 <translation id="6830728435402077660">Güvenli değil</translation>
 <translation id="6831043979455480757">Çevir</translation>
-<translation id="6833996806551876956">Özel Korumalı Alan denemesi</translation>
 <translation id="6836206421467243968"><ph name="TITLE_OF_GROUP" /> sekme grubunu, yeni bir arka plan sekme grubu olarak geri yükleyin.</translation>
 <translation id="6846298663435243399">Yükleniyor...</translation>
 <translation id="6850409657436465440">İndirme işleminiz hâlâ devam ediyor</translation>
@@ -1402,6 +1402,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8237871086242677046">Sayfa analizleri alt sayfası</translation>
 <translation id="8243077599929149377">Kullanıcı adınızı ekleyin</translation>
 <translation id="8250920743982581267">Dokümanlar</translation>
+<translation id="8253557549177565072">{BOOKMARK_COUNT,plural, =1{Yer işareti, hesabınızdaki (<ph name="ACCOUNT_EMAIL" />) <ph name="FOLDER_NAME" /> klasörüne kaydedildi}other{Yer işaretleri, hesabınızdaki (<ph name="ACCOUNT_EMAIL" />) <ph name="FOLDER_NAME" /> klasörüne kaydedildi}}</translation>
 <translation id="8255617931166444521">Siteler, çerezlerinizi yalnızca kendi sitelerindeki tarama etkinliğinizi görmek için kullanabilir</translation>
 <translation id="8259179246279078674">Önceden yüklenmiş sayfalar şifrelenmiş olduğu için Google, önceden yüklenmiş sayfa içeriğiyle ilgili hiçbir şey öğrenmez. Google sunucuları hangi sitelerin gizli olarak önceden yüklendiğini öğrenir. Bu bilgi yalnızca sayfaları önceden yüklemek için kullanılır ve Google Hesabınızdaki diğer bilgilerle bağlantılı değildir.</translation>
 <translation id="8260126382462817229">Tekrar oturum açmayı deneyin</translation>

@@ -56,13 +56,15 @@ PickerSectionView* PickerZeroStateView::GetOrCreateSectionView(
     return section_view_iterator->second;
   }
 
-  auto* section_view = AddChildView(std::make_unique<PickerSectionView>(
-      picker_view_width_, GetSectionTitleForPickerCategoryType(category_type)));
+  auto* section_view =
+      AddChildView(std::make_unique<PickerSectionView>(picker_view_width_));
+  section_view->AddTitleLabel(
+      GetSectionTitleForPickerCategoryType(category_type));
   section_views_.insert({category_type, section_view});
   return section_view;
 }
 
-BEGIN_METADATA(PickerZeroStateView, views::View)
+BEGIN_METADATA(PickerZeroStateView)
 END_METADATA
 
 }  // namespace ash

@@ -264,6 +264,7 @@ int QuicSessionPool::DirectJob::DoCreateSession() {
 
   return rv;
 }
+
 int QuicSessionPool::DirectJob::DoCreateSessionComplete(int rv) {
   session_creation_finished_ = true;
   if (rv != OK) {
@@ -351,7 +352,7 @@ int QuicSessionPool::DirectJob::DoConfirmConnection(int rv) {
         net_log_.AddEvent(
             NetLogEventType::QUIC_SESSION_POOL_JOB_RETRY_ON_ALTERNATE_NETWORK);
         // Notify requests that connection on the default network failed.
-        for (auto* request : requests()) {
+        for (QuicSessionRequest* request : requests()) {
           request->OnConnectionFailedOnDefaultNetwork();
         }
         DVLOG(1) << "Retry connection on alternate network: " << network_;
@@ -413,7 +414,7 @@ void QuicSessionPool::DirectJob::OnResolveHostComplete(int rv) {
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;
   rv = DoLoop(rv);
 
-  for (auto* request : requests()) {
+  for (QuicSessionRequest* request : requests()) {
     request->OnHostResolutionComplete(rv);
   }
 
@@ -423,26 +424,18 @@ void QuicSessionPool::DirectJob::OnResolveHostComplete(int rv) {
 }
 
 void QuicSessionPool::DirectJob::OnCreateSessionComplete(int rv) {
-  if (rv != OK) {
-    DCHECK(!session_);
-    if (rv == ERR_QUIC_PROTOCOL_ERROR) {
-      HistogramProtocolErrorLocation(
-          JobProtocolErrorLocation::kCreateSessionFailedAsync);
-    }
-    for (auto* request : requests()) {
-      request->OnQuicSessionCreationComplete(rv);
-    }
-    if (!callback_.is_null()) {
-      std::move(callback_).Run(rv);
-    }
-    return;
+  if (rv == ERR_QUIC_PROTOCOL_ERROR) {
+    HistogramProtocolErrorLocation(
+        JobProtocolErrorLocation::kCreateSessionFailedAsync);
   }
-  DCHECK(session_);
-  DVLOG(1) << "Created session on network: " << network_;
-  io_state_ = STATE_CREATE_SESSION_COMPLETE;
+  if (rv == OK) {
+    DCHECK(session_);
+    DVLOG(1) << "Created session on network: " << network_;
+  }
+
   rv = DoLoop(rv);
 
-  for (auto* request : requests()) {
+  for (QuicSessionRequest* request : requests()) {
     request->OnQuicSessionCreationComplete(rv);
   }
 
@@ -523,4 +516,5 @@ quic::ParsedQuicVersion QuicSessionPool::DirectJob::SelectQuicVersion(
 
   return quic::ParsedQuicVersion::Unsupported();
 }
+
 }  // namespace net

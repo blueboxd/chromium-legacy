@@ -7,18 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
+#include "chrome/services/mac_notifications/public/mojom/mac_notifications.mojom.h"
+
 @class UNUserNotificationCenter;
 
 namespace mac_notifications {
-
-// This enum is used in UMA. Do not delete or re-order entries. New entries
-// should only be added at the end.
-enum class UNNotificationRequestPermissionResult {
-  kRequestFailed = 0,
-  kPermissionDenied = 1,
-  kPermissionGranted = 2,
-  kMaxValue = kPermissionGranted,
-};
 
 // This logs the result of asking for notification permissions on macOS. Called
 // when we request notification permissions. This happens at startup for both
@@ -26,7 +19,7 @@ enum class UNNotificationRequestPermissionResult {
 // starts up (e.g. when displaying a notification).
 API_AVAILABLE(macosx(10.14))
 void LogUNNotificationRequestPermissionResult(
-    UNNotificationRequestPermissionResult result);
+    mojom::RequestPermissionResult result);
 
 // Requests and log the current notifications settings and permissions.
 API_AVAILABLE(macosx(10.14))

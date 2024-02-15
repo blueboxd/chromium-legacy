@@ -2528,16 +2528,16 @@ TEST_P(DesksTest, LacrosProfileId) {
   TestDeskObserver desk_observer;
   desk->AddObserver(&desk_observer);
 
-  desk->SetLacrosProfileId(1001);
+  desk->SetLacrosProfileId(1001, /*source=*/std::nullopt);
   EXPECT_THAT(desk_observer.lacros_profile_id_updates(),
               testing::ElementsAre(1001));
 
   // Setting the same ID does not result in observer notifications.
-  desk->SetLacrosProfileId(1001);
+  desk->SetLacrosProfileId(1001, /*source=*/std::nullopt);
   EXPECT_THAT(desk_observer.lacros_profile_id_updates(),
               testing::ElementsAre(1001));
 
-  desk->SetLacrosProfileId(2001);
+  desk->SetLacrosProfileId(2001, /*source=*/std::nullopt);
   EXPECT_THAT(desk_observer.lacros_profile_id_updates(),
               testing::ElementsAre(1001, 2001));
 
@@ -9183,9 +9183,12 @@ TEST_P(DesksTest, DeskLacrosIdPrefs) {
 
   auto* controller = DesksController::Get();
   // Set some lacros profile IDs for the three desks.
-  controller->GetDeskAtIndex(0)->SetLacrosProfileId(1001);
-  controller->GetDeskAtIndex(1)->SetLacrosProfileId(2001);
-  controller->GetDeskAtIndex(2)->SetLacrosProfileId(3001);
+  controller->GetDeskAtIndex(0)->SetLacrosProfileId(1001,
+                                                    /*source=*/std::nullopt);
+  controller->GetDeskAtIndex(1)->SetLacrosProfileId(2001,
+                                                    /*source=*/std::nullopt);
+  controller->GetDeskAtIndex(2)->SetLacrosProfileId(3001,
+                                                    /*source=*/std::nullopt);
   EXPECT_THAT(GetDeskRestoreLacrosProfileIds(GetPrimaryUserPrefService()),
               testing::ElementsAre(1001, 2001, 3001));
 
@@ -10901,6 +10904,44 @@ TEST_P(DeskBarTest, CanUndoDeskClosureThroughKeyboardNavigation) {
   }
 }
 
+TEST_P(DeskBarTest, DeskProfilesUsageMetrics) {
+  base::HistogramTester histogram_tester;
+
+  OpenDeskBar();
+  // There's only one desk and regardless of whether the flag feature is enabled
+  // or not, conditions are not met.
+  histogram_tester.ExpectBucketCount(kDeskProfilesUsageStatusHistogramName,
+                                     DeskProfilesUsageStatus::kConditionsNotMet,
+                                     1);
+  CloseDeskBar();
+
+  NewDesk();
+  OpenDeskBar();
+  // Now there are two desks and we expect metrics depending on whether the
+  // feature is enabled or not.
+  if (use_desk_profiles_) {
+    histogram_tester.ExpectBucketCount(kDeskProfilesUsageStatusHistogramName,
+                                       DeskProfilesUsageStatus::kConditionsMet,
+                                       1);
+  } else {
+    histogram_tester.ExpectBucketCount(
+        kDeskProfilesUsageStatusHistogramName,
+        DeskProfilesUsageStatus::kConditionsNotMet, 2);
+  }
+  CloseDeskBar();
+
+  // Explicitly assign a profile to one of the desks.
+  if (use_desk_profiles_) {
+    DesksController::Get()->GetDeskAtIndex(0)->SetLacrosProfileId(
+        GetDummyLacrosDeskProfileId(0), /*source=*/std::nullopt);
+
+    OpenDeskBar();
+    histogram_tester.ExpectBucketCount(kDeskProfilesUsageStatusHistogramName,
+                                       DeskProfilesUsageStatus::kEnabled, 1);
+    CloseDeskBar();
+  }
+}
+
 struct DeskButtonTestParams {
   ShelfAlignment alignment = ShelfAlignment::kBottom;
 };
@@ -11208,35 +11249,14 @@ TEST_P(DeskButtonTest, SuspendShelfAutoHideWhenActivated) {
   ClickDeskButton();
   UnhoverDeskButton();
   EXPECT_TRUE(desk_button->is_activated());
-  EXPECT_FALSE(desk_button->GetHovered());
+  EXPECT_NE(desk_button->GetState(), views::Button::ButtonState::STATE_HOVERED);
   EXPECT_TRUE(shelf->disable_auto_hide());
 
   ClickDeskButton();
   UnhoverDeskButton();
   EXPECT_FALSE(desk_button->is_activated());
-  EXPECT_FALSE(desk_button->GetHovered());
+  EXPECT_NE(desk_button->GetState(), views::Button::ButtonState::STATE_HOVERED);
   ASSERT_FALSE(shelf->disable_auto_hide());
-}
-
-// Tests that when the desk button is hovered, shelf auto-hide should be
-// suspended.
-TEST_P(DeskButtonTest, SuspendShelfAutoHideWhenHovered) {
-  auto* shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
-  ASSERT_FALSE(shelf->disable_auto_hide());
-
-  auto* desk_button = GetDeskButton();
-  ASSERT_TRUE(desk_button);
-
-  HoverDeskButton();
-  EXPECT_FALSE(desk_button->is_activated());
-  EXPECT_TRUE(desk_button->GetHovered());
-  EXPECT_TRUE(shelf->disable_auto_hide());
-
-  UnhoverDeskButton();
-  EXPECT_FALSE(desk_button->is_activated());
-  EXPECT_FALSE(desk_button->GetHovered());
-  EXPECT_FALSE(shelf->disable_auto_hide());
 }
 
 // Tests that the desk button and its child components are correctly positioned
@@ -11757,9 +11777,9 @@ TEST_F(DeskProfilesTest, RemoveProfile) {
   auto* desk1 = controller->GetDeskAtIndex(0);
   auto* desk2 = controller->GetDeskAtIndex(1);
   auto* desk3 = controller->GetDeskAtIndex(2);
-  desk1->SetLacrosProfileId(lacros_profile_id1);
-  desk2->SetLacrosProfileId(lacros_profile_id2);
-  desk3->SetLacrosProfileId(lacros_profile_id3);
+  desk1->SetLacrosProfileId(lacros_profile_id1, /*source=*/std::nullopt);
+  desk2->SetLacrosProfileId(lacros_profile_id2, /*source=*/std::nullopt);
+  desk3->SetLacrosProfileId(lacros_profile_id3, /*source=*/std::nullopt);
 
   EXPECT_EQ(desk1->lacros_profile_id(), lacros_profile_id1);
   EXPECT_EQ(desk2->lacros_profile_id(), lacros_profile_id2);
@@ -11779,10 +11799,10 @@ TEST_F(DeskProfilesTest, DeskProfilesButtonClickMetrics) {
   AddDummyLacrosDeskProfiles(2);
 
   base::HistogramTester histogram_tester;
-  auto* desk_controller = DesksController::Get()->desk_bar_controller();
-  desk_controller->OpenDeskBar(Shell::Get()->GetPrimaryRootWindow());
+  auto* desk_bar_controller = DesksController::Get()->desk_bar_controller();
+  desk_bar_controller->OpenDeskBar(Shell::Get()->GetPrimaryRootWindow());
   auto* desk_bar_view =
-      desk_controller->GetDeskBarView(Shell::Get()->GetPrimaryRootWindow());
+      desk_bar_controller->GetDeskBarView(Shell::Get()->GetPrimaryRootWindow());
   ASSERT_EQ(1u, desk_bar_view->mini_views().size());
 
   DeskProfilesButton* desk_profile_button =
@@ -11805,6 +11825,71 @@ TEST_F(DeskProfilesTest, DeskProfilesButtonClickMetrics) {
   ClickOnView(menu_item, event_generator);
   histogram_tester.ExpectTotalCount(
       kDeskProfilesOpenProfileManagerHistogramName, 1);
+}
+
+TEST_F(DeskProfilesTest, SelectProfile) {
+  AddDummyLacrosDeskProfiles(2);
+
+  base::HistogramTester histogram_tester;
+  auto* desk_bar_controller = DesksController::Get()->desk_bar_controller();
+  auto* event_generator = GetEventGenerator();
+
+  NewDesk();
+  auto* desk1 = DesksController::Get()->GetDeskAtIndex(0);
+  auto* desk2 = DesksController::Get()->GetDeskAtIndex(1);
+
+  // By default, neither desk has a lacros profile ID assigned.
+  EXPECT_EQ(0u, desk1->lacros_profile_id());
+  EXPECT_EQ(0u, desk2->lacros_profile_id());
+
+  desk_bar_controller->OpenDeskBar(Shell::Get()->GetPrimaryRootWindow());
+  auto* desk_bar_view =
+      desk_bar_controller->GetDeskBarView(Shell::Get()->GetPrimaryRootWindow());
+  ASSERT_EQ(2u, desk_bar_view->mini_views().size());
+
+  // Assign a profile to the second desk using the desk profile button.
+  {
+    DeskProfilesButton* desk_profile_button =
+        DesksTestApi::GetDeskProfileButton(desk_bar_view->mini_views()[1]);
+    ASSERT_TRUE(desk_profile_button);
+
+    ClickOnView(desk_profile_button, event_generator);
+    DeskActionContextMenu* menu = desk_profile_button->menu();
+    ASSERT_TRUE(menu);
+
+    // Get the menu item for the seecond profile and click it.
+    views::MenuItemView* menu_item = DesksTestApi::GetDeskActionContextMenuItem(
+        menu, DeskActionContextMenu::kDynamicProfileStart + 1);
+    ASSERT_TRUE(menu_item);
+    ClickOnView(menu_item, event_generator);
+
+    histogram_tester.ExpectBucketCount(
+        kDeskProfilesSelectProfileHistogramName,
+        DeskProfilesSelectProfileSource::kDeskProfileButton, 1);
+
+    // Verify that the profile has indeed been set on desk 2.
+    EXPECT_EQ(desk2->lacros_profile_id(), GetDummyLacrosDeskProfileId(1));
+  }
+
+  // Assign a profile to the second desk using the desk action context menu.
+  {
+    DeskActionContextMenu* menu = DesksTestApi::GetContextMenuForDesk(
+        DeskBarViewBase::Type::kDeskButton, 1);
+    ASSERT_TRUE(menu);
+
+    // Get the menu item for the first profile and click it.
+    views::MenuItemView* menu_item = DesksTestApi::GetDeskActionContextMenuItem(
+        menu, DeskActionContextMenu::kDynamicProfileStart);
+    ASSERT_TRUE(menu_item);
+    ClickOnView(menu_item, event_generator);
+
+    histogram_tester.ExpectBucketCount(
+        kDeskProfilesSelectProfileHistogramName,
+        DeskProfilesSelectProfileSource::kDeskActionContextMenu, 1);
+
+    // Verify that the profile has been updated on desk 2.
+    EXPECT_EQ(desk2->lacros_profile_id(), GetDummyLacrosDeskProfileId(0));
+  }
 }
 
 // TODO(afakhry): Add more tests:

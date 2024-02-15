@@ -180,6 +180,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCreateNewTabInitializeRenderer,
     &kCCTBrandTransparencyMemoryImprovement,
     &kCCTClientDataHeader,
+    &kCCTEmbedderSpecialBehaviorTrigger,
+    &kCCTExtendTrustedCdnPublisher,
     &kCCTFeatureUsage,
     &kCCTIncognitoAvailableToThirdParty,
     &kCCTIntentFeatureOverrides,
@@ -193,6 +195,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableSideSheetForThirdParties,
     &kCCTTabModalDialog,
     &kDataSharingAndroid,
+    &kDefaultBrowserPromoAndroid,
     &kDontAutoHideBrowserControls,
     &kCacheDeprecatedSystemLocationSetting,
     &kChromeSurveyNextAndroid,
@@ -249,13 +252,13 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRelatedSearchesAllLanguage,
     &kReportParentalControlSitesChild,
     &kSearchEnginesPromoV3,
+    &kSearchInCCT,
     &kShowNtpAtStartupAndroid,
     &kShowScrollableMVTOnNTPAndroid,
     &kShowScrollableMVTOnNtpPhoneAndroid,
     &kSmallerTabStripTitleLimit,
     &kFeedPositionAndroid,
     &kSearchResumptionModuleAndroid,
-    &kShareSheetMigrationAndroid,
     &kSuppressToolbarCaptures,
     &kTabDragDropAndroid,
     &kTabAndLinkDragDropAndroid,
@@ -313,6 +316,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordGenerationBottomSheet,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
     &password_manager::features::kSharedPasswordNotificationUI,
+    &password_manager::features::
+        kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
     &password_manager::features::
         kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
     &permissions::features::kPermissionsPromptSurvey,
@@ -477,6 +482,14 @@ BASE_FEATURE(kCCTClientDataHeader,
              "CCTClientDataHeader",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCCTEmbedderSpecialBehaviorTrigger,
+             "CCTEmbedderSpecialBehaviorTrigger",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTExtendTrustedCdnPublisher,
+             "CCTExtendTrustedCdnPublisher",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCCTFeatureUsage,
              "CCTFeatureUsage",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -567,6 +580,10 @@ BASE_FEATURE(kDataSharingAndroid,
              "DataSharingAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDefaultBrowserPromoAndroid,
+             "DefaultBrowserPromoAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kDeferKeepScreenOnDuringGesture,
              "DeferKeepScreenOnDuringGesture",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -577,7 +594,7 @@ BASE_FEATURE(kDeferNotifyInMotion,
 
 BASE_FEATURE(kDeferTabSwitcherLayoutCreation,
              "DeferTabSwitcherLayoutCreation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDelayTempStripRemoval,
              "DelayTempStripRemoval",
@@ -707,10 +724,6 @@ BASE_FEATURE(kOpenDownloadDialog,
              "OpenDownloadDialog",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kOpenPdfInline,
-             "OpenPdfInline",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPartnerCustomizationsUma,
              "PartnerCustomizationsUma",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -772,10 +785,6 @@ BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,
 BASE_FEATURE(kShowScrollableMVTOnNtpPhoneAndroid,
              "ShowScrollableMVTOnNtpPhoneAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kShareSheetMigrationAndroid,
-             "ShareSheetMigrationAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSmallerTabStripTitleLimit,
              "SmallerTabStripTitleLimit",
@@ -860,6 +869,8 @@ BASE_FEATURE(kTestDefaultEnabled,
 BASE_FEATURE(kSearchEnginesPromoV3,
              "SearchEnginesPromoV3",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSearchInCCT, "SearchInCCT", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStartSurfaceAndroid,
              "StartSurfaceAndroid",

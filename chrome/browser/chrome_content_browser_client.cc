@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/base_switches.h"
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
@@ -449,7 +450,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "chromeos/ash/services/network_health/public/cpp/network_health_helper.h"
-#include "components/crash/core/app/breakpad_linux.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
@@ -514,10 +514,11 @@
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/smart_card/chromeos_smart_card_delegate.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
 #include "chromeos/components/kiosk/kiosk_utils.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "components/crash/core/app/breakpad_linux.h"
+#include "content/public/browser/chromeos/multi_capture_service.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
 
@@ -573,7 +574,7 @@
 #include "components/crash/core/app/crashpad.h"
 #endif
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #else
 #include "chrome/browser/apps/link_capturing/web_app_link_capturing_delegate.h"
@@ -973,70 +974,7 @@ blink::mojom::AutoplayPolicy GetAutoplayPolicyForWebContents(
 int GetCrashSignalFD(const base::CommandLine& command_line) {
   return crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
 }
-#elif BUILDFLAG(IS_CHROMEOS)
-breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
-    const std::string& process_type) {
-  base::FilePath dumps_path;
-  base::PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
-  {
-    ANNOTATE_SCOPED_MEMORY_LEAK;
-    bool upload = !getenv(env_vars::kHeadless);
-    breakpad::CrashHandlerHostLinux* crash_handler =
-        new breakpad::CrashHandlerHostLinux(process_type, dumps_path, upload);
-    crash_handler->StartUploaderThread();
-    return crash_handler;
-  }
-}
-
-int GetCrashSignalFD(const base::CommandLine& command_line) {
-  if (crash_reporter::IsCrashpadEnabled()) {
-    int fd;
-    pid_t pid;
-    return crash_reporter::GetHandlerSocket(&fd, &pid) ? fd : -1;
-  }
-
-  // Extensions have the same process type as renderers.
-  if (command_line.HasSwitch(extensions::switches::kExtensionProcess)) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost("extension");
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
-  if (process_type == switches::kRendererProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  if (process_type == switches::kPpapiPluginProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  if (process_type == switches::kGpuProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  if (process_type == switches::kUtilityProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  return -1;
-}
-#elif BUILDFLAG(IS_LINUX)
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 int GetCrashSignalFD(const base::CommandLine& command_line) {
   int fd;
   return crash_reporter::GetHandlerSocket(&fd, nullptr) ? fd : -1;
@@ -1379,6 +1317,63 @@ bool ShouldUseSpareRenderProcessHostForTopChromePage(Profile* profile) {
              features::kTopChromeWebUIUsesSpareRenderer) &&
          !IsTopChromeRendererPresent(profile);
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+void NotifyMultiCaptureStarted(const std::string& label,
+                               content::WebContents* web_contents,
+                               const webapps::AppId* app_id) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (app_id &&
+      video_capture::mojom::MultiCaptureServiceClient::Version_ >=
+          video_capture::mojom::MultiCaptureServiceClient::MethodMinVersions::
+              kMultiCaptureStartedFromAppMinVersion) {
+    content::GetMultiCaptureService().NotifyMultiCaptureStartedFromApp(
+        label, *app_id,
+        web_app::WebAppProvider::GetForWebContents(web_contents)
+            ->registrar_unsafe()
+            .GetAppShortName(*app_id));
+  } else {
+    // TODO(b/319317165): Remove this case once the pivot to web apps is
+    // complete.
+    content::GetMultiCaptureService().NotifyMultiCaptureStarted(
+        label, url::Origin::Create(web_contents->GetLastCommittedURL()));
+  }
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::LacrosService& service =
+      CHECK_DEREF(chromeos::LacrosService::Get());
+  crosapi::mojom::MultiCaptureService& multi_capture_service = CHECK_DEREF(
+      service.GetRemote<crosapi::mojom::MultiCaptureService>().get());
+  if (app_id &&
+      service.GetInterfaceVersion<crosapi::mojom::MultiCaptureService>() >=
+          (int)crosapi::mojom::MultiCaptureService::MethodMinVersions::
+              kMultiCaptureStartedFromAppMinVersion) {
+    multi_capture_service.MultiCaptureStartedFromApp(
+        label, *app_id,
+        web_app::WebAppProvider::GetForWebContents(web_contents)
+            ->registrar_unsafe()
+            .GetAppShortName(*app_id));
+  } else {
+    // TODO(b/319317165): Remove this case once the pivot to web apps is
+    // complete.
+    multi_capture_service.MultiCaptureStarted(
+        label, web_contents->GetLastCommittedURL().host());
+  }
+#endif
+}
+
+void NotifyMultiCaptureStopped(const std::string& label) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  content::GetMultiCaptureService().NotifyMultiCaptureStopped(label);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  crosapi::mojom::MultiCaptureService& multi_capture_service =
+      CHECK_DEREF(chromeos::LacrosService::Get()
+                      ->GetRemote<crosapi::mojom::MultiCaptureService>()
+                      .get());
+  multi_capture_service.MultiCaptureStopped(label);
+#endif
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 std::unique_ptr<blocked_content::PopupNavigationDelegate>
 CreatePopupNavigationDelegate(NavigateParams params) {
@@ -2473,26 +2468,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     client_info->client_id);
   }
 #elif BUILDFLAG(IS_POSIX)
-#if BUILDFLAG(IS_ANDROID)
-  bool enable_crash_reporter = true;
-#elif BUILDFLAG(IS_CHROMEOS)
-  bool enable_crash_reporter = false;
-  if (crash_reporter::IsCrashpadEnabled()) {
-    command_line->AppendSwitch(switches::kEnableCrashpad);
-    enable_crash_reporter = true;
-
-    int fd;
-    pid_t pid;
-    if (crash_reporter::GetHandlerSocket(&fd, &pid)) {
-      command_line->AppendSwitchASCII(
-          crash_reporter::switches::kCrashpadHandlerPid,
-          base::NumberToString(pid));
-    }
-  } else {
-    enable_crash_reporter = breakpad::IsCrashReporterEnabled();
-  }
-#else
-  bool enable_crash_reporter = true;
+#if !BUILDFLAG(IS_ANDROID)
   pid_t pid;
   if (crash_reporter::GetHandlerSocket(nullptr, &pid)) {
     command_line->AppendSwitchASCII(
@@ -2500,18 +2476,15 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         base::NumberToString(pid));
   }
 #endif
-  if (enable_crash_reporter) {
-    std::string switch_value;
-    std::unique_ptr<metrics::ClientInfo> client_info =
-        GoogleUpdateSettings::LoadMetricsClientInfo();
-    if (client_info)
-      switch_value = client_info->client_id;
-    switch_value.push_back(',');
-    switch_value.append(
-        chrome::GetChannelName(chrome::WithExtendedStable(true)));
-    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-                                    switch_value);
+  std::string switch_value;
+  std::unique_ptr<metrics::ClientInfo> client_info =
+      GoogleUpdateSettings::LoadMetricsClientInfo();
+  if (client_info) {
+    switch_value = client_info->client_id;
   }
+  switch_value.push_back(',');
+  switch_value.append(chrome::GetChannelName(chrome::WithExtendedStable(true)));
+  command_line->AppendSwitchASCII(switches::kEnableCrashReporter, switch_value);
 #endif
 
   if (logging::DialogsAreSuppressed())
@@ -4722,13 +4695,6 @@ bool ChromeContentBrowserClient::PreSpawnChild(
     case sandbox::mojom::Sandbox::kWindowsSystemProxyResolver:
       break;
   }
-
-#if !defined(OFFICIAL_BUILD)
-  // Disable renderer code integrity when Application Verifier or pageheap are
-  // enabled for chrome.exe to avoid renderer crashes. https://crbug.com/1004989
-  if (base::win::IsAppVerifierEnabled(chrome::kBrowserProcessExecutableName))
-    enforce_code_integrity = false;
-#endif  // !defined(OFFICIAL_BUILD)
 
   if (!enforce_code_integrity)
     return true;
@@ -8143,3 +8109,27 @@ void ChromeContentBrowserClient::MaybePrewarmHttpDiskCache(
     loading_predictor->MaybePrewarmResources(navigation_url);
   }
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+void ChromeContentBrowserClient::NotifyMultiCaptureStateChanged(
+    content::GlobalRenderFrameHostId capturer_rfh_id,
+    const std::string& label,
+    MultiCaptureChanged state) {
+  content::WebContents* const web_contents = WebContents::FromRenderFrameHost(
+      RenderFrameHost::FromID(capturer_rfh_id));
+  if (!web_contents) {
+    return;
+  }
+
+  switch (state) {
+    case MultiCaptureChanged::kStarted:
+      NotifyMultiCaptureStarted(
+          label, web_contents,
+          web_app::WebAppTabHelper::GetAppId(web_contents));
+      break;
+    case MultiCaptureChanged::kStopped:
+      NotifyMultiCaptureStopped(label);
+      break;
+  }
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)

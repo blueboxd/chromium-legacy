@@ -267,6 +267,8 @@ struct MockConfig {
   std::string metrics_endpoint;
   std::string idp_login_url;
   std::string disconnect_endpoint;
+  std::optional<SkColor> brand_background_color;
+  std::optional<SkColor> brand_text_color;
 };
 
 struct MockIdpInfo {
@@ -338,15 +340,15 @@ static const RequestParameters kDefaultRequestParameters{
 
 static const MockIdpInfo kDefaultIdentityProviderInfo{
     {kWellKnown, {ParseStatus::kSuccess, net::HTTP_OK}},
-    {
-        {ParseStatus::kSuccess, net::HTTP_OK},
-        kAccountsEndpoint,
-        kTokenEndpoint,
-        kClientMetadataEndpoint,
-        kMetricsEndpoint,
-        kIdpLoginUrl,
-        kIdpDisconnectUrl,
-    },
+    {{ParseStatus::kSuccess, net::HTTP_OK},
+     kAccountsEndpoint,
+     kTokenEndpoint,
+     kClientMetadataEndpoint,
+     kMetricsEndpoint,
+     kIdpLoginUrl,
+     kIdpDisconnectUrl,
+     /*brand_background_color=*/std::nullopt,
+     /*brand_text_color=*/std::nullopt},
     kDefaultClientMetadata,
     {ParseStatus::kSuccess, net::HTTP_OK},
     kSingleAccount,
@@ -358,15 +360,15 @@ static const base::flat_map<std::string, MockIdpInfo> kSingleProviderInfo{
 constexpr char kProviderTwoUrlFull[] = "https://idp2.example/fedcm.json";
 static const MockIdpInfo kProviderTwoInfo{
     {{kProviderTwoUrlFull}},
-    {
-        {ParseStatus::kSuccess, net::HTTP_OK},
-        "https://idp2.example/accounts",
-        "https://idp2.example/token",
-        "https://idp2.example/client_metadata",
-        "https://idp2.example/metrics",
-        "https://idp2.example/login_url",
-        "https://idp2.example/disconnect",
-    },
+    {{ParseStatus::kSuccess, net::HTTP_OK},
+     "https://idp2.example/accounts",
+     "https://idp2.example/token",
+     "https://idp2.example/client_metadata",
+     "https://idp2.example/metrics",
+     "https://idp2.example/login_url",
+     "https://idp2.example/disconnect",
+     /*brand_background_color=*/std::nullopt,
+     /*brand_text_color=*/std::nullopt},
     kDefaultClientMetadata,
     {ParseStatus::kSuccess, net::HTTP_OK},
     kMultipleAccounts};
@@ -454,22 +456,19 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
     ++num_fetched_[FetchedEndpoint::CONFIG];
 
     std::string provider_key = provider.spec();
+    const MockConfig& config = config_.idp_info[provider_key].config;
     IdpNetworkRequestManager::Endpoints endpoints;
-    endpoints.token =
-        GURL(config_.idp_info[provider_key].config.token_endpoint);
-    endpoints.accounts =
-        GURL(config_.idp_info[provider_key].config.accounts_endpoint);
-    endpoints.client_metadata =
-        GURL(config_.idp_info[provider_key].config.client_metadata_endpoint);
-    endpoints.metrics =
-        GURL(config_.idp_info[provider_key].config.metrics_endpoint);
-    endpoints.disconnect =
-        GURL(config_.idp_info[provider_key].config.disconnect_endpoint);
+    endpoints.token = GURL(config.token_endpoint);
+    endpoints.accounts = GURL(config.accounts_endpoint);
+    endpoints.client_metadata = GURL(config.client_metadata_endpoint);
+    endpoints.metrics = GURL(config.metrics_endpoint);
+    endpoints.disconnect = GURL(config.disconnect_endpoint);
 
     IdentityProviderMetadata idp_metadata;
     idp_metadata.config_url = provider;
-    idp_metadata.idp_login_url =
-        GURL(config_.idp_info[provider_key].config.idp_login_url);
+    idp_metadata.idp_login_url = GURL(config.idp_login_url);
+    idp_metadata.brand_background_color = config.brand_background_color;
+    idp_metadata.brand_text_color = config.brand_text_color;
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
@@ -642,6 +641,9 @@ class TestDialogController
     AccountList displayed_accounts;
     std::optional<IdentityRequestAccount::SignInMode> sign_in_mode;
     blink::mojom::RpContext rp_context;
+    // The last seen background/text color from IdP metadata.
+    std::optional<SkColor> brand_background_color;
+    std::optional<SkColor> brand_text_color;
     // State related to ShowFailureDialog().
     size_t num_show_idp_signin_status_mismatch_dialog_requests{0u};
     // State related to ShowIdpSigninFailureDialog().
@@ -697,6 +699,9 @@ class TestDialogController
       if (idp_data.has_login_status_mismatch) {
         state_->displayed_mismatch_idps.push_back(idp_data.idp_for_display);
       }
+      state_->brand_background_color =
+          idp_data.idp_metadata.brand_background_color;
+      state_->brand_text_color = idp_data.idp_metadata.brand_text_color;
     }
 
     switch (accounts_dialog_action_) {
@@ -994,7 +999,7 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
 
     // If multiple IdPs are received, add them to a single get call. Unittests
     // for multiple get calls can be added later as needed.
-    std::vector<blink::mojom::IdentityProviderPtr> idp_ptrs;
+    std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> idp_ptrs;
     for (const auto& identity_provider :
          request_parameters.identity_providers) {
       blink::mojom::IdentityProviderRequestOptionsPtr options =
@@ -1006,9 +1011,7 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
       options->login_hint = identity_provider.login_hint;
       options->domain_hint = identity_provider.domain_hint;
       options->scope = std::move(identity_provider.scope);
-      blink::mojom::IdentityProviderPtr idp_ptr =
-          blink::mojom::IdentityProvider::NewFederated(std::move(options));
-      idp_ptrs.push_back(std::move(idp_ptr));
+      idp_ptrs.push_back(std::move(options));
     }
     blink::mojom::IdentityProviderGetParametersPtr get_params =
         blink::mojom::IdentityProviderGetParameters::New(
@@ -1133,6 +1136,14 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
   bool did_show_idp_signin_status_mismatch_dialog() const {
     return dialog_controller_state_
         .num_show_idp_signin_status_mismatch_dialog_requests;
+  }
+
+  std::optional<SkColor> brand_background_color() const {
+    return dialog_controller_state_.brand_background_color;
+  }
+
+  std::optional<SkColor> brand_text_color() const {
+    return dialog_controller_state_.brand_text_color;
   }
 
   int CountNumLoginStateIsSignin() {
@@ -1402,13 +1413,15 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
         url::Origin::Create(GURL(config_url)), accounts);
   }
 
-  std::vector<blink::mojom::IdentityProviderPtr> MaybeAddRegisteredProviders(
-      std::vector<blink::mojom::IdentityProviderPtr>& providers) {
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr>
+  MaybeAddRegisteredProviders(
+      std::vector<blink::mojom::IdentityProviderRequestOptionsPtr>& providers) {
     return federated_auth_request_impl_->MaybeAddRegisteredProviders(providers);
   }
 
-  blink::mojom::IdentityProviderPtr NewNamedIdP(GURL config_url,
-                                                std::string client_id) {
+  blink::mojom::IdentityProviderRequestOptionsPtr NewNamedIdP(
+      GURL config_url,
+      std::string client_id) {
     blink::mojom::IdentityProviderRequestOptionsPtr options =
         blink::mojom::IdentityProviderRequestOptions::New();
     blink::mojom::IdentityProviderConfigPtr config =
@@ -1416,10 +1429,11 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
     config->config_url = config_url;
     config->client_id = client_id;
     options->config = std::move(config);
-    return blink::mojom::IdentityProvider::NewFederated(std::move(options));
+    return options;
   }
 
-  blink::mojom::IdentityProviderPtr NewRegisteredIdP(std::string client_id) {
+  blink::mojom::IdentityProviderRequestOptionsPtr NewRegisteredIdP(
+      std::string client_id) {
     blink::mojom::IdentityProviderConfigPtr config =
         blink::mojom::IdentityProviderConfig::New();
     config->use_registered_config_urls = true;
@@ -1428,7 +1442,7 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
         blink::mojom::IdentityProviderRequestOptions::New();
 
     options->config = std::move(config);
-    return blink::mojom::IdentityProvider::NewFederated(std::move(options));
+    return options;
   }
 
   void SimulateLoginToIdP(std::string login_url = kIdpLoginUrl) {
@@ -5933,9 +5947,9 @@ TEST_F(FederatedAuthRequestImplTest, IdpSigninStatusClosePopupEmbargo) {
 
 // Test that no registered IdP is added without a registry requested.
 TEST_F(FederatedAuthRequestImplTest, MaybeAddRegisteredProvidersEmptyList) {
-  std::vector<blink::mojom::IdentityProviderPtr> providers;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> providers;
 
-  std::vector<blink::mojom::IdentityProviderPtr> result =
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> result =
       MaybeAddRegisteredProviders(providers);
 
   EXPECT_TRUE(result.empty());
@@ -5943,14 +5957,14 @@ TEST_F(FederatedAuthRequestImplTest, MaybeAddRegisteredProvidersEmptyList) {
 
 // Test that no registered IdP with only named providers requested.
 TEST_F(FederatedAuthRequestImplTest, MaybeAddRegisteredProvidersNamed) {
-  std::vector<blink::mojom::IdentityProviderPtr> providers;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> providers;
   providers.emplace_back(NewNamedIdP(GURL("https://idp.example"), kClientId));
 
-  std::vector<blink::mojom::IdentityProviderPtr> result =
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> result =
       MaybeAddRegisteredProviders(providers);
 
   // Expects the vector to be the same.
-  std::vector<blink::mojom::IdentityProviderPtr> expected;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> expected;
   expected.emplace_back(NewNamedIdP(GURL("https://idp.example"), kClientId));
 
   EXPECT_EQ(expected, result);
@@ -5958,7 +5972,7 @@ TEST_F(FederatedAuthRequestImplTest, MaybeAddRegisteredProvidersNamed) {
 
 // Test that a registered provider is added.
 TEST_F(FederatedAuthRequestImplTest, MaybeAddRegisteredProvidersAdded) {
-  std::vector<blink::mojom::IdentityProviderPtr> providers;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> providers;
   providers.emplace_back(NewRegisteredIdP(kClientId));
 
   std::vector<GURL> registry;
@@ -5967,11 +5981,11 @@ TEST_F(FederatedAuthRequestImplTest, MaybeAddRegisteredProvidersAdded) {
   EXPECT_CALL(*test_permission_delegate_, GetRegisteredIdPs())
       .WillOnce(Return(registry));
 
-  std::vector<blink::mojom::IdentityProviderPtr> result =
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> result =
       MaybeAddRegisteredProviders(providers);
 
   // Expects that the registered IdP gets replaced by a named IdP.
-  std::vector<blink::mojom::IdentityProviderPtr> expected;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> expected;
   expected.emplace_back(NewNamedIdP(GURL("https://idp.example"), kClientId));
 
   EXPECT_EQ(expected, result);
@@ -5980,7 +5994,7 @@ TEST_F(FederatedAuthRequestImplTest, MaybeAddRegisteredProvidersAdded) {
 // Test that all registered IdPs are expanded.
 TEST_F(FederatedAuthRequestImplTest,
        MaybeAddRegisteredProvidersAllRequestsForRegisteredIdPsAreExpanded) {
-  std::vector<blink::mojom::IdentityProviderPtr> providers;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> providers;
   providers.emplace_back(NewRegisteredIdP(kClientId));
   providers.emplace_back(NewRegisteredIdP(kClientId));
 
@@ -5990,11 +6004,11 @@ TEST_F(FederatedAuthRequestImplTest,
   EXPECT_CALL(*test_permission_delegate_, GetRegisteredIdPs())
       .WillOnce(Return(registry));
 
-  std::vector<blink::mojom::IdentityProviderPtr> result =
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> result =
       MaybeAddRegisteredProviders(providers);
 
   // Expects that the registered IdP gets replaced by a named IdP.
-  std::vector<blink::mojom::IdentityProviderPtr> expected;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> expected;
   expected.emplace_back(NewNamedIdP(GURL("https://idp.example"), kClientId));
   expected.emplace_back(NewNamedIdP(GURL("https://idp.example"), kClientId));
 
@@ -6004,7 +6018,7 @@ TEST_F(FederatedAuthRequestImplTest,
 // Test that the registry can add two idps.
 TEST_F(FederatedAuthRequestImplTest,
        MaybeAddRegisteredProvidersTwoRegisteredIdPs) {
-  std::vector<blink::mojom::IdentityProviderPtr> providers;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> providers;
   providers.emplace_back(NewRegisteredIdP(kClientId));
 
   std::vector<GURL> registry;
@@ -6014,10 +6028,10 @@ TEST_F(FederatedAuthRequestImplTest,
   EXPECT_CALL(*test_permission_delegate_, GetRegisteredIdPs())
       .WillOnce(Return(registry));
 
-  std::vector<blink::mojom::IdentityProviderPtr> result =
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> result =
       MaybeAddRegisteredProviders(providers);
 
-  std::vector<blink::mojom::IdentityProviderPtr> expected;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> expected;
   expected.emplace_back(NewNamedIdP(GURL("https://idp2.example"), kClientId));
   expected.emplace_back(NewNamedIdP(GURL("https://idp1.example"), kClientId));
 
@@ -6027,7 +6041,7 @@ TEST_F(FederatedAuthRequestImplTest,
 // Test that registered idps are inserted inline.
 TEST_F(FederatedAuthRequestImplTest,
        MaybeAddRegisteredProvidersInsertedInline) {
-  std::vector<blink::mojom::IdentityProviderPtr> providers;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> providers;
   providers.emplace_back(NewNamedIdP(GURL("https://idp1.example"), kClientId));
   providers.emplace_back(NewRegisteredIdP(kClientId));
   providers.emplace_back(NewNamedIdP(GURL("https://idp2.example"), kClientId));
@@ -6039,11 +6053,11 @@ TEST_F(FederatedAuthRequestImplTest,
   EXPECT_CALL(*test_permission_delegate_, GetRegisteredIdPs())
       .WillOnce(Return(registry));
 
-  std::vector<blink::mojom::IdentityProviderPtr> result =
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> result =
       MaybeAddRegisteredProviders(providers);
 
   // Expects that the registered IdP gets replaced by a named IdP.
-  std::vector<blink::mojom::IdentityProviderPtr> expected;
+  std::vector<blink::mojom::IdentityProviderRequestOptionsPtr> expected;
   expected.emplace_back(NewNamedIdP(GURL("https://idp1.example"), kClientId));
   expected.emplace_back(
       NewNamedIdP(GURL("https://idp-registered2.example"), kClientId));
@@ -6554,6 +6568,42 @@ TEST_F(FederatedAuthRequestImplTest, ButtonFlowNotAffectEmbargo) {
   EXPECT_FALSE(DidFetch(FetchedEndpoint::TOKEN));
   EXPECT_FALSE(test_api_permission_delegate_->embargoed_origins_.count(
       main_test_rfh()->GetLastCommittedOrigin()));
+}
+
+// Tests that when background text is passed but no background color, the
+// background text is ignored.
+TEST_F(FederatedAuthRequestImplTest,
+       BrandingWithTextColorAndNoBackgroundColor) {
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.idp_info[kProviderUrlFull].config.brand_text_color =
+      SkColorSetRGB(10, 10, 10);
+  RequestExpectations expectations = kExpectationSuccess;
+  expectations.standalone_console_message =
+      "The FedCM text color is ignored because background color was not "
+      "provided";
+  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+
+  EXPECT_EQ(brand_background_color(), std::nullopt);
+  EXPECT_EQ(brand_text_color(), std::nullopt);
+}
+
+// Tests that when background text does not contrast enough with the background
+// color, the text color is ignored.
+TEST_F(FederatedAuthRequestImplTest,
+       BrandingWithInsufficientContrastTextColor) {
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.idp_info[kProviderUrlFull].config.brand_background_color =
+      SkColorSetRGB(0, 0, 0);
+  configuration.idp_info[kProviderUrlFull].config.brand_text_color =
+      SkColorSetRGB(1, 1, 1);
+  RequestExpectations expectations = kExpectationSuccess;
+  expectations.standalone_console_message =
+      "The FedCM text color is ignored because it does not contrast enough "
+      "with the provided background color";
+  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+
+  EXPECT_EQ(brand_background_color(), SkColorSetRGB(0, 0, 0));
+  EXPECT_EQ(brand_text_color(), std::nullopt);
 }
 
 class FederatedAuthRequestExampleOrgTest : public FederatedAuthRequestImplTest {

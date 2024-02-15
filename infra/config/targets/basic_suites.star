@@ -779,7 +779,18 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
-    name = "chromium_dev_desktop_gtests",
+    name = "chromium_dev_mac_gtests",
+    tests = {
+        "base_unittests": targets.legacy_test_config(),
+        "content_unittests": targets.legacy_test_config(),
+        "net_unittests": targets.legacy_test_config(),
+        "rust_gtest_interop_unittests": targets.legacy_test_config(),
+        "unit_tests": targets.legacy_test_config(),
+    },
+)
+
+targets.legacy_basic_suite(
+    name = "chromium_dev_win_gtests",
     tests = {
         "base_unittests": targets.legacy_test_config(),
         "content_browsertests": targets.legacy_test_config(
@@ -788,7 +799,11 @@ targets.legacy_basic_suite(
             ),
         ),
         "content_unittests": targets.legacy_test_config(),
-        "interactive_ui_tests": targets.legacy_test_config(),
+        "interactive_ui_tests": targets.legacy_test_config(
+            swarming = targets.swarming(
+                shards = 3,
+            ),
+        ),
         "net_unittests": targets.legacy_test_config(),
         "rust_gtest_interop_unittests": targets.legacy_test_config(),
         "unit_tests": targets.legacy_test_config(),
@@ -1004,7 +1019,7 @@ targets.legacy_basic_suite(
         "multiscreen_interactive_ui_tests": targets.legacy_test_config(
             args = [
                 "--windows-virtual-display-driver",
-                "--gtest_filter=*MultiScreen*:*VirtualDisplayWinUtil*",
+                "--gtest_filter=*MultiScreen*:*VirtualDisplayUtilWin*",
             ],
             swarming = targets.swarming(
                 dimensions = {
@@ -1480,11 +1495,41 @@ targets.legacy_basic_suite(
     tests = {
         "chrome_wpt_tests": targets.legacy_test_config(
             args = [
+                "--no-retry-failures",
                 "--test-type",
                 "testharness",
                 "reftest",
                 "crashtest",
                 "print-reftest",
+            ],
+            swarming = targets.swarming(
+                shards = 15,
+            ),
+        ),
+        "chrome_wpt_tests_headful": targets.legacy_test_config(
+            args = [
+                "--no-retry-failures",
+                "--exit-after-n-crashes-or-timeouts=500",
+                "--no-headless",
+                "--test-type",
+                "testharness",
+                "reftest",
+                "crashtest",
+                "print-reftest",
+            ],
+            swarming = targets.swarming(
+                shards = 30,
+            ),
+        ),
+        "chrome_wpt_tests_old_headless": targets.legacy_test_config(
+            args = [
+                "--no-retry-failures",
+                "--test-type",
+                "testharness",
+                "reftest",
+                "crashtest",
+                "print-reftest",
+                "--additional-driver-flag=--headless",
             ],
             swarming = targets.swarming(
                 shards = 15,
@@ -2467,7 +2512,7 @@ targets.legacy_basic_suite(
                 "webgpu_telemetry_cts",
             ],
             args = [
-                "--extra-browser-args=--use-angle=gl --use-webgpu-adapter=opengles --enable-blink-features=WebGPUExperimentalFeatures",
+                "--extra-browser-args=--use-angle=gl --use-webgpu-adapter=opengles --enable-features=WebGPUExperimentalFeatures",
             ],
             swarming = targets.swarming(
                 shards = 14,
@@ -3703,7 +3748,12 @@ targets.legacy_basic_suite(
         "gin_unittests": targets.legacy_test_config(),
         "gl_unittests": targets.legacy_test_config(),
         "google_apis_unittests": targets.legacy_test_config(),
-        "gpu_unittests": targets.legacy_test_config(),
+        "gpu_unittests": targets.legacy_test_config(
+            args = [
+                "--test-launcher-bot-mode",
+                "--test-launcher-filter-file=testing/buildbot/filters/ios.gpu_unittests.filter",
+            ],
+        ),
         "gwp_asan_unittests": targets.legacy_test_config(),
         "ipc_tests": targets.legacy_test_config(),
         "latency_unittests": targets.legacy_test_config(),

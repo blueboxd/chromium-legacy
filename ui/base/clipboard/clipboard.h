@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -25,7 +26,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -129,7 +129,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   virtual void OnPreShutdown() = 0;
 
   // Gets the source of the current clipboard buffer contents.
-  virtual absl::optional<DataTransferEndpoint> GetSource(
+  virtual std::optional<DataTransferEndpoint> GetSource(
       ClipboardBuffer buffer) const = 0;
 
   // Returns a token which uniquely identifies clipboard state.
@@ -302,12 +302,67 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
                          const GURL& main_frame);
 
  protected:
-  // PortableFormat designates the type of data to be stored in the clipboard.
-  // This designation is shared across all OSes. The system-specific designation
-  // is defined by ClipboardFormatType. A single PortableFormat might be
-  // represented by several system-specific ClipboardFormatTypes. For example,
-  // on Linux the kText PortableFormat maps to "text/plain", "STRING", and
-  // several other formats. On Windows it maps to CF_UNICODETEXT.
+  struct BitmapData {
+    SkBitmap bitmap;
+  };
+  struct HtmlData {
+    HtmlData() noexcept;
+    ~HtmlData();
+    HtmlData(const HtmlData&);
+    HtmlData& operator=(const HtmlData&);
+    HtmlData(HtmlData&&);
+    HtmlData& operator=(HtmlData&&);
+
+    std::string markup;
+    std::optional<std::string> source_url;
+  };
+  struct RtfData {
+    std::string data;
+  };
+  struct BookmarkData {
+    std::string title;
+    std::string url;
+  };
+  struct TextData {
+    std::string data;
+  };
+  struct WebkitData {
+    // Empty: this is just a placeholder for the WebKit smart paste marker.
+  };
+  struct RawData {
+    RawData() noexcept;
+    ~RawData();
+    RawData(const RawData&);
+    RawData& operator=(const RawData&);
+    RawData(RawData&&);
+    RawData& operator=(RawData&&);
+
+    ClipboardFormatType format;
+    std::vector<uint8_t> data;
+  };
+  struct SvgData {
+    std::string markup;
+  };
+  struct FilenamesData {
+    std::string text_uri_list;
+  };
+  struct WebCustomFormatMapData {
+    // TODO(dcheng): Describe format here.
+    std::string data;
+  };
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  struct EncodedDataTransferEndpointData {
+    std::string data;
+  };
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  // Data is a variant that that represents all types that Chromium supports
+  // writing to the clipboard. This representation is OS-agnostic; the
+  // system-specific designation is defined by ClipboardFormatType. A single
+  // piece of data represented by this variant might be represented by several
+  // system-specific ClipboardFormatTypes. For example, on Linux the kText
+  // PortableFormat maps to "text/plain", "STRING", and several other formats.
+  // On Windows it maps to CF_UNICODETEXT.
   //
   // The order below is the order in which data will be written to the
   // clipboard, so more specific types must be listed before less specific

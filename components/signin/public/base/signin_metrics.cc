@@ -288,7 +288,7 @@ void RecordSigninAccountType(signin::ConsentLevel consent_level,
       base::UmaHistogramEnumeration("Signin.AccountType.SigninConsent",
                                     account_type);
       break;
-    // TODO(crbug.com/1462552): Remove kSync usage after phase 3 migration. See
+    // TODO(crbug.com/40066949): Remove kSync usage after phase 3 migration. See
     // ConsentLevel::kSync documentation for more details.
     case signin::ConsentLevel::kSync:
       base::UmaHistogramEnumeration("Signin.AccountType.SyncConsent",
@@ -348,10 +348,6 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_DEVICES_PAGE:
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromDevicesPage"));
-      break;
-    case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromCloudPrint"));
       break;
     case AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
       base::RecordAction(
@@ -541,10 +537,6 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_DEVICES_PAGE:
       base::RecordAction(
           base::UserMetricsAction("Signin_Impression_FromDevicesPage"));
-      break;
-    case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Impression_FromCloudPrint"));
       break;
     case AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
       base::RecordAction(

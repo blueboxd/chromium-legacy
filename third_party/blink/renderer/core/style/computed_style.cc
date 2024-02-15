@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_progress_element.h"
@@ -2280,6 +2281,24 @@ const CSSValue* ComputedStyle::GetVariableValue(
   return blink::GetVariableValue(*this, name, is_inherited_property);
 }
 
+bool ComputedStyle::HasCustomScrollbarStyle(const Document& document) const {
+
+  // Ignore ::-webkit-scrollbar when the web setting to prefer default scrollbar
+  // styling is true. This web setting ignores both ::-webkit-scrollbar styling
+  // and standard properties.
+  if (RuntimeEnabledFeatures::PreferDefaultScrollbarStylesEnabled()) {
+    const Settings* settings = document.GetSettings();
+    if (settings && settings->GetPrefersDefaultScrollbarStyles()) {
+      return false;
+    }
+  }
+
+  // Ignore non-standard ::-webkit-scrollbar when standard properties are in
+  // use.
+  return HasPseudoElementStyle(kPseudoIdScrollbar) &&
+         !UsesStandardScrollbarStyle();
+}
+
 Length ComputedStyle::LineHeight() const {
   const Length& lh = LineHeightInternal();
   // Unlike getFontDescription().computedSize() and hence fontSize(), this is
@@ -2565,8 +2584,7 @@ blink::Color ComputedStyle::GetInternalForcedCurrentColor(
     return GetCurrentColor(is_current_color);
   }
   return InternalForcedColor().Resolve(blink::Color(), UsedColorScheme(),
-                                       is_current_color,
-                                       /* is_forced_color */ true);
+                                       is_current_color);
 }
 
 blink::Color ComputedStyle::GetInternalForcedVisitedCurrentColor(
@@ -2576,8 +2594,7 @@ blink::Color ComputedStyle::GetInternalForcedVisitedCurrentColor(
     return GetInternalVisitedCurrentColor(is_current_color);
   }
   return InternalForcedVisitedColor().Resolve(blink::Color(), UsedColorScheme(),
-                                              is_current_color,
-                                              /* is_forced_color */ true);
+                                              is_current_color);
 }
 
 bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {

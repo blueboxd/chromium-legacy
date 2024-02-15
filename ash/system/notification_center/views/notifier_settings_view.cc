@@ -661,7 +661,8 @@ NotifierSettingsView::NotifierSettingsView() {
     auto scroller = std::make_unique<views::ScrollView>();
     scroller->SetBackgroundColor(std::nullopt);
     scroll_bar_ = scroller->SetVerticalScrollBar(
-        std::make_unique<views::OverlayScrollBar>(/*horizontal=*/false));
+        std::make_unique<views::OverlayScrollBar>(
+            views::ScrollBar::Orientation::kVertical));
     scroller->SetDrawOverflowIndicator(false);
     scroller_ = AddChildView(std::move(scroller));
 
@@ -748,7 +749,7 @@ void NotifierSettingsView::OnNotifierIconUpdated(const NotifierId& notifier_id,
   if (features::IsSettingsAppNotificationSettingsEnabled()) {
     return;
   }
-  for (auto* button : buttons_) {
+  for (NotifierButton* button : buttons_) {
     if (button->notifier_id() == notifier_id) {
       button->UpdateIconImage(icon);
       return;

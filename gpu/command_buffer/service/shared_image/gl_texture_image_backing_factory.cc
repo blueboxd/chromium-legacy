@@ -53,7 +53,8 @@ GLTextureImageBackingFactory::GLTextureImageBackingFactory(
                                   workarounds,
                                   feature_info,
                                   progress_reporter),
-      for_cpu_upload_usage_(for_cpu_upload_usage) {}
+      for_cpu_upload_usage_(for_cpu_upload_usage),
+      support_all_metal_usages_(false) {}
 
 GLTextureImageBackingFactory::~GLTextureImageBackingFactory() = default;
 
@@ -165,26 +166,30 @@ bool GLTextureImageBackingFactory::IsSupported(
 
   // This is not beneficial on iOS. The main purpose of this is a multi-gpu
   // support.
-#if BUILDFLAG(IS_MAC)
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
-      gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal) {
-    constexpr uint32_t kMetalInvalidUsages =
-        SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_SCANOUT |
-        SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
-        SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
-    if (usage & kMetalInvalidUsages) {
-      return false;
+  if (!support_all_metal_usages_) {
+    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
+        gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal) {
+      constexpr uint32_t kMetalInvalidUsages =
+          SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_SCANOUT |
+          SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
+          SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+      if (usage & kMetalInvalidUsages) {
+        return false;
+      }
     }
   }
-#endif  // BUILDFLAG(IS_MAC)
 
-  // Doesn't support contexts other than GL for OOPR Canvas
+  // Using GLTextureImageBacking for raster/display is only appropriate when
+  // running on top of GL. For the case WebGL fallback (GrContextType::kNone)
+  // this usages aren't actually relevant but WebGL still adds them so ignore.
   if (gr_context_type != GrContextType::kGL &&
-      ((usage & SHARED_IMAGE_USAGE_DISPLAY_READ) ||
-       (usage & SHARED_IMAGE_USAGE_DISPLAY_WRITE) ||
-       (usage & SHARED_IMAGE_USAGE_RASTER_READ) ||
-       (usage & SHARED_IMAGE_USAGE_RASTER_WRITE))) {
-    return false;
+      gr_context_type != GrContextType::kNone) {
+    constexpr uint32_t kUnsupportedUsages =
+        SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
+        SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE;
+    if (usage & kUnsupportedUsages) {
+      return false;
+    }
   }
 
   // Only supports WebGPU usages on Dawn's OpenGLES backend.
@@ -197,6 +202,10 @@ bool GLTextureImageBackingFactory::IsSupported(
   }
 
   return CanCreateTexture(format, size, pixel_data, GL_TEXTURE_2D);
+}
+
+void GLTextureImageBackingFactory::EnableSupportForAllMetalUsagesForTesting() {
+  support_all_metal_usages_ = true;
 }
 
 std::unique_ptr<SharedImageBacking>

@@ -187,6 +187,7 @@ public class AppMenuPropertiesDelegateUnitTest {
         when(mTab.getProfile()).thenReturn(mProfile);
         when(mWebContents.getNavigationController()).thenReturn(mNavigationController);
         when(mNavigationController.getUseDesktopUserAgent()).thenReturn(false);
+        when(mTabModelSelector.isTabStateInitialized()).thenReturn(true);
         when(mTabModelSelector.getCurrentModel()).thenReturn(mTabModel);
         when(mTabModelSelector.getModel(false)).thenReturn((mTabModel));
         when(mTabModelSelector.getModel(true)).thenReturn((mIncognitoTabModel));
@@ -250,6 +251,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         setShoppingListEligible(false);
         setShoppingListEligible(false);
         mTestValues.addFeatureFlagOverride(ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI, false);
+        mTestValues.addFeatureFlagOverride(
+                ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS, false);
         FeatureList.setTestValues(mTestValues);
     }
 
@@ -1026,6 +1029,24 @@ public class AppMenuPropertiesDelegateUnitTest {
 
         MenuItem item = menu.findItem(R.id.menu_select_tabs);
         assertTrue(item.isEnabled());
+    }
+
+    @Test
+    @SmallTest
+    public void testSelectTabsOption_IsDisabled_InRegularMode_TabStateNotInitialized() {
+        setUpMocksForOverviewMenu(LayoutType.TAB_SWITCHER);
+        when(mTabModelSelector.getCurrentModel()).thenReturn(mTabModel);
+        prepareMocksForGroupTabsOnTabModel(mTabModel);
+
+        when(mTabModelSelector.isTabStateInitialized()).thenReturn(false);
+
+        Menu menu = createTestMenu();
+        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
+        // Check group tabs enabled decision in regular mode doesn't depend on re-auth.
+        verify(mIncognitoReauthControllerMock, times(0)).isReauthPageShowing();
+
+        MenuItem item = menu.findItem(R.id.menu_select_tabs);
+        assertFalse(item.isEnabled());
     }
 
     @Test

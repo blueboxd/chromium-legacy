@@ -2406,7 +2406,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private void initializeBackPressHandling() {
         mBackPressManager.setIsGestureNavEnabledSupplier(
-                () -> BackPressManager.isGestureNavigationMode(getWindow()));
+                () -> UiUtils.isGestureNavigationMode(getWindow()));
         mBackPressManager.setIsFirstVisibleContentDrawnSupplier(
                 () -> {
                     if (mActivityTabStartupMetricsTracker == null) return false;
@@ -3071,7 +3071,18 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         PwaUniversalInstallBottomSheetCoordinator pwaUniversalInstallBottomSheetCoordinator =
                 new PwaUniversalInstallBottomSheetCoordinator(
-                        this, controller, R.drawable.ic_forward_arrow_black_24dp);
+                        this,
+                        currentTab.getWebContents(),
+                        () -> {
+                            doAddToHomescreenOrInstallWebApp(
+                                    currentTab, AppMenuVerbiage.APP_MENU_OPTION_INSTALL);
+                        },
+                        () -> {
+                            doAddToHomescreenOrInstallWebApp(
+                                    currentTab, AppMenuVerbiage.APP_MENU_OPTION_ADD_TO_HOMESCREEN);
+                        },
+                        controller,
+                        R.drawable.ic_forward_arrow_black_24dp);
         if (!pwaUniversalInstallBottomSheetCoordinator.show()) {
             // Fall back to install method for the PWA.
             return doAddToHomescreenOrInstallWebApp(

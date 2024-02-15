@@ -830,6 +830,12 @@ BASE_FEATURE(kEnableMojoJSProtectedMemory,
              "EnableMojoJSProtectedMemory",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enable reporting the modal dialog start time as an alternative end time for
+// duration measurement in performance event timing.
+BASE_FEATURE(kEventTimingFallbackToModalDialogStart,
+             "EventTimingFallbackToModalDialogStart",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether LCP calculations should exclude low-entropy images. If
 // enabled, then the associated parameter sets the cutoff, expressed as the
 // minimum number of bits of encoded image data used to encode each rendered
@@ -885,7 +891,7 @@ BASE_FEATURE(kFencedFramesReportingAttestationsChanges,
 // that sets the automatic beacon data.
 BASE_FEATURE(kFencedFramesCrossOriginAutomaticBeacons,
              "FencedFramesCrossOriginAutomaticBeacons",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Temporarily un-disable credentials on fenced frame automatic beacons until
 // third party cookie deprecation.
@@ -929,6 +935,8 @@ BASE_FEATURE(kFilteringScrollPrediction,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+const base::FeatureParam<std::string> kFilteringScrollPredictionFilterParam{
+    &kFilteringScrollPrediction, "filter", "one_euro_filter"};
 
 BASE_FEATURE(kFixGestureScrollQueuingBug,
              "FixGestureScrollQueuingBug",
@@ -1186,7 +1194,7 @@ BASE_FEATURE(kKeepAliveInBrowserMigration,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAttributionReportingInBrowserMigration,
-             "kAttributionReportingInBrowserMigration",
+             "AttributionReportingInBrowserMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kLCPCriticalPathPredictor,
@@ -1220,11 +1228,6 @@ const base::FeatureParam<LcppResourceLoadPriority>
         &kLCPCriticalPathPredictor, "lcpp_image_load_priority",
         LcppResourceLoadPriority::kVeryHigh, &lcpp_resource_load_priorities};
 
-const base::FeatureParam<LcppResourceLoadPriority>
-    kLCPCriticalPathPredictorInfluencerScriptLoadPriority{
-        &kLCPCriticalPathPredictor, "lcpp_script_load_priority",
-        LcppResourceLoadPriority::kVeryHigh, &lcpp_resource_load_priorities};
-
 const base::FeatureParam<bool>
     kLCPCriticalPathPredictorEnableElementLocatorPerformanceImprovements{
         &kLCPCriticalPathPredictor, "lcpp_enable_perf_improvements", true};
@@ -1238,11 +1241,25 @@ BASE_FEATURE(kLCPScriptObserver,
              "LCPScriptObserver",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const base::FeatureParam<LcppResourceLoadPriority>
+    kLCPScriptObserverScriptLoadPriority{
+        &kLCPScriptObserver, "lcpscriptobserver_script_load_priority",
+        LcppResourceLoadPriority::kVeryHigh, &lcpp_resource_load_priorities};
+
+const base::FeatureParam<LcppResourceLoadPriority>
+    kLCPScriptObserverImageLoadPriority{
+        &kLCPScriptObserver, "lcpscriptobserver_image_load_priority",
+        LcppResourceLoadPriority::kVeryHigh, &lcpp_resource_load_priorities};
+
 const base::FeatureParam<int> kLCPScriptObserverMaxUrlLength{
-    &kLCPScriptObserver, "lcpp_max_url_length", 1024};
+    &kLCPScriptObserver, "lcpscriptobserver_script_max_url_length", 1024};
 
 const base::FeatureParam<int> kLCPScriptObserverMaxUrlCountPerOrigin{
-    &kLCPScriptObserver, "lcpp_max_url_count_per_origin", 5};
+    &kLCPScriptObserver, "lcpscriptobserver_script_max_url_count_per_origin",
+    5};
+
+const base::FeatureParam<bool> kLCPScriptObserverAdjustImageLoadPriority{
+    &kLCPScriptObserver, "lcpscriptobserver_adjust_image_load_priority", false};
 
 BASE_FEATURE(kLCPPAutoPreconnectLcpOrigin,
              "LCPPAutoPreconnectLcpOrigin",
@@ -1346,9 +1363,9 @@ BASE_FEATURE(kLogUnexpectedIPCPostedToBackForwardCachedDocuments,
              "LogUnexpectedIPCPostedToBackForwardCachedDocuments",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables the use of GpuMemoryBuffer images for low latency 2d canvas.
-// TODO(khushalsagar): Enable this if we're using SurfaceControl and GMBs allow
-// us to overlay these resources.
+// Allow low latency canvas 2D to be in overlay (generally meaning scanned out
+// directly to display), even if regular canvas are not in overlay
+// (Canvas2DImageChromium is disabled).
 BASE_FEATURE(kLowLatencyCanvas2dImageChromium,
              "LowLatencyCanvas2dImageChromium",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1357,6 +1374,13 @@ BASE_FEATURE(kLowLatencyCanvas2dImageChromium,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif  // BUILDFLAG(IS_CHROMEOS)
 );
+
+// Allow low latency WebGL to be in overlay (generally meaning scanned out
+// directly to display), even if regular canvas are not in overlay
+// (WebGLImageChromium is disabled).
+BASE_FEATURE(kLowLatencyWebGLImageChromium,
+             "kLowLatencyWebGLImageChromium",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kLowPriorityAsyncScriptExecution,
              "LowPriorityAsyncScriptExecution",
@@ -2353,11 +2377,6 @@ BASE_FEATURE(kWebRtcH264WithOpenH264FFmpeg,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 
-// Exposes non-standard stats in the WebRTC getStats() API.
-BASE_FEATURE(kWebRtcExposeNonStandardStats,
-             "WebRtc-ExposeNonStandardStats",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Causes WebRTC to replace host ICE candidate IP addresses with generated
 // names ending in ".local" and resolve them using mDNS.
 // http://crbug.com/878465
@@ -2504,6 +2523,10 @@ const base::FeatureParam<int> kPixelDistanceToExpand(&kExpandCompositedCullRect,
 BASE_FEATURE(kTreatHTTPExpiresHeaderValueZeroAsExpiredInBlink,
              "TreatHTTPExpiresHeaderValueZeroAsExpiredInBlink",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSimplifyLoadingTransparentPlaceholderImage,
+             "SimplifyLoadingTransparentPlaceholderImage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

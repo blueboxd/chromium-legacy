@@ -204,7 +204,9 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
         case kPseudoViewTransitionOld:
         case kPseudoViewTransitionNew: {
           CHECK(!IdentList().empty());
-          return IdentList()[0].IsNull() ? 0 : kClassLikeSpecificity;
+          return (IdentList().size() == 1u && IdentList()[0].IsNull())
+                     ? 0
+                     : kClassLikeSpecificity;
         }
         default:
           break;
@@ -662,7 +664,7 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(
 
   if ((match->type == CSSSelector::kPseudoOpen ||
        match->type == CSSSelector::kPseudoClosed) &&
-      !RuntimeEnabledFeatures::HTMLSelectListElementEnabled()) {
+      !RuntimeEnabledFeatures::CSSPseudoOpenClosedEnabled()) {
     return CSSSelector::kPseudoUnknown;
   }
 

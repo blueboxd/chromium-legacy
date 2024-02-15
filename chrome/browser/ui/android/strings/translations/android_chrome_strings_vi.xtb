@@ -169,7 +169,6 @@ Chỉ những người có cụm mật khẩu của bạn mới đọc được 
 <translation id="1933845786846280168">Thẻ được chọn</translation>
 <translation id="1943432128510653496">Lưu mật khẩu</translation>
 <translation id="1944535645109964458">Không có khoá đăng nhập nào</translation>
-<translation id="1952172573699511566">Các trang web sẽ hiển thị văn bản bằng ngôn ngữ ưu tiên của bạn khi có thể.</translation>
 <translation id="1959679933317802873">Đang chờ nội dung</translation>
 <translation id="1960290143419248813">Các bản cập nhật Chrome không còn được hỗ trợ cho phiên bản Android này</translation>
 <translation id="1963976881984600709">Bảo vệ tiêu chuẩn</translation>
@@ -204,6 +203,7 @@ Chỉ những người có cụm mật khẩu của bạn mới đọc được 
 <translation id="2132122640199389833">Xoá mọi thiết bị đã liên kết</translation>
 <translation id="213279576345780926">Đã đóng <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Thêm vào Màn hình chính</translation>
+<translation id="2139414603196655536">Hoạt động của bạn trong Thông tin chi tiết về trang được lưu vào Tài khoản Google. <ph name="BEGIN_LINK" />Tìm hiểu cách quản lý quy trình này<ph name="END_LINK" /></translation>
 <translation id="2141396931810938595">Dựa trên tùy chọn sử dụng của bạn</translation>
 <translation id="2149973817440762519">Chỉnh sửa dấu trang</translation>
 <translation id="2155214902713132423">Hiện không dùng được phương thức xác minh này trên thiết bị này. Hãy chọn một cách khác trên thiết bị còn lại.</translation>
@@ -379,7 +379,6 @@ Chỉ những người có cụm mật khẩu của bạn mới đọc được 
 <translation id="3027644380269727216">Dựa vào hoạt động của bạn trên một trang web. Chế độ cài đặt này đang bật.</translation>
 <translation id="3029276696788198026">Không tải trước</translation>
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
-<translation id="303514781271618814">Chrome đang khám phá các tính năng mới cho phép các trang web duy trì cùng một trải nghiệm duyệt web nhưng sử dụng ít dữ liệu về bạn hơn</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Đang theo dõi giá</translation>
 <translation id="3037517125981011456">Hiển thị lời nhắc đăng nhập vào Chrome</translation>
@@ -873,6 +872,7 @@ Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web
 <translation id="5698878456427040674">Kiểm tra xem tài khoản đã chọn có được hỗ trợ hay không.</translation>
 <translation id="570347048394355941">Chuyển sang thẻ</translation>
 <translation id="5715150588940290235">Xoá mã bảo mật đã lưu?</translation>
+<translation id="571930967925877633">Dấu trang, nhật ký và các dữ liệu khác trên Chrome sẽ không được đồng bộ hoá với Tài khoản Google của bạn nữa</translation>
 <translation id="572328651809341494">Các thẻ gần đây</translation>
 <translation id="5726692708398506830">Phóng to mọi nội dung trên trang</translation>
 <translation id="5744751019568455640">Đây là những giọng nói mà bạn có thể chọn để tôi đọc to nội dung các trang web. Nếu bạn thích giọng nói này và muốn tôi dùng tiếp, chỉ cần nhấn vào tên giọng nói.</translation>
@@ -994,7 +994,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6341580099087024258">Hỏi vị trí lưu tệp</translation>
 <translation id="6342069812937806050">Vừa mới</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tùy chọn khác}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tùy chọn khác}}</translation>
-<translation id="6344622098450209924">Tính năng chống theo dõi</translation>
+<translation id="6344622098450209924">Chống theo dõi</translation>
 <translation id="6345878117466430440">Đánh dấu là đã đọc</translation>
 <translation id="6356893102071098867">Kiểm tra để đảm bảo bạn đã chọn đúng tài khoản</translation>
 <translation id="6357653805084533597">Bạn có thể dùng điện thoại này để đăng nhập trên thiết bị đang hiển thị mã QR này.</translation>
@@ -1081,6 +1081,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="670498945988402717">Đã kiểm tra hôm qua</translation>
 <translation id="6710213216561001401">Trước</translation>
 <translation id="671481426037969117">Thời gian hẹn giờ của <ph name="FQDN" /> đã hết. Thời gian hẹn giờ sẽ bắt đầu lại vào ngày mai.</translation>
+<translation id="6714850225831215156">{BOOKMARK_COUNT,plural, =1{Đã lưu dấu trang vào <ph name="FOLDER_NAME" />. Dấu trang chỉ được lưu vào thiết bị này.}other{Đã lưu dấu trang vào <ph name="FOLDER_NAME" />. Dấu trang chỉ được lưu vào thiết bị này.}}</translation>
 <translation id="6715020873764921614">Bạn vẫn muốn tải <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) xuống?</translation>
 <translation id="6719634564325948108">Kết nối bằng mã QR?</translation>
 <translation id="6723740634201835758">Trong Tài khoản Google của bạn</translation>
@@ -1105,7 +1106,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6828070228333235514">Dừng theo dõi giá</translation>
 <translation id="6830728435402077660">Không bảo mật</translation>
 <translation id="6831043979455480757">Dịch</translation>
-<translation id="6833996806551876956">Dùng thử hộp cát bảo vệ quyền riêng tư</translation>
 <translation id="6836206421467243968">Khôi phục nhóm thẻ <ph name="TITLE_OF_GROUP" /> dưới dạng một nhóm thẻ nền mới.</translation>
 <translation id="6846298663435243399">Đang tải…</translation>
 <translation id="6850409657436465440">Vẫn đang tải xuống</translation>
@@ -1402,6 +1402,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8237871086242677046">Bảng thông tin chi tiết về trang ở dưới cùng</translation>
 <translation id="8243077599929149377">Thêm tên người dùng của bạn</translation>
 <translation id="8250920743982581267">Tài liệu</translation>
+<translation id="8253557549177565072">{BOOKMARK_COUNT,plural, =1{Đã lưu dấu trang vào <ph name="FOLDER_NAME" /> trong tài khoản <ph name="ACCOUNT_EMAIL" /> của bạn.}other{Đã lưu dấu trang vào <ph name="FOLDER_NAME" /> trong tài khoản <ph name="ACCOUNT_EMAIL" /> của bạn.}}</translation>
 <translation id="8255617931166444521">Các trang web chỉ có thể dùng cookie để xem hoạt động duyệt web của bạn trên trang web của riêng họ</translation>
 <translation id="8259179246279078674">Vì các trang tải trước đã được mã hóa, nên Google sẽ không tìm hiểu bất cứ điều gì về nội dung trên trang được tải trước. Máy chủ của Google sẽ tìm hiểu những trang web nào đã được tải trước ở chế độ riêng tư. Thông tin này chỉ được dùng để tải trước các trang và không được liên kết với thông tin khác trong Tài khoản Google của bạn.</translation>
 <translation id="8260126382462817229">Thử đăng nhập lại</translation>

@@ -113,6 +113,23 @@ bool IsExplicitBrowserSigninUIOnDesktopEnabled(
 BASE_FEATURE(kMinorModeRestrictionsForHistorySyncOptIn,
              "MinorModeRestrictionsForHistorySyncOptIn",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr int kMinorModeRestrictionsFetchDeadlineDefaultValueMs =
+#if BUILDFLAG(IS_ANDROID)
+    // Based on Signin.AccountCapabilities.UserVisibleLatency
+    400;
+#elif BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+    // Based on Signin.SyncOptIn.PreSyncConfirmationLatency
+    900;
+#elif BUILDFLAG(IS_IOS)
+    // Based on Signin.AccountCapabilities.UserVisibleLatency
+    1000;
+#endif
+
+const base::FeatureParam<int> kMinorModeRestrictionsFetchDeadlineMs{
+    &kMinorModeRestrictionsForHistorySyncOptIn,
+    /*name=*/"MinorModeRestrictionsFetchDeadlineMs",
+    kMinorModeRestrictionsFetchDeadlineDefaultValueMs};
 #endif
 
 #if BUILDFLAG(IS_IOS)

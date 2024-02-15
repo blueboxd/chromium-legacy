@@ -138,10 +138,9 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
   void SetTitleOnReportsTableEmpty(const std::u16string& title) {
     static constexpr char kObserveEmptyReportsTableScript[] = R"(
       const table = document.querySelector('#reportTable')
-          .shadowRoot.querySelector('tbody');
+          .shadowRoot.querySelector('tfoot');
       const setTitleIfDone = (_, obs) => {
-        if (table.children.length === 1 &&
-            table.children[0].children[0]?.innerText === 'No sent or pending reports.') {
+        if (table.querySelector('td')?.innerText === 'Rows: 0') {
           if (obs) {
             obs.disconnect();
           }
@@ -264,10 +263,9 @@ IN_PROC_BROWSER_TEST_F(
 
   static constexpr char kScript[] = R"(
     const table = document.querySelector('#sourceTable')
-        .shadowRoot.querySelector('tbody');
+        .shadowRoot.querySelector('tfoot');
     const setTitleIfDone = (_, obs) => {
-      if (table.children.length === 1 &&
-          table.children[0].children[0]?.innerText === 'No sources.') {
+      if (table.querySelector('td')?.innerText === 'Rows: 0') {
         if (obs) {
           obs.disconnect();
         }
@@ -752,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     // Sort by priority ascending.
     ASSERT_TRUE(ExecJsInWebUI(R"(
       document.querySelector('#reportTable')
-        .shadowRoot.querySelectorAll('th')[5].click();
+        .shadowRoot.querySelector('th:nth-child(6) button').click();
     )"));
     ASSERT_EQ(kCompleteTitle2, title_watcher.WaitAndGetTitle());
   }
@@ -791,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     // Sort by priority descending.
     ASSERT_TRUE(ExecJsInWebUI(R"(
       document.querySelector('#reportTable')
-        .shadowRoot.querySelectorAll('th')[5].click();
+        .shadowRoot.querySelector('th:nth-child(6) button').click();
     )"));
     ASSERT_EQ(kCompleteTitle3, title_watcher.WaitAndGetTitle());
   }
@@ -926,14 +924,12 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   TitleWatcher delete_title_watcher(shell()->web_contents(), kDeleteTitle);
   static constexpr char kObserveEmptySourcesTableScript[] = R"(
     const table = document.querySelector('#sourceTable')
-        .shadowRoot.querySelector('tbody');
+        .shadowRoot.querySelector('tfoot');
     const regTable = document.querySelector('#sourceRegistrationTable')
-        .shadowRoot.querySelector('tbody');
+        .shadowRoot.querySelector('tfoot');
     const obs = new MutationObserver((_, obs) => {
-      if (table.children.length === 1 &&
-          regTable.children.length === 1 &&
-          table.children[0].children[0]?.innerText === 'No sources.' &&
-          regTable.children[0].children[0]?.innerText === 'No registrations.') {
+      if (table.querySelector('td')?.innerText === 'Rows: 0' &&
+          regTable.querySelector('td')?.innerText === 'Rows: 0') {
         obs.disconnect();
         document.title = $1;
       }
@@ -1260,10 +1256,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   static constexpr char kScript[] = R"(
     const table = document.querySelector('#aggregatableReportTable')
-        .shadowRoot.querySelector('tbody');
+        .shadowRoot.querySelector('tfoot');
     const setTitleIfDone = (_, obs) => {
-      if (table.children.length === 1 &&
-          table.children[0].children[0]?.innerText !== 'No sent or pending reports.') {
+      if (table.querySelector('td')?.innerText !== 'Rows: 0') {
         if (obs) {
           obs.disconnect();
         }
@@ -1289,10 +1284,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   static constexpr char kObserveEmptyReportsTableScript[] = R"(
     const table = document.querySelector('#aggregatableReportTable')
-        .shadowRoot.querySelector('tbody');
+        .shadowRoot.querySelector('tfoot');
     const setTitleIfDone = (_, obs) => {
-      if (table.children.length === 1 &&
-          table.children[0].children[0]?.innerText === 'No sent or pending reports.') {
+      if (table.querySelector('td')?.innerText === 'Rows: 0') {
         if (obs) {
           obs.disconnect();
         }

@@ -208,6 +208,9 @@ public abstract class ChromeFeatureList {
     public static final String CCT_BRAND_TRANSPARENCY_MEMORY_IMPROVEMENT =
             "CCTBrandTransparencyMemoryImprovement";
     public static final String CCT_CLIENT_DATA_HEADER = "CCTClientDataHeader";
+    public static final String CCT_EMBEDDER_SPECIAL_BEHAVIOR_TRIGGER =
+            "CCTEmbedderSpecialBehaviorTrigger";
+    public static final String CCT_EXTEND_TRUSTED_CDN_PUBLISHER = "CCTExtendTrustedCdnPublisher";
     public static final String CCT_FEATURE_USAGE = "CCTFeatureUsage";
     public static final String CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY =
             "CCTIncognitoAvailableToThirdParty";
@@ -254,6 +257,7 @@ public abstract class ChromeFeatureList {
             "DarkenWebsitesCheckboxInThemesSetting";
     public static final String DATA_SHARING = "DataSharing";
     public static final String DATA_SHARING_ANDROID = "DataSharingAndroid";
+    public static final String DEFAULT_BROWSER_PROMO_ANDROID = "DefaultBrowserPromoAndroid";
     public static final String DEFER_KEEP_SCREEN_ON_DURING_GESTURE =
             "DeferKeepScreenOnDuringGesture";
     public static final String DEFER_NOTIFY_IN_MOTION = "DeferNotifyInMotion";
@@ -412,13 +416,13 @@ public abstract class ChromeFeatureList {
             "SafeBrowsingNewGmsApiForSubresourceFilterCheck";
     public static final String SAFE_BROWSING_SKIP_SUBRESOURCES = "SafeBrowsingSkipSubResources";
     public static final String SCREENSHOTS_FOR_ANDROID_V2 = "ScreenshotsForAndroidV2";
+    public static final String SEARCH_IN_CCT = "SearchInCCT";
     public static final String SEARCH_ENGINES_PROMO_V3 = "SearchEnginesPromoV3";
     public static final String SEARCH_ENGINE_CHOICE = "SearchEngineChoice";
     public static final String SEARCH_READY_OMNIBOX_ALLOW_QUERY_EDIT =
             "SearchReadyOmniboxAllowQueryEdit";
     public static final String SEARCH_RESUMPTION_MODULE_ANDROID = "SearchResumptionModuleAndroid";
     public static final String SEED_ACCOUNTS_REVAMP = "SeedAccountsRevamp";
-    public static final String SHARE_SHEET_MIGRATION_ANDROID = "ShareSheetMigrationAndroid";
     public static final String SEND_TAB_TO_SELF_V2 = "SendTabToSelfV2";
     public static final String SHOW_NTP_AT_STARTUP_ANDROID = "ShowNtpAtStartupAndroid";
     public static final String SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID = "ShowScrollableMVTOnNTPAndroid";
@@ -481,6 +485,8 @@ public abstract class ChromeFeatureList {
     public static final String TRANSLATE_MESSAGE_UI = "TranslateMessageUI";
     public static final String TRANSLATE_TFLITE = "TFLiteLanguageDetectionEnabled";
     public static final String SHARED_PASSWORD_NOTIFICATION_UI = "SharedPasswordNotificationUI";
+    public static final String UNIFIED_PASSWORD_MANAGER_LOCAL_PASSWORDS_ANDROID_NO_MIGRATION =
+            "UnifiedPasswordManagerLocalPasswordsAndroidNoMigration";
     public static final String UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING =
             "UnifiedPasswordManagerLocalPasswordsMigrationWarning";
     public static final String USE_CHIME_ANDROID_SDK = "UseChimeAndroidSdk";
@@ -546,7 +552,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sCommandLineOnNonRooted =
             newCachedFlag(COMMAND_LINE_ON_NON_ROOTED, false);
     public static final CachedFlag sDeferTabSwitcherLayoutCreation =
-            newCachedFlag(DEFER_TAB_SWITCHER_LAYOUT_CREATION, false);
+            newCachedFlag(DEFER_TAB_SWITCHER_LAYOUT_CREATION, true);
     public static final CachedFlag sDelayTempStripRemoval =
             newCachedFlag(DELAY_TEMP_STRIP_REMOVAL, true);
     public static final CachedFlag sDragDropIntoOmnibox =
@@ -778,6 +784,8 @@ public abstract class ChromeFeatureList {
             newMutableFlagWithSafeDefault(READER_MODE_IN_CCT, false);
     public static final MutableFlagWithSafeDefault sRecordSuppressionMetrics =
             newMutableFlagWithSafeDefault(RECORD_SUPPRESSION_METRICS, true);
+    public static final MutableFlagWithSafeDefault sSearchInCCT =
+            newMutableFlagWithSafeDefault(SEARCH_IN_CCT, false);
     public static final MutableFlagWithSafeDefault sSearchReadyOmniboxAllowQueryEdit =
             newMutableFlagWithSafeDefault(SEARCH_READY_OMNIBOX_ALLOW_QUERY_EDIT, false);
     public static final MutableFlagWithSafeDefault sSuppressionToolbarCaptures =

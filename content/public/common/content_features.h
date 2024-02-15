@@ -25,9 +25,6 @@ namespace features {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
-#if BUILDFLAG(IS_ANDROID)
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kAndroidSurfaceControlMagnifier);
-#endif
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAttributionFencedFrameReportingBeacon);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAudioServiceLaunchOnStartup);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAudioServiceOutOfProcess);
@@ -165,7 +162,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kNotificationTriggers);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kNoStatePrefetchHoldback);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kOriginIsolationHeader);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kOverscrollHistoryNavigation);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kOverscrollHistoryNavigationSetting);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPeriodicBackgroundSync);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFeaturePolicyHeader);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPepperCrossOriginRedirectRestriction);
@@ -308,13 +304,14 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kAccessibilityPageZoom);
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kAccessibilityPageZoomOSLevelAdjustment;
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAccessibilityPageZoomEnhancements);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kAccessibilityUnifiedSnapshots);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kAndroidOpenPdfInline);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kGinJavaBridgeMojo);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kReduceGpuPriorityOnBackground);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kMouseAndTrackpadDropdownMenu);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kRequestDesktopSiteWindowSetting);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSelectionMenuItemModification);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSmartZoom);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kSynchronousCompositorBackgroundSignal);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kUserMediaScreenCapturing);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebNfc);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebViewSuppressTapDuringFling);

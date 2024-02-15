@@ -449,8 +449,9 @@ ReasonsMatcher BackForwardCacheBrowserTest::MatchesNotRestoredReasons(
     const std::optional<testing::Matcher<std::string>>& id,
     const std::optional<testing::Matcher<std::string>>& name,
     const std::optional<testing::Matcher<std::string>>& src,
-    const std::vector<testing::Matcher<std::string>>& reasons,
+    const std::vector<BlockingDetailsReasonsMatcher>& reasons,
     const std::optional<SameOriginMatcher>& same_origin_details) {
+  // TODO(crbug.com/1523191) Make this matcher display human-friendly messages.
   return testing::Pointee(testing::AllOf(
       id.has_value()
           ? testing::Field(
@@ -492,6 +493,7 @@ ReasonsMatcher BackForwardCacheBrowserTest::MatchesNotRestoredReasons(
 SameOriginMatcher BackForwardCacheBrowserTest::MatchesSameOriginDetails(
     const testing::Matcher<std::string>& url,
     const std::vector<ReasonsMatcher>& children) {
+  // TODO(crbug.com/1523191) Make this matcher display human-friendly messages.
   return testing::Pointee(testing::AllOf(
       testing::Field(
           "url", &blink::mojom::SameOriginBfcacheNotRestoredDetails::url, url),
@@ -501,11 +503,49 @@ SameOriginMatcher BackForwardCacheBrowserTest::MatchesSameOriginDetails(
           testing::ElementsAreArray(children))));
 }
 
+BlockingDetailsReasonsMatcher
+BackForwardCacheBrowserTest::MatchesDetailedReason(
+    const testing::Matcher<std::string>& name,
+    const std::optional<BlockingReasonLocationMatcher>& source) {
+  // TODO(crbug.com/1523191) Make this matcher display human-friendly
+  // messages.
+  return testing::Pointee(testing::AllOf(
+      testing::Field("name", &blink::mojom::BFCacheBlockingDetailedReason::name,
+                     name),
+      testing::Field(
+          "source", &blink::mojom::BFCacheBlockingDetailedReason::source,
+          source.has_value()
+              ? source.value()
+              : testing::Property(
+                    "is_null",
+                    &blink::mojom::BlockingReasonSourceLocationPtr::is_null,
+                    true))));
+}
+
+BlockingReasonLocationMatcher
+BackForwardCacheBrowserTest::MatchesSourceLocation(
+    const testing::Matcher<std::string>& url,
+    const testing::Matcher<uint64_t>& line_number,
+    const testing::Matcher<uint64_t>& column_number) {
+  // TODO(crbug.com/1523191) Make this matcher display human-friendly
+  // messages.
+  return testing::Pointee(testing::AllOf(
+      testing::Field("url", &blink::mojom::BlockingReasonSourceLocation::url,
+                     url),
+      testing::Field("line_number",
+                     &blink::mojom::BlockingReasonSourceLocation::line_number,
+                     line_number),
+      testing::Field("column_number",
+                     &blink::mojom::BlockingReasonSourceLocation::column_number,
+                     column_number)));
+}
+
 BlockingDetailsMatcher BackForwardCacheBrowserTest::MatchesBlockingDetails(
     const std::optional<testing::Matcher<std::string>>& url,
     const std::optional<testing::Matcher<std::string>>& function_name,
     const testing::Matcher<uint64_t>& line_number,
     const testing::Matcher<uint64_t>& column_number) {
+  // TODO(crbug.com/1523191) Make this matcher display human-friendly messages.
   return testing::Pointee(testing::AllOf(
       url.has_value()
           ? testing::Field("url", &blink::mojom::BlockingDetails::url,
@@ -1827,7 +1867,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
 // Tests that we're getting the correct TextInputState and focus updates when a
 // page enters the back-forward cache and when it gets restored.
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TextInputStateUpdated) {
+// TODO(b/324570785): Re-enable the test for Android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_TextInputStateUpdated DISABLED_TextInputStateUpdated
+#else
+#define MAYBE_TextInputStateUpdated TextInputStateUpdated
+#endif
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       MAYBE_TextInputStateUpdated) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));

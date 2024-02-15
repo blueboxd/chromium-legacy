@@ -58,6 +58,20 @@ class PdfViewerStreamManager
     : public content::WebContentsObserver,
       public content::WebContentsUserData<PdfViewerStreamManager> {
  public:
+  // A factory interface used to generate test PDF stream managers.
+  class Factory {
+   public:
+    // If PdfViewerStreamManager has a factory set, then
+    // `PdfViewerStreamManager::Create()` will automatically use
+    // `CreatePdfViewerStreamManager()` to create the PDF stream manager if
+    // necessary for PDF navigations.
+    virtual void CreatePdfViewerStreamManager(
+        content::WebContents* contents) = 0;
+
+   protected:
+    virtual ~Factory() = default;
+  };
+
   // Information about the PDF embedder RFH needed to store and retrieve stream
   // containers.
   struct EmbedderHostInfo {
@@ -89,6 +103,10 @@ class PdfViewerStreamManager
   // the `content::WebContents` of `render_frame_host`.
   static PdfViewerStreamManager* FromRenderFrameHost(
       content::RenderFrameHost* render_frame_host);
+
+  // Overrides factory for testing. Default (nullptr) value indicates regular
+  // (non-test) environment.
+  static void SetFactoryForTesting(Factory* factory);
 
   // Starts tracking a `StreamContainer` in an embedder FrameTreeNode, before
   // the embedder host commits. The `StreamContainer` is considered unclaimed
@@ -226,9 +244,13 @@ class PdfViewerStreamManager
   // `ContainsUnclaimedStreamInfo()` before calling this.
   StreamInfo* ClaimStreamInfo(content::RenderFrameHost* embedder_host);
 
-  // Deletes the stream info associated with `embedder_host`, and deletes
-  // `this` if there are no remaining stream infos.
-  void DeleteStreamInfo(content::RenderFrameHost* embedder_host);
+  // Deletes the claimed stream info associated with `embedder_host`, and
+  // deletes `this` if there are no remaining stream infos.
+  void DeleteClaimedStreamInfo(content::RenderFrameHost* embedder_host);
+
+  // Deletes the unclaimed stream info associated with `frame_tree_node_id`, and
+  // deletes `this` if there are no remaining stream infos.
+  void DeleteUnclaimedStreamInfo(int frame_tree_node_id);
 
   // Intended to be called during the PDF content frame's
   // `ReadyToCommitNavigation()` event. Registers navigations occurring in a PDF

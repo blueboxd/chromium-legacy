@@ -168,7 +168,7 @@ int QuicSessionRequest::Request(
     url::SchemeHostPort destination,
     quic::ParsedQuicVersion quic_version,
     const ProxyChain& proxy_chain,
-    const absl::optional<NetworkTrafficAnnotationTag> proxy_annotation_tag,
+    const std::optional<NetworkTrafficAnnotationTag> proxy_annotation_tag,
     SessionUsage session_usage,
     PrivacyMode privacy_mode,
     RequestPriority priority,
@@ -504,7 +504,7 @@ int QuicSessionPool::RequestSession(
     const QuicSessionKey& session_key,
     url::SchemeHostPort destination,
     quic::ParsedQuicVersion quic_version,
-    const absl::optional<NetworkTrafficAnnotationTag> proxy_annotation_tag,
+    const std::optional<NetworkTrafficAnnotationTag> proxy_annotation_tag,
     RequestPriority priority,
     bool use_dns_aliases,
     int cert_verify_flags,
@@ -768,7 +768,7 @@ void QuicSessionPool::FinishConnectAndConfigureSocket(
   }
 
   if (base::FeatureList::IsEnabled(net::features::kReceiveEcn)) {
-    rv = socket->SetRecvEcn();
+    rv = socket->SetRecvTos();
     if (rv != OK) {
       OnFinishConnectAndConfigureSocketError(
           std::move(callback), CREATION_ERROR_SETTING_RECEIVE_ECN, rv);
@@ -861,7 +861,7 @@ int QuicSessionPool::ConfigureSocket(DatagramClientSocket* socket,
   }
 
   if (base::FeatureList::IsEnabled(net::features::kReceiveEcn)) {
-    rv = socket->SetRecvEcn();
+    rv = socket->SetRecvTos();
     if (rv != OK) {
       HistogramCreateSessionFailure(CREATION_ERROR_SETTING_RECEIVE_ECN);
       return rv;
@@ -1153,13 +1153,13 @@ void QuicSessionPool::OnJobComplete(Job* job, int rv) {
     auto session_it = active_sessions_.find(job->key().session_key());
     CHECK(session_it != active_sessions_.end());
     QuicChromiumClientSession* session = session_it->second;
-    for (auto* request : iter->second->requests()) {
+    for (QuicSessionRequest* request : iter->second->requests()) {
       // Do not notify |request| yet.
       request->SetSession(session->CreateHandle(job->key().destination()));
     }
   }
 
-  for (auto* request : iter->second->requests()) {
+  for (QuicSessionRequest* request : iter->second->requests()) {
     // Even though we're invoking callbacks here, we don't need to worry
     // about |this| being deleted, because the pool is owned by the
     // profile which can not be deleted via callbacks.

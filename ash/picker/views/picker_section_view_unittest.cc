@@ -23,6 +23,7 @@
 namespace ash {
 namespace {
 
+using ::testing::Eq;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::SizeIs;
@@ -45,13 +46,24 @@ std::unique_ptr<PickerImageItemView> CreateGifItem(
     const gfx::Size& gif_dimensions) {
   return std::make_unique<PickerImageItemView>(
       views::Button::PressedCallback(),
-      std::make_unique<PickerGifView>(base::DoNothing(), gif_dimensions));
+      std::make_unique<PickerGifView>(base::DoNothing(), gif_dimensions,
+                                      /*accessible_name=*/u""));
 }
 
 using PickerSectionViewTest = AshTestBase;
 
+TEST_F(PickerSectionViewTest, CreatesTitleLabel) {
+  PickerSectionView section_view(kDefaultSectionWidth);
+
+  const std::u16string kSectionTitleText = u"Section";
+  section_view.AddTitleLabel(kSectionTitleText);
+
+  EXPECT_THAT(section_view.title_label_for_testing(),
+              Property(&views::Label::GetText, Eq(kSectionTitleText)));
+}
+
 TEST_F(PickerSectionViewTest, AddsEmojiItem) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   section_view.AddEmojiItem(std::make_unique<PickerEmojiItemView>(
       views::Button::PressedCallback(), u"😊"));
@@ -63,7 +75,7 @@ TEST_F(PickerSectionViewTest, AddsEmojiItem) {
 }
 
 TEST_F(PickerSectionViewTest, AddsSymbolItem) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   section_view.AddSymbolItem(std::make_unique<PickerSymbolItemView>(
       views::Button::PressedCallback(), u"♬"));
@@ -75,7 +87,7 @@ TEST_F(PickerSectionViewTest, AddsSymbolItem) {
 }
 
 TEST_F(PickerSectionViewTest, AddsEmoticonItem) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   section_view.AddEmoticonItem(std::make_unique<PickerEmoticonItemView>(
       views::Button::PressedCallback(), u"¯\\_(ツ)_/¯"));
@@ -87,7 +99,7 @@ TEST_F(PickerSectionViewTest, AddsEmoticonItem) {
 }
 
 TEST_F(PickerSectionViewTest, SmallGridItemsStayWithinSectionWidth) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   section_view.AddEmoticonItem(CreateSizedEmoticonItem(gfx::Size(100, 40)));
   section_view.AddEmoticonItem(CreateSizedEmoticonItem(gfx::Size(80, 40)));
@@ -102,7 +114,7 @@ TEST_F(PickerSectionViewTest, SmallGridItemsStayWithinSectionWidth) {
 }
 
 TEST_F(PickerSectionViewTest, OneGifItem) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   section_view.AddImageItem(CreateGifItem(gfx::Size(100, 100)));
 
@@ -114,7 +126,7 @@ TEST_F(PickerSectionViewTest, OneGifItem) {
 }
 
 TEST_F(PickerSectionViewTest, TwoGifItems) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   section_view.AddImageItem(CreateGifItem(gfx::Size(100, 100)));
   section_view.AddImageItem(CreateGifItem(gfx::Size(100, 100)));
@@ -127,7 +139,7 @@ TEST_F(PickerSectionViewTest, TwoGifItems) {
 }
 
 TEST_F(PickerSectionViewTest, GifItemsWithVaryingHeight) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   section_view.AddImageItem(CreateGifItem(gfx::Size(100, 120)));
   section_view.AddImageItem(CreateGifItem(gfx::Size(100, 20)));
@@ -142,7 +154,7 @@ TEST_F(PickerSectionViewTest, GifItemsWithVaryingHeight) {
 }
 
 TEST_F(PickerSectionViewTest, GifItemsAreResizedToSameWidth) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   section_view.AddImageItem(CreateGifItem(gfx::Size(100, 100)));
   section_view.AddImageItem(CreateGifItem(gfx::Size(80, 160)));
@@ -158,7 +170,7 @@ TEST_F(PickerSectionViewTest, GifItemsAreResizedToSameWidth) {
 }
 
 TEST_F(PickerSectionViewTest, PreservesAspectRatioOfGifItems) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   constexpr gfx::Size kGifDimensions(100, 200);
   section_view.AddImageItem(CreateGifItem(kGifDimensions));
@@ -174,7 +186,7 @@ TEST_F(PickerSectionViewTest, PreservesAspectRatioOfGifItems) {
 }
 
 TEST_F(PickerSectionViewTest, EmojiItemsAndGifItems) {
-  PickerSectionView section_view(kDefaultSectionWidth, u"Section");
+  PickerSectionView section_view(kDefaultSectionWidth);
 
   section_view.AddEmojiItem(std::make_unique<PickerEmojiItemView>(
       views::Button::PressedCallback(), u"😊"));

@@ -138,11 +138,14 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
       size_t next_interceptor_index,
       std::optional<NavigationLoaderInterceptor::Result> interceptor_result);
 
-  // This is the `fallback_callback` passed to
+  // Start a loader with the default behavior. This should be used when no
+  // interceptors have elected to handle the request in the first place.
+  void StartNonInterceptedRequest(ResponseHeadUpdateParams head_update_params);
+
+  // This is the `fallback_callback_for_service_worker` passed to
   // NavigationLoaderInterceptor::MaybeCreateLoader. It allows an interceptor
   // to initially elect to handle a request, and later decide to fallback to
-  // the default behavior. This is needed for service worker network fallback
-  // and signed exchange (SXG) fallback redirect.
+  // the default behavior. This is needed for service worker network fallback.
   void FallbackToNonInterceptedRequest(
       bool reset_subresource_loader_params,
       ResponseHeadUpdateParams head_update_params);
@@ -236,9 +239,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   // Current URL that is being navigated, updated after redirection.
   GURL url_;
 
-  // Redirect URL chain.
-  std::vector<GURL> url_chain_;
-
   const int frame_tree_node_id_;
   const GlobalRequestID global_request_id_;
   net::RedirectInfo redirect_info_;
@@ -255,7 +255,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   net::HttpRequestHeaders url_loader_modified_headers_;
   net::HttpRequestHeaders url_loader_modified_cors_exempt_headers_;
 
-  std::optional<SubresourceLoaderParams> subresource_loader_params_;
+  SubresourceLoaderParams subresource_loader_params_;
 
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors_;
 

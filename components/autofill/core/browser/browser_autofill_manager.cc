@@ -261,6 +261,9 @@ FillDataType GetEventTypeFromSingleFieldSuggestionPopupItemId(
     case PopupItemId::kPasswordAccountStorageOptInAndGenerate:
     case PopupItemId::kPasswordAccountStorageReSignin:
     case PopupItemId::kPasswordEntry:
+    case PopupItemId::kPasswordFieldByFieldFilling:
+    case PopupItemId::kFillPassword:
+    case PopupItemId::kViewPasswordDetails:
     case PopupItemId::kScanCreditCard:
     case PopupItemId::kSeePromoCodeDetails:
     case PopupItemId::kSeparator:
@@ -2024,8 +2027,7 @@ std::vector<Suggestion> BrowserAutofillManager::GetProfileSuggestions(
   base::flat_map<FieldGlobalId, FieldFillingSkipReason> skip_reasons =
       form.fields.size() == form_structure->field_count()
           ? form_filler_->GetFieldFillingSkipReasons(
-                form, *form_structure, trigger_field,
-                trigger_autofill_field->section,
+                form, *form_structure, *trigger_autofill_field,
                 last_address_fields_to_fill_for_section
                     ? GetTargetServerFieldsForTypeAndLastTargetedFields(
                           *last_address_fields_to_fill_for_section,
@@ -2562,10 +2564,16 @@ std::optional<Suggestion> BrowserAutofillManager::MaybeGetPlusAddressSuggestion(
           client().IsOffTheRecord())) {
     return std::nullopt;
   }
+
+  const std::u16string normalized_field_value =
+      RemoveDiacriticsAndConvertToLowerCase(field.value);
   std::optional<std::string> maybe_address =
       plus_address_delegate->GetPlusAddress(
           client().GetLastCommittedPrimaryMainFrameOrigin());
   if (maybe_address == std::nullopt) {
+    if (!normalized_field_value.empty()) {
+      return std::nullopt;
+    }
     Suggestion create_plus_address_suggestion(
         plus_address_delegate->GetCreateSuggestionLabel(),
         PopupItemId::kCreateNewPlusAddress);
@@ -2578,8 +2586,7 @@ std::optional<Suggestion> BrowserAutofillManager::MaybeGetPlusAddressSuggestion(
 
   // Only suggest filling a plus address whose prefix matches the field's value.
   std::u16string address = base::UTF8ToUTF16(*maybe_address);
-  if (!address.starts_with(
-          RemoveDiacriticsAndConvertToLowerCase(field.value))) {
+  if (!address.starts_with(normalized_field_value)) {
     return std::nullopt;
   }
   Suggestion existing_plus_address_suggestion(

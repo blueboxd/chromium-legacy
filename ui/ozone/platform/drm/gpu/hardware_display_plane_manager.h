@@ -108,20 +108,13 @@ class HardwareDisplayPlaneManager {
     display::ColorCalibration color_calibration;
     display::GammaAdjustment gamma_adjustment;
 
-    // The color space of all input planes. This assumes that all planes have
-    // the same color space.
-    SkColorSpacePrimaries planes_primaries = SkNamedPrimariesExt::kSRGB;
-
-    // The color space of the output.
-    SkColorSpacePrimaries output_primaries = SkNamedPrimariesExt::kSRGB;
-
     // Cached blobs for the properties to commit in CommitCrtcProperties.
-    // * If a property is `absl::nullopt`, then it should be left unchanged.
+    // * If a property is `std::nullopt`, then it should be left unchanged.
     // * If a property is `nullptr` then it should be set to 0.
     // * If a property is a blob, then it should be set to that blob.
-    absl::optional<ScopedDrmPropertyBlob> pending_ctm_blob;
-    absl::optional<ScopedDrmPropertyBlob> pending_gamma_lut_blob;
-    absl::optional<ScopedDrmPropertyBlob> pending_degamma_lut_blob;
+    std::optional<ScopedDrmPropertyBlob> pending_ctm_blob;
+    std::optional<ScopedDrmPropertyBlob> pending_gamma_lut_blob;
+    std::optional<ScopedDrmPropertyBlob> pending_degamma_lut_blob;
   };
 
   explicit HardwareDisplayPlaneManager(DrmDevice* drm);
@@ -148,23 +141,10 @@ class HardwareDisplayPlaneManager {
   // calls.
   void BeginFrame(HardwareDisplayPlaneList* plane_list);
 
-  // Sets the input color space for all planes. This assumes that all planes on
-  // a CRTC have the same color space.
-  void SetColorSpaceForAllPlanes(uint32_t crtc_id,
-                                 const SkColorSpacePrimaries& primaries);
-
-  // Sets the output color space for the given CRTC.
-  void SetOutputColorSpace(uint32_t crtc_id,
-                           const SkColorSpacePrimaries& primaries);
-
   // Sets the color temperature adjustment for a given CRTC.
   void SetColorTemperatureAdjustment(
       uint32_t crtc_id,
       const display::ColorTemperatureAdjustment& cta);
-
-  // Sets the color calibration information for a given CRTC.
-  void SetColorCalibration(uint32_t crtc_id,
-                           const display::ColorCalibration& calibration);
 
   // Sets the gamma adjustment for a given CRTC.
   void SetGammaAdjustment(uint32_t crtc_id,
@@ -277,8 +257,8 @@ class HardwareDisplayPlaneManager {
 
   // Convert |crtc/connector_id| into an index, returning empty if the ID
   // couldn't be found.
-  absl::optional<int> LookupCrtcIndex(uint32_t crtc_id) const;
-  absl::optional<int> LookupConnectorIndex(uint32_t connector_id) const;
+  std::optional<int> LookupCrtcIndex(uint32_t crtc_id) const;
+  std::optional<int> LookupConnectorIndex(uint32_t connector_id) const;
 
   // Get Mutable CRTC State.
   CrtcState& CrtcStateForCrtcId(uint32_t crtc_id);

@@ -151,7 +151,7 @@ class NET_EXPORT_PRIVATE QuicSessionRequest {
       url::SchemeHostPort destination,
       quic::ParsedQuicVersion quic_version,
       const ProxyChain& proxy_chain,
-      const absl::optional<NetworkTrafficAnnotationTag> proxy_annotation_tag,
+      const std::optional<NetworkTrafficAnnotationTag> proxy_annotation_tag,
       SessionUsage session_usage,
       PrivacyMode privacy_mode,
       RequestPriority priority,
@@ -343,7 +343,7 @@ class NET_EXPORT_PRIVATE QuicSessionPool
       const QuicSessionKey& session_key,
       url::SchemeHostPort destination,
       quic::ParsedQuicVersion quic_version,
-      const absl::optional<NetworkTrafficAnnotationTag> proxy_annotation_tag,
+      const std::optional<NetworkTrafficAnnotationTag> proxy_annotation_tag,
       RequestPriority priority,
       bool use_dns_aliases,
       int cert_verify_flags,
@@ -489,7 +489,8 @@ class NET_EXPORT_PRIVATE QuicSessionPool
       std::map<QuicChromiumClientSession*, QuicSessionAliasKey>;
   using AliasSet = std::set<QuicSessionAliasKey>;
   using SessionAliasMap = std::map<QuicChromiumClientSession*, AliasSet>;
-  using SessionSet = std::set<QuicChromiumClientSession*>;
+  using SessionSet =
+      std::set<raw_ptr<QuicChromiumClientSession, SetExperimental>>;
   using IPAliasMap = std::map<IPEndPoint, SessionSet>;
   using SessionPeerIPMap = std::map<QuicChromiumClientSession*, IPEndPoint>;
   using JobMap = std::map<QuicSessionKey, std::unique_ptr<Job>>;

@@ -61,9 +61,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ChromeOS.HatsStatus" enum="HatsStatus"
-    expires_after="2024-06-09">
+    expires_after="2024-08-11">
   <owner>aalsum@chromium.org</owner>
-  <owner>cros-telemetry@google.com</owner>
+  <owner>chromeos-data-eng@google.com</owner>
   <summary>
     Records the stage up to which the user interacted with the HaTS Chrome OS
     survey. This is needed in addition to the Hats metrics data since Chrome OS
@@ -673,7 +673,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabService.DiskUsageAtStartup" units="KB"
-    expires_after="2024-05-27">
+    expires_after="2024-08-11">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -1144,6 +1144,18 @@ chromium-metrics-reviews@google.com.
     &quot;AppData/Local/Google/BrowserSwitcher&quot; directory was successfully
     moved to its final destination (&quot;cache.dat&quot;) after writing its
     contents. Windows only.
+  </summary>
+</histogram>
+
+<histogram name="BrowserSwitcher.ChromeLaunch.IsFromBrowserSwitcher"
+    enum="Boolean" expires_after="2024-03-25">
+  <owner>nicolaso@chromium.org</owner>
+  <owner>pastarmovj@chromium.org</owner>
+  <summary>
+    Whether or not Chrome was launched by the Legacy Browser Support for Edge
+    extension's native host. This indicates an automatic Edge=&gt;Chrome or
+    IE=&gt;Chrome transition. Recorded whenever Chrome is launched by any means.
+    Only recorded on Windows.
   </summary>
 </histogram>
 

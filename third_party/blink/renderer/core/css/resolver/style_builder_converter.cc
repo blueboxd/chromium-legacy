@@ -825,7 +825,8 @@ FontSizeAdjust StyleBuilderConverterBase::ConvertFontSizeAdjust(
   if (value.IsPrimitiveValue()) {
     const auto& primitive_value = To<CSSPrimitiveValue>(value);
     DCHECK(primitive_value.IsNumber());
-    return FontSizeAdjust(primitive_value.GetFloatValue());
+    return FontSizeAdjust(
+        primitive_value.ComputeNumber(state.CssToLengthConversionData()));
   }
 
   DCHECK(value.IsValuePair());
@@ -836,7 +837,9 @@ FontSizeAdjust StyleBuilderConverterBase::ConvertFontSizeAdjust(
   if (pair.Second().IsPrimitiveValue()) {
     const auto& primitive_value = To<CSSPrimitiveValue>(pair.Second());
     DCHECK(primitive_value.IsNumber());
-    return FontSizeAdjust(primitive_value.GetFloatValue(), metric);
+    return FontSizeAdjust(
+        primitive_value.ComputeNumber(state.CssToLengthConversionData()),
+        metric);
   }
 
   DCHECK(To<CSSIdentifierValue>(pair.Second()).GetValueID() ==
@@ -851,14 +854,8 @@ FontSizeAdjust StyleBuilderConverter::ConvertFontSizeAdjust(
   return StyleBuilderConverterBase::ConvertFontSizeAdjust(state, value);
 }
 
-FontSelectionValue StyleBuilderConverterBase::ConvertFontStretch(
-    const blink::CSSValue& value) {
-  if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
-    if (primitive_value->IsPercentage()) {
-      return ClampTo<FontSelectionValue>(primitive_value->GetFloatValue());
-    }
-  }
-
+std::optional<FontSelectionValue>
+StyleBuilderConverter::ConvertFontStretchKeyword(const CSSValue& value) {
   // TODO(drott) crbug.com/750014: Consider not parsing them as IdentifierValue
   // any more?
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
@@ -885,6 +882,24 @@ FontSelectionValue StyleBuilderConverterBase::ConvertFontStretch(
         break;
     }
   }
+  return {};
+}
+
+FontSelectionValue StyleBuilderConverterBase::ConvertFontStretch(
+    const CSSLengthResolver& length_resolver,
+    const blink::CSSValue& value) {
+  if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
+    if (primitive_value->IsPercentage()) {
+      return ClampTo<FontSelectionValue>(
+          primitive_value->ComputePercentage(length_resolver));
+    }
+  }
+
+  if (std::optional<FontSelectionValue> keyword =
+          StyleBuilderConverter::ConvertFontStretchKeyword(value);
+      keyword.has_value()) {
+    return keyword.value();
+  }
 
   if (value.IsPendingSystemFontValue()) {
     return kNormalWidthValue;
@@ -897,7 +912,8 @@ FontSelectionValue StyleBuilderConverterBase::ConvertFontStretch(
 FontSelectionValue StyleBuilderConverter::ConvertFontStretch(
     blink::StyleResolverState& state,
     const blink::CSSValue& value) {
-  return StyleBuilderConverterBase::ConvertFontStretch(value);
+  return StyleBuilderConverterBase::ConvertFontStretch(
+      state.CssToLengthConversionData(), value);
 }
 
 FontSelectionValue StyleBuilderConverterBase::ConvertFontStyle(
@@ -1990,12 +2006,13 @@ StyleInitialLetter StyleBuilderConverter::ConvertInitialLetter(
 }
 
 StyleOffsetRotation StyleBuilderConverter::ConvertOffsetRotate(
-    StyleResolverState&,
+    StyleResolverState& state,
     const CSSValue& value) {
-  return ConvertOffsetRotate(value);
+  return ConvertOffsetRotate(state.CssToLengthConversionData(), value);
 }
 
 StyleOffsetRotation StyleBuilderConverter::ConvertOffsetRotate(
+    const CSSLengthResolver& length_resolver,
     const CSSValue& value) {
   StyleOffsetRotation result(0, OffsetRotationType::kFixed);
 
@@ -2018,8 +2035,8 @@ StyleOffsetRotation StyleBuilderConverter::ConvertOffsetRotate(
       result.angle = ClampTo<float>(result.angle + 180);
     } else {
       const auto& primitive_value = To<CSSPrimitiveValue>(*item);
-      result.angle =
-          ClampTo<float>(result.angle + primitive_value.ComputeDegrees());
+      result.angle = ClampTo<float>(
+          result.angle + primitive_value.ComputeDegrees(length_resolver));
     }
   }
 
@@ -2806,7 +2823,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
 
     if (primitive_value->IsAngle()) {
       return *CSSNumericLiteralValue::Create(
-          primitive_value->ComputeDegrees(),
+          primitive_value->ComputeDegrees(css_to_length_conversion_data),
           CSSPrimitiveValue::UnitType::kDegrees);
     }
 

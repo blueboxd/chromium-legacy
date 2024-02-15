@@ -35,6 +35,7 @@
 #include "components/services/storage/privileged/mojom/indexed_db_client_state_checker.mojom.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
+#include "content/browser/indexed_db/file_path_util.h"
 #include "content/browser/indexed_db/file_stream_reader_to_data_pipe.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -355,11 +356,9 @@ constexpr const base::TimeDelta
     IndexedDBBucketContext::kMaxEarliestBucketCompactionFromNow;
 
 IndexedDBBucketContext::Delegate::Delegate()
-    : on_fatal_error(base::DoNothing()),
-      on_corruption(base::DoNothing()),
-      on_ready_for_destruction(base::DoNothing()),
+    : on_ready_for_destruction(base::DoNothing()),
       on_content_changed(base::DoNothing()),
-      on_writing_transaction_complete(base::DoNothing()),
+      on_files_written(base::DoNothing()),
       for_each_bucket_context(base::DoNothing()) {}
 
 IndexedDBBucketContext::Delegate::Delegate(Delegate&& other) = default;
@@ -452,6 +451,10 @@ void IndexedDBBucketContext::ForceClose(bool doom) {
 
   // Initiate deletion if appropriate.
   RunTasks();
+}
+
+int64_t IndexedDBBucketContext::GetInMemorySize() {
+  return backing_store_->GetInMemorySize();
 }
 
 void IndexedDBBucketContext::ReportOutstandingBlobs(bool blobs_outstanding) {
@@ -621,7 +624,7 @@ void IndexedDBBucketContext::RunTasks() {
         continue;
 
       case IndexedDBDatabase::RunTasksResult::kError:
-        delegate().on_fatal_error.Run(status, {});
+        OnDatabaseError(status, {});
         return;
 
       case IndexedDBDatabase::RunTasksResult::kCanBeDestroyed:
@@ -665,7 +668,7 @@ void IndexedDBBucketContext::GetDatabaseInfo(GetDatabaseInfoCallback callback) {
       blink::mojom::IDBError::New(error.code(), error.message()));
 
   if (s.IsCorruption()) {
-    delegate().on_corruption.Run(error);
+    HandleBackingStoreCorruption(error);
   }
 }
 
@@ -680,7 +683,7 @@ void IndexedDBBucketContext::Open(
         transaction_receiver,
     int64_t transaction_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TRACE_EVENT0("IndexedDB", "IndexedDBFactory::Open");
+  TRACE_EVENT0("IndexedDB", "IndexedDBBucketContext::Open");
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
 
@@ -693,7 +696,7 @@ void IndexedDBBucketContext::Open(
   if (!backing_store_) {
     IndexedDBFactoryClient(std::move(factory_client)).OnError(error);
     if (s.IsCorruption()) {
-      delegate().on_corruption.Run(error);
+      HandleBackingStoreCorruption(error);
     }
     return;
   }
@@ -738,7 +741,7 @@ void IndexedDBBucketContext::DeleteDatabase(
     const std::u16string& name,
     bool force_close) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TRACE_EVENT0("IndexedDB", "IndexedDBFactory::DeleteDatabase");
+  TRACE_EVENT0("IndexedDB", "IndexedDBBucketContext::DeleteDatabase");
 
   {
     leveldb::Status s;
@@ -756,13 +759,13 @@ void IndexedDBBucketContext::DeleteDatabase(
 
       IndexedDBFactoryClient(std::move(factory_client)).OnError(error);
       if (s.IsCorruption()) {
-        delegate().on_corruption.Run(error);
+        HandleBackingStoreCorruption(error);
       }
       return;
     }
   }
-  auto on_deletion_complete = base::BindOnce(
-      delegate().on_writing_transaction_complete, /*flushed=*/true);
+  auto on_deletion_complete =
+      base::BindOnce(delegate().on_files_written, /*flushed=*/true);
 
   // First, check the databases that are already represented by
   // `IndexedDBDatabase` objects. If one exists, schedule it to be deleted and
@@ -776,7 +779,7 @@ void IndexedDBBucketContext::DeleteDatabase(
     if (force_close) {
       leveldb::Status status = database->ForceCloseAndRunTasks();
       if (!status.ok()) {
-        delegate().on_fatal_error.Run(status, "Error aborting transactions.");
+        OnDatabaseError(status, "Error aborting transactions.");
       }
     }
     return;
@@ -792,7 +795,7 @@ void IndexedDBBucketContext::DeleteDatabase(
                                  "indexedDB.deleteDatabase.");
     IndexedDBFactoryClient(std::move(factory_client)).OnError(error);
     if (s.IsCorruption()) {
-      delegate().on_corruption.Run(error);
+      HandleBackingStoreCorruption(error);
     }
     return;
   }
@@ -814,7 +817,7 @@ void IndexedDBBucketContext::DeleteDatabase(
   if (force_close) {
     leveldb::Status status = database_ptr->ForceCloseAndRunTasks();
     if (!status.ok()) {
-      delegate().on_fatal_error.Run(status, "Error aborting transactions.");
+      OnDatabaseError(status, "Error aborting transactions.");
     }
   }
 }
@@ -913,6 +916,18 @@ void IndexedDBBucketContext::CompactBackingStoreForTesting() {
       break;
     }
   }
+}
+
+void IndexedDBBucketContext::WriteToIndexedDBForTesting(
+    const std::string& key,
+    const std::string& value,
+    base::OnceClosure callback) {
+  TransactionalLevelDBDatabase* db = backing_store_->db();
+  std::string value_copy = value;
+  leveldb::Status s = db->Put(key, &value_copy);
+  CHECK(s.ok()) << s.ToString();
+  ForceClose(true);
+  std::move(callback).Run();
 }
 
 // static
@@ -1173,6 +1188,48 @@ void IndexedDBBucketContext::RemoveBoundReaders(const base::FilePath& path) {
   file_reader_map_.erase(path);
 }
 
+void IndexedDBBucketContext::HandleBackingStoreCorruption(
+    const IndexedDBDatabaseError& error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // The message may contain the database path, which may be considered
+  // sensitive data, and those strings are passed to the extension, so strip it.
+  std::string sanitized_message = base::UTF16ToUTF8(error.message());
+  base::ReplaceSubstringsAfterOffset(&sanitized_message, 0u,
+                                     data_path_.AsUTF8Unsafe(), "...");
+  IndexedDBBackingStore::RecordCorruptionInfo(data_path_, bucket_locator(),
+                                              sanitized_message);
+  // Note: DestroyLevelDB only deletes LevelDB files, leaving all others,
+  //       so our corruption info file will remain.
+  //       The blob directory will be deleted when the database is recreated
+  //       the next time it is opened.
+  const base::FilePath file_path =
+      data_path_.Append(indexed_db::GetLevelDBFileName(bucket_locator()));
+  ForceClose(/*will_be_deleted=*/false);
+  // `this` may be deleted.
+
+  leveldb::Status s =
+      IndexedDBClassFactory::Get()->leveldb_factory().DestroyLevelDB(file_path);
+  DLOG_IF(ERROR, !s.ok()) << "Unable to delete backing store: " << s.ToString();
+}
+
+void IndexedDBBucketContext::OnDatabaseError(leveldb::Status status,
+                                             const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!status.ok());
+  if (status.IsCorruption()) {
+    IndexedDBDatabaseError error(
+        blink::mojom::IDBException::kUnknownError,
+        base::ASCIIToUTF16(message.empty() ? status.ToString() : message));
+    HandleBackingStoreCorruption(error);
+    return;
+  }
+  if (status.IsIOError()) {
+    quota_manager_proxy_->OnClientWriteFailed(bucket_info_.storage_key);
+  }
+  ForceClose(/*will_be_deleted=*/false);
+}
+
 bool IndexedDBBucketContext::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
@@ -1252,7 +1309,7 @@ IndexedDBBucketContext::OpenAndVerifyIndexedDBBackingStore(
   scoped_refptr<LevelDBState> database_state;
   bool is_disk_full;
   {
-    TRACE_EVENT0("IndexedDB", "IndexedDBFactory::OpenLevelDB");
+    TRACE_EVENT0("IndexedDB", "IndexedDBBucketContext::OpenLevelDB");
     base::TimeTicks begin_time = base::TimeTicks::Now();
     size_t write_buffer_size = leveldb_env::WriteBufferSize(
         base::SysInfo::AmountOfTotalDiskSpace(database_path));
@@ -1273,7 +1330,7 @@ IndexedDBBucketContext::OpenAndVerifyIndexedDBBackingStore(
   // Create the LevelDBScopes wrapper.
   std::unique_ptr<LevelDBScopes> scopes;
   {
-    TRACE_EVENT0("IndexedDB", "IndexedDBFactory::OpenLevelDBScopes");
+    TRACE_EVENT0("IndexedDB", "IndexedDBBucketContext::OpenLevelDBScopes");
     scopes = std::make_unique<LevelDBScopes>(
         ScopesPrefix::Encode(),
         /*max_write_batch_size_bytes=*/1024 * 1024, database_state,
@@ -1282,7 +1339,8 @@ IndexedDBBucketContext::OpenAndVerifyIndexedDBBackingStore(
             [](base::RepeatingCallback<void(leveldb::Status,
                                             const std::string&)> on_fatal_error,
                leveldb::Status s) { on_fatal_error.Run(s, {}); },
-            delegate_.on_fatal_error));
+            base::BindRepeating(&IndexedDBBucketContext::OnDatabaseError,
+                                base::Unretained(this))));
     status = scopes->Initialize();
 
     if (UNLIKELY(!status.ok())) {
@@ -1327,7 +1385,7 @@ IndexedDBBucketContext::OpenAndVerifyIndexedDBBackingStore(
 
   auto backing_store = std::make_unique<IndexedDBBackingStore>(
       backing_store_mode, bucket_locator(), blob_path, std::move(database),
-      base::BindRepeating(delegate_.on_writing_transaction_complete,
+      base::BindRepeating(delegate_.on_files_written,
                           /*flushed=*/true),
       base::BindRepeating(&IndexedDBBucketContext::ReportOutstandingBlobs,
                           weak_factory_.GetWeakPtr()),
@@ -1445,7 +1503,7 @@ IndexedDBBucketContext::InitBackingStoreIfNeeded(bool create_if_missing) {
   lock_manager_ = std::move(lock_manager);
   backing_store_ = std::move(backing_store);
   backing_store_->set_bucket_context(this);
-  delegate().on_writing_transaction_complete.Run(/*flushed=*/true);
+  delegate().on_files_written.Run(/*flushed=*/true);
   return {leveldb::Status::OK(), IndexedDBDatabaseError(), data_loss_info};
 }
 

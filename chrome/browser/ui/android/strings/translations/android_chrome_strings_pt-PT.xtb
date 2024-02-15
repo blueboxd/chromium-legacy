@@ -169,7 +169,6 @@ Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google n�
 <translation id="1933845786846280168">Separador selecionado</translation>
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
 <translation id="1944535645109964458">Nenhuma token de acesso disponível</translation>
-<translation id="1952172573699511566">Quando possível, os Websites apresentam o texto no seu idioma preferido.</translation>
 <translation id="1959679933317802873">A aguardar pelo conteúdo</translation>
 <translation id="1960290143419248813">As atualizações do Chrome já não são suportadas para esta versão do Android.</translation>
 <translation id="1963976881984600709">Proteção padrão</translation>
@@ -204,6 +203,7 @@ Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google n�
 <translation id="2132122640199389833">Remover todos os dispositivos associados</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> fechado</translation>
 <translation id="2139186145475833000">Adicionar ao ecrã principal</translation>
+<translation id="2139414603196655536">A sua atividade nas Estatísticas da página é guardada na sua Conta Google. <ph name="BEGIN_LINK" />Saiba como gerir isto<ph name="END_LINK" /></translation>
 <translation id="2141396931810938595">Com base na sua utilização</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2155214902713132423">Este método de validação não está disponível para este dispositivo. Escolha uma opção diferente no outro dispositivo.</translation>
@@ -379,7 +379,6 @@ Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google n�
 <translation id="3027644380269727216">Com base na sua atividade num site. Esta definição está ativada.</translation>
 <translation id="3029276696788198026">Sem pré-carregamento</translation>
 <translation id="3029704984691124060">As frases de acesso não coincidem</translation>
-<translation id="303514781271618814">O Chrome está a explorar novas funcionalidades que permitem que os sites forneçam a mesma experiência de navegação com uma menor utilização dos seus dados</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Monitorizar o preço</translation>
 <translation id="3037517125981011456">Mostra pedidos para iniciar sessão no Chrome</translation>
@@ -873,6 +872,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5698878456427040674">Verifique se a conta selecionada é suportada.</translation>
 <translation id="570347048394355941">Mudar para o separador</translation>
 <translation id="5715150588940290235">Eliminar os códigos de segurança guardados?</translation>
+<translation id="571930967925877633">Os marcadores, o histórico e outros dados do Chrome vão deixar de ser sincronizados com a sua Conta Google</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
 <translation id="5726692708398506830">Aumentar o tamanho de todos os itens na página</translation>
 <translation id="5744751019568455640">Veja as vozes que pode escolher para ouvir as páginas Web lidas em voz alta. Se gostar desta voz e quiser que continue a usá-la, basta tocar no nome da voz.</translation>
@@ -1081,6 +1081,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="670498945988402717">Última verificação ontem</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="671481426037969117">O temporizador da app <ph name="FQDN" /> terminou. Recomeça amanhã.</translation>
+<translation id="6714850225831215156">{BOOKMARK_COUNT,plural, =1{Marcador guardado em <ph name="FOLDER_NAME" />. Só está guardado neste dispositivo.}other{Marcadores guardados em <ph name="FOLDER_NAME" />. Só estão guardados neste dispositivo.}}</translation>
 <translation id="6715020873764921614">Quer transferir <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) mesmo assim?</translation>
 <translation id="6719634564325948108">Ligar com um código QR?</translation>
 <translation id="6723740634201835758">Na sua Conta Google</translation>
@@ -1105,7 +1106,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6828070228333235514">Parar monitorização do preço</translation>
 <translation id="6830728435402077660">Inseguro</translation>
 <translation id="6831043979455480757">Traduzir</translation>
-<translation id="6833996806551876956">Avaliação do Privacy Sandbox</translation>
 <translation id="6836206421467243968">Restaure o grupo de separadores <ph name="TITLE_OF_GROUP" /> como um novo grupo de separadores em segundo plano.</translation>
 <translation id="6846298663435243399">A carregar...</translation>
 <translation id="6850409657436465440">A transferência ainda está em curso.</translation>
@@ -1402,6 +1402,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8237871086242677046">Secção inferior das estatísticas da página</translation>
 <translation id="8243077599929149377">Adicione o seu nome de utilizador</translation>
 <translation id="8250920743982581267">Docs</translation>
+<translation id="8253557549177565072">{BOOKMARK_COUNT,plural, =1{Marcador guardado em <ph name="FOLDER_NAME" /> na sua conta <ph name="ACCOUNT_EMAIL" />.}other{Marcadores guardados em <ph name="FOLDER_NAME" /> na sua conta <ph name="ACCOUNT_EMAIL" />.}}</translation>
 <translation id="8255617931166444521">Os sites apenas podem utilizar os seus cookies para ver a sua atividade de navegação no respetivo site</translation>
 <translation id="8259179246279078674">Uma vez que as páginas pré-carregadas são encriptadas, a Google não irá aprender nada sobre o conteúdo das páginas pré-carregadas. Os servidores da Google saberão que sites são pré-carregados de forma privada. Esta informação só é utilizada para pré-carregar as páginas e não está associada a outras informações da sua Conta Google.</translation>
 <translation id="8260126382462817229">Experimente iniciar sessão novamente</translation>

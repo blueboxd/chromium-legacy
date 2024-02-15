@@ -721,6 +721,11 @@ def main():
 
   global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
 
+  # TODO(crbug.com/1517549): Remove in next Clang roll.
+  if args.llvm_force_head_revision:
+    global RELEASE_VERSION
+    RELEASE_VERSION = '19'
+
   if (args.pgo or args.thinlto) and not args.bootstrap:
     print('--pgo/--thinlto requires --bootstrap')
     return 1
@@ -842,6 +847,12 @@ def main():
       '-DLLVM_ENABLE_CURL=OFF',
       # Build libclang.a as well as libclang.so
       '-DLIBCLANG_BUILD_STATIC=ON',
+      # The Rust build (on Mac ARM at least if not others) depends on the
+      # FileCheck tool which is built but not installed by default, this
+      # puts it in the path for the Rust build to find and matches the
+      # `bootstrap` tool:
+      # https://github.com/rust-lang/rust/blob/021861aea8de20c76c7411eb8ada7e8235e3d9b5/src/bootstrap/src/core/build_steps/llvm.rs#L348
+      '-DLLVM_INSTALL_UTILS=ON',
       '-DLLVM_ENABLE_ZSTD=%s' % ('ON' if args.with_zstd else 'OFF'),
   ]
 

@@ -1736,7 +1736,7 @@ chromium-metrics-reviews@google.com.
   <summary>Records whenever a Blimp tab toggles visibility.</summary>
 </histogram>
 
-<histogram name="BlueZ.AdapterLost" units="seconds" expires_after="2024-04-28">
+<histogram name="BlueZ.AdapterLost" units="seconds" expires_after="2024-08-11">
   <owner>mcchou@chromium.org</owner>
   <owner>chromeos-bt-platform-sw-core@google.com</owner>
   <summary>
@@ -5543,7 +5543,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Feedback.RequestSource" enum="FeedbackSource"
     expires_after="2024-06-30">
   <owner>afakhry@chromium.org</owner>
-  <owner>cros-telemetry@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
   <summary>Records the source that requested showing the feedback app.</summary>
 </histogram>
 
@@ -6269,7 +6269,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ImportantFile.FileReplaceRetryCount" units="attempt count"
-    expires_after="2024-06-12">
+    expires_after="2024-08-11">
   <owner>etienneb@chromium.org</owner>
   <owner>grt@chromium.org</owner>
   <summary>
@@ -7128,8 +7128,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mojo.InvalidUTF8String" enum="BooleanValid"
-    expires_after="2023-10-08">
-  <owner>rsesek@chromium.org</owner>
+    expires_after="2024-10-08">
+  <owner>ellyjones@chromium.org</owner>
   <owner>chrome-mojo@google.com</owner>
   <summary>
     Emitted any time a Mojo string is deserialized and is not valid UTF-8.
@@ -8390,16 +8390,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Process.Sandbox.StartSandboxedWin.TotalDuration"
+<histogram name="Process.Sandbox.StartSandboxedWin.{Event}Duration"
     units="microseconds" expires_after="2024-06-30">
   <owner>ajgo@chromium.org</owner>
   <owner>src/sandbox/policy/win/OWNERS</owner>
   <summary>
-    Duration of StartSandboxedProcess() including the time Windows spends
-    starting the suspended process. Emitted on a successful launch of a
-    sandboxed process on Windows. Only emitted where a high-resolution timer is
-    available (see Windows.HasHighResolutionTimeTicks).
+    Duration of {Event} within StartSandboxedProcess() including the time
+    Windows spends starting the suspended process. Emitted on a successful
+    launch of a sandboxed process on Windows. Only emitted where a
+    high-resolution timer is available (see Windows.HasHighResolutionTimeTicks).
   </summary>
+  <token key="Event">
+    <variant name="CreatePolicy"/>
+    <variant name="GeneratePolicy"/>
+    <variant name="PostSpawnTarget"/>
+    <variant name="SpawnTarget"/>
+    <variant name="Total" summary="the total time"/>
+  </token>
 </histogram>
 
 <histogram name="PushMessaging.DeliveryStatus" enum="PushEventStatus"
@@ -8473,7 +8480,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PushMessaging.UnregistrationStatus"
-    enum="PushUnregistrationStatus" expires_after="2024-06-09">
+    enum="PushUnregistrationStatus" expires_after="2024-08-11">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>

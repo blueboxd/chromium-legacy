@@ -331,6 +331,8 @@ component("base") {
       "cocoa/find_pasteboard.mm",
       "cocoa/menu_controller.h",
       "cocoa/menu_controller.mm",
+      "cocoa/menu_utils.h",
+      "cocoa/menu_utils.mm",
       "cocoa/nsmenu_additions.h",
       "cocoa/nsmenu_additions.mm",
       "cocoa/nsmenuitem_additions.h",
@@ -636,6 +638,7 @@ component("base") {
 
     weak_frameworks = [
       "AVFAudio.framework",
+      "ScreenCaptureKit.framework",  # Available in macOS 12.3, stable in 13.2.
     ]
   }
 

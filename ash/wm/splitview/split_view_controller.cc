@@ -32,6 +32,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_metrics.h"
 #include "ash/wm/overview/overview_types.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/snap_group/snap_group.h"
@@ -551,9 +552,13 @@ bool SplitViewController::CanSnapWindow(aura::Window* window,
   if (!is_to_be_restored_window && !wm::CanActivateWindow(window))
     return false;
 
+  // We only need to consider the divider width in tablet mode or Snap Groups.
+  const int divider_delta =
+      ShouldConsiderDivider() ? kSplitviewDividerShortSideLength / 2 : 0;
+
   return GetMinimumWindowLength(window, IsLayoutHorizontal(window)) <=
          GetDividerPositionUpperLimit(root_window_) * snap_ratio -
-             kSplitviewDividerShortSideLength / 2;
+             divider_delta;
 }
 
 bool SplitViewController::CanKeepCurrentSnapRatio(
@@ -2567,11 +2572,21 @@ void SplitViewController::OnTabletModeStarted() {
     const int divider_position =
         GetClosestFixedDividerPosition(ash::GetEquivalentDividerPosition(
             primary_window_ ? primary_window_ : secondary_window_,
-            /*should_consider_divider=*/false));
+            /*account_for_divider_width=*/false));
     split_view_divider_.ShowFor(divider_position);
 
     UpdateSnappedWindowsAndDividerBounds();
     NotifyDividerPositionChanged();
+
+    // Ends `SplitViewOverviewSession` if it is currently alive, as
+    // `SplitViewOverviewSession` is for clamshell only.
+    RootWindowController* root_window_controller =
+        RootWindowController::ForWindow(root_window_);
+    if (SplitViewOverviewSession* split_view_overview_session =
+            root_window_controller->split_view_overview_session()) {
+      root_window_controller->EndSplitViewOverviewSession(
+          SplitViewOverviewSessionExitPoint::kTabletConversion);
+    }
   }
 }
 

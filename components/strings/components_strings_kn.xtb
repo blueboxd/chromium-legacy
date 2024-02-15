@@ -246,6 +246,7 @@
 <translation id="1428729058023778569">ಈ ಸೈಟ್ HTTPS ಅನ್ನು ಬೆಂಬಲಿಸದ ಕಾರಣ, ನೀವು ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ನೋಡುತ್ತಿದ್ದೀರಿ. <ph name="BEGIN_LEARN_MORE_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1429080515485835353">ಸ್ವಯಂ-ಅಂಟಿಕೊಳ್ಳುವ ಚಿತ್ರ</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
+<translation id="1431021750861456539">ಸ್ವಯಂಚಾಲಿತ ಫುಲ್‌ಸ್ಕ್ರೀನ್</translation>
 <translation id="1432187715652018471">ಈ ಪುಟ ಸೇವೆಯ ನಿರ್ವಾಹಕವನ್ನು ಸೇರಿಸಲು ಬಯಸುತ್ತಿದೆ.</translation>
 <translation id="1432581352905426595">ಹುಡುಕಾಟದ ಇಂಜಿನ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="1433225466058025572">ಪುನಃ ನಿಮ್ಮ ಫೈಲ್‌ಗಳನ್ನು ಸರಿಸಲು ಪ್ರಯತ್ನಿಸಿ</translation>
@@ -1918,7 +1919,6 @@
 <translation id="4757022425116568383">ನಿಮ್ಮ Chrome ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿರುವ ಪಾಸ್‌ಕೀ</translation>
 <translation id="4757993714154412917">ನೀವು ಈಗಷ್ಟೇ ವಂಚನೆ ಮಾಡುವ ಸೈಟ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಮೂದಿಸಿದ್ದೀರಿ. ನಿಮ್ಮ ಖಾತೆಗಳನ್ನು ಭದ್ರಪಡಿಸಲು, ನಿಮ್ಮ ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು Chromium ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="4758311279753947758">ಸಂಪರ್ಕ ಮಾಹಿತಿಯನ್ನು ಸೇರಿಸಿ</translation>
-<translation id="4761104368405085019">ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಅನ್ನು ಬಳಸಿ</translation>
 <translation id="4761326898079498987">ಹೆಚ್ಚಿನ ವಿವರಗಳಿಗಾಗಿ ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="4761869838909035636">Chrome ಸುರಕ್ಷತೆಯ ಪರಿಶೀಲನೆಯನ್ನು ರನ್ ಮಾಡಿ</translation>
 <translation id="4763196677855776703">ನಿಯಮಗಳು ಮತ್ತು ನಿಬಂಧನೆಗಳನ್ನು <ph name="URL" /> ಒದಗಿಸಿದೆ</translation>
@@ -2256,7 +2256,6 @@
             <ph name="LIST_ITEM" />ಕುಕಿಗಳು ಮತ್ತು ಸೈಟ್ ಡೇಟಾ
             <ph name="LIST_ITEM" />ಫಾರ್ಮ್‌ಗಳಲ್ಲಿ ನಮೂದಿಸಿದ ಮಾಹಿತಿ
           <ph name="END_LIST" /></translation>
-<translation id="54430913453805768"><ph name="URL" /> ನಿಮ್ಮ MIDI ಸಾಧನಗಳನ್ನು (SysEx) ನಿಯಂತ್ರಿಸಲು ಮತ್ತು ಮರು ಪ್ರೋಗ್ರಾಂ ಮಾಡಲು ಬಯಸುತ್ತಿದೆ</translation>
 <translation id="5443468954631487277">ಹಿಮ್ಮುಖ ಆರ್ಡರ್ ಮುಖ ಮೇಲಕ್ಕೆ</translation>
 <translation id="5447235695608032700">ನಿಮ್ಮ ಬಗ್ಗೆ ಸೇವ್ ಮಾಡಿದ ಮಾಹಿತಿಯನ್ನು ಬಳಸಲು <ph name="SITE" /> ಗೆ ಅನುಮತಿಸಿ</translation>
 <translation id="5447765697759493033">ಈ ಸೈಟ್ ಅನ್ನು ಅನುವಾದಿಸಲಾಗುವುದಿಲ್ಲ</translation>
@@ -2283,6 +2282,7 @@
     <ph name="LINE_BREAK" />
     ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="549333378215107354">ಗಾತ್ರ 3</translation>
+<translation id="5501712702042287009">ಸ್ವಯಂಚಾಲಿತ ಫುಲ್‌ಸ್ಕ್ರೀನ್</translation>
 <translation id="550365051221576010">ಪ್ರತಿಯೊಂದನ್ನು ಭರ್ತಿ ಮಾಡಿ</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">ನಿರ್ವಹಿಸಿದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
@@ -2469,7 +2469,6 @@
 <translation id="5877831137320480913">ಸೌಂದರ್ಯ ಮತ್ತು ಫಿಟ್‌ನೆಸ್</translation>
 <translation id="5879989559903563723">ಅತಿಥಿ ಮೋಡ್‌ನಲ್ಲಿ ಅನುಮತಿಸಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="5880050725127890683">Chrome ಸುರಕ್ಷತೆ ಪರಿಶೀಲನೆಗೆ ಹೋಗಿ</translation>
-<translation id="5883861433316751031">MIDI ಸಾಧನಗಳನ್ನು ನಿಯಂತ್ರಿಸಬೇಕೆ ಮತ್ತು ಮರು ಪ್ರೋಗ್ರಾಂ ಮಾಡಬೇಕೆ?</translation>
 <translation id="5884465125445718607">ಎನ್ವಲಪ್ ಚೈನೀಸ್ #6</translation>
 <translation id="5887400589839399685">ಕಾರ್ಡ್ ಸೇವ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="5887687176710214216">ಕೊನೆಯದಾಗಿ ನಿನ್ನೆ ಭೇಟಿ ನೀಡಲಾಗಿದೆ</translation>
@@ -2819,7 +2818,6 @@
 <translation id="6556866813142980365">ಪುನಃ ಮಾಡು</translation>
 <translation id="6557715786897013164">14 x 17 ಇಂಚು</translation>
 <translation id="6560786330438719938">ಇನ್‍‍ಸ್ಟಾಲ್ ಮಾಡಿರುವ ಅಥವಾ ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿರುವ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಅವುಗಳನ್ನು ಎಷ್ಟು ಬಾರಿ ಬಳಸಲಾಗಿದೆ</translation>
-<translation id="6567084950885568327">MIDI ಸಾಧನ ನಿಯಂತ್ರಣ ಮತ್ತು ಮರುಪ್ರೋಗ್ರಾಮಿಂಗ್</translation>
 <translation id="6568793038316600992">ಪಾವತಿ ವಿಧಾನಗಳನ್ನು ನಿರ್ವಹಿಸಿ ಬಟನ್, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಪಾವತಿಗಳು ಮತ್ತು ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಮಾಹಿತಿಯನ್ನು ನಿರ್ವಹಿಸಲು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6569060085658103619">ನೀವು ವಿಸ್ತರಣೆ ಪುಟವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ</translation>
 <translation id="6569366777234823130">ನಾಟಕೀಯ ಚಲನಚಿತ್ರಗಳು</translation>
@@ -3910,7 +3908,6 @@
 <translation id="8671519637524426245"><ph name="SECURE_DNS_SALT" /> ಮೌಲ್ಯವು ಗಾತ್ರದ ಅಗತ್ಯತೆಗಳನ್ನು ಪೂರೈಸುವುದಿಲ್ಲ.</translation>
 <translation id="867224526087042813">ಸಹಿ</translation>
 <translation id="8672264262457010862">ವ್ಯಾಪಾರ ಮತ್ತು ಕೈಗಾರಿಕೆ</translation>
-<translation id="8673776281896298303">ನಿಮ್ಮ MIDI ಸಾಧನಗಳನ್ನು (SysEx) ನಿಯಂತ್ರಿಸಿ ಮತ್ತು ಮರು ಪ್ರೋಗ್ರಾಂ ಮಾಡಿ</translation>
 <translation id="8676424191133491403">ಯಾವುದೇ ವಿಳಂಬವಿಲ್ಲ</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, ಉತ್ತರ, <ph name="ANSWER" /></translation>
 <translation id="8681531050781943054"><ph name="PAGE" /> ನಲ್ಲಿ ವೆಬ್‌ಪುಟವನ್ನು ಈ ಕಾರಣದಿಂದ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ:</translation>
@@ -4150,7 +4147,6 @@
 <translation id="9148507642005240123">&amp;ಎಡಿಟ್ ಮಾಡುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="9148599396704355100">ಕಡಿಮೆ ದರ</translation>
 <translation id="9150025764986957246">ನೀವು ಈ ರೀತಿಯ ವಿಷಯಗಳನ್ನು ನಮೂದಿಸಬಹುದು:</translation>
-<translation id="9150045010208374699">ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಿ</translation>
 <translation id="9150685862434908345">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ದೂರದಿಂದಲೇ ನಿಮ್ಮ ಬ್ರೌಸರ್ ಸೆಟಪ್ ಅನ್ನು ಬದಲಾಯಿಸಬಹುದು. ಈ ಸಾಧನದಲ್ಲಿನ ಚಟುವಟಿಕೆಯನ್ನು Chrome ನಿಂದ ಹೊರಗೂ ನಿರ್ವಹಿಸಬಹುದು. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="9154194610265714752">ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="9155211586651734179">ಆಡಿಯೋ ಬಾಹ್ಯೋಪಕರಣಗಳನ್ನು ಲಗತ್ತಿಸಲಾಗಿದೆ</translation>

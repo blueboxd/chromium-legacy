@@ -4,12 +4,12 @@
 
 import 'chrome://password-manager/password_manager.js';
 
-import {OpenWindowProxyImpl, Page, PASSWORD_MANAGER_ACCOUNT_STORE_TOGGLE_ELEMENT_ID, PasswordManagerImpl, Router, SyncBrowserProxyImpl, TrustedVaultBannerState, UrlParam} from 'chrome://password-manager/password_manager.js';
+import {OpenWindowProxyImpl, PASSWORD_MANAGER_ACCOUNT_STORE_TOGGLE_ELEMENT_ID, PasswordManagerImpl, SyncBrowserProxyImpl, TrustedVaultBannerState} from 'chrome://password-manager/password_manager.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestOpenWindowProxy} from 'chrome://webui-test/test_open_window_proxy.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
@@ -19,7 +19,8 @@ import {createBlockedSiteEntry, createCredentialGroup, createPasswordEntry, make
 
 // clang-format off
 // <if expr="is_win or is_macosx">
-import {PasskeysBrowserProxyImpl, PrefToggleButtonElement} from 'chrome://password-manager/password_manager.js';
+import type { PrefToggleButtonElement} from 'chrome://password-manager/password_manager.js';
+import {PasskeysBrowserProxyImpl} from 'chrome://password-manager/password_manager.js';
 
 import {TestPasskeysBrowserProxy} from './test_passkeys_browser_proxy.js';
 // </if>
@@ -62,8 +63,6 @@ suite('SettingsSectionTest', function() {
     passkeysProxy = new TestPasskeysBrowserProxy();
     PasskeysBrowserProxyImpl.setInstance(passkeysProxy);
     // </if>
-    Router.getInstance().navigateTo(Page.SETTINGS);
-    return flushTasks();
   });
 
   test('pref value displayed in the UI', async function() {
@@ -602,7 +601,8 @@ suite('SettingsSectionTest', function() {
         assertTrue(!!dialog);
       });
 
-  test('Register account storage iph', async function() {
+  test('Account storage iph', async function() {
+    loadTimeData.overrideValues({canAddShortcut: false});
     passwordManager.data.isOptedInAccountStorage = false;
     syncProxy.accountInfo = {
       email: 'testemail@gmail.com',
@@ -612,15 +612,8 @@ suite('SettingsSectionTest', function() {
       isSyncingPasswords: false,
     };
 
-    const newParams = new URLSearchParams();
-    newParams.set(UrlParam.SHOW_ACCOUNT_STORE_IPH, 'true');
-    Router.getInstance().updateRouterParams(newParams);
-
     const section = document.createElement('settings-section');
     document.body.appendChild(section);
-    await waitAfterNextRender(section);
-    await syncProxy.whenCalled('getSyncInfo');
-    await syncProxy.whenCalled('getAccountInfo');
     await flushTasks();
 
     assertDeepEquals(
@@ -628,29 +621,6 @@ suite('SettingsSectionTest', function() {
         [
           [PASSWORD_MANAGER_ACCOUNT_STORE_TOGGLE_ELEMENT_ID, true],
         ],
-    );
-  });
-
-  test('Do not register account storage iph', async function() {
-    passwordManager.data.isOptedInAccountStorage = false;
-    syncProxy.accountInfo = {
-      email: 'testemail@gmail.com',
-    };
-    syncProxy.syncInfo = {
-      isEligibleForAccountStorage: true,
-      isSyncingPasswords: false,
-    };
-
-    const section = document.createElement('settings-section');
-    document.body.appendChild(section);
-    await waitAfterNextRender(section);
-    await syncProxy.whenCalled('getSyncInfo');
-    await syncProxy.whenCalled('getAccountInfo');
-    await flushTasks();
-
-    assertDeepEquals(
-        section.getSortedAnchorStatusesForTesting(),
-        [],
     );
   });
 });

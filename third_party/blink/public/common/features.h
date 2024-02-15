@@ -434,6 +434,9 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEnableMojoJSProtectedMemory);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kEventTimingFallbackToModalDialogStart);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kExcludeLowEntropyImagesFromLCP);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
     kMinimumEntropyForLCP;
@@ -470,6 +473,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // Uses the kFilterName* values in ui_base_features.h as the 'filter' feature
 // param.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFilteringScrollPrediction);
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kFilteringScrollPredictionFilterParam;
 
 // (b/283408783): When enabled, first gesture scrolls on web pages that have
 // touch handlers registered will go through the normal queueing process if
@@ -685,10 +690,6 @@ enum class LcppResourceLoadPriority {
 BLINK_COMMON_EXPORT extern const base::FeatureParam<LcppResourceLoadPriority>
     kLCPCriticalPathPredictorImageLoadPriority;
 
-// The ResourceLoadPriority for scripts that are expected to be LCP influencers.
-BLINK_COMMON_EXPORT extern const base::FeatureParam<LcppResourceLoadPriority>
-    kLCPCriticalPathPredictorInfluencerScriptLoadPriority;
-
 // Enables LCPP ElementLocator performance improvements
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kLCPCriticalPathPredictorEnableElementLocatorPerformanceImprovements;
@@ -701,6 +702,14 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // the LCP element.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPScriptObserver);
 
+// The ResourceLoadPriority for scripts that are expected to be LCP influencers.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<LcppResourceLoadPriority>
+    kLCPScriptObserverScriptLoadPriority;
+
+// The ResourceLoadPriority for images that are expected to LCP elements.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<LcppResourceLoadPriority>
+    kLCPScriptObserverImageLoadPriority;
+
 // The maximum URL count for LCPP.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kLCPScriptObserverMaxUrlCountPerOrigin;
@@ -708,6 +717,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // The maximum URL length allowed for LCPP.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kLCPScriptObserverMaxUrlLength;
+
+// Enable ResourceLoadPriority changes for all HTMLImageElement loaded images.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLCPScriptObserverAdjustImageLoadPriority;
 
 // If enabled, LCP image origin is predicted and preconnected automatically.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPPAutoPreconnectLcpOrigin);
@@ -802,6 +815,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kLogUnexpectedIPCPostedToBackForwardCachedDocuments);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowLatencyCanvas2dImageChromium);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowLatencyWebGLImageChromium);
 
 // If enabled, async scripts will be run on a lower priority task queue.
 // See https://crbug.com/1348467.
@@ -1504,8 +1519,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 
 // Combine WebRTC Network and Worker threads. More info at crbug.com/1373439.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcCombinedNetworkAndWorkerThread);
-// If enabled, expose non-standard stats in the WebRTC getStats API.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcExposeNonStandardStats);
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcH264WithOpenH264FFmpeg);
 #endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
@@ -1604,6 +1617,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 
 // Don't require FCP for the page to turn interactive. Useful for testing.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInteractiveDetectorIgnoreFcp);
+
+// Optimize loading 1x1 transparent placeholder images.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kSimplifyLoadingTransparentPlaceholderImage);
 
 }  // namespace features
 }  // namespace blink

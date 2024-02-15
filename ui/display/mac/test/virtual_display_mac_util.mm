@@ -62,7 +62,7 @@ API_AVAILABLE(macos(10.14))
 @property(nonatomic) struct CGPoint greenPrimary;
 @property(nonatomic) struct CGPoint bluePrimary;
 @property(nonatomic) struct CGPoint whitePoint;
-@property(strong, nonatomic) id queue;
+@property(nonatomic) dispatch_queue_global_t queue;
 @property(copy, nonatomic) id terminationHandler;
 @property(nonatomic) unsigned int serialNumber API_AVAILABLE(macos(11.0));
 - (void)dealloc;
@@ -328,17 +328,17 @@ struct DisplayParams {
   NSString* __strong description;
 };
 
-VirtualDisplayMacUtil::VirtualDisplayMacUtil(Screen* screen) : screen_(screen) {
+VirtualDisplayUtilMac::VirtualDisplayUtilMac(Screen* screen) : screen_(screen) {
   CHECK(screen);
   screen->AddObserver(this);
 }
 
-VirtualDisplayMacUtil::~VirtualDisplayMacUtil() {
+VirtualDisplayUtilMac::~VirtualDisplayUtilMac() {
   ResetDisplays();
   screen_->RemoveObserver(this);
 }
 
-int64_t VirtualDisplayMacUtil::AddDisplay(uint8_t display_id,
+int64_t VirtualDisplayUtilMac::AddDisplay(uint8_t display_id,
                                           const DisplayParams& display_params) {
   if (@available(macos 10.14, *)) {
     DCHECK(display_params.IsValid());
@@ -352,33 +352,33 @@ int64_t VirtualDisplayMacUtil::AddDisplay(uint8_t display_id,
 
     // TODO(crbug.com/1126278): Please remove this log or replace it with
     // [D]CHECK() ASAP when the TEST is stable.
-    LOG(INFO) << "VirtualDisplayMacUtil::" << __func__
-              << " - display id: " << display_id
-              << ". CreateVirtualDisplay success.";
+  LOG(INFO) << "VirtualDisplayUtilMac::" << __func__
+            << " - display id: " << display_id
+            << ". CreateVirtualDisplay success.";
 
-    int64_t id = display.displayID;
-    DCHECK_NE(id, 0u);
+  int64_t id = display.displayID;
+  DCHECK_NE(id, 0u);
 
-    WaitForDisplay(id, /*added=*/true);
+  WaitForDisplay(id, /*added=*/true);
 
   EnsureDisplayWithResolution(
       screen_, id, gfx::Size(display_params.width, display_params.height));
 
     // TODO(crbug.com/1126278): Please remove this log or replace it with
     // [D]CHECK() ASAP when the TEST is stable.
-    LOG(INFO) << "VirtualDisplayMacUtil::" << __func__
-              << " - display id: " << display_id << "(" << id
-              << "). WaitForDisplay success.";
+  LOG(INFO) << "VirtualDisplayUtilMac::" << __func__
+            << " - display id: " << display_id << "(" << id
+            << "). WaitForDisplay success.";
 
-    DCHECK(!g_display_map[id]);
-    g_display_map[id] = display;
+  DCHECK(!g_display_map[id]);
+  g_display_map[id] = display;
 
-    return id;
+  return id;
   }
   return display::kInvalidDisplayId;
 }
 
-void VirtualDisplayMacUtil::RemoveDisplay(int64_t display_id) {
+void VirtualDisplayUtilMac::RemoveDisplay(int64_t display_id) {
   if (@available(macos 10.14, *)) {
     auto it = g_display_map.find(display_id);
     DCHECK(it != g_display_map.end());
@@ -418,15 +418,30 @@ void VirtualDisplayMacUtil::RemoveDisplay(int64_t display_id) {
     // [D]CHECK() ASAP when the TEST is stable.
     LOG(INFO) << "VirtualDisplayMacUtil::" << __func__
               << " - display id: " << display_id << ". WaitForDisplay success.";
+  
+
+  g_display_map.erase(it);
+
+  // TODO(crbug.com/1126278): Please remove this log or replace it with
+  // [D]CHECK() ASAP when the TEST is stable.
+  LOG(INFO) << "VirtualDisplayUtilMac::" << __func__
+            << " - display id: " << display_id << ". Erase success.";
+
+  WaitForDisplay(display_id, /*added=*/false);
+
+  // TODO(crbug.com/1126278): Please remove this log or replace it with
+  // [D]CHECK() ASAP when the TEST is stable.
+  LOG(INFO) << "VirtualDisplayUtilMac::" << __func__
+            << " - display id: " << display_id << ". WaitForDisplay success.";
   }
 }
 
-void VirtualDisplayMacUtil::ResetDisplays() {
+void VirtualDisplayUtilMac::ResetDisplays() {
   int display_count = g_display_map.size();
 
   // TODO(crbug.com/1126278): Please remove this log or replace it with
   // [D]CHECK() ASAP when the TEST is stable.
-  LOG(INFO) << "VirtualDisplayMacUtil::" << __func__
+  LOG(INFO) << "VirtualDisplayUtilMac::" << __func__
             << " - display count: " << display_count << ".";
 
   if (display_count < 1) {
@@ -448,7 +463,7 @@ void VirtualDisplayMacUtil::ResetDisplays() {
 }
 
 // static
-bool VirtualDisplayMacUtil::IsAPIAvailable() {
+bool VirtualDisplayUtilMac::IsAPIAvailable() {
   // The underlying API is only available on macos 10.14 or higher.
   // TODO(crbug.com/1126278): enable support on 10.15 and 10.14.
   if (@available(macos 11.0, *)) {
@@ -462,118 +477,118 @@ bool VirtualDisplayMacUtil::IsAPIAvailable() {
 // Predefined display configurations from
 // https://en.wikipedia.org/wiki/Graphics_display_resolution and
 // https://www.theverge.com/tldr/2016/3/21/11278192/apple-iphone-ipad-screen-sizes-pixels-density-so-many-choices.
-const DisplayParams VirtualDisplayMacUtil::k6016x3384 =
+const DisplayParams VirtualDisplayUtilMac::k6016x3384 =
     DisplayParams(6016, 3384, 218, true, "Apple Pro Display XDR");
-const DisplayParams VirtualDisplayMacUtil::k5120x2880 =
+const DisplayParams VirtualDisplayUtilMac::k5120x2880 =
     DisplayParams(5120, 2880, 218, true, "27-inch iMac with Retina 5K display");
-const DisplayParams VirtualDisplayMacUtil::k4096x2304 =
+const DisplayParams VirtualDisplayUtilMac::k4096x2304 =
     DisplayParams(4096,
                   2304,
                   219,
                   true,
                   "21.5-inch iMac with Retina 4K display");
-const DisplayParams VirtualDisplayMacUtil::k3840x2400 =
+const DisplayParams VirtualDisplayUtilMac::k3840x2400 =
     DisplayParams(3840, 2400, 200, true, "WQUXGA");
-const DisplayParams VirtualDisplayMacUtil::k3840x2160 =
+const DisplayParams VirtualDisplayUtilMac::k3840x2160 =
     DisplayParams(3840, 2160, 200, true, "UHD");
-const DisplayParams VirtualDisplayMacUtil::k3840x1600 =
+const DisplayParams VirtualDisplayUtilMac::k3840x1600 =
     DisplayParams(3840, 1600, 200, true, "WQHD+, UW-QHD+");
-const DisplayParams VirtualDisplayMacUtil::k3840x1080 =
+const DisplayParams VirtualDisplayUtilMac::k3840x1080 =
     DisplayParams(3840, 1080, 200, true, "DFHD");
-const DisplayParams VirtualDisplayMacUtil::k3072x1920 =
+const DisplayParams VirtualDisplayUtilMac::k3072x1920 =
     DisplayParams(3072,
                   1920,
                   226,
                   true,
                   "16-inch MacBook Pro with Retina display");
-const DisplayParams VirtualDisplayMacUtil::k2880x1800 =
+const DisplayParams VirtualDisplayUtilMac::k2880x1800 =
     DisplayParams(2880,
                   1800,
                   220,
                   true,
                   "15.4-inch MacBook Pro with Retina display");
-const DisplayParams VirtualDisplayMacUtil::k2560x1600 =
+const DisplayParams VirtualDisplayUtilMac::k2560x1600 =
     DisplayParams(2560,
                   1600,
                   227,
                   true,
                   "WQXGA, 13.3-inch MacBook Pro with Retina display");
-const DisplayParams VirtualDisplayMacUtil::k2560x1440 =
+const DisplayParams VirtualDisplayUtilMac::k2560x1440 =
     DisplayParams(2560, 1440, 109, false, "27-inch Apple Thunderbolt display");
-const DisplayParams VirtualDisplayMacUtil::k2304x1440 =
+const DisplayParams VirtualDisplayUtilMac::k2304x1440 =
     DisplayParams(2304, 1440, 226, true, "12-inch MacBook with Retina display");
-const DisplayParams VirtualDisplayMacUtil::k2048x1536 =
+const DisplayParams VirtualDisplayUtilMac::k2048x1536 =
     DisplayParams(2048, 1536, 150, false, "QXGA");
-const DisplayParams VirtualDisplayMacUtil::k2048x1152 =
+const DisplayParams VirtualDisplayUtilMac::k2048x1152 =
     DisplayParams(2048, 1152, 150, false, "QWXGA");
-const DisplayParams VirtualDisplayMacUtil::k1920x1200 =
+const DisplayParams VirtualDisplayUtilMac::k1920x1200 =
     DisplayParams(1920, 1200, 150, false, "WUXGA");
-const DisplayParams VirtualDisplayMacUtil::k1600x1200 =
+const DisplayParams VirtualDisplayUtilMac::k1600x1200 =
     DisplayParams(1600, 1200, 125, false, "UXGA");
-const DisplayParams VirtualDisplayMacUtil::k1920x1080 =
+const DisplayParams VirtualDisplayUtilMac::k1920x1080 =
     DisplayParams(1920, 1080, 102, false, "HD, 21.5-inch iMac");
-const DisplayParams VirtualDisplayMacUtil::k1680x1050 =
+const DisplayParams VirtualDisplayUtilMac::k1680x1050 =
     DisplayParams(1680,
                   1050,
                   99,
                   false,
                   "WSXGA+, Apple Cinema Display (20-inch), 20-inch iMac");
-const DisplayParams VirtualDisplayMacUtil::k1440x900 =
+const DisplayParams VirtualDisplayUtilMac::k1440x900 =
     DisplayParams(1440, 900, 127, false, "WXGA+, 13.3-inch MacBook Air");
-const DisplayParams VirtualDisplayMacUtil::k1400x1050 =
+const DisplayParams VirtualDisplayUtilMac::k1400x1050 =
     DisplayParams(1400, 1050, 125, false, "SXGA+");
-const DisplayParams VirtualDisplayMacUtil::k1366x768 =
+const DisplayParams VirtualDisplayUtilMac::k1366x768 =
     DisplayParams(1366, 768, 135, false, "11.6-inch MacBook Air");
-const DisplayParams VirtualDisplayMacUtil::k1280x1024 =
+const DisplayParams VirtualDisplayUtilMac::k1280x1024 =
     DisplayParams(1280, 1024, 100, false, "SXGA");
-const DisplayParams VirtualDisplayMacUtil::k1280x1800 =
+const DisplayParams VirtualDisplayUtilMac::k1280x1800 =
     DisplayParams(1280, 800, 113, false, "13.3-inch MacBook Pro");
 
-VirtualDisplayMacUtil::DisplaySleepBlocker::DisplaySleepBlocker() {
+VirtualDisplayUtilMac::DisplaySleepBlocker::DisplaySleepBlocker() {
   IOReturn result = IOPMAssertionCreateWithName(
       kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn,
       CFSTR("DisplaySleepBlocker"), &assertion_id_);
   DCHECK_EQ(result, kIOReturnSuccess);
 }
 
-VirtualDisplayMacUtil::DisplaySleepBlocker::~DisplaySleepBlocker() {
+VirtualDisplayUtilMac::DisplaySleepBlocker::~DisplaySleepBlocker() {
   IOReturn result = IOPMAssertionRelease(assertion_id_);
   DCHECK_EQ(result, kIOReturnSuccess);
 }
 
-void VirtualDisplayMacUtil::OnDisplayMetricsChanged(
+void VirtualDisplayUtilMac::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  LOG(INFO) << "VirtualDisplayMacUtil::" << __func__
+  LOG(INFO) << "VirtualDisplayUtilMac::" << __func__
             << " - display id: " << display.id()
             << ", changed_metrics: " << changed_metrics << ".";
 }
 
-void VirtualDisplayMacUtil::OnDisplayAdded(
+void VirtualDisplayUtilMac::OnDisplayAdded(
     const display::Display& new_display) {
   // TODO(crbug.com/1126278): Please remove this log or replace it with
   // [D]CHECK() ASAP when the TEST is stable.
-  LOG(INFO) << "VirtualDisplayMacUtil::" << __func__
+  LOG(INFO) << "VirtualDisplayUtilMac::" << __func__
             << " - display id: " << new_display.id() << ".";
 
   OnDisplayAddedOrRemoved(new_display.id());
 }
 
-void VirtualDisplayMacUtil::OnDisplayRemoved(
+void VirtualDisplayUtilMac::OnDisplayRemoved(
     const display::Display& old_display) {
   // TODO(crbug.com/1126278): Please remove this log or replace it with
   // [D]CHECK() ASAP when the TEST is stable.
-  LOG(INFO) << "VirtualDisplayMacUtil::" << __func__
+  LOG(INFO) << "VirtualDisplayUtilMac::" << __func__
             << " - display id: " << old_display.id() << ".";
 
   OnDisplayAddedOrRemoved(old_display.id());
 }
 
-void VirtualDisplayMacUtil::OnDisplayAddedOrRemoved(int64_t id) {
+void VirtualDisplayUtilMac::OnDisplayAddedOrRemoved(int64_t id) {
   if (!waiting_for_ids_.count(id)) {
     // TODO(crbug.com/1126278): Please remove this log or replace it with
     // [D]CHECK() ASAP when the TEST is stable.
-    LOG(INFO) << "VirtualDisplayMacUtil::" << __func__
+    LOG(INFO) << "VirtualDisplayUtilMac::" << __func__
               << " - unexpected display id: " << id << ".";
 
     return;
@@ -587,35 +602,7 @@ void VirtualDisplayMacUtil::OnDisplayAddedOrRemoved(int64_t id) {
   StopWaiting();
 }
 
-void VirtualDisplayMacUtil::RemoveAllDisplays() {
-  if (@available(macos 10.14, *)) {
-    int display_count = g_display_map.size();
-
-    // TODO(crbug.com/1126278): Please remove this log or replace it with
-    // [D]CHECK() ASAP when the TEST is stable.
-    LOG(INFO) << "VirtualDisplayMacUtil::" << __func__
-              << " - display count: " << display_count << ".";
-
-    if (!display_count) {
-      return;
-    }
-
-    if (display_count == 1 && g_need_display_removal_workaround) {
-      RemoveDisplay(g_display_map.begin()->first);
-      return;
-    }
-
-    for (const auto& [id, display] : g_display_map) {
-      waiting_for_ids_.insert(id);
-    }
-
-    g_display_map.clear();
-
-    StartWaiting();
-  }
-}
-
-void VirtualDisplayMacUtil::WaitForDisplay(int64_t id, bool added) {
+void VirtualDisplayUtilMac::WaitForDisplay(int64_t id, bool added) {
   display::Display d;
   if (screen_->GetDisplayWithDisplayId(id, &d) == added) {
     return;
@@ -625,37 +612,37 @@ void VirtualDisplayMacUtil::WaitForDisplay(int64_t id, bool added) {
 
   // TODO(crbug.com/1126278): Please remove this log or replace it with
   // [D]CHECK() ASAP when the TEST is stable.
-  LOG(INFO) << "VirtualDisplayMacUtil::" << __func__ << " - display id: " << id
+  LOG(INFO) << "VirtualDisplayUtilMac::" << __func__ << " - display id: " << id
             << "(added: " << added << "). Start waiting.";
 
   StartWaiting();
 }
 
-void VirtualDisplayMacUtil::StartWaiting() {
+void VirtualDisplayUtilMac::StartWaiting() {
   DCHECK(!run_loop_);
   run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
   run_loop_.reset();
 }
 
-void VirtualDisplayMacUtil::StopWaiting() {
+void VirtualDisplayUtilMac::StopWaiting() {
   DCHECK(run_loop_);
   run_loop_->Quit();
 }
 
 // VirtualDisplayUtil definitions:
 const DisplayParams VirtualDisplayUtil::k1920x1080 =
-    VirtualDisplayMacUtil::k1920x1080;
+    VirtualDisplayUtilMac::k1920x1080;
 const DisplayParams VirtualDisplayUtil::k1024x768 =
     DisplayParams(1024, 768, 113, false, "XGA");
 
 // static
 std::unique_ptr<VirtualDisplayUtil> VirtualDisplayUtil::TryCreate(
     Screen* screen) {
-  if (!VirtualDisplayMacUtil::IsAPIAvailable()) {
+  if (!VirtualDisplayUtilMac::IsAPIAvailable()) {
     return nullptr;
   }
-  return std::make_unique<VirtualDisplayMacUtil>(screen);
+  return std::make_unique<VirtualDisplayUtilMac>(screen);
 }
 
 }  // namespace display::test

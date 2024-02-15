@@ -169,7 +169,6 @@
 <translation id="1933845786846280168">चयनित टैब</translation>
 <translation id="1943432128510653496">पासवर्ड सेव करें</translation>
 <translation id="1944535645109964458">कोई पासकी उपलब्ध नहीं है</translation>
-<translation id="1952172573699511566">जब संभव होगा, वेबसाइटें आपकी पसंदीदा भाषा में टेक्स्ट दिखाएंगी.</translation>
 <translation id="1959679933317802873">कॉन्टेंट का इंतज़ार किया जा रहा है</translation>
 <translation id="1960290143419248813">Chrome अपडेट, अब Android के इस वर्शन पर काम नहीं करते हैं.</translation>
 <translation id="1963976881984600709">स्टैंडर्ड सुरक्षा मोड</translation>
@@ -204,6 +203,7 @@
 <translation id="2132122640199389833">लिंक किए गए सभी डिवाइस हटाएं</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> बंद है</translation>
 <translation id="2139186145475833000">होम स्क्रीन में जोड़ें</translation>
+<translation id="2139414603196655536">Page Insights पर की गई गतिविधि का डेटा, आपके Google खाते में सेव हो जाता है. <ph name="BEGIN_LINK" />इसे मैनेज करने का तरीका जानें<ph name="END_LINK" /></translation>
 <translation id="2141396931810938595">आपके इस्तेमाल के हिसाब से</translation>
 <translation id="2149973817440762519">बुकमार्क में बदलाव करें</translation>
 <translation id="2155214902713132423">इस डिवाइस पर, पुष्टि का यह तरीका इस्तेमाल नहीं किया जा सकता. अपने दूसरे डिवाइस पर, पुष्टि का कोई दूसरा तरीका चुनें.</translation>
@@ -305,7 +305,7 @@
 <translation id="2708051474374549906">Google को भेजे जाने वाले आपके ब्राउज़िंग डेटा के हिसाब से, नुकसान पहुंचाने वाली साइटों, डाउनलोड, और एक्सटेंशन से रीयल-टाइम में सुरक्षा मिलती है</translation>
 <translation id="2708226184420201102"><ph name="PRODUCT_NAME" /> ब्राउज़र में खोलें</translation>
 <translation id="271033894570825754">नया</translation>
-<translation id="2718352093833049315">केवल वाई-फ़ाई पर</translation>
+<translation id="2718352093833049315">सिर्फ़ वाई-फ़ाई पर</translation>
 <translation id="2718846868787000099">आपकी पसंदीदा भाषाओं में कॉन्टेंट दिखाने के लिए, आप जिन साइटों का इस्तेमाल करते हैं वे आपकी प्राथमिकताएं देख सकती हैं</translation>
 <translation id="2723001399770238859">ऑडियो</translation>
 <translation id="2742373789128106053">फ़िलहाल, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> उपलब्ध नहीं है.</translation>
@@ -379,7 +379,6 @@
 <translation id="3027644380269727216">किसी साइट पर आपकी गतिविधि के आधार पर, वह आपको विज्ञापन के सुझाव दिखा सकती है. यह सेटिंग चालू है.</translation>
 <translation id="3029276696788198026">पेजों को पहले से लोड न करें</translation>
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
-<translation id="303514781271618814">Chrome पर ऐसी नई सुविधाएं एक्सप्लोर की जा रही हैं जिनसे साइटें, उपयोगकर्ता का कम डेटा इस्तेमाल करके उन्हें पहले जैसा अनुभव दे सकती हैं</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता पाएं<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">कीमत ट्रैक की जा रही है</translation>
 <translation id="3037517125981011456">Chrome में साइन इन करने के निर्देश दिखाता है</translation>
@@ -873,6 +872,7 @@
 <translation id="5698878456427040674">देखें कि चुना गया खाता काम करता है या नहीं.</translation>
 <translation id="570347048394355941">टैब पर स्विच करें</translation>
 <translation id="5715150588940290235">क्या आपको सेव किए गए सुरक्षा कोड मिटाने हैं?</translation>
+<translation id="571930967925877633">बुकमार्क, इतिहास, और Chrome पर मौजूद अन्य डेटा को अब आपके Google खाते से सिंक नहीं किया जाएगा</translation>
 <translation id="572328651809341494">हाल ही के टैब</translation>
 <translation id="5726692708398506830">पेज पर सब कुछ बड़ा करें</translation>
 <translation id="5744751019568455640">वेब पेजों के कॉन्टेंट को अपनी पसंदीदा आवाज़ में सुनने के लिए, इन आवाज़ों को आज़माया जा सकता है. अगर आपको यह आवाज़ पसंद है और आपको मुझसे इस आवाज़ में कॉन्टेंट पढ़ाना है, तो आवाज़ के नाम पर टैप करें.</translation>
@@ -1081,6 +1081,7 @@
 <translation id="670498945988402717">कल जांच की गई</translation>
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="671481426037969117"><ph name="FQDN" /> इस्तेमाल करने का समय खत्म हो गया. यह कल फिर से शुरू होगा.</translation>
+<translation id="6714850225831215156">{BOOKMARK_COUNT,plural, =1{बुकमार्क <ph name="FOLDER_NAME" /> में सेव किया गया. इसे सिर्फ़ इस डिवाइस में सेव किया गया है.}one{बुकमार्क <ph name="FOLDER_NAME" /> में सेव किया गया. इसे सिर्फ़ इस डिवाइस में सेव किया गया है.}other{बुकमार्क <ph name="FOLDER_NAME" /> में सेव किए गए. इन्हें सिर्फ़ इस डिवाइस में सेव किया गया है.}}</translation>
 <translation id="6715020873764921614">क्या आप फिर भी <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) को डाउनलोड करना चाहते हैं?</translation>
 <translation id="6719634564325948108">क्यूआर कोड की मदद से कनेक्ट करें?</translation>
 <translation id="6723740634201835758">अपने Google खाते में</translation>
@@ -1105,7 +1106,6 @@
 <translation id="6828070228333235514">कीमत को ट्रैक करना रोकें</translation>
 <translation id="6830728435402077660">सुरक्षित नहीं है</translation>
 <translation id="6831043979455480757">Translate</translation>
-<translation id="6833996806551876956">निजता सैंडबॉक्स ट्रायल</translation>
 <translation id="6836206421467243968"><ph name="TITLE_OF_GROUP" /> टैब ग्रुप को, नए बैकग्राउंड वाले टैब ग्रुप की तरह पहले जैसा करें.</translation>
 <translation id="6846298663435243399">लोड हो रहा है…</translation>
 <translation id="6850409657436465440">आपका डाउनलोड अब भी जारी है</translation>
@@ -1402,6 +1402,7 @@
 <translation id="8237871086242677046">पेज की अहम जानकारी वाली बॉटम शीट</translation>
 <translation id="8243077599929149377">अपना उपयोगकर्ता नाम जोड़ें</translation>
 <translation id="8250920743982581267">दस्तावेज़</translation>
+<translation id="8253557549177565072">{BOOKMARK_COUNT,plural, =1{बुकमार्क आपके खाते (<ph name="ACCOUNT_EMAIL" />) में मौजूद <ph name="FOLDER_NAME" /> में सेव किया गया.}one{बुकमार्क आपके खाते (<ph name="ACCOUNT_EMAIL" />) में मौजूद <ph name="FOLDER_NAME" /> में सेव किया गया.}other{बुकमार्क आपके खाते (<ph name="ACCOUNT_EMAIL" />) में मौजूद <ph name="FOLDER_NAME" /> में सेव किए गए.}}</translation>
 <translation id="8255617931166444521">साइटें सिर्फ़ आपकी कुकी का इस्तेमाल कर सकती हैं, ताकि वे अपनी साइटों पर आपकी ब्राउज़िंग गतिविधि देख सकें</translation>
 <translation id="8259179246279078674">अगर पहले से लोड किए गए पेज एन्क्रिप्ट (सुरक्षित) किए गए हैं, तो Google को पहले से लोड किए गए पेज के कॉन्टेंट के बारे में पता नहीं चलेगा. हालांकि, Google के सर्वर को निजी तौर पर पहले से लोड की गई साइटों के बारे में पता होगा. इस जानकारी का इस्तेमाल सिर्फ़ पेजों को पहले से लोड करने के लिए किया जाता है. यह आपके Google खाते की किसी दूसरी जानकारी से जुड़ी नहीं होती.</translation>
 <translation id="8260126382462817229">फिर से प्रवेश करके देखें</translation>

@@ -980,7 +980,7 @@ policies:
   979: LocalFontsBlockedForUrls
   980: ProjectorDogfoodForFamilyLinkEnabled
   981: UrlParamFilterEnabled
-  982: ScreenTimeEnabled
+  982: ''
   983: DefaultClipboardSetting
   984: ClipboardAllowedForUrls
   985: ClipboardBlockedForUrls
@@ -1211,6 +1211,11 @@ policies:
   1210: RemoteAccessHostAllowUrlForwarding
   1211: ScreenCaptureLocation
   1212: AllowedDomainsForAppsList
+  1213: ChromeForTestingAllowed
+  1214: GoogleLocationServicesEnabled
+  1215: ProvisionManagedClientCertificateForUser
+  1216: LocalUserFilesAllowed
+  1217: DevToolsGenAiSettings
 atomic_groups:
   1: Homepage
   2: RemoteAccess

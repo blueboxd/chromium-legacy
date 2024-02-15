@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #include "url/gurl.h"
 
+class RemovingIndexes;
 class WebStateListDelegate;
 class WebStateListObserver;
 
@@ -56,7 +57,9 @@ class WebStateList {
       return *this;
     }
 
-    // Whether the WebState inherits its opener.
+    // Whether the WebState inherits its opener. If set, the WebState opener is
+    // set to the active WebState, otherwise it must be explicitly passed via
+    // `WithOpener`.
     InsertionParams& InheritOpener(bool inherits_opener = true) {
       this->inherit_opener = inherits_opener;
       return *this;
@@ -73,36 +76,6 @@ class WebStateList {
       this->pinned = pin;
       return *this;
     }
-
-    // To simplify migrating off of the deprecated `InsertWebState` member
-    // function, convert a set of insertion parameters to real InsertionParams.
-    static InsertionParams ForDeprecationMigration(
-        int insertion_flags,
-        int desired_index = kInvalidIndex,
-        WebStateOpener opener = WebStateOpener());
-  };
-
-  // Deprecated. Use InsertionParams.
-  enum InsertionFlags {
-    // Used to indicate that nothing special should happen to the newly
-    // inserted WebState.
-    INSERT_NO_FLAGS = 0,
-
-    // Used to indicate that the WebState should be activated on insertion.
-    INSERT_ACTIVATE = 1 << 0,
-
-    // If not set, the insertion index of the WebState is left up to the
-    // order controller associated with the WebStateList so the insertion
-    // index may differ from the specified index. Otherwise the supplied
-    // index is used.
-    INSERT_FORCE_INDEX = 1 << 1,
-
-    // If set, the WebState opener is set to the active WebState, otherwise
-    // it must be explicitly passed.
-    INSERT_INHERIT_OPENER = 1 << 2,
-
-    // Used to indicate that the WebState should be pinned on insertion.
-    INSERT_PINNED = 1 << 3,
   };
 
   // Constants used when closing WebStates.
@@ -269,12 +242,6 @@ class WebStateList {
   int InsertWebState(std::unique_ptr<web::WebState> web_state,
                      InsertionParams params = InsertionParams::Automatic());
 
-  // Deprecated. Use the variant with InsertionParams.
-  int InsertWebState(int index,
-                     std::unique_ptr<web::WebState> web_state,
-                     int insertion_flags,
-                     WebStateOpener opener);
-
   // Moves the WebState at the specified index to another index.
   void MoveWebStateAt(int from_index, int to_index);
 
@@ -304,6 +271,11 @@ class WebStateList {
   // Makes the WebState at the specified index the active WebState.
   void ActivateWebStateAt(int index);
 
+  // Closes and destroys all WebStates at `removing_indexes`. The `close_flags`
+  // is a bitwise combination of ClosingFlags values.
+  void CloseWebStatesAtIndices(int close_flags,
+                               RemovingIndexes removing_indexes);
+
   // Adds an observer to the model.
   void AddObserver(WebStateListObserver* observer);
 
@@ -320,7 +292,7 @@ class WebStateList {
  private:
   friend class ScopedBatchOperation;
 
-  class DetachParams;
+  struct DetachParams;
   class WebStateWrapper;
 
   // Locks the WebStateList for mutation. This methods checks that the list is
@@ -356,20 +328,17 @@ class WebStateList {
   // to the caller (abandon ownership of the returned WebState).
   //
   // Assumes that the WebStateList is locked.
-  std::unique_ptr<web::WebState> DetachWebStateAtImpl(
-      int index,
-      const DetachParams& params);
+  std::unique_ptr<web::WebState> DetachWebStateAtImpl(int index,
+                                                      int new_active_index,
+                                                      DetachParams params);
 
-  // Closes and destroys all WebStates after `start_index`. The `close_flags`
-  // is a bitwise combination of ClosingFlags values. WebStateList is locked
-  // inside the method.
-  void CloseAllWebStatesAfterIndex(int start_index, int close_flags);
-
-  // Closes and destroys all WebStates after `start_index`. The `close_flags`
-  // is a bitwise combination of ClosingFlags values.
+  // Detaches all WebStates at `removing_indexes`. Returns a vector with all the
+  // detached WebStates to the caller (abandoning ownership).
   //
   // Assumes that the WebStateList is locked.
-  void CloseAllWebStatesAfterIndexImpl(int start_index, int close_flags);
+  std::vector<std::unique_ptr<web::WebState>> DetachWebStatesAtIndicesImpl(
+      RemovingIndexes removing_indexes,
+      DetachParams detach_params);
 
   // Makes the WebState at the specified index the active WebState.
   //

@@ -85,6 +85,7 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
                   UserRemovalReason reason) override {}
   void RemoveUserFromList(const AccountId& account_id) override;
   void RemoveUserFromListForRecreation(const AccountId& account_id) override;
+  void CleanStaleUserInformationFor(const AccountId& account_id) override;
   bool IsKnownUser(const AccountId& account_id) const override;
   const User* FindUser(const AccountId& account_id) const override;
   User* FindUserAndModify(const AccountId& account_id) override;
@@ -124,6 +125,8 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
                              base::OnceClosure on_resolved_callback,
                              std::string* out_resolved_locale) const override;
   bool IsValidDefaultUserImageId(int image_index) const override;
+  MultiUserSignInPolicyController* GetMultiUserSignInPolicyController()
+      override;
 
   // UserManagerBase overrides:
   void SetEphemeralModeConfig(
@@ -136,6 +139,9 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   void PerformPostUserLoggedInActions(bool browser_restart) override {}
   bool IsDeviceLocalAccountMarkedForRemoval(
       const AccountId& account_id) const override;
+  void SetUserAffiliation(
+      const AccountId& account_id,
+      const base::flat_set<std::string>& user_affiliation_ids) override {}
   void KioskAppLoggedIn(User* user) override {}
   void PublicAccountUserLoggedIn(User* user) override {}
   // Just make it public for tests.

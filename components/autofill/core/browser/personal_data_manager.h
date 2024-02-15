@@ -24,10 +24,12 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/address_data_cleaner.h"
 #include "components/autofill/core/browser/address_data_manager.h"
+#include "components/autofill/core/browser/autofill_shared_storage_handler.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/autofill_wallet_usage_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card_benefit.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -162,15 +164,17 @@ class PersonalDataManager : public KeyedService,
   // (sync disabled by CLI) or outlives this object, it may not have started yet
   // but its preferences can already be queried. |image_fetcher| is to fetch the
   // customized images for autofill data.
-  void Init(scoped_refptr<AutofillWebDataService> profile_database,
-            scoped_refptr<AutofillWebDataService> account_database,
-            PrefService* pref_service,
-            PrefService* local_state,
-            signin::IdentityManager* identity_manager,
-            history::HistoryService* history_service,
-            syncer::SyncService* sync_service,
-            StrikeDatabaseBase* strike_database,
-            AutofillImageFetcherBase* image_fetcher);
+  void Init(
+      scoped_refptr<AutofillWebDataService> profile_database,
+      scoped_refptr<AutofillWebDataService> account_database,
+      PrefService* pref_service,
+      PrefService* local_state,
+      signin::IdentityManager* identity_manager,
+      history::HistoryService* history_service,
+      syncer::SyncService* sync_service,
+      StrikeDatabaseBase* strike_database,
+      AutofillImageFetcherBase* image_fetcher,
+      std::unique_ptr<AutofillSharedStorageHandler> shared_storage_handler);
 
   // KeyedService:
   void Shutdown() override;
@@ -271,7 +275,7 @@ class PersonalDataManager : public KeyedService,
   // Returns the profile with the specified |guid|, or nullptr if there is no
   // profile with the specified |guid|.
   // TODO(crbug.com/1487119): Change return type to const AutofillProfile*
-  virtual AutofillProfile* GetProfileByGUID(const std::string& guid) const;
+  AutofillProfile* GetProfileByGUID(const std::string& guid) const;
 
   // Determines whether the logged in user (if any) is eligible to store
   // Autofill address profiles to their account.
@@ -395,6 +399,35 @@ class PersonalDataManager : public KeyedService,
   // match.
   CreditCard* GetCreditCardByServerId(const std::string& server_id);
 
+  // Return the first valid flat rate benefit linked with the card with the
+  // specific `instrument_id`.
+  // To avoid dangling pointers, callers should not keep a pointer to the
+  // returned benefits as state.
+  CreditCardFlatRateBenefit* GetFlatRateBenefitByInstrumentId(
+      CreditCardBenefit::LinkedCardInstrumentId instrument_id);
+
+  // Return the first valid category benefit for the specific
+  // `benefit_category` and linked with the card with the specific
+  // `instrument_id`.
+  // To avoid dangling pointers, callers should not keep a pointer to the
+  // returned benefits as state.
+  CreditCardCategoryBenefit* GetCategoryBenefitByInstrumentIdAndCategory(
+      CreditCardBenefit::LinkedCardInstrumentId instrument_id,
+      CreditCardCategoryBenefit::BenefitCategory benefit_category);
+
+  // Return the first valid merchant benefit for the specific
+  // `merchant_origin` and linked with the card with the specific
+  // `instrument_id`.
+  // To avoid dangling pointers, callers should not keep a pointer to the
+  // returned benefits as state.
+  CreditCardMerchantBenefit* GetMerchantBenefitByInstrumentIdAndOrigin(
+      CreditCardBenefit::LinkedCardInstrumentId instrument_id,
+      const url::Origin& merchant_origin);
+
+  // Add the credit-card-linked benefit to local cache for tests. This does
+  // not affect data in the real database.
+  void AddCreditCardBenefitForTest(std::unique_ptr<CreditCardBenefit> benefit);
+
   // Returns whether the personal data has been loaded from the web database.
   virtual bool IsDataLoaded() const;
 
@@ -407,11 +440,11 @@ class PersonalDataManager : public KeyedService,
   // The profiles are returned in the specified `order`.
   // TODO(crbug.com/1487119): Change return type to
   // std::vector<const AutofillProfile*>
-  virtual std::vector<AutofillProfile*> GetProfiles(
+  std::vector<AutofillProfile*> GetProfiles(
       ProfileOrder order = ProfileOrder::kNone) const;
   // TODO(crbug.com/1487119): Change return type to
   // std::vector<const AutofillProfile*>
-  virtual std::vector<AutofillProfile*> GetProfilesFromSource(
+  std::vector<AutofillProfile*> GetProfilesFromSource(
       AutofillProfile::Source profile_source,
       ProfileOrder order = ProfileOrder::kNone) const;
   // Returns just LOCAL_CARD cards.
@@ -653,7 +686,7 @@ class PersonalDataManager : public KeyedService,
 
   // Returns true if Sync-the-feature is enabled and
   // UserSelectableType::kAutofill is among the user's selected data types.
-  // TODO(crbug.com/1462552): Remove this method once ConsentLevel::kSync and
+  // TODO(crbug.com/40066949): Remove this method once ConsentLevel::kSync and
   // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   bool IsSyncFeatureEnabledForAutofill() const;
 
@@ -757,9 +790,6 @@ class PersonalDataManager : public KeyedService,
   virtual const AutofillProfileUpdateStrikeDatabase*
   GetProfileUpdateStrikeDatabase() const;
 
-  // Loads the saved profiles from the web database.
-  virtual void LoadProfiles();
-
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
 
@@ -775,8 +805,11 @@ class PersonalDataManager : public KeyedService,
   // Loads the autofill offer data from the web database.
   virtual void LoadAutofillOffers();
 
-  // Loads the virtual card usage data from the web database
+  // Loads the virtual card usage data from the web database.
   virtual void LoadVirtualCardUsageData();
+
+  // Loads the credit card benefits from the web database.
+  virtual void LoadCreditCardBenefits();
 
   // Cancels a pending query to the local web database.  |handle| is a pointer
   // to the query handle.
@@ -838,6 +871,11 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<VirtualCardUsageData>>
       autofill_virtual_card_usage_data_;
 
+  // Cached version of the credit card benefits obtained from the database.
+  // Including credit-card-linked flat rate benefits, category benefits and
+  // merchant benefits that are available for users' online purchases.
+  std::vector<std::unique_ptr<CreditCardBenefit>> credit_card_benefits_;
+
   // When the manager makes a request from WebDataServiceBase, the database
   // is queried on another sequence, we record the query handle until we
   // get called back.
@@ -850,6 +888,7 @@ class PersonalDataManager : public KeyedService,
   WebDataServiceBase::Handle pending_customer_data_query_ = 0;
   WebDataServiceBase::Handle pending_offer_data_query_ = 0;
   WebDataServiceBase::Handle pending_virtual_card_usage_data_query_ = 0;
+  WebDataServiceBase::Handle pending_credit_card_benefit_query_ = 0;
 
   // The observers.
   base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
@@ -869,10 +908,6 @@ class PersonalDataManager : public KeyedService,
   // the new or updated card, or the empty string if no card was saved.
   virtual std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card);
-
-  // Finds the country code that occurs most frequently among all profiles.
-  // Prefers verified profiles over unverified ones.
-  std::string MostCommonCountryCodeFromProfiles() const;
 
   // Called when the value of prefs::kAutofillCreditCardEnabled or
   // prefs::kAutofillProfileEnabled changes.
@@ -918,6 +953,9 @@ class PersonalDataManager : public KeyedService,
   // |variations_country_code_| if it exists but falls back to other methods if
   // necessary to ensure it always has a value.
   mutable std::string experiment_country_code_;
+
+  // The shared storage handler this instance uses.
+  std::unique_ptr<AutofillSharedStorageHandler> shared_storage_handler_;
 
   // The PrefService that this instance uses. Must outlive this instance.
   raw_ptr<PrefService> pref_service_ = nullptr;

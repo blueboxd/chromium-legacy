@@ -67,6 +67,8 @@ const yellowThemeSelectionColor = 'var(--google-blue-100)';
 
 const previousReadHighlightClass = 'previous-read-highlight';
 
+const linkDataAttribute = 'link';
+
 // A two-way map where each key is unique and each value is unique. The keys are
 // DOM nodes and the values are numbers, representing AXNodeIDs.
 class TwoWayMap<K, V> extends Map<K, V> {
@@ -102,6 +104,12 @@ if (chrome.readingMode) {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
     readAnythingApp.updateContent();
+  };
+
+  chrome.readingMode.updateLinks = () => {
+    const readAnythingApp = document.querySelector('read-anything-app');
+    assert(readAnythingApp);
+    readAnythingApp.updateLinks();
   };
 
   chrome.readingMode.updateSelection = () => {
@@ -292,6 +300,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   private buildSubtree_(nodeId: number): Node {
     let htmlTag = chrome.readingMode.getHtmlTag(nodeId);
+    const dataAttributes = new Map<string, string>();
 
     // Text nodes do not have an html tag.
     if (!htmlTag.length) {
@@ -311,17 +320,24 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       htmlTag = 'div';
     }
 
+    const url = chrome.readingMode.getUrl(nodeId);
+
     if (!this.shouldShowLinks() && htmlTag === 'a') {
       htmlTag = 'span';
+      dataAttributes.set(linkDataAttribute, url ?? '');
     }
 
     const element = document.createElement(htmlTag);
+    // Add required data attributes.
+    for (const [attr, val] of dataAttributes) {
+      element.dataset[attr] = val;
+    }
     this.domNodeToAxNodeIdMap_.set(element, nodeId);
     const direction = chrome.readingMode.getTextDirection(nodeId);
     if (direction) {
       element.setAttribute('dir', direction);
     }
-    const url = chrome.readingMode.getUrl(nodeId);
+
     if (url && element.nodeName === 'A') {
       element.setAttribute('href', url);
       element.onclick = () => {
@@ -428,10 +444,6 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // first text node.
     this.firstTextNodeSetForReadAloud = -1;
 
-    this.updateContentInternal();
-  }
-
-  private updateContentInternal() {
     const shadowRoot = this.shadowRoot;
     assert(shadowRoot);
     const container = shadowRoot.getElementById('container');
@@ -496,6 +508,23 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     startElement.scrollIntoViewIfNeeded();
   }
 
+  updateLinks() {
+    if (!this.shadowRoot) {
+      return;
+    }
+
+    const selector = this.shouldShowLinks() ? 'span[data-link]' : 'a';
+    const elements = this.shadowRoot.querySelectorAll(selector);
+
+    for (const elem of elements) {
+      assert(elem instanceof HTMLElement);
+      const nodeId = this.domNodeToAxNodeIdMap_.get(elem);
+      assert(nodeId !== undefined);
+      const replacement = this.buildSubtree_(nodeId);
+      this.replaceElement(elem, replacement);
+    }
+  }
+
   onSpeechRateChange(rate: number) {
     this.rate = rate;
     this.resetSpeechPostSettingChange_();
@@ -554,6 +583,16 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       this.availableVoices = this.synth.getVoices();
     }
     return this.availableVoices;
+  }
+
+  private replaceElement(current: HTMLElement, replacer: Node) {
+    const nodeId = this.domNodeToAxNodeIdMap_.get(current);
+    assert(nodeId !== undefined);
+    // Update map.
+    this.domNodeToAxNodeIdMap_.delete(current);
+    this.domNodeToAxNodeIdMap_.set(replacer, nodeId);
+    // Replace element in DOM.
+    current.replaceWith(replacer);
   }
 
   private onPreviewVoice_(
@@ -616,7 +655,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // if it's paused from a non-pause button (e.g. voice previews) so the links
     // don't flash off and on.
     if (chrome.readingMode.linksEnabled && pausedFromPlayClickButton) {
-      this.updateContent();
+      this.updateLinks();
       this.highlightNodes(chrome.readingMode.getCurrentText());
     }
   }
@@ -635,7 +674,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   //  previous granularity.
   playPreviousGranularity() {
     this.synth.cancel();
-    this.resetPreviousHighlight();
+    this.resetPreviousHighlightAndRemoveCurrentHighlight();
     chrome.readingMode.movePositionToPreviousGranularity();
 
     if (!this.highlightAndPlayMessage()) {
@@ -662,7 +701,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       // Hide links when speech resumes. We only hide links when the page was
       // paused from the play/pause button.
       if (chrome.readingMode.linksEnabled && pausedFromPlayClickButton) {
-        this.updateContent();
+        this.updateLinks();
       }
 
       // If the current read highlight has been cleared from a call to
@@ -682,7 +721,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       this.pausedFromPlayClickButton = false;
       // Hide links when speech begins playing.
       if (chrome.readingMode.linksEnabled) {
-        this.updateContent();
+        this.updateLinks();
       }
 
       // TODO(crbug.com/1474951): There should be a way to use AXPosition so
@@ -929,7 +968,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     // Hide links when speech finishes playing.
     if (chrome.readingMode.linksEnabled) {
-      this.updateContent();
+      this.updateLinks();
     }
   }
 
@@ -1018,6 +1057,15 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       default:
         return defaultSelectionColor;
     }
+  }
+
+  private resetPreviousHighlightAndRemoveCurrentHighlight() {
+    const lastElement = this.previousHighlight_.pop();
+    if (lastElement) {
+      lastElement.className = '';
+    }
+
+    this.resetPreviousHighlight();
   }
 
   private resetPreviousHighlight() {

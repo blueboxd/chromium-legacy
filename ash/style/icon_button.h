@@ -37,9 +37,9 @@ class BlurredBackgroundShield;
 // this is done to help differentiating focus ring from the content of the
 // button.
 class ASH_EXPORT IconButton : public views::ImageButton {
- public:
-  METADATA_HEADER(IconButton);
+  METADATA_HEADER(IconButton, views::ImageButton)
 
+ public:
   using ColorVariant = absl::variant<SkColor, ui::ColorId>;
 
   enum class Type {
@@ -89,8 +89,9 @@ class ASH_EXPORT IconButton : public views::ImageButton {
 
     Builder& SetAccessibleNameId(int accessible_name_id);
     Builder& SetAccessibleName(const std::u16string& accessible_name);
-    Builder& SetToggelable(bool is_togglable);
+    Builder& SetTogglable(bool is_togglable);
     Builder& SetBorder(bool has_border);
+    Builder& SetViewId(int view_id);
     Builder& SetEnabled(bool enabled);
     Builder& SetBackgroundImage(const gfx::ImageSkia& background_image);
     Builder& SetBackgroundColor(ui::ColorId color_id);
@@ -102,6 +103,7 @@ class ASH_EXPORT IconButton : public views::ImageButton {
     absl::variant<int, std::u16string> accessible_name_;
     bool is_togglable_;
     bool has_border_;
+    std::optional<int> view_id_;
     std::optional<bool> enabled_;
     std::optional<gfx::ImageSkia> background_image_;
     std::optional<ui::ColorId> background_color_;

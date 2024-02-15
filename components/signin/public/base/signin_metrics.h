@@ -133,7 +133,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN = 10,
   ACCESS_POINT_USER_MANAGER = 11,
   ACCESS_POINT_DEVICES_PAGE = 12,
-  ACCESS_POINT_CLOUD_PRINT = 13,
+  // ACCESS_POINT_CLOUD_PRINT = 13, no longer used.
   // ACCESS_POINT_CONTENT_AREA = 14, no longer used.
   ACCESS_POINT_SIGNIN_PROMO = 15,
   ACCESS_POINT_RECENT_TABS = 16,
@@ -438,8 +438,9 @@ enum class SourceForRefreshTokenOperation {
   // kAccountReconcilor_RevokeTokensNotInCookies = 18,
   kLogoutTabHelper_PrimaryPageChanged = 19,
   kForceSigninReauthWithDifferentAccount = 20,
+  kAccountReconcilor_RevokeTokensNotInCookies = 21,
 
-  kMaxValue = kForceSigninReauthWithDifferentAccount,
+  kMaxValue = kAccountReconcilor_RevokeTokensNotInCookies,
 };
 
 // Different types of reporting. This is used as a histogram suffix.

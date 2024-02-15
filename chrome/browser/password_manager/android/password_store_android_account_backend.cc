@@ -31,14 +31,14 @@ constexpr char kUPMActiveHistogram[] =
 
 std::string GetSyncingAccount(const syncer::SyncService* sync_service) {
   CHECK(sync_service);
-  // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
+  // TODO(crbug.com/40067770): Migrate away from `ConsentLevel::kSync` on
   // Android.
   return sync_util::GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(
       sync_service);
 }
 
 void LogUPMActiveStatus(syncer::SyncService* sync_service, PrefService* prefs) {
-  // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
+  // TODO(crbug.com/40067770): Migrate away from `ConsentLevel::kSync` on
   // Android.
   if (!sync_util::IsSyncFeatureEnabledIncludingPasswords(sync_service)) {
     base::UmaHistogramEnumeration(
@@ -130,12 +130,13 @@ PasswordStoreAndroidAccountBackend::PasswordStoreAndroidAccountBackend(
       affiliations_prefetcher_(affiliations_prefetcher) {
   sync_controller_delegate_ =
       std::make_unique<PasswordSyncControllerDelegateAndroid>(
-          std::make_unique<PasswordSyncControllerDelegateBridgeImpl>(),
-          base::BindOnce(&PasswordStoreAndroidAccountBackend::SyncShutdown,
-                         weak_ptr_factory_.GetWeakPtr()));
-  sync_controller_delegate_->SetPwdSyncStateChangedCallback(base::BindRepeating(
-      &PasswordStoreAndroidAccountBackend::OnPasswordsSyncStateChanged,
-      weak_ptr_factory_.GetWeakPtr()));
+          std::make_unique<PasswordSyncControllerDelegateBridgeImpl>());
+  sync_controller_delegate_->SetSyncObserverCallbacks(
+      base::BindRepeating(
+          &PasswordStoreAndroidAccountBackend::OnPasswordsSyncStateChanged,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PasswordStoreAndroidAccountBackend::SyncShutdown,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 PasswordStoreAndroidAccountBackend::PasswordStoreAndroidAccountBackend(
@@ -151,9 +152,12 @@ PasswordStoreAndroidAccountBackend::PasswordStoreAndroidAccountBackend(
                                   prefs),
       affiliations_prefetcher_(affiliations_prefetcher) {
   sync_controller_delegate_ = std::move(sync_controller_delegate);
-  sync_controller_delegate_->SetPwdSyncStateChangedCallback(base::BindRepeating(
-      &PasswordStoreAndroidAccountBackend::OnPasswordsSyncStateChanged,
-      weak_ptr_factory_.GetWeakPtr()));
+  sync_controller_delegate_->SetSyncObserverCallbacks(
+      base::BindRepeating(
+          &PasswordStoreAndroidAccountBackend::OnPasswordsSyncStateChanged,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PasswordStoreAndroidAccountBackend::SyncShutdown,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 PasswordStoreAndroidAccountBackend::~PasswordStoreAndroidAccountBackend() =
@@ -432,6 +436,12 @@ void PasswordStoreAndroidAccountBackend::OnPasswordsSyncStateChanged() {
 }
 
 void PasswordStoreAndroidAccountBackend::SyncShutdown() {
+  ClearAllTasksAndReplyWithReason(
+      AndroidBackendError(
+          AndroidBackendErrorType::kCancelledPwdSyncStateChanged),
+      PasswordStoreBackendError(
+          PasswordStoreBackendErrorType::kUncategorized,
+          PasswordStoreBackendErrorRecoveryType::kRecoverable));
   sync_service_ = nullptr;
 }
 

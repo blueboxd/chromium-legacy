@@ -50,7 +50,7 @@ constexpr BubbleContents kGPMTouchID = {
     .on_ok = &AuthenticatorRequestDialogModel::OnGPMCreate,
 };
 
-constexpr BubbleContents kGPMCreateContents = {
+constexpr BubbleContents kGPMCreatePasskeyContents = {
     .illustration_light_id = IDR_WEBAUTHN_GPM_FINGERPRINT_LIGHT,
     .title = u"Create passkey for example.com? (UNTRANSLATED)",
     .body = nullptr,
@@ -69,6 +69,18 @@ constexpr BubbleContents kTrustThisComputerContents = {
         u"options. (UNTRANSLATED)",
     .show_footer = false,
     .on_ok = &AuthenticatorRequestDialogModel::OnTrustThisComputer,
+};
+
+constexpr BubbleContents kGPMOnboardingContents = {
+    .illustration_light_id = IDR_WEBAUTHN_GPM_FINGERPRINT_LIGHT,
+    .title =
+        u"Start using passkeys with your Google Password Manager "
+        u"(UNTRANSLATED)",
+    .body =
+        u"We'll create a passkey for you to sign in to example.com "
+        u"(UNTRANSLATED)",
+    .show_footer = true,
+    .on_ok = &AuthenticatorRequestDialogModel::OnGPMOnboardingAccepted,
 };
 
 class AuthenticatorRequestBubbleDelegate
@@ -117,12 +129,14 @@ class AuthenticatorRequestBubbleDelegate
   static const BubbleContents* GetContents(
       AuthenticatorRequestDialogModel::Step step) {
     switch (step) {
-      case AuthenticatorRequestDialogModel::Step::kGPMCreate:
-        return &kGPMCreateContents;
+      case AuthenticatorRequestDialogModel::Step::kGPMCreatePasskey:
+        return &kGPMCreatePasskeyContents;
       case AuthenticatorRequestDialogModel::Step::kTrustThisComputer:
         return &kTrustThisComputerContents;
       case AuthenticatorRequestDialogModel::Step::kGPMTouchID:
         return &kGPMTouchID;
+      case AuthenticatorRequestDialogModel::Step::kGPMOnboarding:
+        return &kGPMOnboardingContents;
       default:
         NOTREACHED();
         return nullptr;

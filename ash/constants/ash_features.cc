@@ -390,12 +390,6 @@ BASE_FEATURE(kCameraEffectsSupportedByHardware,
              "CameraEffectsSupportedByHardware",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether the camera privacy switch toasts and notification should be
-// displayed.
-BASE_FEATURE(kCameraPrivacySwitchNotifications,
-             "CameraPrivacySwitchNotifications",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the feature to parameterize glyph for "Campbell" feature.
 BASE_FEATURE(kCampbellGlyph,
              "CampbellGlyph",
@@ -471,12 +465,6 @@ BASE_FEATURE(kClipboardHistoryUrlTitles,
              "ClipboardHistoryUrlTitles",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, clipboard history explicitly pastes into `content::WebContents`
-// instead of using synthetic key events.
-BASE_FEATURE(kClipboardHistoryWebContentsPaste,
-             "ClipboardHistoryWebContentsPaste",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled and account falls under the new deal, will be allowed to toggle
 // auto updates.
 BASE_FEATURE(kConsumerAutoUpdateToggleAllowed,
@@ -512,11 +500,6 @@ BASE_FEATURE(kCryptauthAttestationSyncing,
              "CryptauthAttestationSyncing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables contextual nudges for gesture education.
-BASE_FEATURE(kContextualNudges,
-             "ContextualNudges",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables or disables Crostini GPU support.
 // Note that this feature can be overridden by login_manager based on
 // whether a per-board build sets the USE virtio_gpu flag.
@@ -543,6 +526,11 @@ BASE_FEATURE(kCrostiniQtImeSupport,
 // Enables or disables Crostini Virtual Keyboard support.
 BASE_FEATURE(kCrostiniVirtualKeyboardSupport,
              "CrostiniVirtualKeyboardSupport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables using newer infrastructure for termina-dlc.
+BASE_FEATURE(kCrostiniTerminaDlcForceOta,
+             "CrostiniTerminaDlcForceOta",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables always using device-activity-status data to filter
@@ -1154,12 +1142,6 @@ BASE_FEATURE(kFilesTrashDrive,
              "FilesTrashDrive",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, the jelly colors will be used in the firmware update app.
-// Requires jelly-colors flag to also be enabled.
-BASE_FEATURE(kFirmwareUpdateJelly,
-             "FirmwareUpdateJelly",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the v2 version of the Firmware Updates app.
 BASE_FEATURE(kFirmwareUpdateUIV2,
              "FirmwareUpdateUIV2",
@@ -1225,6 +1207,7 @@ BASE_FEATURE(kForceReSyncDrive,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls enabling/disabling the forest feature.
+// For more info, see go/crosforest.
 BASE_FEATURE(kForestFeature,
              "ForestFeature",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1427,17 +1410,10 @@ BASE_FEATURE(kHiddenNetworkWarning,
              "HiddenNetworkWarning",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables hiding of ARC media notifications. If this is enabled, all ARC
-// notifications that are of the media type will not be shown. This
-// is because they will be replaced by native media session notifications.
-// TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
-BASE_FEATURE(kHideArcMediaNotifications,
-             "HideArcMediaNotifications",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, shelf navigation controls and the overview tray item will be
 // removed from the shelf in tablet mode (unless otherwise specified by user
-// preferences, or policy).
+// preferences, or policy). This feature also enables "contextual nudges" for
+// gesture education.
 BASE_FEATURE(kHideShelfControlsInTabletMode,
              "HideShelfControlsInTabletMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1613,12 +1589,6 @@ BASE_FEATURE(kImeStylusHandwriting,
              "StylusHandwriting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether to hide voice button in IME tray if accessibility mic icon
-// is already shown in the shelf.
-BASE_FEATURE(kImeTrayHideVoiceButton,
-             "ImeTrayHideVoiceButton",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables debug info UI for Korean input method's internal-mode switch.
 BASE_FEATURE(kImeKoreanModeSwitchDebug,
              "ImeKoreanModeSwitchDebug",
@@ -1719,7 +1689,7 @@ BASE_FEATURE(kLacrosProfileBackwardMigration,
 // on the user's preferences.
 BASE_FEATURE(kLanguagePacksFonts,
              "LanguagePacksFonts",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the Language Pack corresponding to the application locale is
 // downloaded and installed during OOBE. This pre-fetching is aimed at improving
@@ -1779,7 +1749,7 @@ BASE_FEATURE(kLinkCrossDeviceInternals,
 // (This feature is only available for consumer users)
 BASE_FEATURE(kLocalPasswordForConsumers,
              "LocalPasswordForConsumers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Supports the feature to hide sensitive content in notifications on the lock
 // screen. This option is effective when |kLockScreenNotification| is enabled.
@@ -1813,12 +1783,6 @@ BASE_FEATURE(kMacAddressRandomization,
 BASE_FEATURE(kMediaAppPdfA11yOcr,
              "MediaAppPdfA11yOcr",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables notification of when a microphone-using app is launched while the
-// microphone is muted.
-BASE_FEATURE(kMicMuteNotifications,
-             "MicMuteNotifications",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to enable the requirement of a minimum chrome version on the
 // device through the policy DeviceMinimumVersion. If the requirement is
@@ -2076,17 +2040,17 @@ BASE_FEATURE(kOsFeedbackDialog,
              "OsFeedbackDialog",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, the jelly colors will be used in the os feedback app. Requires
-// jelly-colors flag to also be enabled.
-BASE_FEATURE(kOsFeedbackJelly,
-             "OsFeedbackJelly",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables app badging toggle to be displayed in app notification page in
 // ChromeOS Settings.
 BASE_FEATURE(kOsSettingsAppBadgingToggle,
              "OsSettingsAppBadgingToggle",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Whether the DNS dialog in should be deprecated in Security and Privacy
+// Settings page when the user toggles off the DNS button.
+BASE_FEATURE(kOsSettingsDeprecateDnsDialog,
+             "OsSettingsDeprecateDnsDialog",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Whether the metrics toggle in settings user sync options page should be
 // deprecated.
@@ -2266,12 +2230,6 @@ BASE_FEATURE(kPreferConstantFrameRate,
              "PreferConstantFrameRate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, the jelly colors will be used in the print management app.
-// Requires jelly-colors flag to also be enabled.
-BASE_FEATURE(kPrintManagementJelly,
-             "PrintManagementJelly",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, ChromeOS print preview app is available. Enabling does not
 // replace the existing Chrome print preview UI, and will require an additional
 // flag and pref configured to facilitate. See b/323421684 for more information.
@@ -2423,11 +2381,6 @@ BASE_FEATURE(kQuickUnlockPinAutosubmitBackfill,
 BASE_FEATURE(kReleaseNotesNotificationAllChannels,
              "ReleaseNotesNotificationAllChannels",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables Release Notes suggestion chip on ChromeOS.
-BASE_FEATURE(kReleaseNotesSuggestionChip,
-             "ReleaseNotesSuggestionChip",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables rendering ARC notifications using ChromeOS notification framework
 BASE_FEATURE(kRenderArcNotificationsByChrome,
@@ -2657,11 +2610,6 @@ BASE_FEATURE(kSmdsSupport, "SmdsSupport", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the snap group feature is enabled or not.
 BASE_FEATURE(kSnapGroup, "SnapGroup", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables battery indicator for styluses in the palette tray
-BASE_FEATURE(kStylusBatteryStatus,
-             "StylusBatteryStatus",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables using the system input engine for physical typing in
 // Japanese.
@@ -3043,13 +2991,6 @@ BASE_FEATURE(kEnableMappableSIForFastInkHost,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool AreContextualNudgesEnabled() {
-  if (!IsHideShelfControlsInTabletModeEnabled()) {
-    return false;
-  }
-  return base::FeatureList::IsEnabled(kContextualNudges);
-}
-
 bool AreDesksTemplatesEnabled() {
   return base::FeatureList::IsEnabled(kDesksTemplates);
 }
@@ -3236,10 +3177,6 @@ bool IsClipboardHistoryLongpressEnabled() {
 bool IsClipboardHistoryUrlTitlesEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryUrlTitles) &&
          chromeos::features::IsClipboardHistoryRefreshEnabled();
-}
-
-bool IsClipboardHistoryWebContentsPasteEnabled() {
-  return base::FeatureList::IsEnabled(kClipboardHistoryWebContentsPaste);
 }
 
 bool IsContinuousOverviewScrollAnimationEnabled() {
@@ -3593,10 +3530,6 @@ bool IsHibernateEnabled() {
   return base::FeatureList::IsEnabled(kHibernate);
 }
 
-bool IsHideArcMediaNotificationsEnabled() {
-  return base::FeatureList::IsEnabled(kHideArcMediaNotifications);
-}
-
 bool IsHideShelfControlsInTabletModeEnabled() {
   return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode);
 }
@@ -3686,10 +3619,6 @@ bool IsStartAssistantAudioDecoderOnDemandEnabled() {
   return base::FeatureList::IsEnabled(kStartAssistantAudioDecoderOnDemand);
 }
 
-bool IsImeTrayHideVoiceButtonEnabled() {
-  return base::FeatureList::IsEnabled(kImeTrayHideVoiceButton);
-}
-
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
@@ -3732,21 +3661,6 @@ bool IsIppClientInfoEnabled() {
 bool IsJellyEnabledForDiagnosticsApp() {
   return chromeos::features::IsJellyEnabled() &&
          base::FeatureList::IsEnabled(kDiagnosticsAppJelly);
-}
-
-bool IsJellyEnabledForFirmwareUpdate() {
-  return chromeos::features::IsJellyEnabled() &&
-         base::FeatureList::IsEnabled(kFirmwareUpdateJelly);
-}
-
-bool IsJellyEnabledForOsFeedback() {
-  return chromeos::features::IsJellyEnabled() &&
-         base::FeatureList::IsEnabled(kOsFeedbackJelly);
-}
-
-bool IsJellyEnabledForPrintManagement() {
-  return chromeos::features::IsJellyEnabled() &&
-         base::FeatureList::IsEnabled(kPrintManagementJelly);
 }
 
 bool IsJellyEnabledForScanningApp() {
@@ -3846,10 +3760,6 @@ bool IsProductivityLauncherImageSearchEnabled() {
 
 bool IsMacAddressRandomizationEnabled() {
   return base::FeatureList::IsEnabled(kMacAddressRandomization);
-}
-
-bool IsMicMuteNotificationsEnabled() {
-  return base::FeatureList::IsEnabled(kMicMuteNotifications);
 }
 
 bool IsMinimumChromeVersionEnabled() {
@@ -4024,6 +3934,10 @@ bool IsOsFeedbackDialogEnabled() {
 
 bool IsOsSettingsAppBadgingToggleEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsAppBadgingToggle);
+}
+
+bool IsOsSettingsDeprecateDnsDialogEnabled() {
+  return base::FeatureList::IsEnabled(kOsSettingsDeprecateDnsDialog);
 }
 
 bool IsOsSettingsDeprecateSyncMetricsToggleEnabled() {
@@ -4358,10 +4272,6 @@ bool IsSystemTrayShadowEnabled() {
   return base::FeatureList::IsEnabled(kSystemTrayShadow);
 }
 
-bool IsStylusBatteryStatusEnabled() {
-  return base::FeatureList::IsEnabled(kStylusBatteryStatus);
-}
-
 bool IsTetheringExperimentalFunctionalityEnabled() {
   return base::FeatureList::IsEnabled(kTetheringExperimentalFunctionality);
 }
@@ -4426,6 +4336,10 @@ bool ShouldUseStorkSmds() {
 
 bool IsUserEducationEnabled() {
   return IsHoldingSpaceWallpaperNudgeEnabled() || IsWelcomeTourEnabled();
+}
+
+bool IsUpstreamTrustedReportsFirmwareEnabled() {
+  return base::FeatureList::IsEnabled(kUpstreamTrustedReportsFirmware);
 }
 
 bool IsVideoConferenceEnabled() {

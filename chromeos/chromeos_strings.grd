@@ -231,14 +231,17 @@
        <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_FORMULA_LABEL_TEXT" desc="The text that precedes a formula description in a Quick Answers unit conversion result card.">
       Formula
        </message>
-       <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_FORMULA_MULTIPLICATION_OPERATOR_TEXT" desc="The text that denotes a multiplication operation in the formula in a Quick Answers unit conversion result card.">
-      multiply
+       <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_APPROXIMATE_DIVISION_FORMULA_TEXT" desc="The formula description text format string used for approximate formulas involving division, shown on the Quick Answers unit conversion result card. The first placeholder contains the unit conversion category and the second placeholder contains the conversion rate.">
+      For an approximate result, divide the <ph name="CATEGORY_TEXT">$1<ex>length</ex></ph> value by <ph name="CONVERSION_RATE">$2<ex>1.094</ex></ph>
        </message>
-       <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_FORMULA_DIVISION_OPERATOR_TEXT" desc="The text that denotes a division operation in the formula in a Quick Answers unit conversion result card.">
-      divide
+       <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_EXACT_DIVISION_FORMULA_TEXT" desc="The formula description text format string used for exact formulas involving division, shown on the Quick Answers unit conversion result card. The first placeholder contains the unit conversion category and the second placeholder contains the conversion rate.">
+      Divide the <ph name="CATEGORY_TEXT">$1<ex>length</ex></ph> value by <ph name="CONVERSION_RATE">$2<ex>3</ex></ph>
        </message>
-       <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_FORMULA_DESCRIPTION_TEXT" desc="The formula description text format string used for Quick Answers unit conversion result card. The first placeholder contains the arithmetic operator, the second placeholder contains the unit conversion category, and the third placeholder contains the conversion rate number.">
-      For an approximate result, <ph name="OPERATOR_TEXT">$1<ex>multiply</ex></ph> the <ph name="CATEGORY_TEXT">$2<ex>length</ex></ph> value by <ph name="CONVERSION_RATE">$3<ex>3</ex></ph>
+       <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_APPROXIMATE_MULTIPLICATION_FORMULA_TEXT" desc="The formula description text format string used for approximate formulas involving multiplication, shown on the Quick Answers unit conversion result card. The first placeholder contains the unit conversion category and the second placeholder contains the conversion rate.">
+      For an approximate result, multiply the <ph name="CATEGORY_TEXT">$1<ex>length</ex></ph> value by <ph name="CONVERSION_RATE">$2<ex>1.094</ex></ph>
+       </message>
+       <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_EXACT_MULTIPLICATION_FORMULA_TEXT" desc="The formula description text format string used for exact formulas involving multiplication, shown on the Quick Answers unit conversion result card. The first placeholder contains the unit conversion category and the second placeholder contains the conversion rate.">
+      Multiply the <ph name="CATEGORY_TEXT">$1<ex>length</ex></ph> value by <ph name="CONVERSION_RATE">$2<ex>3</ex></ph>
        </message>
       <message name="IDS_UNIT_CONVERSION_POUND_DISPLAY_TEXT" desc="The display text of pound unit type.">
         pounds
@@ -376,6 +379,12 @@
       <!-- Mahi -->
       <message name="IDS_MAHI_EXPERIMENT_BADGE_ACCESSIBLE_NAME" desc="Accessible name of the badge to indicate that it is an experimental feature." translateable="false">
         Experimental feature
+      </message>
+      <message name="IDS_MAHI_SUMMARIZE_BUTTON_LABEL_TEXT" desc="The text label for the summarize button inside the Mahi menu">
+        Summarize
+      </message>
+      <message name="IDS_MAHI_MENU_INPUT_TEXTHOLDER" desc="The textholder for the input textfield inside the Mahi menu" translateable="false">
+        Ask question
       </message>
 
       <!-- Multitask Menu -->
@@ -3108,10 +3117,22 @@
           Delete
         </message>
         <message name="IDS_SEA_PEN_CREATE_MORE" desc="Menu item that, when clicked, will allow users to create more wallpapers like the selected wallpaper.">
-          Create more in this style
+          Create more
         </message>
         <message name="IDS_SEA_PEN_ABOUT" desc="Menu item that, when clicked, will show users more about the selected wallpaper.">
           About
+        </message>
+        <message name="IDS_SEA_PEN_ABOUT_DIALOG_TITLE" desc="Title for dialog that shows more information about the selected wallpaper.">
+          About wallpaper
+        </message>
+        <message name="IDS_SEA_PEN_ABOUT_DIALOG_PROMPT" desc="About dialog's description of the prompt that created the selected wallpaper.">
+          This wallpaper was created with AI using the following text: "<ph name="PROMPT">$1<ex>A radiant pink garden rose in bloom</ex></ph>."
+        </message>
+        <message name="IDS_SEA_PEN_ABOUT_DIALOG_DATE" desc="About dialog's description of the date that the selected wallpaper was created.">
+          Created on <ph name="DATE">$1<ex>Aug 25, 2023</ex></ph>
+        </message>
+        <message name="IDS_SEA_PEN_ABOUT_DIALOG_CLOSE" desc="Button that closes the about dialog.">
+          Close
         </message>
         <message name="IDS_SEA_PEN_EXPERIMENT_LABEL" desc="Label for experiment item indicating the feature is experimental.">
           Experiment
@@ -3147,7 +3168,8 @@
           You can only create wallpapers with AI for personal and non-commercial use. When you get wallpaper help, text is sent to Google AI servers to generate wallpaper suggestions, subject to <ph name="BEGIN_LINK_GOOGLE_PRIVACY_POLICY">&lt;a target="_blank" href="https://policies.google.com/privacy"&gt;</ph>Google's Privacy Policy<ph name="END_LINK_GOOGLE_PRIVACY_POLICY">&lt;/a&gt;</ph>. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="https://support.google.com/chromebook?p=copyeditor"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
         </message>
 
-        <!-- Sea Pen Templates -->
+        <!-- Sea Pen Templates (AUTOGENERATED - contact assistive-eng@google.com before editing) -->
+        <!-- Wallpaper template flower -->
         <message name="IDS_SEA_PEN_TEMPLATE_TITLE_FLOWER" desc="Title of the image generation template IDS_SEA_PEN_TEMPLATE_FLOWER.">
           Airbrushed
         </message>
@@ -3207,6 +3229,115 @@
         </message>
         <message name="IDS_SEA_PEN_OPTION_FLOWER_COLOR_RED" desc="Option to fill in the FLOWER_COLOR placeholder for IDS_SEA_PEN_TEMPLATE_FLOWER.">
           dark red
+        </message>
+        <!-- Wallpaper template art -->
+        <message name="IDS_SEA_PEN_TEMPLATE_TITLE_ART" desc="Title of the image generation template IDS_SEA_PEN_TEMPLATE_ART.">
+          Classic art
+        </message>
+        <message name="IDS_SEA_PEN_TEMPLATE_ART" desc="Template used to generate an image of classic art. Users can select the variables from a drop-down menu.">
+          A painting of a <ph name="ART_FEATURE">$1<ex>canyon</ex></ph> in the <ph name="ART_MOVEMENT">$2<ex>avant-garde</ex></ph> style
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_CANYON" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          canyon
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_MOUNTAIN" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          mountain
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_BEACH" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          beach
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_CAVE" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          cave
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_CLIFF" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          cliff
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_FOREST" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          forest
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_GLACIER" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          glacier
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_ISLAND" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          tropical island
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_JUNGLE" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          jungle
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_LAKE" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          lake
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_MEADOW" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          meadow
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_OCEAN" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          vast ocean
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_RIVER" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          river
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_DUNE" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          sand dune
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_SWAMP" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          swamp
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_VALLEY" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          valley
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_WATERFALL" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          waterfall
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_FIELD" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          field of flowers
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_CITYSCAPE" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          cityscape
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_FEATURE_VILLAGE" desc="Option to fill in the ART_FEATURE placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          village
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_AVANT_GARDE" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          avant-garde
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_REALIST" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          realist
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_EXPRESSIONIST" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          expressionist
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_IMPRESSIONIST" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          impressionist
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_POST_IMPRESSIONIST" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          post-impressionist
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_ART_NOUVEAU" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          art nouveau
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_BAROQUE" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          baroque
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_BAUHAUS" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          bauhaus
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_CLASSICIST" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          classicist
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_WATERCOLOR" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          watercolor
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_ABSTRACT" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          abstract
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_POINTILLIST" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          pointillist
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_GRAPHIC_DESIGN" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          graphic design
+        </message>
+        <message name="IDS_SEA_PEN_OPTION_ART_MOVEMENT_MODERN_ART" desc="Option to fill in the ART_MOVEMENT placeholder for IDS_SEA_PEN_TEMPLATE_ART.">
+          modern art
         </message>
 
         <!-- Traffic Counters UI -->
@@ -4092,14 +4223,15 @@
         <message name="IDS_FIRMWARE_CONFIRMATION_DISCLAIMER_ICON_ARIA_LABEL" desc="The alt-text read by the screen reader when the warning disclaimer is selected." translateable="false">
           Warning
         </message>
+        <!-- TODO(cambickel): Make these strings translatable. -->
         <message name="IDS_FIRMWARE_REQUEST_ID_REMOVE_REPLUG" desc="Request shown to the user during an update, requesting that the device USB cable be unplugged and reinserted." translateable="false">
-          The update will continue when the device USB cable has been unplugged and then re-inserted.
+          Please unplug and then re-insert the device USB cable to continue the update process.
         </message>
         <message name="IDS_FIRMWARE_REQUEST_ID_REMOVE_USB_CABLE" desc="Request shown to the user during an update, requesting that the device USB cable be unplugged." translateable="false">
-          The update will continue when the device USB cable has been unplugged.
+          Please unplug the device USB cable to continue the update process.
         </message>
         <message name="IDS_FIRMWARE_REQUEST_ID_INSERT_USB_CABLE" desc="Request shown to the user during an update, requesting that the device USB cable be reinserted." translateable="false">
-          The update will continue when the device USB cable has been re-inserted.
+          Please re-insert the device USB cable to continue the update process.
         </message>
         <message name="IDS_FIRMWARE_REQUEST_ID_PRESS_UNLOCK" desc="Request shown to the user during an update, requesting that the user press unlock on the device being updated." translateable="false">
           Press unlock on the device to continue the update process.
@@ -4108,10 +4240,11 @@
           Do not turn off your computer or remove the AC adapter while the update is in progress.
         </message>
         <message name="IDS_FIRMWARE_REQUEST_ID_REPLUG_INSTALL" desc="Request shown to the user during an update, requesting that the user unplug and replug the device and then install again." translateable="false">
-          Unplug and replug the device, then install the firmware.
+          Unplug and replug the device to continue the update process.
         </message>
+        <!-- TODO(cambickel): Upload screenshot for IDS_FIRMWARE_REQUEST_ID_REPLUG_POWER once it's approved by UX. -->
         <message name="IDS_FIRMWARE_REQUEST_ID_REPLUG_POWER" desc="Request shown to the user during an update, requesting that the device power cable be unplugged and reinserted." translateable="false">
-          The update will continue when the device power cable has been unplugged and then re-inserted.
+          Please unplug and then re-insert the device power cable to continue the update process.
         </message>
         <!-- Search Page -->
         <message name="IDS_FEEDBACK_TOOL_CONTINUE_BUTTON_LABEL" desc="Label of the continue button.">
@@ -4408,7 +4541,7 @@
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_NON_SEARCH_SHORTCUT_WARNING"
             desc="The status (warning) message that displays when user attempts to input a shortcut that does not include the search/launcher key.">
-          Shortcut without <ph name="meta_key">$1<ex>search</ex></ph> key might conflict with some app's shortcut. Press this shortcut again to continue using it, or press a new shortcut using the <ph name="key">$1<ex>search</ex></ph> key.
+          Shortcut without <ph name="meta_key">$1<ex>search</ex></ph> key might conflict with some app's shortcut. Press this shortcut again to continue using it, or press a new shortcut using the <ph name="key">$1<ex>search</ex></ph> key. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SEARCH_NO_RESULTS" desc="Text description of a search that has no results.">
           No search results found
@@ -4919,6 +5052,9 @@
         </message>
         <message name="IDS_INPUT_OVERLAY_BUTTON_OPTIONS_ACTION_EDIT_BUTTON_A11Y_LABEL" desc="Action edit button a11y label for button options menu. Spoken by screen readers when the list item button gets focus but not visually rendered." translateable="false">
           Tap on the button to focus on the label
+        </message>
+        <message name="IDS_INPUT_OVERLAY_BUTTON_PLACEMENT_A11Y_LABEL" desc="A11y label for button placement mode. Spoken by screen readers when in button placement mode but not visually rendered." translateable="false">
+          Use arrow keys to move this control to the game action you want. Use the enter key to place the control. Use the escape key to cancel.
         </message>
         <message name="IDS_INPUT_OVERLAY_EDITING_LIST_FIRST_CONTROL_LABEL" desc="The label to the left of the '+' button in the row below the title in the Game Controls editor menu without having created any buttons." translateable="false">
           Assign first control

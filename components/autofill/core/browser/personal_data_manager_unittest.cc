@@ -36,6 +36,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card_art_image.h"
+#include "components/autofill/core/browser/data_model/credit_card_benefit_test_api.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
@@ -205,8 +206,8 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
   }
 
-  // Add 3 credit cards. One local, one masked, one full.
-  void SetUpThreeCardTypes() {
+  // Add 2 credit cards. One local, one masked.
+  void SetUpTwoCardTypes() {
     EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
     CreditCard masked_server_card;
     test::SetCreditCardInfo(&masked_server_card, "Elvis Presley",
@@ -219,23 +220,12 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     {
       PersonalDataProfileTaskWaiter waiter(*personal_data_);
       EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
+      // TODO(crbug.com/1497734): Switch to an appropriate setter for masked
+      // cards, as full cards have been removed.
       personal_data_->AddFullServerCreditCardForTesting(masked_server_card);
       std::move(waiter).Wait();
     }
     ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
-
-    personal_data_->ResetFullServerCard(
-        personal_data_->GetCreditCards()[0]->guid());
-
-    CreditCard full_server_card;
-    test::SetCreditCardInfo(&full_server_card, "Buddy Holly",
-                            "5187654321098765",  // Mastercard
-                            "10", "2998", "1");
-    full_server_card.set_guid("00000000-0000-0000-0000-000000000008");
-    full_server_card.set_record_type(CreditCard::RecordType::kFullServerCard);
-    full_server_card.set_server_id("full_id");
-    full_server_card.set_use_count(10);
-    personal_data_->AddFullServerCreditCardForTesting(full_server_card);
 
     CreditCard local_card;
     test::SetCreditCardInfo(&local_card, "Freddy Mercury",
@@ -250,7 +240,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
       personal_data_->AddCreditCard(local_card);
       std::move(waiter).Wait();
     }
-    EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
+    ASSERT_EQ(2U, personal_data_->GetCreditCards().size());
   }
 
   // Helper method to create a local card that was expired 400 days ago,
@@ -2079,7 +2069,7 @@ TEST_F(PersonalDataManagerTest, GetAutofillOffers_WalletImportDisabled) {
 }
 
 // Tests that GetAutofillOffers does not return any offers if
-// |IsAutofillCreditCardEnabled()| returns |false|.
+// `IsAutofillPaymentMethodsEnabled()` returns `false`.
 TEST_F(PersonalDataManagerTest, GetAutofillOffers_AutofillCreditCardDisabled) {
   // Add a card-linked offer and a promo code offer.
   AddOfferDataForTest(test::GetCardLinkedOfferData1());
@@ -2139,7 +2129,7 @@ TEST_F(PersonalDataManagerTest,
 }
 
 // Tests that GetActiveAutofillPromoCodeOffersForOrigin does not return any
-// promo code offers if |IsAutofillCreditCardEnabled()| returns |false|.
+// promo code offers if `IsAutofillPaymentMethodsEnabled()` returns `false`.
 TEST_F(PersonalDataManagerTest,
        GetActiveAutofillPromoCodeOffersForOrigin_AutofillCreditCardDisabled) {
   // Add an active promo code offer.
@@ -2688,22 +2678,12 @@ TEST_F(PersonalDataManagerTest, GetCreditCardsToSuggest_ServerDuplicates) {
   server_cards.back().set_use_date(AutofillClock::Now() - base::Days(15));
   server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
-  // This unmasked server card is an exact dupe of a local card. Therefore only
-  // this card should appear in the suggestions as full server cards have
-  // precedence over local cards.
-  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "c789");
-  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
-                          "378282246310005" /* American Express */, "04",
-                          "2999", "1");
-  server_cards.back().set_use_count(1);
-  server_cards.back().set_use_date(AutofillClock::Now() - base::Days(15));
-
   SetServerCards(server_cards);
 
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  EXPECT_EQ(5U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(4U, personal_data_->GetCreditCards().size());
 
   std::vector<CreditCard*> card_to_suggest =
       personal_data_->GetCreditCardsToSuggest();
@@ -2716,7 +2696,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardsToSuggest_ServerDuplicates) {
             card_to_suggest[2]->GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(CreditCard::RecordType::kLocalCard,
             card_to_suggest[0]->record_type());
-  EXPECT_EQ(CreditCard::RecordType::kFullServerCard,
+  EXPECT_EQ(CreditCard::RecordType::kLocalCard,
             card_to_suggest[1]->record_type());
   EXPECT_EQ(CreditCard::RecordType::kLocalCard,
             card_to_suggest[2]->record_type());
@@ -3049,8 +3029,7 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
   // Create in-use and in-disuse cards of each record type.
   const std::vector<CreditCard::RecordType> record_types{
       CreditCard::RecordType::kLocalCard,
-      CreditCard::RecordType::kMaskedServerCard,
-      CreditCard::RecordType::kFullServerCard};
+      CreditCard::RecordType::kMaskedServerCard};
   for (auto record_type : record_types) {
     // Create a card that's still in active use.
     CreditCard card_in_use = test::GetRandomCreditCard(record_type);
@@ -3074,37 +3053,25 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
     }
   }
 
-  // Sets the virtual card enrollment state for the first three server cards.
+  // Sets the virtual card enrollment state for the first server card.
   server_cards[0].set_virtual_card_enrollment_state(
       CreditCard::VirtualCardEnrollmentState::kEnrolled);
   server_cards[0].set_card_art_url(GURL("https://www.example.com/image1"));
-  server_cards[1].set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::kEnrolled);
-  server_cards[1].set_card_art_url(GURL("https://www.example.com/image1"));
-  server_cards[2].set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::kEnrolled);
-  server_cards[2].set_card_art_url(GURL("https://www.example.com/image2"));
 
   SetServerCards(server_cards);
-
-  // SetServerCards modifies the metadata (use_count and use_date)
-  // of unmasked cards. Reset the server card metadata to match the data set
-  // up above.
-  for (const auto& card : server_cards)
-    account_autofill_table_->UpdateServerCardMetadata(card);
 
   personal_data_->Refresh();
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
-  ASSERT_EQ(6U, personal_data_->GetCreditCards().size());
+  ASSERT_EQ(4U, personal_data_->GetCreditCards().size());
 
   // Reload the database, which will log the stored profile counts.
   base::HistogramTester histogram_tester;
   ResetPersonalDataManager();
 
-  EXPECT_EQ(personal_data_->GetServerCardWithArtImageCount(), 3U);
+  EXPECT_EQ(personal_data_->GetServerCardWithArtImageCount(), 1U);
 
-  ASSERT_EQ(6U, personal_data_->GetCreditCards().size());
+  ASSERT_EQ(4U, personal_data_->GetCreditCards().size());
 
   // Validate the basic count metrics for both local and server cards. Deep
   // validation of the metrics is done in:
@@ -3116,28 +3083,29 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
       "Autofill.StoredCreditCardCount.Server.Masked", 1);
   histogram_tester.ExpectTotalCount(
       "Autofill.StoredCreditCardCount.Server.Unmasked", 1);
-  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount", 6, 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount", 4, 1);
   histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount.Local", 2,
                                      1);
-  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount.Server", 4,
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount.Server", 2,
                                      1);
   histogram_tester.ExpectBucketCount(
       "Autofill.StoredCreditCardCount.Server.Masked", 2, 1);
   histogram_tester.ExpectBucketCount(
-      "Autofill.StoredCreditCardCount.Server.Unmasked", 2, 1);
+      "Autofill.StoredCreditCardCount.Server.Unmasked", 0, 1);
   histogram_tester.ExpectTotalCount(
       "Autofill.StoredCreditCardCount.Server.WithVirtualCardMetadata", 1);
   histogram_tester.ExpectBucketCount(
-      "Autofill.StoredCreditCardCount.Server.WithCardArtImage", 3, 1);
+      "Autofill.StoredCreditCardCount.Server.WithCardArtImage", 1, 1);
 }
 
 // Test that setting a null sync service returns only local credit cards.
 TEST_F(PersonalDataManagerTest, GetCreditCards_NoSyncService) {
   base::HistogramTester histogram_tester;
-  SetUpThreeCardTypes();
+  SetUpTwoCardTypes();
 
   // Set no sync service.
   personal_data_->SetSyncServiceForTest(nullptr);
+  personal_data_->Refresh();
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
   // No sync service is the same as payments integration being disabled, i.e.
@@ -3152,7 +3120,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCards_NoSyncService) {
     BUILDFLAG(IS_CHROMEOS)
 TEST_F(PersonalDataManagerSyncTransportModeTest,
        ServerCardsShowInTransportMode) {
-  SetUpThreeCardTypes();
+  SetUpTwoCardTypes();
 
   CoreAccountInfo active_info =
       identity_test_env_.identity_manager()->GetPrimaryAccountInfo(
@@ -3162,11 +3130,11 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
   ::autofill::prefs::SetUserOptedInWalletSyncTransport(
       prefs_.get(), active_info.account_id, true);
 
-  // Check that the server cards are available for suggestion.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  EXPECT_EQ(3U, personal_data_->GetCreditCardsToSuggest().size());
+  // Check that the server card is available for suggestion.
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCardsToSuggest().size());
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
-  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+  EXPECT_EQ(1U, personal_data_->GetServerCreditCards().size());
 
   // Stop Wallet sync.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged());
@@ -3185,28 +3153,28 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
 // appropriate feature is disabled.
 TEST_F(PersonalDataManagerSyncTransportModeTest,
        ServerCardsShowInTransportMode_NeedOptIn) {
-  SetUpThreeCardTypes();
+  SetUpTwoCardTypes();
 
   CoreAccountInfo active_info =
       identity_test_env_.identity_manager()->GetPrimaryAccountInfo(
           signin::ConsentLevel::kSignin);
 
-  // The server cards should not be available at first. The user needs to
+  // The server card should not be available at first. The user needs to
   // accept the opt-in offer.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
   EXPECT_EQ(1U, personal_data_->GetCreditCardsToSuggest().size());
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
-  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+  EXPECT_EQ(1U, personal_data_->GetServerCreditCards().size());
 
   // Opt-in to seeing server card in sync transport mode.
   ::autofill::prefs::SetUserOptedInWalletSyncTransport(
       prefs_.get(), active_info.account_id, true);
 
-  // Check that the server cards are available for suggestion.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  EXPECT_EQ(3U, personal_data_->GetCreditCardsToSuggest().size());
+  // Check that the server card is available for suggestion.
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCardsToSuggest().size());
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
-  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+  EXPECT_EQ(1U, personal_data_->GetServerCreditCards().size());
 }
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS)
@@ -3252,21 +3220,21 @@ TEST_F(PersonalDataManagerTest, UsePersistentServerStorage) {
   ASSERT_TRUE(identity_test_env_.identity_manager()->HasPrimaryAccount(
       signin::ConsentLevel::kSync));
   ASSERT_TRUE(sync_service_.HasSyncConsent());
-  SetUpThreeCardTypes();
+  SetUpTwoCardTypes();
 
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  EXPECT_EQ(3U, personal_data_->GetCreditCardsToSuggest().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCardsToSuggest().size());
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
-  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+  EXPECT_EQ(1U, personal_data_->GetServerCreditCards().size());
 }
 
 // Verify that PDM can switch at runtime between the different storages.
 TEST_F(PersonalDataManagerSyncTransportModeTest, SwitchServerStorages) {
   // Start with account storage.
-  SetUpThreeCardTypes();
+  SetUpTwoCardTypes();
 
-  // Check that we do have 2 server cards, as expected.
-  ASSERT_EQ(2U, personal_data_->GetServerCreditCards().size());
+  // Check that we do have a server card, as expected.
+  ASSERT_EQ(1U, personal_data_->GetServerCreditCards().size());
 
   // Switch to persistent storage.
   sync_service_.SetHasSyncConsent(true);
@@ -3275,6 +3243,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, SwitchServerStorages) {
 
   EXPECT_EQ(0U, personal_data_->GetServerCreditCards().size());
 
+  // Add a new card to the persistent storage.
   CreditCard server_card;
   test::SetCreditCardInfo(&server_card, "Server Card",
                           "4234567890123456",  // Visa
@@ -3282,17 +3251,21 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, SwitchServerStorages) {
   server_card.set_guid("00000000-0000-0000-0000-000000000007");
   server_card.set_record_type(CreditCard::RecordType::kFullServerCard);
   server_card.set_server_id("server_id");
+  // TODO(crbug.com/1497734): Switch to an appropriate setter for masked
+  // cards, as full cards have been removed.
   personal_data_->AddFullServerCreditCardForTesting(server_card);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
   EXPECT_EQ(1U, personal_data_->GetServerCreditCards().size());
 
-  // Switch back to the account storage.
+  // Switch back to the account storage, and verify that we are back to the
+  // original card.
   sync_service_.SetHasSyncConsent(false);
   personal_data_->OnStateChanged(&sync_service_);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
-  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+  ASSERT_EQ(1U, personal_data_->GetServerCreditCards().size());
+  EXPECT_EQ(u"3456", personal_data_->GetServerCreditCards()[0]->number());
 }
 
 // Sanity check that the mode where we use the regular, persistent storage for
@@ -3995,6 +3968,172 @@ TEST_F(PersonalDataManagerTest, AccountStatusSyncRetrieval) {
 
   personal_data_->SetSyncServiceForTest(nullptr);
   EXPECT_EQ(personal_data_->GetAccountStatusForTesting(), std::nullopt);
+}
+
+// Tests that benefit getters return expected result for active benefits.
+TEST_F(PersonalDataManagerTest, GetActiveCreditCardBenefits) {
+  // Add active benefits.
+  std::unique_ptr<CreditCardFlatRateBenefit> flat_rate_benefit =
+      test::GetActiveCreditCardFlatRateBenefit();
+  const CreditCardBenefit::LinkedCardInstrumentId
+      instrument_id_for_flat_rate_benefit =
+          flat_rate_benefit->linked_card_instrument_id();
+  personal_data_->AddCreditCardBenefitForTest(std::move(flat_rate_benefit));
+
+  std::unique_ptr<CreditCardCategoryBenefit> category_benefit =
+      test::GetActiveCreditCardCategoryBenefit();
+  const CreditCardBenefit::LinkedCardInstrumentId
+      instrument_id_for_category_benefit =
+          category_benefit->linked_card_instrument_id();
+  const CreditCardCategoryBenefit::BenefitCategory
+      benefit_category_for_category_benefit =
+          category_benefit->benefit_category();
+  personal_data_->AddCreditCardBenefitForTest(std::move(category_benefit));
+
+  std::unique_ptr<CreditCardMerchantBenefit> merchant_benefit =
+      test::GetActiveCreditCardMerchantBenefit();
+  const CreditCardBenefit::LinkedCardInstrumentId
+      instrument_id_for_merchant_benefit =
+          merchant_benefit->linked_card_instrument_id();
+  const url::Origin& merchant_origin_for_merchant_benefit =
+      *merchant_benefit->merchant_domains().begin();
+  personal_data_->AddCreditCardBenefitForTest(std::move(merchant_benefit));
+
+  // Match getter results with the search criteria.
+  EXPECT_TRUE(personal_data_->IsAutofillPaymentMethodsEnabled());
+  EXPECT_EQ(personal_data_
+                ->GetFlatRateBenefitByInstrumentId(
+                    instrument_id_for_flat_rate_benefit)
+                ->linked_card_instrument_id(),
+            instrument_id_for_flat_rate_benefit);
+
+  CreditCardCategoryBenefit* category_benefit_result =
+      personal_data_->GetCategoryBenefitByInstrumentIdAndCategory(
+          instrument_id_for_category_benefit,
+          benefit_category_for_category_benefit);
+  EXPECT_EQ(category_benefit_result->linked_card_instrument_id(),
+            instrument_id_for_category_benefit);
+  EXPECT_EQ(category_benefit_result->benefit_category(),
+            benefit_category_for_category_benefit);
+
+  CreditCardMerchantBenefit* merchant_benefit_result =
+      personal_data_->GetMerchantBenefitByInstrumentIdAndOrigin(
+          instrument_id_for_merchant_benefit,
+          merchant_origin_for_merchant_benefit);
+  EXPECT_EQ(merchant_benefit_result->linked_card_instrument_id(),
+            instrument_id_for_merchant_benefit);
+  EXPECT_TRUE(merchant_benefit_result->merchant_domains().contains(
+      merchant_origin_for_merchant_benefit));
+
+  // Disable autofill credit card pref. Check that no benefits are returned.
+  prefs::SetAutofillPaymentMethodsEnabled(prefs_.get(), false);
+  EXPECT_EQ(personal_data_->GetFlatRateBenefitByInstrumentId(
+                instrument_id_for_flat_rate_benefit),
+            nullptr);
+  EXPECT_EQ(personal_data_->GetCategoryBenefitByInstrumentIdAndCategory(
+                instrument_id_for_category_benefit,
+                benefit_category_for_category_benefit),
+            nullptr);
+  EXPECT_EQ(personal_data_->GetMerchantBenefitByInstrumentIdAndOrigin(
+                instrument_id_for_merchant_benefit,
+                merchant_origin_for_merchant_benefit),
+            nullptr);
+}
+
+// Tests benefit getters will not return inactive benefits.
+TEST_F(PersonalDataManagerTest, GetInactiveCreditCardBenefits) {
+  // Add inactive benefits.
+  base::Time future_time = AutofillClock::Now() + base::Days(5);
+
+  std::unique_ptr<CreditCardFlatRateBenefit> flat_rate_benefit =
+      test::GetActiveCreditCardFlatRateBenefit();
+  test_api(*flat_rate_benefit).SetStartTimeForTesting(future_time);
+  const CreditCardBenefit::LinkedCardInstrumentId
+      instrument_id_for_flat_rate_benefit =
+          flat_rate_benefit->linked_card_instrument_id();
+  personal_data_->AddCreditCardBenefitForTest(std::move(flat_rate_benefit));
+
+  std::unique_ptr<CreditCardCategoryBenefit> category_benefit =
+      test::GetActiveCreditCardCategoryBenefit();
+  test_api(*category_benefit).SetStartTimeForTesting(future_time);
+  const CreditCardBenefit::LinkedCardInstrumentId
+      instrument_id_for_category_benefit =
+          category_benefit->linked_card_instrument_id();
+  const CreditCardCategoryBenefit::BenefitCategory
+      benefit_category_for_category_benefit =
+          category_benefit->benefit_category();
+  personal_data_->AddCreditCardBenefitForTest(std::move(category_benefit));
+
+  std::unique_ptr<CreditCardMerchantBenefit> merchant_benefit =
+      test::GetActiveCreditCardMerchantBenefit();
+  test_api(*merchant_benefit).SetStartTimeForTesting(future_time);
+  const CreditCardBenefit::LinkedCardInstrumentId
+      instrument_id_for_merchant_benefit =
+          merchant_benefit->linked_card_instrument_id();
+  const url::Origin& merchant_origin_for_merchant_benefit =
+      *merchant_benefit->merchant_domains().begin();
+  personal_data_->AddCreditCardBenefitForTest(std::move(merchant_benefit));
+
+  // Should not return any benefits as no benefit is currently active.
+  EXPECT_EQ(personal_data_->GetFlatRateBenefitByInstrumentId(
+                instrument_id_for_flat_rate_benefit),
+            nullptr);
+  EXPECT_EQ(personal_data_->GetCategoryBenefitByInstrumentIdAndCategory(
+                instrument_id_for_category_benefit,
+                benefit_category_for_category_benefit),
+            nullptr);
+  EXPECT_EQ(personal_data_->GetMerchantBenefitByInstrumentIdAndOrigin(
+                instrument_id_for_merchant_benefit,
+                merchant_origin_for_merchant_benefit),
+            nullptr);
+}
+
+// Tests benefit getters will not return expired benefits.
+TEST_F(PersonalDataManagerTest, GetExpiredCreditCardBenefits) {
+  // Add Expired benefits.
+  base::Time expired_time = AutofillClock::Now() - base::Days(5);
+
+  std::unique_ptr<CreditCardFlatRateBenefit> flat_rate_benefit =
+      test::GetActiveCreditCardFlatRateBenefit();
+  test_api(*flat_rate_benefit).SetEndTimeForTesting(expired_time);
+  const CreditCardBenefit::LinkedCardInstrumentId
+      instrument_id_for_flat_rate_benefit =
+          flat_rate_benefit->linked_card_instrument_id();
+  personal_data_->AddCreditCardBenefitForTest(std::move(flat_rate_benefit));
+
+  std::unique_ptr<CreditCardCategoryBenefit> category_benefit =
+      test::GetActiveCreditCardCategoryBenefit();
+  test_api(*category_benefit).SetEndTimeForTesting(expired_time);
+  const CreditCardBenefit::LinkedCardInstrumentId
+      instrument_id_for_category_benefit =
+          category_benefit->linked_card_instrument_id();
+  const CreditCardCategoryBenefit::BenefitCategory
+      benefit_category_for_category_benefit =
+          category_benefit->benefit_category();
+  personal_data_->AddCreditCardBenefitForTest(std::move(category_benefit));
+
+  std::unique_ptr<CreditCardMerchantBenefit> merchant_benefit =
+      test::GetActiveCreditCardMerchantBenefit();
+  test_api(*merchant_benefit).SetEndTimeForTesting(expired_time);
+  const CreditCardBenefit::LinkedCardInstrumentId
+      instrument_id_for_merchant_benefit =
+          merchant_benefit->linked_card_instrument_id();
+  const url::Origin& merchant_origin_for_merchant_benefit =
+      *merchant_benefit->merchant_domains().begin();
+  personal_data_->AddCreditCardBenefitForTest(std::move(merchant_benefit));
+
+  // Should not return any benefits as all of the benefits are expired.
+  EXPECT_EQ(personal_data_->GetFlatRateBenefitByInstrumentId(
+                instrument_id_for_flat_rate_benefit),
+            nullptr);
+  EXPECT_EQ(personal_data_->GetCategoryBenefitByInstrumentIdAndCategory(
+                instrument_id_for_category_benefit,
+                benefit_category_for_category_benefit),
+            nullptr);
+  EXPECT_EQ(personal_data_->GetMerchantBenefitByInstrumentIdAndOrigin(
+                instrument_id_for_merchant_benefit,
+                merchant_origin_for_merchant_benefit),
+            nullptr);
 }
 
 }  // namespace autofill

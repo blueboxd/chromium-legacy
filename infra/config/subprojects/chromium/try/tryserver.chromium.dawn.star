@@ -268,6 +268,22 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-dawn-arm64-exp-rel",
+    description_html = "Runs ToT Dawn tests on experimental Pixel 6 configs",
+    mirrors = [
+        "ci/Dawn Android arm64 Builder",
+        "ci/Dawn Android arm64 Experimental Release (Pixel 6)",
+    ],
+    gn_args = "ci/Dawn Android arm64 Builder",
+    pool = "luci.chromium.gpu.android.pixel6.try",
+    builderless = True,
+    os = os.LINUX_DEFAULT,
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+)
+
+try_.builder(
     name = "linux-dawn-rel",
     mirrors = [
         "ci/Dawn Linux x64 Builder",
@@ -389,6 +405,22 @@ try_.builder(
     ],
     gn_args = "ci/Dawn Win10 x64 Builder",
     pool = "luci.chromium.gpu.win10.intel.try",
+    builderless = True,
+    os = os.WINDOWS_ANY,
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+)
+
+try_.builder(
+    name = "dawn-try-win-x64-nvidia-exp",
+    description_html = "Runs ToT Dawn tests on experimental NVIDIA configs",
+    mirrors = [
+        "ci/Dawn Win10 x64 Builder",
+        "ci/Dawn Win10 x64 Experimental Release (NVIDIA)",
+    ],
+    gn_args = "ci/Dawn Win10 x64 Builder",
+    pool = "luci.chromium.gpu.win10.nvidia.try",
     builderless = True,
     os = os.WINDOWS_ANY,
     test_presentation = resultdb.test_presentation(

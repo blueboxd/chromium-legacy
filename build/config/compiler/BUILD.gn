@@ -1853,6 +1853,9 @@ config("default_warnings") {
         cflags_cc += [
           # TODO(https://crbug.com/1474434): fix and reenable
           "-Wno-missing-field-initializers",
+
+          # TODO(https://crbug.com/324953188): fix and reenable
+          "-Wno-extra-qualification",
         ]
       }
 
@@ -1897,6 +1900,7 @@ config("default_warnings") {
       cflags += [
         "-Wno-error=unknown-warning-option",
         "-Wno-error=unused-command-line-argument",
+        "-Wno-error=unknown-pragmas",
       ]
     }
   }

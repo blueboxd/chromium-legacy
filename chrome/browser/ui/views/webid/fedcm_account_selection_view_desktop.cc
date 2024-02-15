@@ -91,6 +91,17 @@ void FedCmAccountSelectionView::Show(
       base::BindOnce(&FedCmAccountSelectionView::OnAccountsDisplayed,
                      weak_ptr_factory_.GetWeakPtr());
 
+  // TODO(crbug.com/1518356): Support modal dialogs for all types of FedCM
+  // dialogs. This boolean is used to fall back to the bubble dialog where
+  // modal is not yet implemented.
+  bool has_modal_support =
+      sign_in_mode != Account::SignInMode::kAuto &&
+      !identity_provider_data_list[0].idp_metadata.supports_add_account;
+
+  // TODO(crbug.com/1518356): Implement modal request permissions dialog.
+  bool should_request_permission =
+      rp_mode == blink::mojom::RpMode::kWidget || !has_modal_support;
+
   idp_display_data_list_.clear();
 
   size_t accounts_size = 0u;
@@ -99,7 +110,9 @@ void FedCmAccountSelectionView::Show(
     idp_display_data_list_.emplace_back(
         base::UTF8ToUTF16(identity_provider.idp_for_display),
         identity_provider.idp_metadata, identity_provider.client_metadata,
-        identity_provider.accounts, identity_provider.request_permission,
+        identity_provider.accounts,
+        should_request_permission ? identity_provider.request_permission
+                                  : false,
         identity_provider.has_login_status_mismatch);
     // TODO(crbug.com/1406014): Decide what we should display if the IdPs use
     // different contexts here.
@@ -117,13 +130,6 @@ void FedCmAccountSelectionView::Show(
                             ? std::make_optional<std::u16string>(
                                   base::UTF8ToUTF16(*iframe_etld_plus_one))
                             : std::nullopt;
-
-  // TODO(crbug.com/1518356): Support modal dialogs for all types of FedCM
-  // dialogs. This boolean is used to fall back to the bubble dialog where
-  // modal is not yet implemented.
-  bool has_modal_support =
-      idp_display_data_list_.size() == 1u && accounts_size == 1u &&
-      !idp_display_data_list_[0].idp_metadata.supports_add_account;
 
   // If a modal dialog was created previously but there is no modal support for
   // this type of dialog, reset account_selection_view_ to create a bubble
@@ -436,7 +442,8 @@ AccountSelectionViewBase* FedCmAccountSelectionView::CreateAccountSelectionView(
     blink::mojom::RpMode rp_mode,
     bool show_auto_reauthn_checkbox,
     bool has_modal_support) {
-  Browser* browser = chrome::FindBrowserWithTab(delegate_->GetWebContents());
+  content::WebContents* web_contents = delegate_->GetWebContents();
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
 
   // Reject the API if the browser is not found or its tab strip model does not
   // exist, as we require those to show UI. It is unclear why there are callers
@@ -449,7 +456,7 @@ AccountSelectionViewBase* FedCmAccountSelectionView::CreateAccountSelectionView(
 
   if (rp_mode == blink::mojom::RpMode::kButton && has_modal_support) {
     return new AccountSelectionModalView(
-        rp_context, browser,
+        top_frame_etld_plus_one, idp_title, rp_context, web_contents,
         SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory(),
         this, this);
   }
@@ -459,7 +466,7 @@ AccountSelectionViewBase* FedCmAccountSelectionView::CreateAccountSelectionView(
 
   return new AccountSelectionBubbleView(
       top_frame_etld_plus_one, iframe_etld_plus_one, idp_title, rp_context,
-      show_auto_reauthn_checkbox, browser, anchor_view,
+      show_auto_reauthn_checkbox, web_contents, anchor_view,
       SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory(),
       this, this);
 }
@@ -720,4 +727,5 @@ base::WeakPtr<views::Widget> FedCmAccountSelectionView::GetDialogWidget() {
 void FedCmAccountSelectionView::ResetAccountSelectionView() {
   account_selection_view_->CloseDialog();
   account_selection_view_ = nullptr;
+  TabStripModelObserver::StopObservingAll(this);
 }

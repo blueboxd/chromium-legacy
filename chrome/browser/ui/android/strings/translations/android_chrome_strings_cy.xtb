@@ -169,7 +169,6 @@ Dim ond rhywun sydd â'ch cyfrinymadrodd all ddarllen eich data sydd wedi'u hamg
 <translation id="1933845786846280168">Tab a Ddewisir</translation>
 <translation id="1943432128510653496">Cadw cyfrineiriau</translation>
 <translation id="1944535645109964458">Dim codau pas ar gael</translation>
-<translation id="1952172573699511566">Bydd gwefannau yn dangos testun yn eich dewis iaith, pan fydd hynny'n bosib.</translation>
 <translation id="1959679933317802873">Wrthi'n aros am gynnwys</translation>
 <translation id="1960290143419248813">Nid yw diweddariadau Chrome bellach yn cael eu cefnogi ar gyfer y fersiwn hon o Android</translation>
 <translation id="1963976881984600709">Amddiffyniad safonol</translation>
@@ -204,6 +203,7 @@ Dim ond rhywun sydd â'ch cyfrinymadrodd all ddarllen eich data sydd wedi'u hamg
 <translation id="2132122640199389833">Tynnu'r holl ddyfeisiau cysylltiedig</translation>
 <translation id="213279576345780926">Wedi cau <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Ychwanegu at y sgrîn Hafan</translation>
+<translation id="2139414603196655536">Mae'ch gweithgarwch ym Mewnwelediadau Tudalen wedi'i gadw yn eich Cyfrif Google. <ph name="BEGIN_LINK" />Dysgu sut i reoli hyn<ph name="END_LINK" /></translation>
 <translation id="2141396931810938595">Yn seiliedig ar eich defnydd</translation>
 <translation id="2149973817440762519">Golygu Nod Tudalen</translation>
 <translation id="2155214902713132423">Nid yw'r dull dilysu hwn ar gael ar gyfer y ddyfais hon. Dewiswch opsiwn gwahanol ar eich dyfais arall.</translation>
@@ -379,7 +379,6 @@ Dim ond rhywun sydd â'ch cyfrinymadrodd all ddarllen eich data sydd wedi'u hamg
 <translation id="3027644380269727216">Yn seiliedig ar eich gweithgarwch ar wefan. Mae'r gosodiad hwn wedi'i droi ymlaen.</translation>
 <translation id="3029276696788198026">Dim rhaglwytho</translation>
 <translation id="3029704984691124060">Nid yw'r cyfrinymadroddion yn cyfateb</translation>
-<translation id="303514781271618814">Mae Chrome yn archwilio nodweddion newydd sy'n caniatáu i wefannau ddarparu'r un profiad pori drwy ddefnyddio llai o'ch data</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Cael help<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Yn dilyn y pris</translation>
 <translation id="3037517125981011456">Dangos anogwyr i fewngofnodi i Chrome</translation>
@@ -873,6 +872,7 @@ I newid y gosodiad hwn, <ph name="BEGIN_LINK" />ailosodwch gysoni<ph name="END_L
 <translation id="5698878456427040674">Gwiriwch a yw'r cyfrif a ddewiswyd yn cael ei gefnogi.</translation>
 <translation id="570347048394355941">Newid i'r Tab</translation>
 <translation id="5715150588940290235">Dileu codau diogelwch sydd wedi'u cadw?</translation>
+<translation id="571930967925877633">Ni fydd eich nodau tudalen, eich hanes na'ch data Chrome eraill yn cael eu cysoni â'ch Cyfrif Google mwyach</translation>
 <translation id="572328651809341494">Tabiau diweddar</translation>
 <translation id="5726692708398506830">Gwnewch bopeth ar y dudalen yn fwy</translation>
 <translation id="5744751019568455640">Dyma'r lleisiau y gallwch eu dewis ar gyfer darllen eich tudalennau gwe. Os ydych yn hoffi'r llais hwn ac eisiau i mi barhau i'w ddefnyddio, tapiwch enw'r llais.</translation>
@@ -1081,6 +1081,7 @@ Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion 
 <translation id="670498945988402717">Gwiriwyd ddoe</translation>
 <translation id="6710213216561001401">Blaenorol</translation>
 <translation id="671481426037969117">Mae'ch amserydd <ph name="FQDN" /> wedi dirwyn i ben. Bydd yn dechrau eto yfory.</translation>
+<translation id="6714850225831215156">{BOOKMARK_COUNT,plural, =1{Wedi cadw nod tudalen i <ph name="FOLDER_NAME" />. Dim ond i'r ddyfais hon y caiff ei gadw.}zero{Wedi cadw nodau tudalen i <ph name="FOLDER_NAME" />. Dim ond i'r ddyfais hon y caiff ei gadw.}two{Wedi cadw nodau tudalen i <ph name="FOLDER_NAME" />. Dim ond i'r ddyfais hon y caiff ei gadw.}few{Wedi cadw nodau tudalen i <ph name="FOLDER_NAME" />. Dim ond i'r ddyfais hon y caiff ei gadw.}many{Wedi cadw nodau tudalen i <ph name="FOLDER_NAME" />. Dim ond i'r ddyfais hon y caiff ei gadw.}other{Wedi cadw nodau tudalen i <ph name="FOLDER_NAME" />. Dim ond i'r ddyfais hon y caiff ei gadw.}}</translation>
 <translation id="6715020873764921614">Ydych chi am lawrlwytho <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) beth bynnag?</translation>
 <translation id="6719634564325948108">Cysylltu â Chod QR?</translation>
 <translation id="6723740634201835758">Yn eich Cyfrif Google</translation>
@@ -1105,7 +1106,6 @@ Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion 
 <translation id="6828070228333235514">Stopio dilyn y pris</translation>
 <translation id="6830728435402077660">Ddim yn ddiogel</translation>
 <translation id="6831043979455480757">Cyfieithu</translation>
-<translation id="6833996806551876956">Prawf Privacy Sandbox</translation>
 <translation id="6836206421467243968">Adfer grŵp tabiau <ph name="TITLE_OF_GROUP" /> fel grŵp tabiau cefndirol newydd.</translation>
 <translation id="6846298663435243399">Yn llwytho…</translation>
 <translation id="6850409657436465440">Dal wrthi'n lawrlwytho</translation>
@@ -1402,6 +1402,7 @@ Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion 
 <translation id="8237871086242677046">Dalen waelod mewnwelediadau tudalen</translation>
 <translation id="8243077599929149377">Ychwanegwch eich enw defnyddiwr</translation>
 <translation id="8250920743982581267">Dogfennau</translation>
+<translation id="8253557549177565072">{BOOKMARK_COUNT,plural, =1{Wedi cadw'r nod tudalen i <ph name="FOLDER_NAME" /> yn eich cyfrif, <ph name="ACCOUNT_EMAIL" />.}zero{Wedi cadw'r nodau tudalen i <ph name="FOLDER_NAME" /> yn eich cyfrif, <ph name="ACCOUNT_EMAIL" />.}two{Wedi cadw'r nodau tudalen i <ph name="FOLDER_NAME" /> yn eich cyfrif, <ph name="ACCOUNT_EMAIL" />.}few{Wedi cadw'r nodau tudalen i <ph name="FOLDER_NAME" /> yn eich cyfrif, <ph name="ACCOUNT_EMAIL" />.}many{Wedi cadw'r nodau tudalen i <ph name="FOLDER_NAME" /> yn eich cyfrif, <ph name="ACCOUNT_EMAIL" />.}other{Wedi cadw'r nodau tudalen i <ph name="FOLDER_NAME" /> yn eich cyfrif, <ph name="ACCOUNT_EMAIL" />.}}</translation>
 <translation id="8255617931166444521">Dim ond i weld eich gweithgarwch pori ar eu gwefan eu hunain y gall gwefannau ddefnyddio'ch cwcis</translation>
 <translation id="8259179246279078674">Oherwydd bod y tudalennau sydd wedi'u rhaglwytho wedi'u hamgryptio, ni fydd Google yn dysgu unrhyw beth am gynnwys y dudalen sydd wedi'i rhaglwytho. Bydd gweinyddion Google yn dysgu pa wefannau sy'n cael eu rhaglwytho'n breifat. Defnyddir y wybodaeth hon i raglwytho'r tudalennau yn unig, ac nid yw'n gysylltiedig â gwybodaeth arall o'ch Cyfrif Google.</translation>
 <translation id="8260126382462817229">Rhowch gynnig arall ar fewngofnodi</translation>

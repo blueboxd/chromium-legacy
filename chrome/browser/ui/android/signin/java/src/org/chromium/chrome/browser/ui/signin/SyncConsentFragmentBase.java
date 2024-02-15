@@ -500,8 +500,6 @@ public abstract class SyncConsentFragmentBase extends Fragment
      * "Add account" button in this case.
      */
     private void setHasAccounts(boolean hasAccounts) {
-        assert mSigninView != null;
-
         if (hasAccounts) {
             final boolean hideAccountPicker =
                     mIsSignedInWithoutSync
@@ -669,7 +667,7 @@ public abstract class SyncConsentFragmentBase extends Fragment
                                 return;
                             }
                             mConsentTextTracker.recordConsent(
-                                    Profile.getLastUsedRegularProfile(),
+                                    getProfile(),
                                     accountInfo.getId(),
                                     ConsentAuditorFeature.CHROME_SYNC,
                                     (TextView) confirmationView,
@@ -805,7 +803,7 @@ public abstract class SyncConsentFragmentBase extends Fragment
                 AccountUtils.getCoreAccountInfosIfFulfilledOrEmpty(
                         mAccountManagerFacade.getCoreAccountInfos()));
 
-        if (mSigninView != null) mSigninView.startAnimations();
+        mSigninView.startAnimations();
         if (mDeviceLockReady) {
             mDeviceLockPageCallback.run();
         }
@@ -816,7 +814,7 @@ public abstract class SyncConsentFragmentBase extends Fragment
         super.onPause();
         mAccountManagerFacade.removeObserver(this);
 
-        if (mSigninView != null) mSigninView.stopAnimations();
+        mSigninView.stopAnimations();
     }
 
     private void selectAccount(String accountEmail) {

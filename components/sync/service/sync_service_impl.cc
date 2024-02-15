@@ -323,6 +323,8 @@ void SyncServiceImpl::Initialize() {
   sync_prefs_.MaybeMigratePrefsForSyncToSigninPart1(
       GetSyncAccountStateForPrefs(),
       signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
+  sync_prefs_.MaybeMigrateCustomPassphrasePref(
+      signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
 
   if (!IsLocalSyncEnabled()) {
     const bool account_info_fully_loaded =
@@ -1095,11 +1097,8 @@ void SyncServiceImpl::OnActionableProtocolError(
         // Account passphrase pref should be cleared when sync is reset from the
         // dashboard because then the cached passphrase wouldn't be useful
         // anymore.
-        if (GetSyncAccountStateForPrefs() ==
-            SyncPrefs::SyncAccountState::kSignedInNotSyncing) {
-          sync_prefs_.ClearEncryptionBootstrapTokenForAccount(
-              signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
-        }
+        sync_prefs_.ClearEncryptionBootstrapTokenForAccount(
+            signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
       }
 
       // Security domain state might be reset, reset local state as well.
@@ -1121,7 +1120,7 @@ void SyncServiceImpl::OnActionableProtocolError(
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
       // On every platform except ash, revoke the Sync consent/Clear primary
       // account after a dashboard clear.
-      // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
+      // TODO(crbug.com/40066949): Simplify once kSync becomes unreachable or is
       // deleted from the codebase. See ConsentLevel::kSync documentation for
       // details.
       if (!IsLocalSyncEnabled() &&
@@ -2236,18 +2235,17 @@ void SyncServiceImpl::StopAndClear() {
   // that if the user ever chooses to enable Sync again, they start off with
   // their previous settings by default. We do however require going through
   // first-time setup again and set SyncRequested to false.
+  // For explicit passphrase users, clear the encryption key, such that they
+  // will need to reenter it if sync gets re-enabled. Note: the gaia-keyed
+  // passphrase pref should be cleared before clearing
+  // InitialSyncFeatureSetupComplete().
+  sync_prefs_.ClearEncryptionBootstrapToken();
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   sync_prefs_.ClearInitialSyncFeatureSetupComplete();
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
   sync_prefs_.ClearPassphrasePromptMutedProductVersion();
   // The passphrase type is now undefined again.
   sync_prefs_.ClearCachedPassphraseType();
-  // TODO(crbug.com/1471928): Update comment to specify that
-  // *EncryptionBootstrapToken will be used for syncing users only, when
-  // kSyncRememberCustomPassphraseAfterSignout is fully rolled-out.
-  // For explicit passphrase users, clear the encryption key, such that they
-  // will need to reenter it if sync gets re-enabled.
-  sync_prefs_.ClearEncryptionBootstrapToken();
   // If the migration didn't finish before StopAndClear() was called, mark it as
   // done so it doesn't trigger again if the user signs in later.
   sync_prefs_.MarkPartialSyncToSigninMigrationFullyDone();

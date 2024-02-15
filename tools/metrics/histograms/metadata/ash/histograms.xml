@@ -925,7 +925,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunAshDataSizeMB" units="MB"
-    expires_after="2024-10-31">
+    expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -936,7 +936,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunCommonDataSizeMB" units="MB"
-    expires_after="2024-10-31">
+    expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -946,7 +946,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunExtraDiskSpaceOccupiedByMove"
-    units="MB" expires_after="2024-06-30">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -957,7 +957,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.BrowserDataMigrator.DryRunExtraDiskSpaceOccupiedByMove.LowDiskUser2"
-    units="MB" expires_after="2024-10-31">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -969,7 +969,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunFreeDiskSpace.LowDiskUser2"
-    units="MB" expires_after="2024-10-31">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -981,7 +981,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunFreeDiskSpaceAfterDelete"
-    units="MB" expires_after="2024-02-20">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -992,7 +992,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.BrowserDataMigrator.DryRunFreeDiskSpaceAfterDelete.LowDiskUser2"
-    units="MB" expires_after="2024-10-31">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1005,7 +1005,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunFreeDiskSpaceAfterMigration"
-    units="MB" expires_after="2024-06-30">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1015,7 +1015,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunLacrosDataSizeMB" units="MB"
-    expires_after="2024-10-31">
+    expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1026,7 +1026,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunMyFilesDirSize.LowDiskUser2"
-    units="MB" expires_after="2024-10-31">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1038,7 +1038,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunNoCopyDataSizeMB" units="MB"
-    expires_after="2024-10-31">
+    expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1047,7 +1047,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunProfileDirSize.LowDiskUser2"
-    units="MB" expires_after="2024-10-31">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1059,7 +1059,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.CancelledMigrationTime"
-    units="ms" expires_after="2024-10-31">
+    units="ms" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1073,7 +1073,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.ExtraDiskSpaceOccupied"
-    units="MB" expires_after="2024-10-31">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1083,7 +1083,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.BrowserDataMigrator.MoveMigrator.ExtraDiskSpaceOccupied.DiffWithEstimate"
-    units="MB" expires_after="2024-07-21">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1093,7 +1093,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.ExtraSpaceRequiredMB"
-    units="MB" expires_after="2024-10-31">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1104,7 +1104,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.MaxResumeReached"
-    enum="MoveMigratorResumeStep" expires_after="2024-01-28">
+    enum="MoveMigratorResumeStep" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1115,7 +1115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.MoveLacrosItemsTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1126,7 +1126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.PosixErrno.{TaskStatus}"
-    units="errno" expires_after="2024-10-31">
+    units="errno" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1169,7 +1169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.PreMigrationCleanUpTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1180,7 +1180,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.ResumeCount"
-    units="units" expires_after="2024-01-28">
+    units="units" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1191,7 +1191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.ResumeStep"
-    enum="MoveMigratorResumeStep" expires_after="2024-06-02">
+    enum="MoveMigratorResumeStep" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1205,7 +1205,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.BrowserDataMigrator.MoveMigrator.SetupLacrosDirCopyTargetItemsTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1217,7 +1217,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.SuccessfulMigrationTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1229,7 +1229,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.TaskStatus"
-    enum="MoveMigratorTaskStatus" expires_after="2024-08-04">
+    enum="MoveMigratorTaskStatus" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1240,7 +1240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.TmpProfileDirSize"
-    units="MB" expires_after="2024-07-21">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1249,7 +1249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.TmpSplitDirSize"
-    units="MB" expires_after="2024-07-21">
+    units="MB" expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -2287,7 +2287,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.DeskLifetime_{DeskIndex}" units="hr"
-    expires_after="2024-05-19">
+    expires_after="2024-08-11">
   <owner>afakhry@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -2310,20 +2310,36 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Desks.DeskProfiles.AvatarView.ButtonPressed"
     enum="BooleanHit" expires_after="2024-12-21">
-  <owner>shidi@chromium.org</owner>
   <owner>dandersson@chromium.org</owner>
   <owner>yongshun@chromium.org</owner>
+  <owner>chromeos-wms@google.com</owner>
   <summary>Records when the desk profiles button is pressed.</summary>
 </histogram>
 
 <histogram name="Ash.Desks.DeskProfiles.ContextMenu.OpenProfileManager"
     units="BooleanHit" expires_after="2024-12-21">
-  <owner>shidi@chromium.org</owner>
   <owner>dandersson@chromium.org</owner>
   <owner>yongshun@chromium.org</owner>
+  <owner>chromeos-wms@google.com</owner>
   <summary>
     Records when the profile manager is opened from desk profiles context menu.
   </summary>
+</histogram>
+
+<histogram name="Ash.Desks.DeskProfiles.SelectProfile"
+    enum="DeskProfilesSelectProfileSource" expires_after="2024-12-21">
+  <owner>dandersson@chromium.org</owner>
+  <owner>yongshun@chromium.org</owner>
+  <owner>chromeos-wms@google.com</owner>
+  <summary>Emitted when the user assigns a profile to a desk.</summary>
+</histogram>
+
+<histogram name="Ash.Desks.DeskProfiles.UsageStatus"
+    enum="DeskProfilesUsageStatus" expires_after="2024-12-21">
+  <owner>dandersson@chromium.org</owner>
+  <owner>yongshun@chromium.org</owner>
+  <owner>chromeos-wms@google.com</owner>
+  <summary>Records relative adoption of desk profiles.</summary>
 </histogram>
 
 <histogram name="Ash.Desks.DesksCount3" units="units"
@@ -2497,7 +2513,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_16" units="units"
-    expires_after="2024-05-26">
+    expires_after="2024-08-11">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -3648,6 +3664,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Glanceables.TimeManagement.Classroom.UserAction"
+    enum="ClassroomUserAction" expires_after="2024-12-31">
+  <owner>tbarzic@google.com</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <summary>
+    User actions performed in the Time Management Glanceables bubble for Google
+    Classroom
+  </summary>
+</histogram>
+
 <histogram name="Ash.Glanceables.TimeManagement.FeatureStatus"
     enum="TimeManagementGlanceablesFeatureStatus" expires_after="2024-12-31">
   <owner>amitrokhin@google.com</owner>
@@ -3740,6 +3766,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the total number of times the selected tasks list is changed. The
     total count is recorded when the glanceable bubble is closed.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Glanceables.TimeManagement.Tasks.UserAction"
+    enum="TasksUserAction" expires_after="2024-12-31">
+  <owner>tbarzic@google.com</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <summary>
+    User actions performed in the Time Management Glanceables bubble for Google
+    Tasks
   </summary>
 </histogram>
 
@@ -4031,7 +4067,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.LacrosMigrationStatus2" enum="LacrosMigrationStatus"
-    expires_after="2024-03-10">
+    expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -4162,7 +4198,6 @@ chromium-metrics-reviews@google.com.
 <histogram name="Ash.Login.OOBE.UserClicks" enum="OobeUserClickTarget"
     expires_after="2024-06-30">
   <owner>emaamari@google.com</owner>
-  <owner>raleksandrov@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>What shelf buttons or trays are clicked in the OOBE.</summary>
 </histogram>
@@ -5386,7 +5421,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Personalization.App.Duration" units="ms"
-    expires_after="2024-06-09">
+    expires_after="2024-08-11">
   <owner>pzliu@google.com</owner>
   <owner>assistive-eng@google.com</owner>
   <summary>
@@ -5396,7 +5431,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Personalization.DynamicColor.ColorScheme.Settled"
-    enum="PersonalizationDynamicColorColorScheme" expires_after="2024-06-09">
+    enum="PersonalizationDynamicColorColorScheme" expires_after="2024-08-11">
   <owner>ericamlee@chromium.org</owner>
   <owner>assistive-eng@google.com</owner>
   <summary>
@@ -5416,7 +5451,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Personalization.DynamicColor.StaticColor.Settled"
-    enum="PersonalizationDynamicColorStaticColor" expires_after="2024-06-09">
+    enum="PersonalizationDynamicColorStaticColor" expires_after="2024-08-11">
   <owner>ericamlee@chromium.org</owner>
   <owner>assistive-eng@google.com</owner>
   <summary>
@@ -7321,7 +7356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.UserDataStatsRecorder.DataSize.TotalSize" units="MB"
-    expires_after="2024-06-02">
+    expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -7331,7 +7366,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.UserDataStatsRecorder.DataSize.{ItemName}" units="MB"
-    expires_after="2024-07-21">
+    expires_after="2025-02-01">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>

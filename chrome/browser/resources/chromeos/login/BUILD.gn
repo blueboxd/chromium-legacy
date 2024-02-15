@@ -53,7 +53,7 @@ generate_grd("build_oobe_conditional_grd") {
     ":preprocess_conditional",
   ]
   input_files_base_dir = rebase_path("$target_gen_dir/tsc", root_build_dir)
-  input_files = conditional_files
+  input_files = conditional_js_files
 }
 
 # Files that are served conditionally
@@ -201,8 +201,6 @@ group("closure_compile") {
   deps = [
     ":closure_compile_local",
     "components:closure_compile",
-    "screens/common:closure_compile",
-    "screens/oobe:closure_compile",
     "test_api:closure_compile",
 
     # TODO(crbug.com/1229130)
@@ -217,14 +215,8 @@ js_type_check("closure_compile_local") {
   deps = [
     ":cr_ui",
     ":display_manager",
-    ":install_oobe_error_store",
-    ":login_ui_tools",
     ":multi_tap_detector",
   ]
-}
-
-js_library("i18n_setup") {
-  deps = [ "//ash/webui/common/resources:load_time_data.m" ]
 }
 
 js_library("cr_ui") {
@@ -252,20 +244,6 @@ js_library("display_manager") {
   extra_deps = [ ":copy_js" ]
 }
 
-js_library("install_oobe_error_store") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/install_oobe_error_store.js" ]
-  deps = []
-  extra_deps = [ ":copy_js" ]
-}
-
-js_library("login_ui_tools") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/chromeos/login/login_ui_tools.js",
-  ]
-  deps = []
-  extra_deps = [ ":copy_js" ]
-}
-
 js_library("multi_tap_detector") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/multi_tap_detector.js" ]
   deps = []
@@ -277,8 +255,7 @@ copy("copy_js") {
   sources = [
     "cr_ui.js",
     "display_manager.js",
-    "install_oobe_error_store.js",
-    "login_ui_tools.js",
+    "install_oobe_error_store.ts",
     "multi_tap_detector.js",
   ]
   outputs = [ "$target_gen_dir/{{source_file_part}}" ]
@@ -326,5 +303,5 @@ ts_library("build_ts") {
 
   # These files can be added conditionally in the runtime, so they shouldn't
   # be added to the same grd file as the rest of the sources.
-  manifest_excludes = conditional_files
+  manifest_excludes = conditional_js_files
 }

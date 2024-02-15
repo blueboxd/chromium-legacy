@@ -54,7 +54,7 @@ chromium-metrics-reviews@google.com.
 <variants name="TabOrganizationEntryPoint">
   <variant name=".AllEntrypoints" summary="any of the entrypoints"/>
   <variant name=".Proactive"
-      summary="the 'Organize Tabs' button in the tab strip."/>
+      summary="the 'Organize Tabs' button in the tab strip"/>
   <variant name=".TabContextMenu" summary="the option in the tab context menu"/>
   <variant name=".TabSearch"
       summary="the start request button in the tab search ui"/>
@@ -376,7 +376,9 @@ chromium-metrics-reviews@google.com.
   <summary>
     Logged when the user clicks {EntryPoint}. In cases where the entrypoint is
     proactively shown, logs false if the user did not interact with the
-    entrypoint.
+    entrypoint. All first run experience users will go through the tab search
+    entrypoint even if entering the tab search UI from a different entrypoint,
+    in which case both entrypoints will be logged.
   </summary>
   <token key="EntryPoint" variants="TabOrganizationEntryPoint"/>
 </histogram>
@@ -532,7 +534,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.SwitchedToForegroundAge" units="ms"
-    expires_after="2024-06-09">
+    expires_after="2024-08-11">
   <owner>dtrainor@chromium.org</owner>
   <owner>ckitagawa@chroimum.org</owner>
   <summary>
@@ -574,6 +576,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of (non-zero) tabs groups open in all browsers (counting app-mode
     windows) when a load completes.
+  </summary>
+</histogram>
+
+<histogram name="TabGroups.NumberOfRootIdsFixed" units="groups"
+    expires_after="2024-07-14">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>clank-tab-dev@chromium.org</owner>
+  <summary>
+    [Android] Records the number of tab groups where the root identifier did not
+    match a tab from its tab group and the root identifier had to be corrected.
+    Emitted once per start during tab state initialization.
   </summary>
 </histogram>
 
@@ -1183,8 +1196,8 @@ chromium-metrics-reviews@google.com.
   <token key="BatteryState" variants="BatteryState"/>
 </histogram>
 
-<histogram name="Tabs.OldCountAtStartup" units="tabs"
-    expires_after="2024-06-30">
+<histogram name="Tabs.OldCountAtStartup2" units="tabs"
+    expires_after="2025-02-08">
   <owner>alionadangla@chromium.org</owner>
   <owner>lpromero@chromium.org</owner>
   <owner>chromeleon@google.com</owner>
@@ -2210,9 +2223,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.Tasks.OrderValidOnStartup" enum="Boolean"
-    expires_after="2024-03-24">
+    expires_after="2024-09-24">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>fredmello@chromium.org</owner>
+  <owner>clank-tab-dev@chromium.org</owner>
   <summary>
     [Android] boolean value indicating whether the invariant that tab groups are
     contiguous holds. Recorded on cold start after all tabs are restored.
@@ -2220,9 +2233,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.Tasks.TabAddedWithValidProposedPosition" enum="Boolean"
-    expires_after="2024-07-21">
+    expires_after="2024-09-24">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>fredmello@chromium.org</owner>
+  <owner>clank-tab-dev@chromium.org</owner>
   <summary>
     [Android] boolean value indicating whether a tab that was added to the
     TabModel would have been added at the correct position if
@@ -2241,8 +2254,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Tabs.UnusedCountAtStartup" units="tabs"
-    expires_after="2024-07-21">
+<histogram name="Tabs.UnusedCountAtStartup2" units="tabs"
+    expires_after="2025-02-08">
   <owner>ewannpv@chromium.org</owner>
   <owner>chromeleon@google.com</owner>
   <summary>

@@ -11,6 +11,7 @@
 #include "ash/picker/model/picker_search_results.h"
 #include "ash/picker/views/picker_category_type.h"
 #include "ash/picker/views/picker_category_view.h"
+#include "ash/picker/views/picker_contents_view.h"
 #include "ash/picker/views/picker_search_field_view.h"
 #include "ash/picker/views/picker_search_results_view.h"
 #include "ash/picker/views/picker_section_view.h"
@@ -27,6 +28,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/display/screen.h"
@@ -94,8 +96,6 @@ class FakePickerViewDelegate : public PickerViewDelegate {
     last_inserted_result_ = result;
   }
 
-  bool ShouldPaint() override { return true; }
-
   PickerAssetFetcher* GetAssetFetcher() override { return &asset_fetcher_; }
 
   std::optional<PickerSearchResult> last_inserted_result() const {
@@ -120,6 +120,12 @@ views::View* GetCategoryItemView(PickerView* picker_view) {
       .section_views_for_testing()
       .find(PickerCategoryType::kExpressions)
       ->second->item_views_for_testing()[0];
+}
+views::View* GetNonEmojiCategoryItemView(PickerView* picker_view) {
+  return picker_view->zero_state_view_for_testing()
+      .section_views_for_testing()
+      .find(PickerCategoryType::kExpressions)
+      ->second->item_views_for_testing()[1];
 }
 
 TEST_F(PickerViewTest, CreateWidgetHasCorrectHierarchy) {
@@ -196,6 +202,7 @@ TEST_F(PickerViewTest, NonEmptySearchFieldContentsSwitchesToSearchResultsView) {
   PickerView* view = GetPickerViewFromWidget(*widget);
 
   PressAndReleaseKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  task_environment()->FastForwardBy(PickerView::kSearchFieldDebouncingDelay);
 
   EXPECT_THAT(view->zero_state_view_for_testing(),
               Property(&views::View::GetVisible, false));
@@ -213,6 +220,7 @@ TEST_F(PickerViewTest, EmptySearchFieldContentsSwitchesToZeroStateView) {
   PressAndReleaseKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
 
   PressAndReleaseKey(ui::KeyboardCode::VKEY_BACK, ui::EF_NONE);
+  task_environment()->FastForwardBy(PickerView::kSearchFieldDebouncingDelay);
 
   EXPECT_THAT(view->zero_state_view_for_testing(),
               Property(&views::View::GetVisible, true));
@@ -263,7 +271,7 @@ TEST_F(PickerViewTest, SwitchesToCategoryView) {
   widget->Show();
 
   PickerView* picker_view = GetPickerViewFromWidget(*widget);
-  views::View* category_item_view = GetCategoryItemView(picker_view);
+  views::View* category_item_view = GetNonEmojiCategoryItemView(picker_view);
   ViewDrawnWaiter().Wait(category_item_view);
   LeftClickOn(category_item_view);
 
@@ -280,7 +288,7 @@ TEST_F(PickerViewTest, SelectingCategoryUpdatesSearchFieldPlaceholderText) {
   widget->Show();
 
   PickerView* picker_view = GetPickerViewFromWidget(*widget);
-  views::View* category_item_view = GetCategoryItemView(picker_view);
+  views::View* category_item_view = GetNonEmojiCategoryItemView(picker_view);
   ViewDrawnWaiter().Wait(category_item_view);
   LeftClickOn(category_item_view);
 
@@ -288,7 +296,7 @@ TEST_F(PickerViewTest, SelectingCategoryUpdatesSearchFieldPlaceholderText) {
                   .textfield_for_testing()
                   .GetPlaceholderText(),
               Eq(l10n_util::GetStringUTF16(
-                  IDS_PICKER_EMOJIS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT)));
+                  IDS_PICKER_SYMBOLS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT)));
 }
 
 TEST_F(PickerViewTest, SearchingWithCategorySwitchesToSearchResultsView) {
@@ -300,11 +308,12 @@ TEST_F(PickerViewTest, SearchingWithCategorySwitchesToSearchResultsView) {
 
   // Switch to category view.
   PickerView* picker_view = GetPickerViewFromWidget(*widget);
-  views::View* category_item_view = GetCategoryItemView(picker_view);
+  views::View* category_item_view = GetNonEmojiCategoryItemView(picker_view);
   ViewDrawnWaiter().Wait(category_item_view);
   LeftClickOn(category_item_view);
   // Type something into the search field.
   PressAndReleaseKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  task_environment()->FastForwardBy(PickerView::kSearchFieldDebouncingDelay);
 
   EXPECT_FALSE(picker_view->category_view_for_testing().GetVisible());
   EXPECT_FALSE(picker_view->zero_state_view_for_testing().GetVisible());
@@ -320,7 +329,7 @@ TEST_F(PickerViewTest, EmptySearchFieldSwitchesBackToCategoryView) {
 
   // Switch to category view.
   PickerView* picker_view = GetPickerViewFromWidget(*widget);
-  views::View* category_item_view = GetCategoryItemView(picker_view);
+  views::View* category_item_view = GetNonEmojiCategoryItemView(picker_view);
   ViewDrawnWaiter().Wait(category_item_view);
   LeftClickOn(category_item_view);
   // Type something into the search field.
@@ -374,9 +383,11 @@ TEST_F(PickerViewTest, RecordsSearchLatencyAfterSearchFinished) {
   widget->Show();
 
   PressAndReleaseKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  task_environment()->FastForwardBy(PickerView::kSearchFieldDebouncingDelay);
 
-  histogram.ExpectUniqueTimeSample("Ash.Picker.Session.SearchLatency",
-                                   base::Seconds(1), 1);
+  histogram.ExpectUniqueTimeSample(
+      "Ash.Picker.Session.SearchLatency",
+      base::Seconds(1) + PickerView::kSearchFieldDebouncingDelay, 1);
 }
 
 TEST_F(PickerViewTest, BoundsDefaultAlignedWithCaret) {
@@ -393,7 +404,7 @@ TEST_F(PickerViewTest, BoundsDefaultAlignedWithCaret) {
                   .work_area()
                   .Contains(view->GetBoundsInScreen()));
   // Should be to the right of the caret.
-  EXPECT_GE(view->GetBoundsInScreen().x(), kDefaultCaretBounds.right());
+  EXPECT_GT(view->GetBoundsInScreen().x(), kDefaultCaretBounds.right());
   // Center of the search field should be vertically aligned with the caret.
   EXPECT_EQ(view->search_field_view_for_testing()
                 .GetBoundsInScreen()
@@ -417,7 +428,7 @@ TEST_F(PickerViewTest, BoundsAlignedWithCaretNearTopLeftOfScreen) {
   // Should be entirely on screen.
   EXPECT_TRUE(screen_work_area.Contains(view->GetBoundsInScreen()));
   // Should be to the right of the caret.
-  EXPECT_GE(view->GetBoundsInScreen().x(), caret_bounds.right());
+  EXPECT_GT(view->GetBoundsInScreen().x(), caret_bounds.right());
   // Center of the search field should be vertically aligned with the caret.
   EXPECT_EQ(view->search_field_view_for_testing()
                 .GetBoundsInScreen()
@@ -441,7 +452,7 @@ TEST_F(PickerViewTest, BoundsAlignedWithCaretNearBottomLeftOfScreen) {
   // Should be entirely on screen.
   EXPECT_TRUE(screen_work_area.Contains(view->GetBoundsInScreen()));
   // Should be to the right of the caret.
-  EXPECT_GE(view->GetBoundsInScreen().x(), caret_bounds.right());
+  EXPECT_GT(view->GetBoundsInScreen().x(), caret_bounds.right());
   // Center of the search field should be vertically aligned with the caret.
   EXPECT_EQ(view->search_field_view_for_testing()
                 .GetBoundsInScreen()
@@ -465,7 +476,7 @@ TEST_F(PickerViewTest, BoundsBelowCaretForCaretNearTopRightOfScreen) {
   // Should be entirely on screen.
   EXPECT_TRUE(screen_work_area.Contains(view->GetBoundsInScreen()));
   // Should be below the caret.
-  EXPECT_GE(view->GetBoundsInScreen().y(), caret_bounds.bottom());
+  EXPECT_GT(view->GetBoundsInScreen().y(), caret_bounds.bottom());
 }
 
 TEST_F(PickerViewTest, BoundsAboveCaretForCaretNearBottomRightOfScreen) {
@@ -483,7 +494,7 @@ TEST_F(PickerViewTest, BoundsAboveCaretForCaretNearBottomRightOfScreen) {
   // Should be entirely on screen.
   EXPECT_TRUE(screen_work_area.Contains(view->GetBoundsInScreen()));
   // Should be above the caret.
-  EXPECT_LE(view->GetBoundsInScreen().bottom(), caret_bounds.y());
+  EXPECT_LT(view->GetBoundsInScreen().bottom(), caret_bounds.y());
 }
 
 TEST_F(PickerViewTest, BoundsAlignedWithCursorForEmptyCaretBounds) {
@@ -555,7 +566,7 @@ TEST_F(PickerViewTest, ResultsBelowSearchFieldNearTopOfScreen) {
   widget->Show();
 
   PickerView* view = GetPickerViewFromWidget(*widget);
-  EXPECT_GE(view->zero_state_view_for_testing().GetBoundsInScreen().y(),
+  EXPECT_GE(view->contents_view_for_testing().GetBoundsInScreen().y(),
             view->search_field_view_for_testing().GetBoundsInScreen().bottom());
 }
 
@@ -571,8 +582,24 @@ TEST_F(PickerViewTest, ResultsAboveSearchFieldNearBottomOfScreen) {
   widget->Show();
 
   PickerView* view = GetPickerViewFromWidget(*widget);
-  EXPECT_LE(view->zero_state_view_for_testing().GetBoundsInScreen().bottom(),
+  EXPECT_LE(view->contents_view_for_testing().GetBoundsInScreen().bottom(),
             view->search_field_view_for_testing().GetBoundsInScreen().y());
+}
+
+TEST_F(PickerViewTest, ShowsEmojiPickerWhenClickingOnEmoji) {
+  FakePickerViewDelegate delegate;
+  auto widget =
+      PickerView::CreateWidget(kDefaultCaretBounds, kDefaultCursorPoint,
+                               kDefaultFocusedWindowBounds, &delegate);
+  widget->Show();
+  bool called = false;
+  ui::SetShowEmojiKeyboardCallback(
+      base::BindRepeating([](bool* called) { *called = true; }, &called));
+
+  LeftClickOn(GetCategoryItemView(GetPickerViewFromWidget(*widget)));
+
+  EXPECT_TRUE(widget->IsClosed());
+  EXPECT_TRUE(called);
 }
 
 }  // namespace

@@ -174,8 +174,7 @@
     "prefix": "attribution-reporting-in-browser-migration",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/inspector-protocol/attribution-reporting"],
-    "exclusive_tests": "ALL",
-    "args": ["--enable-features=KeepAliveInBrowserMigration,kAttributionReportingInBrowserMigration,AttributionReportingCrossAppWeb,PrivacySandboxAdsAPIsOverride",
+    "args": ["--enable-features=KeepAliveInBrowserMigration,AttributionReportingInBrowserMigration,AttributionReportingCrossAppWeb,PrivacySandboxAdsAPIsOverride",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["anthonygarant@chromium.org"],
     "expires": "May 30, 2024"
@@ -1793,7 +1792,7 @@
     "exclusive_tests": [
       "external/wpt/shared-storage-selecturl-limit/"
     ],
-    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,FencedFramesAPIChanges,FencedFramesDefaultMode,FencedFramesEnforceFocus,PrivacySandboxAdsAPIsOverride,SharedStorageSelectURLLimit:SharedStorageSelectURLBitBudgetPerPageLoad/9,SharedStorageAPIM118",
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,FencedFramesAPIChanges,FencedFramesDefaultMode,FencedFramesEnforceFocus,PrivacySandboxAdsAPIsOverride,SharedStorageSelectURLLimit:SharedStorageSelectURLBitBudgetPerPageLoad/9,SharedStorageAPIM118,SharedStorageAPIM123",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "Jul 31, 2024"
   },
@@ -2426,11 +2425,14 @@
     "bases": [
       "css-parser/deprecated-css-appearance-values.html",
       "css-parser/deprecated-css-appearance-values-warning/appearance-warning-cssom-usecounter.html",
+      "css-parser/deprecated-css-appearance-values-warning/appearance-warning-slider-vertical-usecounter.html",
       "css-parser/deprecated-css-appearance-values-warning/appearance-warning-usecounter.html",
       "css-parser/deprecated-css-appearance-values-warning/webkit-appearance-warning-cssom-usecounter.html",
       "css-parser/deprecated-css-appearance-values-warning/webkit-appearance-warning-usecounter.html",
       "http/tests/inspector-protocol/issues/css-appearance-non-standard-issue.js",
       "http/tests/inspector-protocol/issues/css-appearance-non-standard-cssom-issue.js",
+      "http/tests/inspector-protocol/issues/css-appearance-non-standard-slider-vertical-cssom-issue.js",
+      "http/tests/inspector-protocol/issues/css-appearance-non-standard-slider-vertical-issue.js",
       "http/tests/inspector-protocol/issues/css-webkit-appearance-non-standard-issue.js"
     ],
     "args": ["--enable-blink-features=NonStandardAppearanceValuesHighUsage",
@@ -2601,14 +2603,28 @@
     "owners": ["fergal@chromium.org", "rakina@chromium.org"]
   },
   {
-    "prefix": "vertical-form-controls-direction-disabled",
+    "prefix": "vertical-form-controls-direction-disabled-slider-vertical-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
+      "css-parser/vertical-range-slider-appearance.html",
       "fast/forms/color-scheme/meter/meter-appearance-basic-vertical.html",
       "fast/forms/color-scheme/progress/progress-appearance-basic.html",
       "fast/forms/range/range-appearance-border-padding.html"
     ],
     "args": ["--disable-features=FormControlsVerticalWritingModeDirectionSupport",
+             "--disable-features=NonStandardAppearanceValueSliderVertical",
+             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "owners": ["dizhangg@chromium.org"],
+    "expires": "Jun 1, 2024"
+  },
+  {
+    "prefix": "vertical-form-controls-direction-disabled-slider-vertical-enabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "css-parser/vertical-range-slider-appearance.html"
+    ],
+    "args": ["--disable-features=FormControlsVerticalWritingModeDirectionSupport",
+             "--enable-features=NonStandardAppearanceValueSliderVertical",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["dizhangg@chromium.org"],
     "expires": "Jun 1, 2024"
@@ -2672,5 +2688,15 @@
     "bases": [
       "external/wpt/custom-elements/state"
     ]
+  },
+  {
+    "prefix": "prefers-default-scrollbar-styles",
+    "platforms": ["Linux"],
+    "exclusive_tests": "ALL",
+    "bases": ["scrollbars/prefers-default-scrollbar-styles"],
+    "args": ["--enable-blink-features=PreferDefaultScrollbarStyles",
+             "--blink-settings=prefersDefaultScrollbarStyles=true"],
+    "expires": "Feb 1, 2025",
+    "owners": ["evelynn.kaplan@microsoft.com", "almaher@microsoft.com"]
   }
 ]

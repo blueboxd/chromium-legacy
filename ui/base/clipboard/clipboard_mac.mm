@@ -123,12 +123,12 @@ ClipboardMac::~ClipboardMac() {
 
 void ClipboardMac::OnPreShutdown() {}
 
-absl::optional<DataTransferEndpoint> ClipboardMac::GetSource(
+std::optional<DataTransferEndpoint> ClipboardMac::GetSource(
     ClipboardBuffer buffer) const {
   return GetSourceInternal(buffer, GetPasteboard());
 }
 
-absl::optional<DataTransferEndpoint> ClipboardMac::GetSourceInternal(
+std::optional<DataTransferEndpoint> ClipboardMac::GetSourceInternal(
     ClipboardBuffer buffer,
     NSPasteboard* pasteboard) const {
   DCHECK(CalledOnValidThread());
@@ -137,12 +137,12 @@ absl::optional<DataTransferEndpoint> ClipboardMac::GetSourceInternal(
   NSString* source_url = [pasteboard stringForType:kUTTypeChromiumSourceURL];
 
   if (!source_url) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   GURL gurl(base::SysNSStringToUTF8(source_url));
   if (!gurl.is_valid()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return DataTransferEndpoint(std::move(gurl));

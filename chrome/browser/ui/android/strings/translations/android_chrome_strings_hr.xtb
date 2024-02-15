@@ -169,7 +169,6 @@ Vaše šifrirane podatke može pročitati samo osoba koja ima vašu šifru. Šif
 <translation id="1933845786846280168">Odabrana kartica</translation>
 <translation id="1943432128510653496">Spremanje zaporki</translation>
 <translation id="1944535645109964458">Nije dostupan nijedan pristupni ključ</translation>
-<translation id="1952172573699511566">Web-lokacije prikazivat će tekst na željenom jeziku kad god je to moguće.</translation>
 <translation id="1959679933317802873">Čekanje sadržaja</translation>
 <translation id="1960290143419248813">Chromeova ažuriranja više nisu podržana za ovu verziju Androida</translation>
 <translation id="1963976881984600709">Standardna zaštita</translation>
@@ -204,6 +203,7 @@ Vaše šifrirane podatke može pročitati samo osoba koja ima vašu šifru. Šif
 <translation id="2132122640199389833">Ukloni sve povezane uređaje</translation>
 <translation id="213279576345780926">Zatvorena je kartica <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Dodaj na početni zaslon</translation>
+<translation id="2139414603196655536">Vaša aktivnost u uvidima u stranicu sprema se na vaš Google račun. <ph name="BEGIN_LINK" />Saznajte kako upravljati time<ph name="END_LINK" /></translation>
 <translation id="2141396931810938595">Na temelju vaše upotrebe</translation>
 <translation id="2149973817440762519">Uredi oznaku</translation>
 <translation id="2155214902713132423">Taj način potvrde nije dostupan za ovaj uređaj. Odaberite neku drugu opciju na drugom uređaju.</translation>
@@ -379,7 +379,6 @@ Vaše šifrirane podatke može pročitati samo osoba koja ima vašu šifru. Šif
 <translation id="3027644380269727216">Na temelju vaše aktivnosti na web-lokaciji. Postavka je uključena.</translation>
 <translation id="3029276696788198026">Bez predučitavanja</translation>
 <translation id="3029704984691124060">Zaporke se ne podudaraju</translation>
-<translation id="303514781271618814">Chrome istražuje nove značajke koje web-lokacijama omogućuju pružanje istog doživljaja pregledavanja uz upotrebu manje količine vaših podataka</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Praćenje cijene</translation>
 <translation id="3037517125981011456">Prikazuje obavijesti za prijavu u Chrome</translation>
@@ -873,6 +872,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5698878456427040674">Provjerite je li odabrani račun podržan.</translation>
 <translation id="570347048394355941">Prelazak na karticu</translation>
 <translation id="5715150588940290235">Izbrisati spremljene sigurnosne kodove?</translation>
+<translation id="571930967925877633">Vaše oznake, povijest i drugi podaci iz Chromea više se neće sinkronizirati s vašim Google računom</translation>
 <translation id="572328651809341494">Nedavne kartice</translation>
 <translation id="5726692708398506830">Povećavanje svega na stranici</translation>
 <translation id="5744751019568455640">Evo glasova koje možete odabrati za čitanje svojih web-stranica. Ako vam se sviđa taj glas i želite da ga nastavim upotrebljavati, samo dodirnite naziv glasa.</translation>
@@ -1081,6 +1081,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="670498945988402717">Provjera je izvršena jučer</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="671481426037969117">Isteklo je odbrojavanje za aplikaciju <ph name="FQDN" />. Ponovo će se pokrenuti sutra.</translation>
+<translation id="6714850225831215156">{BOOKMARK_COUNT,plural, =1{Oznaka je spremljena u mapu <ph name="FOLDER_NAME" />. Sprema se samo na ovom uređaju.}one{Oznake su spremljene u mapu <ph name="FOLDER_NAME" />. Spremaju se samo na ovom uređaju.}few{Oznake su spremljene u mapu <ph name="FOLDER_NAME" />. Spremaju se samo na ovom uređaju.}other{Oznake su spremljene u mapu <ph name="FOLDER_NAME" />. Spremaju se samo na ovom uređaju.}}</translation>
 <translation id="6715020873764921614">Želite li ipak preuzeti datoteku <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />)?</translation>
 <translation id="6719634564325948108">Želite li se povezati pomoću QR koda?</translation>
 <translation id="6723740634201835758">Na vašem Google računu</translation>
@@ -1105,7 +1106,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6828070228333235514">Zaustavi praćenje cijene</translation>
 <translation id="6830728435402077660">Nije sigurno</translation>
 <translation id="6831043979455480757">Prevedi</translation>
-<translation id="6833996806551876956">Proba za Privacy Sandbox</translation>
 <translation id="6836206421467243968">Vratite grupu kartica <ph name="TITLE_OF_GROUP" /> kao novu pozadinsku grupu kartica.</translation>
 <translation id="6846298663435243399">Učitavanje…</translation>
 <translation id="6850409657436465440">Preuzimanje je još u tijeku</translation>
@@ -1119,6 +1119,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6869056123412990582">računalu</translation>
 <translation id="6882836635272038266">Standardna zaštita od web-lokacija, preuzimanja i proširenja za koje je poznato da su opasna.</translation>
 <translation id="6883204995689174413">Dijeli</translation>
+<translation id="688398477366397178">Neka web-lokacije znaju koje jezike govorite. Prikazivat će sadržaj na tim jezicima kad je to moguće.</translation>
 <translation id="688738109438487280">Dodavanje postojećih podataka na račun <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Otključajte za kopiranje zaporke</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
@@ -1402,6 +1403,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8237871086242677046">Donja tablica uvida u stranicu</translation>
 <translation id="8243077599929149377">Dodajte svoje korisničko ime</translation>
 <translation id="8250920743982581267">Dokumenti</translation>
+<translation id="8253557549177565072">{BOOKMARK_COUNT,plural, =1{Oznaka je spremljena u mapu <ph name="FOLDER_NAME" /> na vašem računu, <ph name="ACCOUNT_EMAIL" />.}one{Oznake su spremljene u mapu <ph name="FOLDER_NAME" /> na vašem računu, <ph name="ACCOUNT_EMAIL" />.}few{Oznake su spremljene u mapu <ph name="FOLDER_NAME" /> na vašem računu, <ph name="ACCOUNT_EMAIL" />.}other{Oznake su spremljene u mapu <ph name="FOLDER_NAME" /> na vašem računu, <ph name="ACCOUNT_EMAIL" />.}}</translation>
 <translation id="8255617931166444521">Pojedina web-lokacija može upotrebljavati vaše kolačiće samo za uvid u vašu aktivnost pregledavanja na toj web-lokaciji</translation>
 <translation id="8259179246279078674">Budući da se predučitane stranice šifriraju, Google neće saznati ništa o sadržaju predučitanih stranica. Googleovi poslužitelji saznat će koje se web-lokacije anonimno predučitavaju. Ti se podaci koriste samo za predučitavanje stranica i ne povezuju se s drugim podacima s vašeg Google računa.</translation>
 <translation id="8260126382462817229">Ponovo se pokušajte prijaviti</translation>

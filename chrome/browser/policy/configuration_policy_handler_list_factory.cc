@@ -143,6 +143,7 @@
 #include "chrome/browser/enterprise/connectors/enterprise_connectors_policy_handler.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_policy_handler.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
+#include "chrome/browser/policy/devtools_gen_ai_policy_handler.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #include "chrome/browser/policy/managed_account_policy_handler.h"
 #include "chrome/browser/web_applications/policy/web_app_settings_policy_handler.h"
@@ -184,12 +185,12 @@
 #include "chrome/browser/ash/policy/handlers/configuration_policy_handler_ash.h"
 #include "chrome/browser/ash/policy/handlers/lacros_availability_policy_handler.h"
 #include "chrome/browser/ash/policy/handlers/lacros_selection_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/screen_capture_location_policy_handler.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/metric_reporting_prefs.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
 #include "chrome/browser/policy/device_login_screen_geolocation_access_level_policy_handler.h"
 #include "chrome/browser/policy/os_color_mode_policy_handler.h"
-#include "chrome/browser/policy/screen_capture_location_policy_handler.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/ash/services/multidevice_setup/public/cpp/prefs.h"
@@ -249,6 +250,10 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_prefs.h"
 #endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#include "components/enterprise/client_certificates/core/prefs.h"
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1609,6 +1614,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 { key::kInsertKeyModifier,
     ash::prefs::kInsertKeyModifier,
     base::Value::Type::INTEGER },
+  {key::kGoogleLocationServicesEnabled,
+    ash::prefs::kUserGeolocationAccessLevel,
+    base::Value::Type::INTEGER},
+  { key::kLocalUserFilesAllowed,
+    prefs::kLocalUserFilesAllowed,
+    base::Value::Type::BOOLEAN
+  },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -1991,9 +2003,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWarnBeforeQuittingEnabled,
     prefs::kConfirmToQuitEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kScreenTimeEnabled,
-    policy_prefs::kScreenTimeEnabled,
-    base::Value::Type::BOOLEAN},
   { key::kCreatePasskeysInICloudKeychain,
     prefs::kCreatePasskeysInICloudKeychain,
     base::Value::Type::BOOLEAN },
@@ -2081,6 +2090,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     optimization_guide::model_execution::prefs::kWallpaperSearchEnterprisePolicyAllowed,
     base::Value::Type::INTEGER},
 #endif
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  { key::kChromeForTestingAllowed,
+    prefs::kChromeForTestingAllowed,
+    base::Value::Type::BOOLEAN },
+#endif
 
 #if BUILDFLAG(CHROME_CERTIFICATE_POLICIES_SUPPORTED)
   { key::kCACertificates,
@@ -2096,6 +2110,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kCAPlatformIntegrationEnabled,
     base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(CHROME_CERTIFICATE_POLICIES_SUPPORTED)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  { key::kProvisionManagedClientCertificateForUser,
+    client_certificates::prefs::kProvisionManagedClientCertificateForUserPrefs,
+    base::Value::Type::INTEGER },
+#endif  //
 };
 // clang-format on
 
@@ -2388,6 +2408,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           key::kWindowManagementBlockedForUrls,
           prefs::kManagedWindowManagementBlockedForUrls,
           base::Value::Type::LIST)));
+  handlers->AddHandler(std::make_unique<DevtoolsGenAiPolicyHandler>());
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \

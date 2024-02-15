@@ -305,7 +305,7 @@ TEST_P(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
       /*base_connector_id=*/1u, /*path_topology=*/{}, false, false,
       PrivacyScreenState::kNotSupported, false, std::string(), base::FilePath(),
       {}, nullptr, nullptr, 0, gfx::Size(), color_info, kVrrNotCapable,
-      absl::nullopt, DrmFormatsAndModifiers());
+      std::nullopt, DrmFormatsAndModifiers());
 
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
@@ -533,7 +533,7 @@ TEST_P(DisplayChangeObserverTest, WCGDisplayColorSpaces) {
 
   const auto color_space = display_color_spaces.GetRasterColorSpace();
   EXPECT_TRUE(color_space.IsValid());
-  EXPECT_EQ(color_space.GetPrimaryID(), gfx::ColorSpace::PrimaryID::BT709);
+  EXPECT_EQ(color_space.GetPrimaryID(), gfx::ColorSpace::PrimaryID::P3);
   EXPECT_EQ(color_space.GetTransferID(), gfx::ColorSpace::TransferID::SRGB);
 }
 
@@ -613,7 +613,7 @@ TEST_P(DisplayChangeObserverTest, VSyncRateMin) {
     const ManagedDisplayInfo display_info = CreateManagedDisplayInfo(
         &observer, display_snapshot.get(), display_mode.get());
 
-    EXPECT_EQ(display_info.vsync_rate_min(), absl::nullopt);
+    EXPECT_EQ(display_info.vsync_rate_min(), std::nullopt);
   }
 
   // Verify that the value of vsync_rate_min falls back to the value from the

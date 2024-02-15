@@ -288,7 +288,7 @@ bool HasForceDisplayColorProfile() {
 gfx::DisplayColorSpaces CreateDisplayColorSpaces(
     const gfx::ColorSpace& snapshot_color_space,
     bool allow_high_bit_depth,
-    const absl::optional<gfx::HDRStaticMetadata>& hdr_static_metadata) {
+    const std::optional<gfx::HDRStaticMetadata>& hdr_static_metadata) {
   if (HasForceDisplayColorProfile()) {
     return gfx::DisplayColorSpaces(GetForcedDisplayColorProfile(),
                                    DisplaySnapshot::PrimaryFormat());
@@ -301,9 +301,8 @@ gfx::DisplayColorSpaces CreateDisplayColorSpaces(
                                    DisplaySnapshot::PrimaryFormat());
   }
 
-  // Make all displays report that they have sRGB primaries. Hardware color
-  // management will convert to the device's color primaries.
-  skcms_Matrix3x3 primary_matrix = SkNamedGamut::kSRGB;
+  skcms_Matrix3x3 primary_matrix{};
+  snapshot_color_space.GetPrimaryMatrix(&primary_matrix);
 
   // Reconstruct the native colorspace with an IEC61966 2.1 transfer function
   // for SDR content (matching that of sRGB).

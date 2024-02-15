@@ -7,8 +7,10 @@
 #include <cstring>
 #include <functional>
 #include <limits>
+#include <optional>
 
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
 #include "base/location.h"
@@ -33,7 +35,6 @@
 #include "net/disk_cache/simple/simple_histogram_macros.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "third_party/abseil-cpp/absl/container/inlined_vector.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/zlib/zlib.h"
 
 using base::FilePath;
@@ -342,7 +343,7 @@ SimpleSynchronousEntry::SparseRequest::SparseRequest(int64_t sparse_offset_p,
 void SimpleSynchronousEntry::OpenEntry(
     net::CacheType cache_type,
     const FilePath& path,
-    const absl::optional<std::string>& key,
+    const std::optional<std::string>& key,
     const uint64_t entry_hash,
     SimpleFileTracker* file_tracker,
     std::unique_ptr<UnboundBackendFileOperations> file_operations,
@@ -1172,7 +1173,7 @@ void SimpleSynchronousEntry::Close(
 SimpleSynchronousEntry::SimpleSynchronousEntry(
     net::CacheType cache_type,
     const FilePath& path,
-    const absl::optional<std::string>& key,
+    const std::optional<std::string>& key,
     const uint64_t entry_hash,
     SimpleFileTracker* file_tracker,
     std::unique_ptr<UnboundBackendFileOperations> unbound_file_operations,
@@ -1413,8 +1414,10 @@ bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
     header = reinterpret_cast<const SimpleFileHeader*>(header_data.data());
   }
 
-  char* key_data = header_data.data() + sizeof(*header);
-  if (base::PersistentHash(key_data, header->key_length) != header->key_hash) {
+  const char* key_data = header_data.data() + sizeof(*header);
+  base::span<const char> key_span =
+      base::make_span(key_data, header->key_length);
+  if (base::PersistentHash(base::as_bytes(key_span)) != header->key_hash) {
     RecordSyncOpenResult(cache_type_, OPEN_ENTRY_KEY_HASH_MISMATCH);
     return false;
   }

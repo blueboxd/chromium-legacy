@@ -80,6 +80,7 @@
 #include "content/public/test/url_loader_monitor.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/fenced_frame_test_utils.h"
 #include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
@@ -689,19 +690,26 @@ std::unique_ptr<net::test_server::HttpResponse> HandleAdditionalBids(
 class InterestGroupBrowserTest : public ContentBrowserTest {
  public:
   InterestGroupBrowserTest() {
-    feature_list_.InitWithFeatures(
+    feature_list_.InitWithFeaturesAndParameters(
         /*enabled_features=*/
-        {blink::features::kInterestGroupStorage,
-         blink::features::kFledgeBiddingAndAuctionServer,
-         features::kPrivacySandboxAdsAPIsOverride,
-         blink::features::kAdInterestGroupAPI, blink::features::kParakeet,
-         blink::features::kFledge, blink::features::kAllowURNsInIframes,
-         blink::features::kFledgeNegativeTargeting,
-         blink::features::kBiddingAndScoringDebugReportingAPI,
-         blink::features::kFledgeDirectFromSellerSignalsHeaderAdSlot,
-         blink::features::kFencedFramesM120FeaturesPart1,
-         features::kBackForwardCache, features::kFledgeUseInterestGroupCache,
-         blink::features::kFencedFramesLocalUnpartitionedDataAccess},
+        {{blink::features::kInterestGroupStorage, {}},
+         {blink::features::kFledgeBiddingAndAuctionServer, {}},
+         {features::kPrivacySandboxAdsAPIsOverride, {}},
+         {blink::features::kAdInterestGroupAPI, {}},
+         {blink::features::kParakeet, {}},
+         {blink::features::kFledge, {}},
+         {blink::features::kAllowURNsInIframes, {}},
+         {blink::features::kFledgeNegativeTargeting, {}},
+         {blink::features::kBiddingAndScoringDebugReportingAPI, {}},
+         {blink::features::kFledgeDirectFromSellerSignalsHeaderAdSlot, {}},
+         {blink::features::kFencedFramesM120FeaturesPart1, {}},
+         {features::kBackForwardCache, {}},
+         {features::kFledgeUseInterestGroupCache, {}},
+         {blink::features::kFencedFramesLocalUnpartitionedDataAccess, {}},
+         // This is in field trial config, but we want this consistent among
+         // bots.
+         {blink::features::kFledgeCustomMaxAuctionAdComponents,
+          {{"FledgeAdComponentLimit", "40"}}}},
         /*disabled_features=*/
         {blink::features::kFencedFrames,
          blink::features::kFledgeEnforceKAnonymity,
@@ -15525,15 +15533,15 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   std::string host;
   RenderFrameHost* execution_targets[] = {
       main_frame,
-      same_origin_iframe,
-      cross_origin_iframe,
-      inner_cross_origin_iframe,
+      // Test the next two cases twice, to make sure the caching logic works, or
+      // at least doesn't prevent duplicate warnings.
+      same_origin_iframe, same_origin_iframe, cross_origin_iframe,
+      cross_origin_iframe, inner_cross_origin_iframe,
       same_origin_iframe_in_cross_origin_iframe,
       cross_origin_iframe_with_permissions,
       nested_cross_origin_iframe_with_permissions,
       same_origin_iframe_in_cross_origin_iframe_with_permissions,
-      same_origin_iframe_in_cross_origin_iframe2,
-      cross_origin_join_only,
+      same_origin_iframe_in_cross_origin_iframe2, cross_origin_join_only,
       cross_origin_run_auction_only};
 
   // The execution targets that are expected to have permissions warnings.
@@ -18427,12 +18435,12 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
 
     void PreconnectSockets(uint32_t num_streams,
                            const GURL& url,
-                           bool allow_credentials,
+                           network::mojom::CredentialsMode credentials_mode,
                            const net::NetworkAnonymizationKey&
                                network_anonymization_key) override {
       EXPECT_EQ(1u, num_streams);
       EXPECT_EQ(expected_url_, url);
-      EXPECT_TRUE(allow_credentials);
+      EXPECT_EQ(credentials_mode, network::mojom::CredentialsMode::kInclude);
       run_loop_.Quit();
     }
 
@@ -21074,15 +21082,74 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, DetachedFramePromiseResolve) {
   EXPECT_EQ(nullptr, EvalJs(shell(), kTopLevelScript));
 }
 
-IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, NoFeatureDetection) {
-  // Tests behavior with all feature detection off; this is currently default,
-  // but should go away once anything enabling it goes to 100%
-
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, FeatureDetection) {
+  // Since kFledgeCustomMaxAuctionAdComponents is rolling out, feature
+  // detection helper should be visible.
   GURL test_url =
       embedded_https_test_server().GetURL("a.test", "/simple_page.html");
 
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(false, EvalJs(shell(), "'protectedAudience' in navigator"));
+  EXPECT_EQ(true, EvalJs(shell(), "'protectedAudience' in navigator"));
+}
+class InterestGroupBFCacheBrowserTest : public InterestGroupBrowserTest {
+ public:
+  InterestGroupBFCacheBrowserTest() {
+    feature_list_.InitAndEnableFeature(features::kBackForwardCache);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// When there is a cross-document navigation and the original page goes into the
+// bfcache, the weak pointer to the auction initiator page should not be reset.
+IN_PROC_BROWSER_TEST_F(
+    InterestGroupBFCacheBrowserTest,
+    CrossDocumentNavigationShouldNotResetAuctionInitiatorPageInBFCache) {
+  const GURL test_url = embedded_https_test_server().GetURL("a.test", "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  const url::Origin test_origin = url::Origin::Create(test_url);
+
+  RenderFrameHostImplWrapper main_frame(web_contents()->GetPrimaryMainFrame());
+
+  // Before first Protected Audience API call, the auction initiator page should
+  // not be set.
+  ASSERT_EQ(main_frame->auction_initiator_page(), nullptr);
+
+  EXPECT_EQ(kSuccess,
+            JoinInterestGroupAndVerify(
+                blink::TestInterestGroupBuilder(
+                    /*owner=*/test_origin,
+                    /*name=*/"cars")
+                    .SetBiddingUrl(embedded_https_test_server().GetURL(
+                        "a.test", "/interest_group/bidding_logic.js"))
+                    .SetAds({{{GURL("https://example.com/render"),
+                               R"({"ad":"metadata","here":[1,2]})"}}})
+                    .Build()));
+
+  base::WeakPtr<PageImpl> auction_initiator_page =
+      main_frame->auction_initiator_page();
+  ASSERT_NE(auction_initiator_page, nullptr);
+  EXPECT_EQ(auction_initiator_page.get(), &(main_frame->GetPage()));
+
+  // Navigate, the main frame is put into bfcache.
+  const GURL test_url_b =
+      embedded_https_test_server().GetURL("b.test", "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url_b));
+  ASSERT_TRUE(main_frame->IsInBackForwardCache());
+
+  // Navigate back.
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  shell()->web_contents()->GetController().GoBack();
+  back_load_observer.Wait();
+
+  // The auction initiator page should not be reset since the original page goes
+  // into the bfcache.
+  ASSERT_NE(main_frame->auction_initiator_page(), nullptr);
+  EXPECT_EQ(main_frame->auction_initiator_page().get(),
+            &(main_frame->GetPage()));
+  EXPECT_EQ(main_frame->auction_initiator_page().get(),
+            auction_initiator_page.get());
 }
 
 class InterestGroupAdComponentLimitBrowserTest

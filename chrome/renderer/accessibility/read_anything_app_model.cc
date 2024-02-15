@@ -1171,8 +1171,7 @@ ReadAnythingAppModel::GetNextNodes() {
       // If the position is now at the start of a paragraph and we already have
       // nodes to return, return the current list of nodes so that we don't
       // cross paragraph boundaries with text.
-      if (ax_position_->AtStartOfParagraph() &&
-          current_granularity.node_ids.size() > 0) {
+      if (ShouldSplitAtParagraph(ax_position_, current_granularity)) {
         return current_granularity;
       }
 
@@ -1326,11 +1325,7 @@ ReadAnythingAppModel::GetNextValidPositionFromCurrentPosition(
     return new_position;
   }
 
-  bool is_leaf = new_position->GetAnchor()->IsChildOfLeaf();
-  // If the node is a leaf, use the parent node instead.
-  ui::AXNode* anchor_node =
-      is_leaf ? new_position->GetAnchor()->GetLowestPlatformAncestor()
-              : new_position->GetAnchor();
+  ui::AXNode* anchor_node = GetAnchorNode(new_position);
   bool was_previously_spoken =
       NodeBeenOrWillBeSpoken(current_granularity, anchor_node->id());
   bool is_text_node = IsTextForReadAnything(anchor_node->id());
@@ -1356,10 +1351,7 @@ ReadAnythingAppModel::GetNextValidPositionFromCurrentPosition(
     new_position =
         new_position->CreateNextSentenceStartPosition(movement_options);
 
-    is_leaf = anchor_node->IsChildOfLeaf();
-    if (is_leaf) {
-      anchor_node = anchor_node->GetLowestPlatformAncestor();
-    }
+    anchor_node = GetAnchorNode(new_position);
     was_previously_spoken =
         NodeBeenOrWillBeSpoken(current_granularity, anchor_node->id());
     is_text_node = IsTextForReadAnything(anchor_node->id());
@@ -1426,9 +1418,38 @@ void ReadAnythingAppModel::ResetReadAloudState() {
 
 bool ReadAnythingAppModel::IsTextForReadAnything(
     ui::AXNodeID ax_node_id) const {
-  // TODO(crbug.com/1474951): Can this be updated to IsText() instead?
-  return (GetHtmlTag(ax_node_id).length() == 0);
+  // ListMarkers will have an HTML tag of "::marker," so they won't be
+  // considered text when checking for the length of the html tag. However, in
+  // order to read out loud ordered bullets, nodes that have the kListMarker
+  // role should be included.
+  // Note: This technically will include unordered list markers like bullets,
+  // but these won't be spoken because they will be filtered by the TTS engine.
+  ui::AXNode* node = GetAXNode(ax_node_id);
+  bool is_list_marker = node->GetRole() == ax::mojom::Role::kListMarker;
+
+  // TODO(crbug.com/1474951): Can this be updated to IsText() instead of
+  // checking the length of the html tag?
+  return (GetHtmlTag(ax_node_id).length() == 0) || is_list_marker;
 }
+
 bool ReadAnythingAppModel::IsOpeningPunctuation(char c) {
   return (c == '(' || c == '{' || c == '[' || c == '<');
+}
+
+// We should split the current utterance at a paragraph boundary if the
+// AXPosition is at the start of a paragraph and we already have nodes in
+// our current granularity segment.
+bool ReadAnythingAppModel::ShouldSplitAtParagraph(
+    ui::AXNodePosition::AXPositionInstance& position,
+    ReadAloudCurrentGranularity& current_granularity) {
+  return position->AtStartOfParagraph() &&
+         (current_granularity.node_ids.size() > 0);
+}
+
+ui::AXNode* ReadAnythingAppModel::GetAnchorNode(
+    ui::AXNodePosition::AXPositionInstance& position) {
+  bool is_leaf = position->GetAnchor()->IsChildOfLeaf();
+  // If the node is a leaf, use the parent node instead.
+  return is_leaf ? position->GetAnchor()->GetLowestPlatformAncestor()
+                 : position->GetAnchor();
 }

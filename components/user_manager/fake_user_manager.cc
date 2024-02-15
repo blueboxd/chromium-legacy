@@ -121,6 +121,11 @@ void FakeUserManager::RemoveUserFromListForRecreation(
   RemoveUserFromList(account_id);
 }
 
+void FakeUserManager::CleanStaleUserInformationFor(
+    const AccountId& account_id) {
+  RemoveUserFromList(account_id);
+}
+
 const UserList& FakeUserManager::GetUsers() const {
   return users_;
 }
@@ -381,6 +386,12 @@ void FakeUserManager::ScheduleResolveLocale(
 bool FakeUserManager::IsValidDefaultUserImageId(int image_index) const {
   NOTIMPLEMENTED();
   return false;
+}
+
+MultiUserSignInPolicyController*
+FakeUserManager::GetMultiUserSignInPolicyController() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 }  // namespace user_manager

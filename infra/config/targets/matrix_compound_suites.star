@@ -199,6 +199,9 @@ targets.legacy_matrix_compound_suite(
         ),
         "chromeos_chrome_all_tast_tests": targets.legacy_matrix_config(
             mixins = [
+                # FieldTrial is disabled on ChromeOS builders but not in this builder.
+                # Notify Tast to notify and handle the different UI by that.
+                "chromeos-tast-fieldtrial-enabled",
                 "chromeos-jacuzzi-skylab-chrome-all-tast-tests",
             ],
             variants = [
@@ -206,11 +209,17 @@ targets.legacy_matrix_compound_suite(
             ],
         ),
         "chromeos_chrome_criticalstaging_tast_tests": targets.legacy_matrix_config(
+            mixins = [
+                "chromeos-tast-fieldtrial-enabled",
+            ],
             variants = [
                 "CROS_JACUZZI_CQ_PUBLIC_LKGM",
             ],
         ),
         "chromeos_chrome_disabled_tast_tests": targets.legacy_matrix_config(
+            mixins = [
+                "chromeos-tast-fieldtrial-enabled",
+            ],
             variants = [
                 "CROS_JACUZZI_CQ_PUBLIC_LKGM",
             ],
@@ -263,6 +272,9 @@ targets.legacy_matrix_compound_suite(
             ],
         ),
         "chromeos_chrome_all_tast_tests": targets.legacy_matrix_config(
+            mixins = [
+                "chromeos-tast-fieldtrial-enabled",
+            ],
             variants = [
                 "CROS_OCTOPUS_PUBLIC_LKGM",
             ],
@@ -1361,7 +1373,11 @@ targets.legacy_matrix_compound_suite(
 targets.legacy_matrix_compound_suite(
     name = "optimization_guide_linux_gtests",
     basic_suites = {
-        "optimization_guide_nogpu_gtests": None,
+        "optimization_guide_nogpu_gtests": targets.legacy_matrix_config(
+            mixins = [
+                "gce",
+            ],
+        ),
         "optimization_guide_gpu_gtests": targets.legacy_matrix_config(
             # TODO(b:322815244): Add AMD and NVIDIA variants once driver issues
             # are resolved.
@@ -1422,10 +1438,10 @@ targets.legacy_matrix_compound_suite(
             ],
         ),
         "optimization_guide_gpu_gtests": targets.legacy_matrix_config(
-            # TODO(b:321865883): Add NVIDIA variant once deployment is stable.
             variants = [
                 "AMD_RADEON_RX_5500_XT",
                 "INTEL_UHD_630",
+                "NVIDIA_GEFORCE_GTX_1660",
             ],
         ),
     },

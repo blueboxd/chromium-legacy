@@ -74,10 +74,6 @@ BASE_DECLARE_FEATURE(kWebAuthnICloudKeychainForInactiveWithDrive);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnICloudKeychainForInactiveWithoutDrive);
 
-// Allow sites to opt into experimenting with conditional UI presentations.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthConditionalUIExperimentation);
-
 // Allow some sites to experiment with removing caBLE linking in requests.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnLinkingExperimentation);
@@ -98,10 +94,6 @@ BASE_DECLARE_FEATURE(kWebAuthnNewPasskeyUI);
 // user id that starts with "GOOGLE_ACCOUNT:".
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnFilterGooglePasskeys);
-
-// Show an incognito confirmation sheet on Android when creating a credential.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnAndroidIncognitoConfirmation);
 
 // Support evaluating PRFs during create() calls.
 COMPONENT_EXPORT(DEVICE_FIDO)

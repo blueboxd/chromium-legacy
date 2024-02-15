@@ -103,7 +103,7 @@ FontCustomPlatformData::~FontCustomPlatformData() {
   }
 }
 
-FontPlatformData FontCustomPlatformData::GetFontPlatformData(
+const FontPlatformData* FontCustomPlatformData::GetFontPlatformData(
     float size,
     float adjusted_specified_size,
     bool bold,
@@ -115,7 +115,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     const ResolvedFontFeatures& resolved_font_features,
     FontOrientation orientation,
     const FontVariationSettings* variation_settings,
-    const FontPalette* palette) {
+    const FontPalette* palette) const {
   DCHECK(base_typeface_);
 
   sk_sp<SkTypeface> return_typeface = base_typeface_;
@@ -276,10 +276,11 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
       return_typeface = palette_typeface;
     }
   }
-  return FontPlatformData(std::move(return_typeface), std::string(), size,
-                          synthetic_bold && !base_typeface_->isBold(),
-                          synthetic_italic && !base_typeface_->isItalic(),
-                          text_rendering, resolved_font_features, orientation);
+  return MakeGarbageCollected<FontPlatformData>(
+      std::move(return_typeface), std::string(), size,
+      synthetic_bold && !base_typeface_->isBold(),
+      synthetic_italic && !base_typeface_->isItalic(), text_rendering,
+      resolved_font_features, orientation);
 }
 
 Vector<VariationAxis> FontCustomPlatformData::GetVariationAxes() const {
@@ -303,7 +304,7 @@ String FontCustomPlatformData::FamilyNameForInspector() const {
                           localized_string.fString.size());
 }
 
-scoped_refptr<FontCustomPlatformData> FontCustomPlatformData::Create(
+FontCustomPlatformData* FontCustomPlatformData::Create(
     SharedBuffer* buffer,
     String& ots_parse_message) {
   DCHECK(buffer);
@@ -320,8 +321,8 @@ scoped_refptr<FontCustomPlatformData> FontCustomPlatformData::Create(
   if (v8::Isolate* isolate = v8::Isolate::TryGetCurrent()) {
     isolate->AdjustAmountOfExternalAllocatedMemory(data_size);
   }
-  return base::AdoptRef(
-      new FontCustomPlatformData(std::move(typeface), data_size));
+  return MakeGarbageCollected<FontCustomPlatformData>(std::move(typeface),
+                                                      data_size);
 }
 
 bool FontCustomPlatformData::MayBeIconFont() const {

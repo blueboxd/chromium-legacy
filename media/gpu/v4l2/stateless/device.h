@@ -175,10 +175,6 @@ class MEDIA_GPU_EXPORT Device : public base::RefCountedThreadSafe<Device> {
   // are supported using the VIDIOC_ENUM_FRAMESIZES ioctl.
   std::pair<gfx::Size, gfx::Size> GetFrameResolutionRange(VideoCodec codec);
 
-  // Uses the VIDIOC_QUERYCTRL and VIDIOC_QUERYMENU ioctls to list the
-  // profiles of the input formats.
-  std::vector<VideoCodecProfile> ProfilesForVideoCodec(VideoCodec codec);
-
   // mmap the |buffer| so that it can be read/written.
   bool MmapBuffer(Buffer& buffer);
 
@@ -208,8 +204,8 @@ class MEDIA_GPU_EXPORT Device : public base::RefCountedThreadSafe<Device> {
 
  protected:
   virtual ~Device();
-  int Ioctl(const base::ScopedFD& fd, uint64_t request, void* arg);
-  int IoctlDevice(uint64_t request, void* arg);
+  bool Ioctl(const base::ScopedFD& fd, uint64_t request, void* arg);
+  bool IoctlDevice(uint64_t request, void* arg);
   bool OpenDevice();
 };
 

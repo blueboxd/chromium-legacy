@@ -631,7 +631,6 @@ static_library("test_support") {
       "../browser/ui/performance_controls/test_support/memory_saver_interactive_test_mixin.h",
       "../browser/ui/performance_controls/test_support/resource_usage_collector_observer.cc",
       "../browser/ui/performance_controls/test_support/resource_usage_collector_observer.h",
-      "../browser/ui/performance_controls/test_support/user_education_browser_test_mixin.h",
       "../browser/ui/performance_controls/test_support/webui_interactive_test_mixin.h",
       "../browser/ui/profiles/profile_ui_test_utils.h",
       "../browser/ui/safety_hub/safety_hub_test_util.cc",
@@ -3099,7 +3098,7 @@ if (!is_android) {
         "../browser/pdf",
         "../browser/pdf:pdf_extension_test_utils",
         "//components/pdf/browser",
-        "//components/pdf/common",
+        "//components/pdf/common:constants",
         "//pdf:features",
         "//pdf/loader",
       ]
@@ -4394,6 +4393,7 @@ if (!is_android) {
         "../browser/ash/app_restore/app_restore_test_util.h",
         "../browser/ash/app_restore/full_restore_app_launch_handler_browsertest.cc",
         "../browser/ash/app_restore/full_restore_policy_browsertest.cc",
+        "../browser/ash/app_restore/pine_browsertest.cc",
         "../browser/ash/apps/apk_web_app_installer_browsertest.cc",
         "../browser/ash/apps/apk_web_app_service_lacros_browsertest.cc",
         "../browser/ash/arc/accessibility/arc_accessibility_helper_bridge_browsertest.cc",
@@ -4743,6 +4743,7 @@ if (!is_android) {
         "../browser/ash/video_conference/video_conference_integration_browsertest.cc",
         "../browser/ash/wallpaper/wallpaper_drivefs_delegate_impl_browsertest.cc",
         "../browser/ash/wmp_browsertest.cc",
+        "../browser/chromeos/network/network_portal_signin_window_ash_browsertest.cc",
         "../browser/chromeos/reporting/websites/website_events_observer_ash_browsertest.cc",
         "../browser/chromeos/reporting/websites/website_usage_telemetry_sampler_ash_browsertest.cc",
         "../browser/chromeos/smart_reader/smart_reader_client_browsertest.cc",
@@ -5457,16 +5458,6 @@ if (!is_android) {
 }
 
 if (is_chromeos_lacros) {
-  # This test target is intended for lacros chrome specific tests that depend
-  # on wayland, for generic tests, please use 'unit_tests' target instead.
-  test("lacros_chrome_unittests") {
-    use_xvfb = use_xvfb_in_this_config
-    deps = [
-      "//base/test:run_all_unittests",
-      "//chromeos/process_proxy:unit_tests",
-    ]
-  }
-
   source_set("lacros_test_support_ui") {
     testonly = true
 
@@ -5844,7 +5835,7 @@ if (!is_android) {
       ]
 
       # Needed by startup.mobile benchmark.
-      data_deps += [ "//chrome/android/webapk/shell_apk:maps_go_webapk" ]
+      data_deps += [ "//chrome/android/webapk/shell_apk:webapk" ]
 
       if (telemetry_target_suffix == "_android_clank_chrome") {
         # Depending on Android version, either Chrome.apk or Monochrome.apk can
@@ -6403,6 +6394,7 @@ test("unit_tests") {
     "../browser/ui/autofill/chrome_autofill_client_unittest.cc",
     "../browser/ui/autofill/payments/card_unmask_authentication_selection_dialog_controller_impl_unittest.cc",
     "../browser/ui/autofill/payments/card_unmask_otp_input_dialog_controller_impl_unittest.cc",
+    "../browser/ui/autofill/payments/chrome_payments_autofill_client_unittest.cc",
     "../browser/ui/blocked_content/popup_opener_tab_helper_unittest.cc",
     "../browser/ui/chrome_select_file_policy_unittest.cc",
     "../browser/ui/cookie_controls/cookie_controls_controller_unittest.cc",
@@ -6827,6 +6819,7 @@ test("unit_tests") {
     "//components/payments/content",
     "//components/payments/content:test_support",
     "//components/payments/content:utils",
+    "//components/pdf/common:constants",
     "//components/performance_manager",
     "//components/performance_manager/public/mojom",
     "//components/performance_manager/test_support:test_support_common",
@@ -10152,6 +10145,10 @@ test("unit_tests") {
         [ "../common/media/component_widevine_cdm_hint_file_linux_unittest.cc" ]
   }
 
+  if (enable_widevine && is_linux) {
+    sources += [ "../common/media/cdm_registration_unittest.cc" ]
+  }
+
   if (enable_lens_desktop_google_branded_features) {
     sources += [
       "../browser/ui/views/lens/lens_region_search_controller_unittest.cc",
@@ -10323,6 +10320,11 @@ if (!is_android) {
       "interaction/webcontents_interaction_test_util.h",
       "permissions/permission_request_manager_test_api.cc",
       "permissions/permission_request_manager_test_api.h",
+      "user_education/interactive_feature_promo_test.cc",
+      "user_education/interactive_feature_promo_test.h",
+      "user_education/interactive_feature_promo_test_common.h",
+      "user_education/interactive_feature_promo_test_internal.cc",
+      "user_education/interactive_feature_promo_test_internal.h",
     ]
 
     if (enable_supervised_users) {
@@ -10410,6 +10412,7 @@ if (!is_android) {
       "//components/storage_monitor:test_support",
       "//components/supervised_user/core/browser/proto",
       "//components/sync:test_support",
+      "//components/user_education/test:test",
       "//components/user_education/views:views",
       "//components/user_manager",
       "//components/webapps/browser",
@@ -11129,14 +11132,19 @@ if (!is_android && !is_chromeos_device) {
           "../browser/ash/os_feedback/os_feedback_interactive_uitest.cc",
           "../browser/ui/ash/app_list/app_list_interactive_uitest.cc",
           "../browser/ui/ash/desks/desks_interactive_uitest.cc",
+          "../browser/ui/ash/picker/picker_interactive_uitest.cc",
           "../browser/ui/ash/user_education/welcome_tour/welcome_tour_interactive_uitest.cc",
           "../browser/ui/web_applications/test/system_web_app_interactive_uitest.cc",
           "../browser/ui/webui/ash/firmware_update_ui/integration_tests/firmware_update_interactive_uitest.cc",
           "../browser/ui/webui/ash/settings/integration_tests/add_new_keyboard_interactive_uitest.cc",
+          "../browser/ui/webui/ash/settings/integration_tests/add_new_mouse_interactive_uitest.cc",
+          "../browser/ui/webui/ash/settings/integration_tests/add_new_touchpad_interactive_uitest.cc",
           "../browser/ui/webui/ash/settings/integration_tests/device_settings_base_test.cc",
           "../browser/ui/webui/ash/settings/integration_tests/device_settings_base_test.h",
           "../browser/ui/webui/ash/settings/integration_tests/keyboard_modifier_remapping_interactive_uitest.cc",
           "../browser/ui/webui/ash/settings/integration_tests/keyboard_six_pack_keys_interactive_uitest.cc",
+          "../browser/ui/webui/ash/settings/integration_tests/mouse_button_key_combination_interactive_uitest.cc",
+          "../browser/ui/webui/ash/settings/integration_tests/mouse_button_renaming_interactive_uitest.cc",
           "../browser/ui/webui/ash/settings/integration_tests/mouse_scroll_acceleration_interactive_uitest.cc",
           "../browser/ui/webui/ash/settings/integration_tests/open_keyboard_subpage_interactive_uitest.cc",
           "../browser/ui/webui/ash/settings/integration_tests/open_touchpad_subpage_interactive_uitest.cc",
@@ -11150,7 +11158,9 @@ if (!is_android && !is_chromeos_device) {
           "../browser/ui/webui/ash/shortcut_customization/integration_tests/add_custom_accelerator_and_reset_interactive_uitest.cc",
           "../browser/ui/webui/ash/shortcut_customization/integration_tests/add_custom_accelerator_to_unlocked_action_interactive_uitest.cc",
           "../browser/ui/webui/ash/shortcut_customization/integration_tests/edit_default_accelerator_interactive_uitest.cc",
+          "../browser/ui/webui/ash/shortcut_customization/integration_tests/open_keyboard_settings_interactive_uitest.cc",
           "../browser/ui/webui/ash/shortcut_customization/integration_tests/search_for_shortcuts_interactive_ui_test.cc",
+          "../browser/ui/webui/ash/shortcut_customization/integration_tests/select_category_from_side_nav_interactive_uitest.cc",
           "../browser/ui/webui/ash/shortcut_customization/integration_tests/shortcut_customization_test_base.cc",
           "../browser/ui/webui/ash/shortcut_customization/integration_tests/shortcut_customization_test_base.h",
           "//ash/drag_drop/drag_drop_interactive_uitest.cc",
@@ -11168,6 +11178,8 @@ if (!is_android && !is_chromeos_device) {
           "//chrome/browser/ash/crosapi:crosapi",
           "//chrome/browser/ash/system_web_apps/test_support",
           "//chrome/browser/ash/system_web_apps/test_support:test_support_ui",
+          "//chromeos/ash/components/dbus/fwupd:fwupd",
+          "//chromeos/ash/components/fwupd:fwupd",
           "//chromeos/ash/components/standalone_browser",
           "//components/app_constants",
           "//device/udev_linux:test_support",

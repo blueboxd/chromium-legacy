@@ -4,7 +4,7 @@
 
 import {ENTRIES, getCaller, pending, repeatUntil, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
 
-import {IGNORE_APP_ERRORS, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {remoteCall, setupAndWaitUntilReady} from './background.js';
 import {DirectoryTreePageObject} from './page_objects/directory_tree.js';
 
 /**
@@ -38,20 +38,22 @@ async function keyboardCopy(path: string) {
 
   // Copy the file into the same file list.
   chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('copyFile', appId, ['world.ogv']),
+      (await remoteCall.callRemoteTestUtil<boolean>(
+          'copyFile', appId, ['world.ogv'])),
       'copyFile failed');
   // Check: the copied file should appear in the file list.
   const expectedEntryRows = [ENTRIES.world.getExpectedRow()].concat(
-      [['world (1).ogv', '56 KB', 'OGG video']]);
+      [['world (1).ogv', '56 KB', 'OGG video', '']]);
   await remoteCall.waitForFiles(
       appId, expectedEntryRows, {ignoreLastModifiedTime: true});
-  const files = await remoteCall.callRemoteTestUtil('getFileList', appId, []);
+  const files =
+      await remoteCall.callRemoteTestUtil<string[]>('getFileList', appId, []);
   if (path === RootPath.DRIVE) {
     // DriveFs doesn't preserve mtimes so they shouldn't match.
-    chrome.test.assertTrue(files[0][3] !== files[1][3], files[0][3]);
+    chrome.test.assertTrue(files[0]![3] !== files[1]![3], files[0]![3]);
   } else {
     // The mtimes should match for Local files.
-    chrome.test.assertTrue(files[0][3] === files[1][3], files[0][3]);
+    chrome.test.assertTrue(files[0]![3] === files[1]![3], files[0]![3]);
   }
 }
 
@@ -344,11 +346,6 @@ export async function renameRemovableWithKeyboardOnFileList() {
   expectedRows[2]![0] = smallerPartitionName;
   await remoteCall.waitForFiles(
       appId, expectedRows, {ignoreLastModifiedTime: true});
-
-  // Even though the Files app rename flow worked, the background.js page
-  // console errors about not being able to 'mount' the older volume name
-  // due to a disk_mount_manager.cc error: user/fake-usb not found.
-  return IGNORE_APP_ERRORS;
 }
 
 /**

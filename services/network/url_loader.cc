@@ -1773,9 +1773,9 @@ void URLLoader::ContinueOnResponseStarted() {
     return;
   }
 
-  // Figure out if we need to sniff (for MIME type detection or for Cross-Origin
-  // Read Blocking / CORB).
-  if (factory_params_->is_corb_enabled) {
+  // Figure out if we need to sniff (for MIME type detection or for Opaque
+  // Response Blocking / ORB)
+  if (factory_params_->is_orb_enabled) {
     corb_analyzer_ = corb::ResponseAnalyzer::Create(*per_factory_corb_state_);
     is_more_corb_sniffing_needed_ = true;
     auto decision =
@@ -2570,7 +2570,7 @@ void URLLoader::OnHeadersReceivedComplete(
 
 void URLLoader::CompleteBlockedResponse(
     int error_code,
-    bool should_report_corb_blocking,
+    bool should_report_orb_blocking,
     std::optional<mojom::BlockedByResponseReason> reason) {
   if (has_received_response_) {
     // The response headers and body shouldn't yet be sent to the
@@ -2586,7 +2586,7 @@ void URLLoader::CompleteBlockedResponse(
   status.encoded_data_length = 0;
   status.encoded_body_length = 0;
   status.decoded_body_length = 0;
-  status.should_report_corb_blocking = should_report_corb_blocking;
+  status.should_report_orb_blocking = should_report_orb_blocking;
   status.blocked_by_response_reason = reason;
 
   if (memory_cache_writer_)

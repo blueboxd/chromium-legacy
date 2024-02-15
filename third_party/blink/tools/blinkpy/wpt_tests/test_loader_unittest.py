@@ -111,7 +111,7 @@ class TestLoaderTestCase(unittest.TestCase):
         test_file = self._load_metadata('reftest.html')
         test = test_file.get_test('reftest.html')
         self.assertEqual(test.expected, 'FAIL')
-        self.assertEqual(test.known_intermittent, ['ERROR'])
+        self.assertEqual(test.known_intermittent, ['PASS', 'ERROR'])
         self.assertFalse(test.disabled)
         self.assertIsNone(test.get_subtest('should not exist'))
 
@@ -171,6 +171,28 @@ class TestLoaderTestCase(unittest.TestCase):
         self.assertEqual(test.known_intermittent,
                          ['ERROR', 'PRECONDITION_FAILED'])
         self.assertIsNone(test_file.get_test('variant.html?foo=baz'))
+
+    def test_load_failure_with_baseline(self):
+        """A `[ Failure ]` line allows harness OK, even with a baseline."""
+        self.fs.write_text_file(
+            self.finder.path_from_web_tests('TestExpectations'),
+            textwrap.dedent("""\
+                # results: [ Failure ]
+                external/wpt/variant.html?foo=bar/abc [ Failure ]
+                """))
+        self.fs.write_text_file(
+            self.finder.path_from_wpt_tests(
+                'variant_foo=bar_abc-expected.txt'),
+            textwrap.dedent("""\
+                This is a testharness.js-based test.
+                Harness Error. harness_status.status = 3 , harness_status.message =
+                Harness: the test ran to completion.
+                """))
+        test_file = self._load_metadata('variant.html')
+        test = test_file.get_test('variant.html?foo=bar/abc')
+        self.assertEqual(test.expected, 'OK')
+        self.assertEqual(test.known_intermittent,
+                         ['ERROR', 'PRECONDITION_FAILED'])
 
     def test_load_baseline_precondition_failed(self):
         self.fs.write_text_file(
@@ -236,8 +258,8 @@ class TestLoaderTestCase(unittest.TestCase):
                 """))
         test_file = self._load_metadata('variant.html')
         test = test_file.get_test('variant.html?foo=baz')
-        self.assertEqual(test.expected, 'TIMEOUT')
-        self.assertEqual(test.known_intermittent, [])
+        self.assertEqual(test.expected, 'OK')
+        self.assertEqual(test.known_intermittent, ['TIMEOUT'])
         self.assertFalse(test.disabled)
 
     def test_load_virtual_expectations(self):

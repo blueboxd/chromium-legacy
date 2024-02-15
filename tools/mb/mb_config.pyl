@@ -47,6 +47,7 @@
       'linux-chrome': 'official_reclient',
       'linux-chromeos-chrome': 'official_reclient_chromeos_include_unwind_tables',
       'linux-chromeos-chrome-with-lacros': 'official_reclient_chromeos_include_unwind_tables_with_lacros',
+      'linux-lacros-chrome': 'official_reclient_lacros_include_unwind_tables',
       'mac-chrome': 'official_reclient_mac',
       'win-branded-rel': 'chrome_branded_reclient_minimal_symbols',
       'win-chrome': 'official_reclient_x86',
@@ -275,6 +276,7 @@
       'linux-chromeos-chrome-with-lacros': 'official_reclient_chromeos_include_unwind_tables_with_lacros',
       'linux-chromeos-compile-chrome': 'official_reclient_chromeos_include_unwind_tables',
       'linux-finch-smoke-chrome': 'official_reclient',
+      'linux-lacros-chrome': 'official_reclient_lacros_include_unwind_tables',
       'mac-arm64-finch-smoke-chrome': 'official_reclient_mac_arm',
       'mac-chrome': 'official_reclient_mac',
       'win-branded-compile-rel': 'chrome_branded_reclient_minimal_symbols',
@@ -823,6 +825,11 @@
       'cast_receiver_size_optimized_internal', 'official', 'reclient', 'minimal_symbols', 'fuchsia', 'fuchsia_include_sd_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator',
     ],
 
+    'official_reclient_lacros_include_unwind_tables': [
+      'official', 'reclient', 'lacros', 'minimal_symbols', 'include_unwind_tables',
+      'also_build_ash_chrome',
+    ],
+
     'official_reclient_linux_perf_pgo': [
       'official', 'reclient', 'no_gnome_keyring', 'minimal_symbols',
     ],
@@ -960,6 +967,10 @@
   # This is a dict mapping a given 'mixin' name to a dict of settings that
   # mb should use. See //tools/mb/docs/user_guide.md for more information.
   'mixins': {
+    'also_build_ash_chrome': {
+      'gn_args': 'also_build_ash_chrome=true'
+    },
+
     'also_build_lacros_chrome': {
       'gn_args': 'also_build_lacros_chrome=true'
     },

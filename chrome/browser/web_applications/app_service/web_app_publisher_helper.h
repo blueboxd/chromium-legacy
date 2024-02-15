@@ -30,6 +30,7 @@
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/services/app_service/public/cpp/app.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
@@ -111,9 +112,6 @@ void UninstallImpl(WebAppProvider* provider,
                    const std::string& app_id,
                    apps::UninstallSource uninstall_source,
                    gfx::NativeWindow parent_window);
-
-RunOnOsLoginMode ConvertOsLoginModeToWebAppConstants(
-    apps::RunOnOsLoginMode login_mode);
 
 class WebAppPublisherHelper : public WebAppRegistrarObserver,
                               public WebAppInstallManagerObserver,
@@ -242,9 +240,6 @@ class WebAppPublisherHelper : public WebAppRegistrarObserver,
   void UpdateAppSize(const std::string& app_id);
 
   void SetWindowMode(const std::string& app_id, apps::WindowMode window_mode);
-
-  void SetRunOnOsLoginMode(const std::string& app_id,
-                           apps::RunOnOsLoginMode run_on_os_login_mode);
 
   // Converts |display_mode| to a |window_mode|.
   apps::WindowMode ConvertDisplayModeToWindowMode(

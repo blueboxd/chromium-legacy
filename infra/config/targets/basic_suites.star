@@ -1495,7 +1495,6 @@ targets.legacy_basic_suite(
     tests = {
         "chrome_wpt_tests": targets.legacy_test_config(
             args = [
-                "--no-retry-failures",
                 "--test-type",
                 "testharness",
                 "reftest",
@@ -1503,7 +1502,7 @@ targets.legacy_basic_suite(
                 "print-reftest",
             ],
             swarming = targets.swarming(
-                shards = 15,
+                shards = 20,
             ),
         ),
         "chrome_wpt_tests_headful": targets.legacy_test_config(
@@ -1520,10 +1519,10 @@ targets.legacy_basic_suite(
             swarming = targets.swarming(
                 shards = 30,
             ),
+            experiment_percentage = 10,
         ),
         "chrome_wpt_tests_old_headless": targets.legacy_test_config(
             args = [
-                "--no-retry-failures",
                 "--test-type",
                 "testharness",
                 "reftest",
@@ -1534,6 +1533,7 @@ targets.legacy_basic_suite(
             swarming = targets.swarming(
                 shards = 15,
             ),
+            experiment_percentage = 100,
         ),
     },
 )
@@ -2895,6 +2895,36 @@ targets.legacy_basic_suite(
     },
 )
 
+# This is esentially a copy of gpu_passthrough_telemetry_tests running with
+# Graphite. Initially limited to just the tests that pass on Android.
+targets.legacy_basic_suite(
+    name = "gpu_passthrough_graphite_telemetry_tests",
+    tests = {
+        "screenshot_sync_passthrough_graphite_tests": targets.legacy_test_config(
+            args = [
+                "--dont-restore-color-profile-after-test",
+                "--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle  --enable-features=SkiaGraphite",
+            ],
+            android_args = [
+                # TODO(crbug.com/1093085): Remove this once we fix the tests.
+                "--extra-browser-args=--force-online-connection-state-for-indicator",
+                "$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices",
+            ],
+            chromeos_args = [
+                "$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote",
+            ],
+            lacros_args = [
+                "--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland",
+                "--xvfb",
+                "--no-xvfb",
+                "--use-weston",
+                "--weston-use-gl",
+            ],
+            ci_only = True,
+        ),
+    },
+)
+
 targets.legacy_basic_suite(
     name = "gpu_passthrough_telemetry_tests",
     tests = {
@@ -4162,6 +4192,27 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "linux_lacros_chrome_gtests",
+    tests = {
+        "browser_tests": targets.legacy_test_config(
+            swarming = targets.swarming(
+                shards = 33,
+            ),
+        ),
+        "lacros_chrome_browsertests": targets.legacy_test_config(
+            swarming = targets.swarming(
+                shards = 6,
+            ),
+        ),
+        "interactive_ui_tests": targets.legacy_test_config(
+            swarming = targets.swarming(
+                shards = 6,
+            ),
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "linux_lacros_chrome_interactive_ui_tests_version_skew",
     tests = {
         "interactive_ui_tests": targets.legacy_test_config(
@@ -4178,7 +4229,6 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "linux_lacros_specific_gtests",
     tests = {
-        "lacros_chrome_unittests": targets.legacy_test_config(),
         "ozone_unittests": targets.legacy_test_config(),
     },
 )

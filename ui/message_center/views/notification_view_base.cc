@@ -139,10 +139,6 @@ bool IsForAshNotification() {
 
 CompactTitleMessageView::~CompactTitleMessageView() = default;
 
-const char* CompactTitleMessageView::GetClassName() const {
-  return "CompactTitleMessageView";
-}
-
 CompactTitleMessageView::CompactTitleMessageView() {
   title_ = AddChildView(std::make_unique<views::Label>(
       std::u16string(), views::style::CONTEXT_DIALOG_BODY_TEXT));
@@ -859,7 +855,7 @@ void NotificationViewBase::InkDropRippleAnimationEnded(
     header_row_->SetSubpixelRenderingEnabled(true);
 }
 
-BEGIN_METADATA(NotificationViewBase, MessageView)
+BEGIN_METADATA(NotificationViewBase)
 END_METADATA
 
 }  // namespace message_center

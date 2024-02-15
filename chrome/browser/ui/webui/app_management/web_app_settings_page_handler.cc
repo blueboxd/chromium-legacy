@@ -10,6 +10,7 @@
 #include "chrome/browser/apps/link_capturing/link_capturing_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler_base.h"
+#include "chrome/browser/web_applications/app_service/web_app_publisher_helper.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
@@ -75,6 +76,24 @@ std::vector<std::string> GetScopeExtensions(const webapps::AppId& app_id,
   return scope_extensions_vector;
 }
 
+web_app::RunOnOsLoginMode ConvertOsLoginModeToWebAppConstants(
+    apps::RunOnOsLoginMode login_mode) {
+  web_app::RunOnOsLoginMode web_app_constant_login_mode =
+      web_app::RunOnOsLoginMode::kMinValue;
+  switch (login_mode) {
+    case apps::RunOnOsLoginMode::kWindowed:
+      web_app_constant_login_mode = web_app::RunOnOsLoginMode::kWindowed;
+      break;
+    case apps::RunOnOsLoginMode::kNotRun:
+      web_app_constant_login_mode = web_app::RunOnOsLoginMode::kNotRun;
+      break;
+    case apps::RunOnOsLoginMode::kUnknown:
+      web_app_constant_login_mode = web_app::RunOnOsLoginMode::kNotRun;
+      break;
+  }
+  return web_app_constant_login_mode;
+}
+
 }  // namespace
 
 WebAppSettingsPageHandler::WebAppSettingsPageHandler(
@@ -91,6 +110,11 @@ WebAppSettingsPageHandler::WebAppSettingsPageHandler(
 }
 
 WebAppSettingsPageHandler::~WebAppSettingsPageHandler() = default;
+
+void WebAppSettingsPageHandler::SetPinned(const std::string& app_id,
+                                          bool pinned) {
+  NOTIMPLEMENTED();
+}
 
 void WebAppSettingsPageHandler::SetResizeLocked(const std::string& app_id,
                                                 bool locked) {
@@ -140,8 +164,11 @@ void WebAppSettingsPageHandler::SetWindowMode(const std::string& app_id,
 void WebAppSettingsPageHandler::SetRunOnOsLoginMode(
     const std::string& app_id,
     apps::RunOnOsLoginMode run_on_os_login_mode) {
-  apps::AppServiceProxyFactory::GetForProfile(profile())->SetRunOnOsLoginMode(
-      app_id, run_on_os_login_mode);
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForWebApps(profile());
+  provider->scheduler().SetRunOnOsLoginMode(
+      app_id, ConvertOsLoginModeToWebAppConstants(run_on_os_login_mode),
+      base::DoNothing());
 }
 
 void WebAppSettingsPageHandler::ShowDefaultAppAssociationsUi() {

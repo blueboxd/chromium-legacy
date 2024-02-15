@@ -566,14 +566,20 @@ IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, ExceptionsList) {
   RunTest("settings/cookies_page_test.js", "runMochaSuite('ExceptionsList')");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, CookieSettingsUiAlignmentTest) {
+IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
+                       PreCookieSettingsUiAlignmentTest) {
   RunTest("settings/cookies_page_test.js",
-          "runMochaSuite('CookieSettingsUiAlignmentTest')");
+          "runMochaSuite('PreCookieSettingsUiAlignmentTest')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, FirstPartySetsUIDisabled) {
   RunTest("settings/cookies_page_test.js",
           "runMochaSuite('FirstPartySetsUIDisabled')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, IpProtectionToggle) {
+  RunTest("settings/cookies_page_test.js",
+          "runMochaSuite('IpProtectionToggle')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, TrackingProtectionSettings) {

@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
@@ -162,12 +163,15 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
 #if BUILDFLAG(USE_VAAPI)
     create_decoder_function_cb = base::BindOnce(&VaapiVideoDecoder::Create);
 #elif BUILDFLAG(USE_V4L2_CODEC)
-    if (base::FeatureList::IsEnabled(kV4L2FlatStatelessVideoDecoder)) {
-      create_decoder_function_cb =
-          base::BindOnce(&V4L2StatelessVideoDecoder::Create);
-    } else if (base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)) {
-      create_decoder_function_cb =
-          base::BindOnce(&V4L2StatefulVideoDecoder::Create);
+    if (base::FeatureList::IsEnabled(kV4L2FlatStatelessVideoDecoder) ||
+        base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)) {
+      if (IsV4L2DecoderStateful()) {
+        create_decoder_function_cb =
+            base::BindOnce(&V4L2StatefulVideoDecoder::Create);
+      } else {
+        create_decoder_function_cb =
+            base::BindOnce(&V4L2StatelessVideoDecoder::Create);
+      }
     } else {
       create_decoder_function_cb = base::BindOnce(&V4L2VideoDecoder::Create);
     }
@@ -194,12 +198,15 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::CreateForTesting(
 #if BUILDFLAG(USE_VAAPI)
   create_decoder_function_cb = base::BindOnce(&VaapiVideoDecoder::Create);
 #elif BUILDFLAG(USE_V4L2_CODEC)
-  if (base::FeatureList::IsEnabled(kV4L2FlatStatelessVideoDecoder)) {
-    create_decoder_function_cb =
-        base::BindOnce(&V4L2StatelessVideoDecoder::Create);
-  } else if (base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)) {
-    create_decoder_function_cb =
-        base::BindOnce(&V4L2StatefulVideoDecoder::Create);
+  if (base::FeatureList::IsEnabled(kV4L2FlatStatelessVideoDecoder) ||
+      base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)) {
+    if (IsV4L2DecoderStateful()) {
+      create_decoder_function_cb =
+          base::BindOnce(&V4L2StatefulVideoDecoder::Create);
+    } else {
+      create_decoder_function_cb =
+          base::BindOnce(&V4L2StatelessVideoDecoder::Create);
+    }
   } else {
     create_decoder_function_cb = base::BindOnce(&V4L2VideoDecoder::Create);
   }
@@ -262,13 +269,7 @@ VideoDecoderPipeline::GetSupportedConfigs(
       break;
 #elif BUILDFLAG(USE_V4L2_CODEC)
     case VideoDecoderType::kV4L2:
-      if (base::FeatureList::IsEnabled(kV4L2FlatStatelessVideoDecoder)) {
-        configs = V4L2StatelessVideoDecoder::GetSupportedConfigs();
-      } else if (base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)) {
-        configs = V4L2StatefulVideoDecoder::GetSupportedConfigs();
-      } else {
-        configs = V4L2VideoDecoder::GetSupportedConfigs();
-      }
+      configs = GetSupportedV4L2DecoderConfigs();
       break;
 #endif
     default:
@@ -425,7 +426,8 @@ int VideoDecoderPipeline::GetMaxDecodeRequests() const {
   // to be synchronous.
 
 #if BUILDFLAG(USE_V4L2_CODEC)
-  if (base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)) {
+  if (base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder) &&
+      IsV4L2DecoderStateful()) {
     return 4;
   }
 #endif
@@ -512,6 +514,10 @@ void VideoDecoderPipeline::Initialize(const VideoDecoderConfig& config,
     std::move(init_cb).Run(DecoderStatus::Codes::kUnsupportedConfig);
     return;
   }
+  constexpr auto kVideoCodecProfileCount = media::VIDEO_CODEC_PROFILE_MAX + 1;
+  base::UmaHistogramEnumeration(
+      "Media.PlatformVideoDecoding.VideoCodecProfile", config.profile(),
+      static_cast<VideoCodecProfile>(kVideoCodecProfileCount));
 
   needs_bitstream_conversion_ = (config.codec() == VideoCodec::kH264) ||
                                 (config.codec() == VideoCodec::kHEVC);
@@ -627,9 +633,10 @@ void VideoDecoderPipeline::OnInitializeDone(InitCB init_cb,
     buffer_transcryptor_.reset();
 #endif  // BUILDFLAG(IS_CHROMEOS)
     decoder_.reset();
+  } else {
+    MEDIA_LOG(INFO, media_log_)
+        << "VideoDecoderPipeline |decoder_| Initialize() successful";
   }
-  MEDIA_LOG(INFO, media_log_)
-      << "VideoDecoderPipeline |decoder_| Initialize() successful";
 
 #if BUILDFLAG(IS_CHROMEOS)
   if (decoder_ && decoder_->NeedsTranscryption()) {
@@ -1014,8 +1021,11 @@ VideoDecoderPipeline::PickDecoderOutputFormat(
   // libva) and a PlatformVideoFramePool.
   CHECK(allocator.has_value());
   CHECK(main_frame_pool_->AsPlatformVideoFramePool());
+  // The custom allocator creates frames backed by GPU memory buffers.
+  // TODO(nhebert): Change the storage type argument when |allocator| switches
+  // to create NativePixmap-backed frames.
   main_frame_pool_->AsPlatformVideoFramePool()->SetCustomFrameAllocator(
-      *allocator);
+      *allocator, VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
 #elif BUILDFLAG(IS_LINUX) && BUILDFLAG(USE_V4L2_CODEC)
   // Linux w/ V4L2 should not use a custom allocator
   // Only tested with video_decode_accelerator_tests
@@ -1120,10 +1130,26 @@ VideoDecoderPipeline::PickDecoderOutputFormat(
   } else {
     VLOGF(2) << "Initializing ImageProcessor; max buffers: "
              << estimated_num_buffers_for_renderer_;
+    // |output_storage_type| holds the storage type of frames created by
+    // |main_frame_pool_|, which are used as the output frames for the image
+    // processor.
+    // As part of b/277581596, |main_frame_pool_| will be changed to create
+    // NativePixmap frames instead of GPU memory buffer frames. There will be
+    // points during the transition where |main_frame_pool_| will use different
+    // storage types for different platforms. The plan is to migrate the
+    // ChromeOS Chrome browser frame pool first. Then later, Linux and ChromeOS
+    // ARC. To handle correctly configuring |image_processor| during this
+    // transition, the frame pool is being used as the source of truth for the
+    // |output_storage_type|.
+    // TODO(nhebert): Clean up this comment after the NativePixmap migration
+    // completes.
+    const VideoFrame::StorageType output_storage_type =
+        main_frame_pool_->GetFrameStorageType();
     image_processor = ImageProcessorFactory::CreateWithInputCandidates(
         candidates, /*input_visible_rect=*/decoder_visible_rect,
         output_size ? *output_size : decoder_visible_rect.size(),
-        estimated_num_buffers_for_renderer_, decoder_task_runner_,
+        output_storage_type, estimated_num_buffers_for_renderer_,
+        decoder_task_runner_,
         base::BindRepeating(&PickRenderableFourcc, renderable_fourccs_),
         base::BindPostTaskToCurrentDefault(
             base::BindRepeating(&VideoDecoderPipeline::OnError,
@@ -1159,8 +1185,10 @@ VideoDecoderPipeline::PickDecoderOutputFormat(
     auxiliary_frame_pool_->set_parent_task_runner(decoder_task_runner_);
 
 #if BUILDFLAG(IS_LINUX)
+    // TODO(nhebert): Change the storage type argument when |allocator| switches
+    // to create NativePixmap-backed frames.
     auxiliary_frame_pool_->AsPlatformVideoFramePool()->SetCustomFrameAllocator(
-        *allocator);
+        *allocator, VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
 #endif
 
     CroStatus::Or<GpuBufferLayout> status_or_layout =

@@ -48,7 +48,8 @@ BASE_FEATURE(kApplyNativeOcclusionToCompositor,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Field trial param name for `kApplyNativeOcclusionToCompositor`.
-const char kApplyNativeOcclusionToCompositorType[] = "type";
+const base::FeatureParam<std::string> kApplyNativeOcclusionToCompositorType{
+    &kApplyNativeOcclusionToCompositor, "type", /*default=*/""};
 // When the WindowTreeHost is occluded or hidden, resources are released and
 // the compositor is hidden. See WindowTreeHost for specifics on what this
 // does.
@@ -486,15 +487,15 @@ bool CustomizeChromeSupportsChromeRefresh2023() {
 
 BASE_FEATURE(kChromeRefresh2023,
              "ChromeRefresh2023",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kChromeRefreshSecondary2023,
              "ChromeRefreshSecondary2023",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kChromeRefresh2023NTB,
              "ChromeRefresh2023NTB",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kChromeRefresh2023NTBVariationKey[] = "Variation";
 
@@ -546,7 +547,7 @@ bool IsChromeRefresh2023() {
 
 BASE_FEATURE(kChromeWebuiRefresh2023,
              "ChromeWebuiRefresh2023",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsChromeWebuiRefresh2023() {
   if (!CustomizeChromeSupportsChromeRefresh2023()) {

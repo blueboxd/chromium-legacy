@@ -471,6 +471,11 @@ bool IsContentPushNotificationsSetUpListEnabled();
 // YES when the Content Provisional Push Notifications are enabled.
 bool IsContentPushNotificationsProvisionalEnabled();
 
+// TODO(b/322348322): Remove provisional notifications bypass conditions testing
+// flag param. YES when the Content Provisional Push Notifications are enabled
+// and the time based conditions should be ignored.
+bool IsContentPushNotificationsProvisionalBypass();
+
 // Returns true when the IOSLargeFakebox feature is enabled.
 bool IsIOSLargeFakeboxEnabled();
 
@@ -565,7 +570,17 @@ BASE_DECLARE_FEATURE(kIOSTipsNotifications);
 // Tips notifications.
 extern const char kIOSTipsNotificationsTriggerTimeParam[];
 
+// Feature param containing a bitfield to specify which notifications should be
+// enabled. Bits are assigned based on the enum `TipsNotificationType`.
+extern const char kIOSTipsNotificationsEnabledParam[];
+
 // Helper for whether Tips Notifications are enabled.
 bool IsIOSTipsNotificationsEnabled();
+
+// Feature flag to use a UICollectionView for the Magic Stack.
+BASE_DECLARE_FEATURE(kIOSMagicStackCollectionView);
+
+// Returns true if the MagicStack UICollectionView implementation is enabled.
+bool IsIOSMagicStackCollectionViewEnabled();
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

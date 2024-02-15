@@ -3146,8 +3146,6 @@ void Document::Shutdown() {
     }
   }
 
-  computed_node_mapping_.clear();
-
   DetachLayoutTree();
   layout_view_ = nullptr;
   DCHECK(!View()->IsAttached());
@@ -6078,6 +6076,13 @@ void Document::AddMutationEventListenerTypeIfEnabled(
     return;
   }
   AddListenerType(listener_type);
+}
+
+bool Document::HasListenerType(ListenerType listener_type) const {
+  DCHECK(!execution_context_ ||
+         RuntimeEnabledFeatures::MutationEventsEnabled(execution_context_) ||
+         !(listener_types_ & kDOMMutationEventListener));
+  return (listener_types_ & listener_type);
 }
 
 void Document::AddListenerTypeIfNeeded(const AtomicString& event_type,
@@ -9091,7 +9096,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(slot_assignment_engine_);
   visitor->Trace(viewport_data_);
   visitor->Trace(lazy_load_image_observer_);
-  visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
   visitor->Trace(cookie_jar_);
   visitor->Trace(synchronous_mutation_observer_set_);
@@ -9224,14 +9228,13 @@ bool Document::ChildrenCanHaveStyle() const {
   return false;
 }
 
-ComputedAccessibleNode* Document::GetOrCreateComputedAccessibleNode(
-    AXID ax_id) {
-  DCHECK(ax_id) << "Invalid ax_id";
-  if (!base::Contains(computed_node_mapping_, ax_id)) {
-    auto* node = MakeGarbageCollected<ComputedAccessibleNode>(ax_id, this);
-    computed_node_mapping_.insert(ax_id, node);
+ComputedAccessibleNode* Document::GetOrCreateComputedAccessibleNode(AXID axid) {
+  DCHECK(axid) << "Invalid ax_id";
+  if (AXObjectCache* cache = ExistingAXObjectCache()) {
+    return cache->GetOrCreateComputedAccessibleNode(axid);
   }
-  return computed_node_mapping_.at(ax_id);
+
+  return nullptr;
 }
 
 void Document::SetShowBeforeUnloadDialog(bool show_dialog) {
@@ -9497,7 +9500,7 @@ void Document::ResetAgent(Agent& agent) {
 }
 
 bool Document::SupportsLegacyDOMMutations() {
-  if (!RuntimeEnabledFeatures::MutationEventsEnabled()) {
+  if (!RuntimeEnabledFeatures::MutationEventsEnabled(GetExecutionContext())) {
     return false;
   }
   if (!legacy_dom_mutations_supported_.has_value()) {

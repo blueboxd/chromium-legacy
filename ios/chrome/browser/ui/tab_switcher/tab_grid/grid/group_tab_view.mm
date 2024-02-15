@@ -54,7 +54,7 @@ const CGFloat kBottomFaviconViewScaleFactor = 0.75;
     [_snapshotFaviconView addSubview:gradientView];
 
     _bottomFaviconView = [[UIView alloc] init];
-    _bottomFaviconView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+    _bottomFaviconView.backgroundColor = [UIColor whiteColor];
     _bottomFaviconView.layer.cornerRadius =
         kGroupGridBottomTrailingCellCornerRadius;
     _bottomFaviconView.layer.masksToBounds = YES;
@@ -65,10 +65,12 @@ const CGFloat kBottomFaviconViewScaleFactor = 0.75;
     _bottomFaviconImageView.backgroundColor = [UIColor clearColor];
     _bottomFaviconImageView.layer.cornerRadius =
         kGroupGridFaviconViewCornerRadius;
-    _bottomFaviconImageView.contentMode = UIViewContentModeScaleAspectFit;
+    _bottomFaviconImageView.contentMode = UIViewContentModeScaleAspectFill;
+    _bottomFaviconImageView.layer.masksToBounds = YES;
 
     _faviconView = [[UIView alloc] init];
-    _faviconView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+    _faviconView.backgroundColor =
+        [UIColor colorNamed:kTabGroupFaviconBackgroundColor];
     _faviconView.layer.cornerRadius = kGroupGridBottomTrailingCellCornerRadius;
     _faviconView.layer.masksToBounds = YES;
     _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -78,9 +80,11 @@ const CGFloat kBottomFaviconViewScaleFactor = 0.75;
     _faviconImageView.backgroundColor = [UIColor clearColor];
     _faviconImageView.layer.cornerRadius = kGroupGridFaviconViewCornerRadius;
     _faviconImageView.contentMode = UIViewContentModeScaleAspectFill;
+    _faviconImageView.layer.masksToBounds = YES;
 
     _remainingTabsView = [[UIView alloc] init];
-    _remainingTabsView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+    _remainingTabsView.backgroundColor =
+        [UIColor colorNamed:kTabGroupFaviconBackgroundColor];
     _remainingTabsView.layer.cornerRadius =
         kGroupGridBottomTrailingCellCornerRadius;
     _remainingTabsView.layer.masksToBounds = YES;
@@ -135,8 +139,7 @@ const CGFloat kBottomFaviconViewScaleFactor = 0.75;
           constraintEqualToAnchor:_faviconView.widthAnchor
                        multiplier:kFaviconViewScaleFactor],
       [_faviconImageView.heightAnchor
-          constraintEqualToAnchor:_faviconView.heightAnchor
-                       multiplier:kFaviconViewScaleFactor],
+          constraintEqualToAnchor:_faviconImageView.widthAnchor],
     ];
     [NSLayoutConstraint activateConstraints:constraints];
   }

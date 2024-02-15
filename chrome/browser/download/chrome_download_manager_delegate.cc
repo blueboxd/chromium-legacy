@@ -66,6 +66,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/pdf/common/constants.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
@@ -598,7 +599,8 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
     DownloadItem* download,
     download::DownloadTargetCallback* callback) {
   if (download->GetTargetFilePath().empty() &&
-      download->GetMimeType() == kPDFMimeType && !download->HasUserGesture()) {
+      download->GetMimeType() == pdf::kPDFMimeType &&
+      !download->HasUserGesture()) {
     ReportPDFLoadStatus(PDFLoadStatus::kTriggeredNoGestureDriveByDownload);
   }
 
@@ -611,6 +613,18 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
   DownloadPathReservationTracker::FilenameConflictAction action =
       kDefaultPlatformConflictAction;
 #if BUILDFLAG(IS_ANDROID)
+  if (download->IsTransient() && download_path.empty() &&
+      download->GetMimeType() == pdf::kPDFMimeType &&
+      !download->IsMustDownload()) {
+    base::FilePath generated_filename = net::GenerateFileName(
+        download->GetURL(), download->GetContentDisposition(),
+        profile_->GetPrefs()->GetString(prefs::kDefaultCharset),
+        download->GetSuggestedFilename(), download->GetMimeType(),
+        l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
+    base::FilePath cache_dir;
+    base::android::GetCacheDirectory(&cache_dir);
+    download_path = cache_dir.Append(generated_filename);
+  }
   if (!download_path.empty())
     action = DownloadPathReservationTracker::UNIQUIFY;
 #endif

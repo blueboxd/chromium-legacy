@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
@@ -81,11 +82,13 @@ const char kFeaturePolicyBlocked[] =
     "Access to the feature \"display-capture\" is disallowed by permission "
     "policy.";
 
+template <typename IDLResolvedType>
 class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
  public:
   PromiseResolverCallbacks(
       UserMediaRequestType media_type,
-      ScriptPromiseResolverWithTracker<UserMediaRequestResult>* resolver,
+      ScriptPromiseResolverWithTracker<UserMediaRequestResult, IDLResolvedType>*
+          resolver,
       base::OnceCallback<void(const String&, CaptureController*)>
           on_success_follow_up)
       : media_type_(media_type),
@@ -95,11 +98,15 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
 
   void OnSuccess(const MediaStreamVector& streams,
                  CaptureController* capture_controller) override {
-    if (media_type_ == UserMediaRequestType::kAllScreensMedia) {
-      OnSuccessGetAllScreensMedia(streams);
-      return;
-    }
+    OnSuccessImpl<IDLResolvedType>(streams, capture_controller);
+  }
 
+  template <typename T>
+  void OnSuccessImpl(const MediaStreamVector&, CaptureController*);
+
+  template <>
+  void OnSuccessImpl<MediaStream>(const MediaStreamVector& streams,
+                                  CaptureController* capture_controller) {
     DCHECK_EQ(streams.size(), 1u);
     MediaStream* stream = streams[0];
 
@@ -133,7 +140,7 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
     if (capture_controller) {
       capture_controller->FinalizeFocusDecision();
     }
-    resolver_->Reject(error, result);
+    resolver_->template Reject<V8MediaStreamError>(error, result);
   }
 
   void Trace(Visitor* visitor) const override {
@@ -141,16 +148,21 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
     UserMediaRequest::Callbacks::Trace(visitor);
   }
 
- private:
-  void OnSuccessGetAllScreensMedia(const MediaStreamVector& streams) {
+  template <>
+  void OnSuccessImpl<IDLSequence<MediaStream>>(
+      const MediaStreamVector& streams,
+      CaptureController* capture_controller) {
     DCHECK(!streams.empty());
     DCHECK_EQ(UserMediaRequestType::kAllScreensMedia, media_type_);
     resolver_->Resolve(streams);
   }
 
+ private:
   const UserMediaRequestType media_type_;
 
-  Member<ScriptPromiseResolverWithTracker<UserMediaRequestResult>> resolver_;
+  Member<
+      ScriptPromiseResolverWithTracker<UserMediaRequestResult, IDLResolvedType>>
+      resolver_;
   base::OnceCallback<void(const String&, CaptureController*)>
       on_success_follow_up_;
 };
@@ -397,20 +409,21 @@ MediaDevices::MediaDevices(Navigator& navigator)
 
 MediaDevices::~MediaDevices() = default;
 
-ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state,
-                                             ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLSequence<MediaDeviceInfo>> MediaDevices::enumerateDevices(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UpdateWebRTCMethodCount(RTCAPIName::kEnumerateDevices);
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Current frame is detached.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLSequence<MediaDeviceInfo>>();
   }
 
-  auto* result_tracker = MakeGarbageCollected<
-      ScriptPromiseResolverWithTracker<EnumerateDevicesResult>>(
+  auto* result_tracker = MakeGarbageCollected<ScriptPromiseResolverWithTracker<
+      EnumerateDevicesResult, IDLSequence<MediaDeviceInfo>>>(
       script_state, "Media.MediaDevices.EnumerateDevices", base::Seconds(4));
-  const ScriptPromise promise = result_tracker->Promise();
+  const auto promise = result_tracker->Promise();
 
   enumerate_device_requests_.insert(result_tracker);
 
@@ -431,7 +444,7 @@ MediaTrackSupportedConstraints* MediaDevices::getSupportedConstraints() const {
   return MediaTrackSupportedConstraints::Create();
 }
 
-ScriptPromise MediaDevices::getUserMedia(
+ScriptPromiseTyped<MediaStream> MediaDevices::getUserMedia(
     ScriptState* script_state,
     const UserMediaStreamConstraints* options,
     ExceptionState& exception_state) {
@@ -439,9 +452,9 @@ ScriptPromise MediaDevices::getUserMedia(
   // This timeout of base::Seconds(8) is an initial value and based on the data
   // in Media.MediaDevices.GetUserMedia.Latency, it should be iterated upon.
   auto* resolver = MakeGarbageCollected<
-      ScriptPromiseResolverWithTracker<UserMediaRequestResult>>(
+      ScriptPromiseResolverWithTracker<UserMediaRequestResult, MediaStream>>(
       script_state, "Media.MediaDevices.GetUserMedia", base::Seconds(8));
-  const ScriptPromise promise = resolver->Promise();
+  const auto promise = resolver->Promise();
 
   DCHECK(options);  // Guaranteed by the default value in the IDL.
   DCHECK(!exception_state.HadException());
@@ -458,15 +471,17 @@ ScriptPromise MediaDevices::getUserMedia(
                               constraints, exception_state);
 }
 
-ScriptPromise MediaDevices::SendUserMediaRequest(
+template <typename IDLResolvedType>
+ScriptPromiseTyped<IDLResolvedType> MediaDevices::SendUserMediaRequest(
     UserMediaRequestType media_type,
-    ScriptPromiseResolverWithTracker<UserMediaRequestResult>* resolver,
+    ScriptPromiseResolverWithTracker<UserMediaRequestResult, IDLResolvedType>*
+        resolver,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!exception_state.HadException());
 
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid()) {
     resolver->RecordAndThrowDOMException(
@@ -501,8 +516,9 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   }
 #endif
 
-  auto* callbacks = MakeGarbageCollected<PromiseResolverCallbacks>(
-      media_type, resolver, std::move(on_success_follow_up));
+  auto* callbacks =
+      MakeGarbageCollected<PromiseResolverCallbacks<IDLResolvedType>>(
+          media_type, resolver, std::move(on_success_follow_up));
 
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   UserMediaClient* user_media_client = UserMediaClient::From(window);
@@ -513,6 +529,7 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
     surface = IdentifiableSurface::FromTypeAndToken(
         surface_type, TokenFromConstraints(options));
   }
+
   UserMediaRequest* request =
       UserMediaRequest::Create(window, user_media_client, media_type, options,
                                callbacks, exception_state, surface);
@@ -543,17 +560,17 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   return promise;
 }
 
-ScriptPromise MediaDevices::getAllScreensMedia(
+ScriptPromiseTyped<IDLSequence<MediaStream>> MediaDevices::getAllScreensMedia(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This timeout of base::Seconds(6) is an initial value and based on the data
   // in Media.MediaDevices.GetAllScreensMedia.Latency, it should be iterated
   // upon.
-  auto* resolver = MakeGarbageCollected<
-      ScriptPromiseResolverWithTracker<UserMediaRequestResult>>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverWithTracker<
+      UserMediaRequestResult, IDLSequence<MediaStream>>>(
       script_state, "Media.MediaDevices.GetAllScreensMedia", base::Seconds(6));
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   ExecutionContext* const context = GetExecutionContext();
   if (!context) {
@@ -561,6 +578,38 @@ ScriptPromise MediaDevices::getAllScreensMedia(
         exception_state, DOMExceptionCode::kInvalidStateError,
         "No media device client available; is this a detached window?",
         UserMediaRequestResult::kContextDestroyed);
+    return promise;
+  }
+
+  const ContentSecurityPolicy* content_security_policy =
+      context->GetContentSecurityPolicy();
+  if (!content_security_policy) {
+    resolver->RecordAndThrowDOMException(
+        exception_state, DOMExceptionCode::kNotAllowedError,
+        "This document's Content Security Policy does not meet the "
+        "requirements to use this API. See https://web.dev/articles/strict-csp "
+        "for more information.",
+        UserMediaRequestResult::kInsecureContext);
+    return promise;
+  }
+
+  if (!content_security_policy->IsStrictPolicyEnforced()) {
+    resolver->RecordAndThrowDOMException(
+        exception_state, DOMExceptionCode::kNotAllowedError,
+        "This document's Content Security Policy does not meet the "
+        "requirements to use this API. See https://web.dev/articles/strict-csp "
+        "for more information.",
+        UserMediaRequestResult::kInsecureContext);
+    return promise;
+  }
+
+  if (!content_security_policy->RequiresTrustedTypes()) {
+    resolver->RecordAndThrowDOMException(
+        exception_state, DOMExceptionCode::kNotAllowedError,
+        "This document's Content Security Policy does not meet the "
+        "requirements to use this API. See "
+        "https://web.dev/articles/trusted-types for more information.",
+        UserMediaRequestResult::kInsecureContext);
     return promise;
   }
 
@@ -572,7 +621,7 @@ ScriptPromise MediaDevices::getAllScreensMedia(
                               constraints, exception_state);
 }
 
-ScriptPromise MediaDevices::getDisplayMedia(
+ScriptPromiseTyped<MediaStream> MediaDevices::getDisplayMedia(
     ScriptState* script_state,
     const DisplayMediaStreamOptions* options,
     ExceptionState& exception_state) {
@@ -581,9 +630,9 @@ ScriptPromise MediaDevices::getDisplayMedia(
   // This timeout of base::Seconds(6) is an initial value and based on the data
   // in Media.MediaDevices.GetDisplayMedia.Latency, it should be iterated upon.
   auto* resolver = MakeGarbageCollected<
-      ScriptPromiseResolverWithTracker<UserMediaRequestResult>>(
+      ScriptPromiseResolverWithTracker<UserMediaRequestResult, MediaStream>>(
       script_state, "Media.MediaDevices.GetDisplayMedia", base::Seconds(6));
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   if (!window) {
     resolver->RecordAndThrowDOMException(
@@ -991,7 +1040,9 @@ void RecordEnumeratedDevices(ScriptState* script_state,
 }  // namespace
 
 void MediaDevices::DevicesEnumerated(
-    ScriptPromiseResolverWithTracker<EnumerateDevicesResult>* result_tracker,
+    ScriptPromiseResolverWithTracker<EnumerateDevicesResult,
+                                     IDLSequence<MediaDeviceInfo>>*
+        result_tracker,
     const Vector<Vector<WebMediaDeviceInfo>>& enumeration,
     Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
         video_input_capabilities,
@@ -1068,9 +1119,10 @@ void MediaDevices::DevicesEnumerated(
 
 void MediaDevices::OnDispatcherHostConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (ScriptPromiseResolverWithTracker<EnumerateDevicesResult>*
+  for (ScriptPromiseResolverWithTracker<EnumerateDevicesResult,
+                                        IDLSequence<MediaDeviceInfo>>*
            result_tracker : enumerate_device_requests_) {
-    result_tracker->Reject(
+    result_tracker->Reject<DOMException>(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
                                            "enumerateDevices() failed."),
         EnumerateDevicesResult::kErrorMediaDevicesDispatcherHostDisconnected);

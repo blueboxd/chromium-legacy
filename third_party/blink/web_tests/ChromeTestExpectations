@@ -7,7 +7,7 @@
 # https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/run_web_platform_tests.md
 
 # `wdspec` tests
-external/wpt/webdriver/tests/bidi/network/response_completed/response_completed.py [ Failure ]  # Flaky output
+external/wpt/webdriver/tests/bidi/network/response_completed/response_completed.py [ Failure Timeout ]  # Flaky output
 external/wpt/webdriver/tests/classic/element_send_keys/interactability.py [ Failure ]  # Flaky output
 external/wpt/webdriver/tests/classic/perform_actions/wheel.py [ Failure ]  # Flaky output
 external/wpt/webdriver/tests/bidi/input/perform_actions/invalid.py [ Failure Timeout ]  # Flaky output
@@ -35,7 +35,7 @@ external/wpt/webdriver/tests/bidi/browsing_context/traverse_history/delta.py [ F
 external/wpt/webdriver/tests/bidi/browsing_context/traverse_history/invalid.py [ Failure ]
 external/wpt/webdriver/tests/bidi/browsing_context/set_viewport/viewport.py [ Failure ]
 crbug.com/324436866 external/wpt/webdriver/tests/bidi/browsing_context/create/user_context.py [ Failure ]
-crbug.com/324436866 external/wpt/webdriver/tests/bidi/browser/remove_user_context/user_context.py [ Failure Pass ]
+crbug.com/324436866 external/wpt/webdriver/tests/bidi/browser/remove_user_context/user_context.py [ Failure Pass Timeout ]
 crbug.com/1507773 external/wpt/webdriver/tests/bidi/script/call_function/remote_values.py [ Failure Pass Timeout ]
 crbug.com/1507773 external/wpt/webdriver/tests/classic/find_element_from_element/find.py [ Failure Pass Timeout ]
 crbug.com/1507773 external/wpt/webdriver/tests/classic/find_elements/find.py [ Failure Pass Timeout ]
@@ -46,12 +46,11 @@ crbug.com/1507773 external/wpt/webdriver/tests/classic/forward/forward.py [ Fail
 crbug.com/1507773 external/wpt/webdriver/tests/classic/get_element_attribute/get.py [ Failure Pass Timeout ]
 crbug.com/1507773 external/wpt/webdriver/tests/classic/is_element_enabled/enabled.py [ Failure Pass Timeout ]
 crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_nodes/context.py [ Failure ]
-crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_nodes/invalid.py [ Failure ]
-crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_nodes/max_node_count.py [ Failure ]
-crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_nodes/ownership.py [ Failure ]
+crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_nodes/invalid.py [ Pass Timeout ]
 crbug.com/1499775 external/wpt/webdriver/tests/bidi/browsing_context/locate_nodes/start_nodes.py [ Failure ]
-crbug.com/1499775 external/wpt/webdriver/tests/bidi/input/perform_actions/pointer_mouse_multiclick.py [ Failure ]
+crbug.com/1499775 external/wpt/webdriver/tests/bidi/input/perform_actions/pointer_mouse_multiclick.py [ Failure Timeout ]
 crbug.com/324436866 external/wpt/webdriver/tests/bidi/browsing_context/print/context.py [ Failure Pass Timeout ]
+crbug.com/324436866 external/wpt/webdriver/tests/classic/get_current_url/file.py [ Failure Pass Timeout ]
 
 # Gardener 2024-02-08
 crbug.com/324436866 [ Debug ] external/wpt/webdriver/tests/bidi/browsing_context/context_destroyed/context_destroyed.py [ Failure Timeout ]
@@ -199,6 +198,7 @@ crbug.com/1499775 external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-ifr
 crbug.com/1499775 external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-iframe-sibling.html [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-with-transform-and-preserve-3D.html [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/css/css-backgrounds/background-clip/clip-text-flex.html [ Failure ]  # Reftest image failure
+crbug.com/1499775 external/wpt/css/css-break/hit-test-transformed-inline.html [ Failure ]  # Flaky output
 crbug.com/1499775 external/wpt/css/css-color/composited-filters-under-opacity.html [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/css/css-color/filters-under-will-change-opacity.html [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/css/css-contain/contain-layout-ink-overflow-019.html [ Failure ]  # Reftest image failure
@@ -322,6 +322,7 @@ crbug.com/1499775 external/wpt/css/selectors/invalidation/modal-pseudo-class-in-
 crbug.com/1499775 external/wpt/css/selectors/modal-pseudo-class.html [ Timeout ]
 crbug.com/1499775 external/wpt/css/selectors/remove-hovered-element.html [ Timeout ]
 crbug.com/1499775 external/wpt/dom/events/scrolling/input-text-scroll-event-when-using-arrow-keys.html [ Timeout ]
+crbug.com/1499775 external/wpt/dom/events/scrolling/scrollend-event-not-fired-on-no-scroll.html [ Failure ]  # Flaky output
 crbug.com/1499775 external/wpt/event-timing/event-click-visibilitychange.html [ Skip Timeout ]
 crbug.com/1499775 external/wpt/eventsource/eventsource-request-cancellation.window.any.html [ Failure ]  # Flaky output
 crbug.com/1499775 external/wpt/eventsource/eventsource-request-cancellation.window.any.worker.html [ Failure ]  # Flaky output
@@ -355,6 +356,7 @@ crbug.com/1499775 external/wpt/fullscreen/rendering/fullscreen-pseudo-class.html
 crbug.com/1499775 external/wpt/fullscreen/rendering/fullscreen-root-block-scroll.html [ Timeout ] # pass on wpt.fyi
 crbug.com/1499775 external/wpt/fullscreen/rendering/fullscreen-root-block-size.html [ Timeout ]
 crbug.com/1499775 external/wpt/fullscreen/rendering/ua-style-iframe.html [ Timeout ] # pass on wpt.fyi
+crbug.com/1499775 external/wpt/geolocation-API/permission.https.html [ Failure ]  # Flaky output
 crbug.com/1499775 external/wpt/html/browsers/history/the-location-interface/assign_before_load.html [ Failure ]  # Flaky output
 crbug.com/1499775 external/wpt/html/browsers/history/the-location-interface/assign_after_load.html [ Failure ]  # Flaky output
 crbug.com/1499775 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/cross-origin-top-navigation-with-user-activation-in-parent.window.html [ Timeout ]
@@ -442,6 +444,7 @@ crbug.com/1499775 external/wpt/speculation-rules/prerender/response-code-success
 crbug.com/1499775 external/wpt/storage-access-api/storage-access-permission.sub.https.window.html [ Timeout ]
 crbug.com/1499775 external/wpt/svg/text/reftests/lang-attribute.svg [ Failure ]  # Reftest image failure
 crbug.com/1499775 external/wpt/svg/text/reftests/xml-lang-attribute.svg [ Failure ]  # Reftest image failure
+crbug.com/1499775 external/wpt/visual-viewport/resize-event-order.html [ Failure ]  # Flaky output
 crbug.com/1499775 external/wpt/webrtc-stats/hardware-capability-stats.https.html [ Skip Timeout ]
 crbug.com/1499775 external/wpt/websockets/send-many-64K-messages-with-backpressure.any.sharedworker.html?wpt_flags=h2 [ Skip Timeout ]
 crbug.com/1499775 external/wpt/websockets/stream/tentative/backpressure-send.any.sharedworker.html?wpt_flags=h2 [ Skip Timeout ]
@@ -533,6 +536,13 @@ crbug.com/1499775 external/wpt/css/css-ui/appearance-button-001.html [ Failure P
 crbug.com/1499775 external/wpt/css/css-ui/appearance-menulist-button-001.html [ Failure Pass ]
 crbug.com/1499775 external/wpt/css/css-ui/outline-027.html [ Failure Pass ]
 crbug.com/1499775 external/wpt/mathml/presentation-markup/scripts/underover-stretchy-002.html [ Failure Pass ]
+crbug.com/1499775 external/wpt/cookie-store/cookieStore_subscribe_arguments.https.any.html [ Failure Pass ]
+crbug.com/1499775 external/wpt/reporting/same-origin-same-site-credentials.https.sub.html [ Failure ]  # Flaky output
+crbug.com/1499775 external/wpt/secure-payment-confirmation/authentication-optout.https.html [ Failure Timeout ]  # Flaky output
+crbug.com/1499775 external/wpt/reporting/reporting-isolated-across-navigations.https.sub.html [ Failure Timeout ]  # Flaky output
+crbug.com/1499775 external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure ]  # Flaky output
+crbug.com/1499775 external/wpt/fetch/fetch-later/send-on-deactivate.tentative.https.window.html [ Failure ]  # Flaky output
+crbug.com/1499775 external/wpt/orientation-sensor/RelativeOrientationSensor-iframe-access.https.html [ Failure Timeout ]  # Flaky output
 
 # These tests fail when run with timeout multipler is 2
 crbug.com/1507050 external/wpt/html/semantics/scripting-1/the-script-element/moving-between-documents/after-prepare-createHTMLDocument-fetch-error-external-classic.html [ Failure Pass ]
@@ -931,4 +941,3 @@ crbug.com/1485918 external/wpt/websockets/cookies/third-party-cookie-accepted.ht
 crbug.com/1485918 external/wpt/webxr/dom-overlay/nested_fullscreen.https.html [ Failure Timeout ] # Timeout for headless shell
 crbug.com/1485918 external/wpt/window-management/multi-screen-window-open-fullscreen.tentative.https.html [ Failure ]
 crbug.com/1485918 external/wpt/workers/shared-worker-partitioned-cookies.tentative.https.html [ Failure Timeout ]
-

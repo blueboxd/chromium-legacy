@@ -216,18 +216,14 @@ extern const char kIOSPullToRefreshUsed[];
 // The user has tapped "incognito" on the page control in the tab grid.
 extern const char kIOSIncognitoPageControlTapped[];
 
-// The user has swiped left from regular tab grid to the incognito tab grid.
-extern const char kIOSSwipeLeftForIncognitoUsed[];
+// The user has swiped right from regular tab grid to the incognito tab grid.
+extern const char kIOSSwipeRightForIncognitoUsed[];
 
 // The user has tapped the toolbar backward/forward button to navigate on a tab.
 extern const char kIOSBackForwardButtonTapped[];
 
 // The user has swiped from the edge to navigate backward or forward on a tab.
 extern const char kIOSSwipeBackForwardUsed[];
-
-// The user has met a condition that makes the Enhanced Safe Browsing
-// inline and blue-dot promos eligible to be displayed.
-extern const char kEnhancedSafeBrowsingPromoCriterionMet[];
 
 #endif  // BUILDFLAG(IS_IOS)
 

@@ -518,6 +518,12 @@ const char kIOSKeyboardAccessoryUpgradeName[] =
 const char kIOSKeyboardAccessoryUpgradeDescription[] =
     "When enabled, the upgraded keyboard accessory UI will be presented.";
 
+const char kIOSMagicStackCollectionViewName[] =
+    "Enable using a UICollectionView for the Magic Stack";
+const char kIOSMagicStackCollectionViewDescription[] =
+    "When enabled, the Magic Stack will be using a UICollectionView "
+    "implementation";
+
 const char kIOSParcelTrackingName[] = "Parcel Tracking";
 const char kIOSParcelTrackingDescription[] =
     "When enabled, the user will be able to track their packages.";
@@ -584,6 +590,23 @@ const char kIPHiOSPromoPasswordManagerWidgetName[] =
 const char kIPHiOSPromoPasswordManagerWidgetDescription[] =
     "Enables displaying the Password Manager widget promo IPH when users "
     "navigate to the Password Manager";
+
+const char kIPHiOSPullToRefreshFeatureName[] = "IPH for Pull Down To Refresh";
+const char kIPHiOSPullToRefreshFeatureDescription[] =
+    "Enables displaying the gesture IPH instructing users to pull down to "
+    "refresh on the tab content view to new users.";
+
+const char kIPHiOSSwipeBackForwardFeatureName[] = "IPH for Swipe Back/Forward";
+const char kIPHiOSSwipeBackForwardFeatureDescription[] =
+    "Enables displaying the gesture IPH instructing users to swipe back or "
+    "forward on the currently opened website to navigate to the previous or "
+    "next one visited.";
+
+const char kIPHiOSTabGridSwipeRightForIncognitoName[] =
+    "IPH for Swipe Right for Incognito on Tab Grid";
+const char kIPHiOSTabGridSwipeRightForIncognitoDescription[] =
+    "Enables displaying the gesture IPH instructing users to swipe right on "
+    "regular tab grid to view incognito tabs to new users.";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =

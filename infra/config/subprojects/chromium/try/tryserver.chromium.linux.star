@@ -334,7 +334,7 @@ try_.builder(
     builderless = not settings.is_main,
     experiments = {
         # crbug/940930
-        "chromium.enable_cleandead": 50,
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -431,10 +431,14 @@ try_.builder(
             "partial_code_coverage_instrumentation",
         ],
     ),
+    ssd = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(
         location_filters = [
             "ui/ozone/platform/wayland/.+",
+            "chrome/browser/.+(ui|browser)test.+",
+            "chrome/browser/ui/views/.+test.+",
+            "ui/views/widget/.+test.+",
         ],
     ),
     use_clang_coverage = True,
@@ -512,7 +516,7 @@ try_.builder(
     builderless = not settings.is_main,
     experiments = {
         # crbug/940930
-        "chromium.enable_cleandead": 50,
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
@@ -568,7 +572,7 @@ try_.orchestrator_builder(
         "chromium.add_one_test_shard": 10,
         "chromium.compilator_can_outlive_parent": 100,
         # crbug/940930
-        "chromium.enable_cleandead": 50,
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -610,7 +614,6 @@ This builder should be removed after migrating linux_chromium_asan_rel_ng from N
 try_.compilator_builder(
     name = "linux_chromium_asan_siso_rel_ng-compilator",
     main_list_view = "try",
-    siso_configs = ["builder", "remote-library-link"],
     siso_enabled = True,
 )
 
@@ -719,7 +722,7 @@ try_.builder(
     ],
     experiments = {
         # crbug/940930
-        "chromium.enable_cleandead": 50,
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
@@ -749,7 +752,6 @@ This builder should be removed after migrating linux_chromium_compile_dbg_ng fro
     contact_team_email = "chrome-build-team@google.com",
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
-    siso_configs = ["builder", "remote-library-link"],
     siso_enabled = True,
     tryjob = try_.job(
         experiment_percentage = 10,
@@ -841,7 +843,7 @@ try_.orchestrator_builder(
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
         # crbug/940930
-        "chromium.enable_cleandead": 50,
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -883,7 +885,6 @@ This builder should be removed after migrating linux_chromium_tsan_rel_ng from N
 try_.compilator_builder(
     name = "linux_chromium_tsan_siso_rel_ng-compilator",
     main_list_view = "try",
-    siso_configs = ["builder", "remote-library-link"],
     siso_enabled = True,
 )
 

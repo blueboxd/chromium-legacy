@@ -141,9 +141,6 @@
   'android_browsertests_no_fieldtrial': {
     'modifications': {
       'android-12-x64-rel': {
-        # TODO(crbug.com/1225851): Remove experiment and ci_only
-        # once the test suite is stable.
-        'experiment_percentage': 100,
         'args': [
           # https://crbug.com/1289764
           '--gtest_filter=-All/ChromeBrowsingDataLifetimeManagerScheduledRemovalTest.History/*',
@@ -1302,6 +1299,11 @@
         }
       },
       'win11-arm64-rel-tests': {
+        # Some Win Arm64 bots aren't using 100% scaling, which some browser
+        # tests rely on.
+        'args': [
+          '--force-device-scale-factor=1',
+        ],
         'swarming': {
           # This is for slow test execution that often becomes a critical path of
           # swarming jobs. crbug.com/868114
@@ -2012,6 +2014,7 @@
       # If you change this, make similar changes in android-x86-code-coverage below
       'android-oreo-x86-rel': {
         'args': [
+          '--gtest-also-run-pre-tests',
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_o.content_browsertests.filter',
         ],
         'swarming': {
@@ -2024,6 +2027,7 @@
       },
       'android-pie-arm64-rel': {
         'args': [
+          '--gtest-also-run-pre-tests',
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.content_browsertests_coverage.filter',
         ],
         # Only retry the individual failed tests instead of rerunning entire
@@ -2177,6 +2181,13 @@
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
       },
+      'win11-arm64-rel-tests': {
+        # Some Win Arm64 bots aren't using 100% scaling, which some
+        # tests rely on.
+        'args': [
+          '--force-device-scale-factor=1',
+        ],
+      }
     },
   },
   'content_shell_crash_test': {
@@ -3310,6 +3321,11 @@
         }
       },
       'win11-arm64-dbg-tests': {
+        # Some Win Arm64 bots aren't using 100% scaling, which some browser
+        # tests rely on.
+        'args': [
+          '--force-device-scale-factor=1',
+        ],
         'swarming': {
           'shards': 9,
         },

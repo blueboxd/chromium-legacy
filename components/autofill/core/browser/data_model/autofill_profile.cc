@@ -597,6 +597,7 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
       ADDRESS_HOME_COUNTRY,
       ADDRESS_HOME_LANDMARK,
       ADDRESS_HOME_OVERFLOW,
+      ADDRESS_HOME_STREET_LOCATION_AND_LOCALITY,
       ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK,
       ADDRESS_HOME_OVERFLOW_AND_LANDMARK,
       ADDRESS_HOME_BETWEEN_STREETS,
@@ -1290,7 +1291,6 @@ FieldTypeSet AutofillProfile::FindInaccessibleProfileValues() const {
   FieldTypeSet inaccessible_fields;
   const std::string stored_country =
       base::UTF16ToUTF8(GetRawInfo(ADDRESS_HOME_COUNTRY));
-  AutofillCountry country(stored_country.empty() ? "US" : stored_country);
   // Consider only AddressFields which are invisible in the settings for some
   // countries.
   for (const AddressField& adress_field :
@@ -1298,8 +1298,9 @@ FieldTypeSet AutofillProfile::FindInaccessibleProfileValues() const {
         AddressField::DEPENDENT_LOCALITY, AddressField::POSTAL_CODE,
         AddressField::SORTING_CODE}) {
     FieldType field_type = i18n::TypeForField(adress_field);
+    CHECK_EQ(GroupTypeOfFieldType(field_type), FieldTypeGroup::kAddress);
     if (HasRawInfo(field_type) &&
-        !country.IsAddressFieldSettingAccessible(field_type)) {
+        !GetAddress().IsAddressFieldSettingAccessible(field_type)) {
       inaccessible_fields.insert(field_type);
     }
   }

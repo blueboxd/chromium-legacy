@@ -1,4 +1,4 @@
-<style>
+<style include="cr-shared-style">
   :host {
     background-color: var(--color-new-tab-page-module-background);
     border-radius: var(--ntp-module-border-radius);
@@ -34,6 +34,10 @@
     margin: 8px;
   }
 
+  :host(:not([modules-redesigned_])) #tabs {
+    margin: 0 0 8px 0;
+  }
+
   .tab {
     align-items: center;
     display: flex;
@@ -53,6 +57,10 @@
     position: absolute;
   }
 
+  :host(:not([modules-redesigned_])) .tab:hover #hover-layer {
+    background: var(--color-new-tab-page-control-background-hovered);
+  }
+
   #hover-layer {
     display: none;
   }
@@ -67,11 +75,24 @@
         var(--ntp-module-item-border-radius);
   }
 
-  .tab-icon {
-    height: 18px;
-    margin-inline-end: 17px;
-    margin-inline-start: 17px;
-    width: 18px;
+  :host([is-single-tab_]) .tab {
+    border-radius: var(--ntp-module-item-border-radius);
+  }
+
+  :host(:not([modules-redesigned_])) .tab {
+    border-radius: 0;
+  }
+
+  .icon {
+    background-color: var(--color-new-tab-page-module-background);
+    margin-inline: 10px;
+  }
+
+  :host(:not([modules-redesigned_])) .icon {
+    background-position: unset;
+    height: 24px;
+    margin-inline: 18px 16px;
+    width: 24px;
   }
 
   .tab-info {
@@ -87,17 +108,11 @@
     color: var(--color-new-tab-page-secondary-foreground);
   }
 
-  .tab-device,
   .tab-title,
   .tab-domain {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .tab-device {
-    font-size: 11px;
-    line-height: 13px;
   }
 
   .tab-title {
@@ -110,36 +125,57 @@
     display: flex;
     flex-direction: row;
     font-size: 11px;
-    line-height: 13px;
+    line-height: 16px;
+  }
+
+  .tab-device {
+    height: 16px;
+    margin-inline: 0 4px;
+    width: 16px;
   }
 
   .date {
     white-space: nowrap;
   }
 </style>
-<ntp-module-header-v2
+<ntp-module-header-v2 hidden="[[!modulesRedesigned_]]"
     id="moduleHeaderElementV2"
     header-text="[[i18n('modulesTabResumptionTitle')]]"
     menu-item-groups="[[getMenuItemGroups_()]]"
     more-actions-text="[[i18nRecursive('',
                                   'modulesMoreActions',
-                                  'modulesDriveSentence')]]"
+                                  'modulesTabResumptionTitle')]]"
     on-disable-button-click="onDisableButtonClick_"
     on-dismiss-button-click="onDismissButtonClick_"
     on-info-button-click="onInfoButtonClick_"
     on-menu-button-click="onMenuButtonClick_">
 </ntp-module-header-v2>
+<ntp-module-header hidden="[[modulesRedesigned_]]"
+    disable-text="[[i18nRecursive('',
+                              'modulesDisableButtonTextV2',
+                              'modulesThisTypeOfCardText')]]"
+    dismiss-text="[[i18n('modulesTabResumptionDismissButton')]]"
+    more-actions-text="[[i18nRecursive('',
+                                  'modulesMoreActions',
+                                  'modulesTabResumptionTitle')]]"
+    show-info-button show-dismiss-button
+    on-disable-button-click="onDisableButtonClick_"
+    on-dismiss-button-click="onDismissButtonClick_"
+    on-info-button-click="onInfoButtonClick_"
+    icon-src="chrome://resources/images/icon_tab.svg">
+    [[i18n('modulesTabResumptionTitle')]]
+</ntp-module-header>
 <div id="tabs">
   <template id="tabRepeat" is="dom-repeat" items="[[tabs]]">
     <a class="tab" href="[[item.url.url]]" on-click="onTabClick_">
       <div id="hover-layer"></div>
-      <page-favicon id="icon" url="[[item.url]]" size="16">
+      <page-favicon class="icon" url="[[item.url]]" size="16">
       </page-favicon>
       <div class="tab-info">
-        <div class="tab-device">[[item.sessionName]]</div>
         <div class="tab-title">[[item.title]]</div>
         <div class="tab-description">
-          <div class="tab-domain">[[item.url.url]]</div>
+          <iron-icon class="tab-device" icon="[[computeIcon_(item)]]"></iron-icon>
+          <div class="tab-domain">[[computeDomain_(item)]]</div>
           <span class="dot">&nbsp&#8226&nbsp</span>
           <div class="date">[[item.relativeTimeText]]</div>
         </div>

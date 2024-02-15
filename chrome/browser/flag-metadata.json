@@ -1325,6 +1325,11 @@
     "expiry_milestone": 126
   },
   {
+    "name": "compose-text-selection",
+    "owners": ["//components/compose/OWNERS", "chrome-compose-frontend@google.com"],
+    "expiry_milestone": 132
+  },
+  {
     "name": "content-languages-in-language-picker",
     "owners": [
       "perrier@google.com",
@@ -2376,7 +2381,7 @@
   {
     "name": "enable-cros-autocorrect-by-default",
     "owners": [ "curtismcmullan@chromium.org", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 125
+    "expiry_milestone": 130
   },
   {
     "name": "enable-cros-autocorrect-params-tuning",
@@ -2391,7 +2396,7 @@
   {
     "name": "enable-cros-autocorrect-use-replace-surrounding-text",
     "owners": [ "hdchuong@chromium.org", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 125
+    "expiry_milestone": 130
   },
   {
     "name": "enable-cros-avatars-cloud-migration",
@@ -2426,7 +2431,7 @@
   {
     "name": "enable-cros-ime-assist-multi-word",
     "owners": [ "curtismcmullan@chromium.org", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 120
+    "expiry_milestone": 130
   },
   {
     "name": "enable-cros-ime-assist-multi-word-expanded",
@@ -3351,11 +3356,6 @@
     "name": "enable-pip-double-tap-to-resize",
     "owners": [ "takise@chromium.org", "jorgegil@chromium.org" ],
     "expiry_milestone": 130
-  },
-  {
-    "name": "enable-pip-pinch-to-resize",
-    "owners": [ "massan@chromium.org", "takise@chromium.org" ],
-    "expiry_milestone": 123
   },
   {
     "name": "enable-pip-tilt",
@@ -4325,6 +4325,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "file-notification-revamp",
+    "owners": [ "timloh@chromium.org", "backlight-swe@google.com" ],
+    "expiry_milestone": 126
+  },
+  {
     "name": "file-system-access-locking-scheme",
     "owners": [ "memmott@chromium.org", "chrome-owp-storage@google.com" ],
     "expiry_milestone": 122
@@ -4691,12 +4696,9 @@
     "expiry_milestone": 119
   },
   {
-    "name": "heuristic-memory-saver-mode",
-    "owners": [
-      "anthonyvd@chromium.org",
-      "agale@chromium.org"
-    ],
-    "expiry_milestone": 115
+    "name": "help-app-opens-instead-of-release-notes-notification",
+    "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
+    "expiry_milestone": 127
   },
   {
     "name": "hide-incognito-media-metadata",
@@ -4967,6 +4969,21 @@
     "owners": [ "huitingyu@chromium.org", "bling-flags@google.com" ],
     "expiry_milestone": 121
   },
+    {
+    "name": "ios-iph-pull-to-refresh",
+    "owners": ["ginnyhuang@chromium.org", "bling-flags@google.com"],
+    "expiry_milestone": 130
+  },
+  {
+    "name": "ios-iph-swipe-back-forward",
+    "owners": ["ginnyhuang@chromium.org", "bling-flags@google.com"],
+    "expiry_milestone": 130
+  },
+  {
+    "name": "ios-iph-tab-grid-swipe-right-for-incognito",
+    "owners": ["ginnyhuang@chromium.org", "bling-flags@google.com"],
+    "expiry_milestone": 130
+  },
   {
     "name": "ios-keyboard-accessory-upgrade",
     "owners": [ "noemies@chromium.org", "sugoi@chromium.org", "tmartino@chromium.org", "bling-integrations-team@google.com" ],
@@ -4976,6 +4993,11 @@
     "name": "ios-large-fakebox",
     "owners": ["scottyoder@google.com", "bling-get-set-up@google.com"],
     "expiry_milestone": 124
+  },
+  {
+    "name": "ios-magic-stack-collection-view",
+    "owners": [ "thegreenfrog@google.com", "bling-get-set-up@google.com" ],
+    "expiry_milestone": 128
   },
   {
     "name": "ios-magic-stack-segmentation-ranking",
@@ -5721,6 +5743,11 @@
     "expiry_milestone":108
   },
   {
+    "name": "ntp-realbox-contextual-and-trending-suggestions",
+    "owners": ["jennserrano@google.com", "niharm@google.com", "chrome-omnibox-team@google.com"],
+    "expiry_milestone": 130
+  },
+  {
     "name": "ntp-realbox-cr23-all",
     "owners": [ "niharm@google.com", "mahmadi@google.com"],
     "expiry_milestone": 130
@@ -6160,6 +6187,14 @@
       "manukh@chromium.org", "chrome-omnibox-team@google.com"
     ],
     "expiry_milestone": 120
+  },
+  {
+    "name": "omnibox-starter-pack-expansion",
+    "owners": [
+      "yoangela@chromium.org",
+      "chrome-omnibox-team@google.com"
+    ],
+    "expiry_milestone": 130
   },
   {
     "name": "omnibox-ui-max-autocomplete-matches",
@@ -7050,6 +7085,13 @@
   },
   {
     "name": "release-notes-notification-all-channels",
+    "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
+    // This is required by test teams to verify functionality on dev/beta
+    // channels on devices which have no access to commandline flags.
+    "expiry_milestone": -1
+  },
+  {
+    "name": "release-notes-notification-always-eligible",
     "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
     // This is required by test teams to verify functionality on dev/beta
     // channels on devices which have no access to commandline flags.

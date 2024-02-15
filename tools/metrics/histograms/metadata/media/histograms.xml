@@ -4564,6 +4564,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.PlatformVideoDecoding.VideoCodecProfile"
+    enum="VideoCodecProfile" expires_after="2024-05-01">
+  <owner>mcasas@chromium.org</owner>
+  <owner>chromeos-gfx-video@google.com</owner>
+  <summary>
+    VideoCodecProfile used to Initialize() the platform VideoDecoder
+    implementation; this is emitted once per video (or per track, when using
+    MSE) initialization and after verifying that the codec profile is thought to
+    be supported.
+  </summary>
+</histogram>
+
 <histogram name="Media.RebuffersCount" units="rebuffers" expires_after="never">
 <!-- expires-never: Media pipeline health metric. -->
 
@@ -5149,6 +5161,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Video codec used in plain src= (not MSE) HTML5 media if the media container
     is WebM.
+  </summary>
+</histogram>
+
+<histogram name="Media.ThumbnailCapturerMac.ShareableContentErrorPercentage"
+    units="%" expires_after="2024-09-01">
+  <owner>kron@google.com</owner>
+  <owner>eladalon@google.com</owner>
+  <summary>
+    This histogram tracks the percentage of callbacks where there was no
+    shareable content returned from the OS. This is recorded in the destructor
+    of ThumbnailCapturerMac. The metric is rounded upwards so that a single
+    error shows up as at least 1%.
   </summary>
 </histogram>
 
@@ -5906,7 +5930,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Win.Device.CapturePixelFormat"
-    enum="VideoPixelFormatUnion" expires_after="2024-05-19">
+    enum="VideoPixelFormatUnion" expires_after="2025-05-19">
   <owner>ilnik@google.com</owner>
   <owner>video-cmi-mpp@google.com</owner>
   <summary>
@@ -5916,7 +5940,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Win.Device.InternalPixelFormat"
-    enum="VideoPixelFormatUnion" expires_after="2024-06-04">
+    enum="VideoPixelFormatUnion" expires_after="2025-06-04">
   <owner>ilnik@google.com</owner>
   <owner>video-cmi-mpp@google.com</owner>
   <summary>
@@ -5926,7 +5950,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Win.Device.IsSharedTexture" enum="Boolean"
-    expires_after="2024-04-28">
+    expires_after="2025-04-28">
   <owner>ilnik@google.com</owner>
   <owner>video-cmi-mpp@google.com</owner>
   <summary>
@@ -5937,7 +5961,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Win.Device.RequestedPixelFormat"
-    enum="VideoPixelFormatUnion" expires_after="2024-03-19">
+    enum="VideoPixelFormatUnion" expires_after="2025-03-19">
   <owner>ilnik@google.com</owner>
   <owner>video-cmi-mpp@google.com</owner>
   <summary>
@@ -6535,17 +6559,6 @@ chromium-metrics-reviews@google.com.
     <variant name="VaapiVideoEncodeAccelerator" summary=""/>
     <variant name="VaapiVideoEncodeAccelerator.Vpp" summary=""/>
   </token>
-</histogram>
-
-<histogram name="MediaDeviceNotification.UdevRequestSuccess"
-    enum="BooleanSuccess" expires_after="M124">
-  <owner>thestig@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
-  <summary>
-    Whenever a new removable mass storage media device is attached to the
-    system, send a request to udevadm to query the device properties. True if
-    the udev request to get the removable device details was successful.
-  </summary>
 </histogram>
 
 <histogram name="MediaLauncherActivity.LaunchResult" enum="BooleanSuccess"

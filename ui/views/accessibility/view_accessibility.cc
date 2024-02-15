@@ -267,17 +267,6 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     data->relative_bounds.bounds = override_data_.relative_bounds.bounds;
   }
 
-#if DCHECK_IS_ON()
-  // This will help keep track of the attributes that have already
-  // been migrated from the old system of computing AXNodeData for Views (pull),
-  // to the new system (push). This will help ensure that new Views don't use
-  // the old system for attributes that have already been migrated.
-  // TODO(accessibility): Remove once migration is complete.
-  views::ViewsAXCompletedAttributes::Validate(*data);
-#endif
-
-  views::ViewAccessibilityUtils::Merge(/*source*/ data_, /*destination*/ *data);
-
   // We need to add the ignored state to all ignored Views, similar to how Blink
   // exposes ignored DOM nodes. Calling AXNodeData::IsIgnored() would also check
   // if the role is in the list of roles that are inherently ignored.
@@ -329,6 +318,27 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
                               scale_factor);
     }
   }
+
+  // ***IMPORTANT***
+  //
+  // This step absolutely needs to be at the very end of the function in order
+  // for us to catch all the attributes that have been set through a different
+  // way than the ViewsAX AXNodeData push system. See `data_` for more info.
+
+#if DCHECK_IS_ON()
+  // This will help keep track of the attributes that have already
+  // been migrated from the old system of computing AXNodeData for Views (pull),
+  // to the new system (push). This will help ensure that new Views don't use
+  // the old system for attributes that have already been migrated.
+  // TODO(accessibility): Remove once migration is complete.
+  views::ViewsAXCompletedAttributes::Validate(*data);
+#endif
+
+  views::ViewAccessibilityUtils::Merge(/*source*/ data_, /*destination*/ *data);
+
+  // Nothing should be added beyond this point. Reach out to the Chromium
+  // accessibility team in Slack, or to benjamin.beaudry@microsoft.com if you
+  // absolutely need to add something past this point.
 }
 
 void ViewAccessibility::OverrideFocus(AXVirtualView* virtual_view) {
@@ -375,6 +385,28 @@ void ViewAccessibility::EndPopupFocusOverride() {
 
 void ViewAccessibility::FireFocusAfterMenuClose() {
   view_->NotifyAccessibilityEvent(ax::mojom::Event::kFocusAfterMenuClose, true);
+}
+
+void ViewAccessibility::SetRole(const ax::mojom::Role role) {
+  if (role == GetViewAccessibilityRole()) {
+    return;
+  }
+
+  data_.role = role;
+  if (role != ax::mojom::Role::kUnknown && role != ax::mojom::Role::kNone) {
+    // TODO(javiercon): This is to temporarily work around the DCHECK
+    // that wants to have a role to calculate a name-from: As of right now,
+    // OverrideRole is getting migrated before OverrideName. This means that
+    // when views call both in sequence and since OverrideRole is replaced by
+    // this func data_ will have the role but override_data_ will have the name
+    // (and not the role) so make sure to remove this once OverrideName is also
+    // migrated.
+    override_data_.role = role;
+  }
+}
+
+ax::mojom::Role ViewAccessibility::GetViewAccessibilityRole() const {
+  return data_.role;
 }
 
 void ViewAccessibility::OverrideRole(const ax::mojom::Role role) {

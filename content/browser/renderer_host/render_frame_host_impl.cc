@@ -8310,6 +8310,24 @@ void RenderFrameHostImpl::CreateNewWindow(
     return;
   }
 
+  // Fenced frames that have revoked network access can't open popups.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kFencedFramesLocalUnpartitionedDataAccess)) {
+    const std::optional<FencedFrameProperties>&
+        initiator_fenced_frame_properties =
+            frame_tree_node()->GetFencedFrameProperties(
+                FencedFramePropertiesNodeSource::kFrameTreeRoot);
+    if (initiator_fenced_frame_properties.has_value() &&
+        initiator_fenced_frame_properties->has_disabled_untrusted_network()) {
+      AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kError,
+          "Popup creation is not allowed after the fenced frame's "
+          "network has been disabled.");
+      std::move(callback).Run(mojom::CreateNewWindowStatus::kBlocked, nullptr);
+      return;
+    }
+  }
+
   bool no_javascript_access = false;
 
   // Filter out URLs to which navigation is disallowed from this context.
@@ -10431,7 +10449,8 @@ void RenderFrameHostImpl::CommitNavigation(
           url_loader_factory::CreatePendingRemote(
               ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
               url_loader_factory::TerminalParams::ForNonNetwork(
-                  CreateWebUIURLLoaderFactory(this, effective_scheme, {})),
+                  CreateWebUIURLLoaderFactory(this, effective_scheme, {}),
+                  GetProcess()->GetID()),
               url_loader_factory::ContentClientParams(
                   browser_context, this, GetProcess()->GetID(),
                   subresource_loader_factories_config.origin(),
@@ -10543,7 +10562,7 @@ void RenderFrameHostImpl::CommitNavigation(
           pending_factory_proxy.InitWithNewPipeAndPassReceiver(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
           url_loader_factory::TerminalParams::ForNonNetwork(
-              std::move(original_pending_factory)),
+              std::move(original_pending_factory), GetProcess()->GetID()),
           url_loader_factory::ContentClientParams(
               GetBrowserContext(), this, GetProcess()->GetID(),
               subresource_loader_factories_config.origin(),
@@ -11132,14 +11151,6 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
   }
 }
 
-void RenderFrameHostImpl::SnapshotDocumentForViewTransition(
-    blink::mojom::LocalFrame::SnapshotDocumentForViewTransitionCallback
-        callback) {
-  DCHECK(IsRenderFrameLive());
-  GetAssociatedLocalFrame()->SnapshotDocumentForViewTransition(
-      std::move(callback));
-}
-
 #if BUILDFLAG(ENABLE_PPAPI)
 RenderFrameHostImplPpapiSupport& RenderFrameHostImpl::GetPpapiSupport() {
   if (!ppapi_support_) {
@@ -11409,9 +11420,6 @@ void RenderFrameHostImpl::GrantFileAccessFromResourceRequestBody(
 
 void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     NavigationRequest* request) {
-  // Browser plugin guests are not allowed to navigate outside web-safe schemes,
-  // so do not grant them the ability to commit additional URLs.
-  if (!GetProcess()->IsForGuestsOnly()) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantCommitURL(
         GetProcess()->GetID(), request->common_params().url);
     if (request->IsLoadDataWithBaseURL()) {
@@ -11423,7 +11431,6 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
           GetProcess()->GetID(),
           request->common_params().base_url_for_data_url);
     }
-  }
 
   // We may be returning to an existing NavigationEntry that had been granted
   // file access.  If this is a different process, we will need to grant the

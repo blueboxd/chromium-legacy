@@ -66,6 +66,14 @@ void PineController::MaybeStartPineOverviewSessionDevAccelerator() {
   data->apps_infos.emplace_back(
       "mgndgikekgjfcpckkfioiadnlibdjbkf", /*tab_title=*/"Maps",
       std::vector<std::string>{"https://www.google.com/maps/"});
+  // Files.
+  data->apps_infos.emplace_back("fkiggjmkendpmbegkagpmagjepfkpmeb");
+  // Chrome.
+  data->apps_infos.emplace_back(
+      "mgndgikekgjfcpckkfioiadnlibdjbkf", /*tab_title=*/"Twitter",
+      std::vector<std::string>{"https://www.twitter.com/",
+                               "https://www.youtube.com/",
+                               "https://www.google.com/"});
 
   MaybeStartPineOverviewSession(std::move(data));
 }
@@ -96,6 +104,12 @@ void PineController::MaybeStartPineOverviewSession(
       base::BindOnce(&PineController::OnPineImageDecoded,
                      weak_ptr_factory_.GetWeakPtr()),
       GetShutdownPineImagePath(), data_decoder::mojom::ImageCodec::kPng);
+}
+
+void PineController::MaybeEndPineOverviewSession() {
+  pine_contents_data_.reset();
+  OverviewController::Get()->EndOverview(OverviewEndAction::kAccelerator,
+                                         OverviewEnterExitType::kPine);
 }
 
 void PineController::OnPineImageDecoded(const gfx::ImageSkia& pine_image) {

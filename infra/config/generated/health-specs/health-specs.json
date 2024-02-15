@@ -8059,7 +8059,7 @@
           }
         ]
       },
-      "chromeos-jacuzzi-rel-skylab-fyi": {
+      "chromeos-jacuzzi-rel-skylab": {
         "contact_team_email": "chromeos-velocity@google.com",
         "problem_specs": [
           {
@@ -8133,7 +8133,7 @@
           }
         ]
       },
-      "chromeos-octopus-rel-skylab-fyi": {
+      "chromeos-octopus-rel-skylab": {
         "contact_team_email": "chromeos-velocity@google.com",
         "problem_specs": [
           {
@@ -9928,6 +9928,27 @@
         ]
       },
       "linux-lacros-dbg-tests-fyi": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "period_days": 7,
+            "score": 5,
+            "thresholds": {
+              "_default": "_default"
+            }
+          },
+          {
+            "name": "Low Value",
+            "period_days": 90,
+            "score": 1,
+            "thresholds": {
+              "_default": "_default"
+            }
+          }
+        ]
+      },
+      "linux-lacros-rel-dangling-ptr-fyi": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
         "problem_specs": [
           {
             "name": "Unhealthy",

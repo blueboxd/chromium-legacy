@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -144,7 +146,7 @@ void SoftNavigationHeuristics::ResetHeuristic() {
 
 void SoftNavigationHeuristics::InteractionCallbackCalled(
     const scheduler::TaskAttributionInfo& task,
-    EventScopeType type,
+    EventScope::Type type,
     bool is_new_interaction) {
   // Set task ID to the current one.
   initial_interaction_encountered_ = true;
@@ -169,7 +171,6 @@ void SoftNavigationHeuristics::InteractionCallbackCalled(
                                            last_interaction_task_id_.value());
   }
 
-  tracker->RegisterObserverIfNeeded(this);
   SetIsTrackingSoftNavigationHeuristicsOnDocument(true);
   TRACE_EVENT_INSTANT("scheduler",
                       "SoftNavigationHeuristics::UserInitiatedInteraction");
@@ -407,39 +408,9 @@ void SoftNavigationHeuristics::RecordPaint(
   }
 }
 
-void SoftNavigationHeuristics::SetEventParametersAndQueueNestedOnes(
-    EventScopeType type,
-    bool is_new_interaction,
-    bool is_nested) {
-  seen_first_observer = false;
-  if (is_nested) {
-    nested_event_parameters_.push_back(
-        EventParameters(is_new_interaction, type));
-    current_event_parameters_ = &nested_event_parameters_.back();
-  } else {
-    top_event_parameters_ = EventParameters(is_new_interaction, type);
-    current_event_parameters_ = &top_event_parameters_;
-    nested_event_parameters_.clear();
-  }
-}
-
-bool SoftNavigationHeuristics::PopNestedEventParametersIfNeeded() {
-  if (nested_event_parameters_.empty()) {
-    return false;
-  }
-  nested_event_parameters_.pop_back();
-  if (!nested_event_parameters_.empty()) {
-    current_event_parameters_ = &nested_event_parameters_.back();
-    return true;
-  }
-  current_event_parameters_ = &top_event_parameters_;
-  return true;
-}
-
 void SoftNavigationHeuristics::SetCurrentTimeAsStartTime() {
-  CHECK(current_event_parameters_);
   if (!last_interaction_task_id_.value() ||
-      !current_event_parameters_->is_new_interaction) {
+      !CurrentEventParameters().is_new_interaction) {
     pending_interaction_timestamp_ = base::TimeTicks::Now();
     return;
   }
@@ -566,23 +537,21 @@ void SoftNavigationHeuristics::OnCreateTaskScope(
                "task_id", task.Id().value());
   potential_soft_navigation_tasks_.insert(&task);
   has_potential_soft_navigation_task_ = true;
-  CHECK(current_event_parameters_);
+  const EventParameters& current_event_parameters = CurrentEventParameters();
   // If this event is a new interaction event and we haven't seen previous
   // events in the current scope. The latter can happen when events bubble.
-  if (current_event_parameters_->is_new_interaction && !seen_first_observer) {
+  if (current_event_parameters.is_new_interaction && !seen_first_observer_) {
     PerInteractionData* data = MakeGarbageCollected<PerInteractionData>();
     interaction_task_id_to_interaction_data_.insert(task.Id().value(), data);
     last_interaction_task_id_ = task.Id();
   }
-  seen_first_observer = true;
+  seen_first_observer_ = true;
   soft_navigation_descendant_cache_.clear();
 
   // Create a user initiated interaction
-  CHECK(current_event_parameters_);
-  InteractionCallbackCalled(task, current_event_parameters_->type,
-                            current_event_parameters_->is_new_interaction);
-  if (current_event_parameters_->type ==
-      SoftNavigationHeuristics::EventScopeType::kNavigate) {
+  InteractionCallbackCalled(task, current_event_parameters.type,
+                            current_event_parameters.is_new_interaction);
+  if (current_event_parameters.type == EventScope::Type::kNavigate) {
     SameDocumentNavigationStarted();
   }
 }
@@ -611,41 +580,67 @@ LocalFrame* SoftNavigationHeuristics::GetLocalFrameIfNotDetached() const {
   return window->IsCurrentlyDisplayedInFrame() ? window->GetFrame() : nullptr;
 }
 
-// SoftNavigationEventScope implementation
+SoftNavigationHeuristics::EventScope SoftNavigationHeuristics::CreateEventScope(
+    EventScope::Type type,
+    bool is_new_interaction) {
+  seen_first_observer_ = false;
+  // Even for nested event scopes, we need to set these parameters, to ensure
+  // that created tasks know they were initiated by the correct event type.
+  all_event_parameters_.push_back(EventParameters(is_new_interaction, type));
+  if (all_event_parameters_.size() == 1) {
+    UserInitiatedInteraction();
+  }
+  return SoftNavigationHeuristics::EventScope(this);
+}
+
+void SoftNavigationHeuristics::OnSoftNavigationEventScopeDestroyed() {
+  // Set the start time to the end of event processing. In case of nested event
+  // scopes, we want this to be the end of the nested `navigate()` event
+  // handler.
+  SetCurrentTimeAsStartTime();
+
+  // `SetCurrentTimeAsStartTime()` depends on `CurrentEventParameters()`, so
+  // clear this last.
+  all_event_parameters_.pop_back();
+
+  // TODO(crbug.com/1502640): We should also reset the heuristic a few seconds
+  // after a click event handler is done, to reduce potential cycles.
+}
+
+// SoftNavigationHeuristics::EventScope implementation
 // ///////////////////////////////////////////
-SoftNavigationEventScope::SoftNavigationEventScope(
-    SoftNavigationHeuristics* heuristics,
-    SoftNavigationHeuristics::EventScopeType type,
-    bool is_new_interaction)
+SoftNavigationHeuristics::EventScope::EventScope(
+    SoftNavigationHeuristics* heuristics)
     : heuristics_(heuristics) {
+  CHECK(heuristics_);
   ThreadScheduler* scheduler = ThreadScheduler::Current();
   DCHECK(scheduler);
   auto* tracker = scheduler->GetTaskAttributionTracker();
   if (!tracker) {
     return;
   }
-  // EventScope can be nested in case a click/keyboard event synchronously
-  // initiates a navigation.
-  bool nested = !tracker->RegisterObserverIfNeeded(heuristics_);
-
-  // Even for nested event scopes, we need to set these parameters, to ensure
-  // that created tasks know they were initiated by the correct event type.
-  heuristics_->SetEventParametersAndQueueNestedOnes(type, is_new_interaction,
-                                                    nested);
-  if (!nested) {
-    heuristics_->UserInitiatedInteraction();
-  }
+  nested_ = !tracker->RegisterObserverIfNeeded(heuristics_);
 }
 
-SoftNavigationEventScope::~SoftNavigationEventScope() {
-  bool nested = heuristics_->PopNestedEventParametersIfNeeded();
-  // Set the start time to the end of event processing. In case of nested event
-  // scopes, we want this to be the end of the nested `navigate()` event
-  // handler.
-  heuristics_->SetCurrentTimeAsStartTime();
+SoftNavigationHeuristics::EventScope::EventScope(EventScope&& other)
+    : heuristics_(std::exchange(other.heuristics_, nullptr)),
+      nested_(other.nested_) {}
+
+SoftNavigationHeuristics::EventScope&
+SoftNavigationHeuristics::EventScope::operator=(EventScope&& other) {
+  heuristics_ = std::exchange(other.heuristics_, nullptr);
+  nested_ = other.nested_;
+  return *this;
+}
+
+SoftNavigationHeuristics::EventScope::~EventScope() {
+  if (!heuristics_) {
+    return;
+  }
+  heuristics_->OnSoftNavigationEventScopeDestroyed();
 
   // Only the top level EventScope should unregister the observer.
-  if (!nested) {
+  if (!nested_) {
     ThreadScheduler* scheduler = ThreadScheduler::Current();
     DCHECK(scheduler);
     auto* tracker = scheduler->GetTaskAttributionTracker();
@@ -654,7 +649,6 @@ SoftNavigationEventScope::~SoftNavigationEventScope() {
     }
     tracker->UnregisterObserver(heuristics_);
   }
-  // TODO(crbug.com/1502640): We should also reset the heuristic a few seconds
-  // after a click event handler is done, to reduce potential cycles.
 }
+
 }  // namespace blink

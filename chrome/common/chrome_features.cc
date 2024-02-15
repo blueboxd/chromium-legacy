@@ -452,11 +452,6 @@ BASE_FEATURE(kEnableNetworkServiceResourceBlockListIfThirdPartyCookiesBlocked,
              "EnableNetworkServiceResourceBlockListIfThirdPartyCookiesBlocked",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable extended descriptions for key settings in Chrome settings.
-BASE_FEATURE(kExtendedSettingsDescriptions,
-             "ExtendedSettingsDescriptions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 #if !BUILDFLAG(IS_ANDROID)
 // Lazy initialize IndividualSettings for extensions from enterprise policy
 // that are not installed.
@@ -1180,7 +1175,6 @@ BASE_FEATURE(kSafetyCheckExtensions,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
-#if !BUILDFLAG(IS_ANDROID)
 // Enables notification permission module in Safety Check.
 BASE_FEATURE(kSafetyCheckNotificationPermissions,
              "SafetyCheckNotificationPermissions",
@@ -1201,7 +1195,6 @@ BASE_FEATURE(kSafetyHub, "SafetyHub", base::FEATURE_DISABLED_BY_DEFAULT);
 // Time between automated runs of the password check.
 const base::FeatureParam<base::TimeDelta> kBackgroundPasswordCheckInterval{
     &kSafetyHub, "background-password-check-interval", base::Days(10)};
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for multiple scheduler configurations.

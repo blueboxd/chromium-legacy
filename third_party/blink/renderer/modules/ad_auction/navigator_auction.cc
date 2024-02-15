@@ -31,6 +31,7 @@
 #include "third_party/blink/public/common/interest_group/ad_auction_currencies.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size_utils.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
+#include "third_party/blink/public/mojom/interest_group/ad_auction_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-blink.h"
 #include "third_party/blink/public/mojom/parakeet/ad_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
@@ -199,6 +200,20 @@ class NavigatorAuction::AuctionHandle final : public AbortSignal::Algorithm {
       : public AuctionHandleFunction {
    public:
     DirectFromSellerSignalsHeaderAdSlotResolved(
+        AuctionHandle* auction_handle,
+        mojom::blink::AuctionAdConfigAuctionIdPtr auction_id,
+        const String& seller_name);
+
+    ScriptValue CallImpl(ScriptState* script_state, ScriptValue value) override;
+
+   private:
+    const mojom::blink::AuctionAdConfigAuctionIdPtr auction_id_;
+    const String seller_name_;
+  };
+
+  class DeprecatedRenderURLReplacementsResolved : public AuctionHandleFunction {
+   public:
+    DeprecatedRenderURLReplacementsResolved(
         AuctionHandle* auction_handle,
         mojom::blink::AuctionAdConfigAuctionIdPtr auction_id,
         const String& seller_name);
@@ -1597,6 +1612,58 @@ void CopyDirectFromSellerSignalsHeaderAdSlotFromIdlToMojo(
   output.expects_direct_from_seller_signals_header_ad_slot = true;
 }
 
+WTF::Vector<mojom::blink::AdKeywordReplacementPtr>
+ConvertVectorIdlToMojoDeprecatedRenderUrlReplacement(
+    const Vector<std::pair<WTF::String, WTF::String>>& input) {
+  WTF::Vector<mojom::blink::AdKeywordReplacementPtr> output;
+  for (const auto& key_value_pair : input) {
+    auto local_replacement = mojom::blink::AdKeywordReplacement::New();
+    local_replacement->match = std::move(key_value_pair.first);
+    local_replacement->replacement = std::move(key_value_pair.second);
+    output.emplace_back(std::move(local_replacement));
+  }
+  return output;
+}
+
+WTF::Vector<mojom::blink::AdKeywordReplacementPtr>
+ConvertNonPromiseDeprecatedRenderURLReplacementsFromV8ToMojo(
+    const ScriptState& script_state,
+    ExceptionState& exception_state,
+    const String& seller_name,
+    v8::Local<v8::Value> value) {
+  WTF::Vector<std::pair<WTF::String, WTF::String>> decoded =
+      NativeValueTraits<IDLRecord<IDLUSVString, IDLUSVString>>::NativeValue(
+          script_state.GetIsolate(), value, exception_state);
+  if (exception_state.HadException()) {
+    return {};
+  }
+
+  return ConvertVectorIdlToMojoDeprecatedRenderUrlReplacement(decoded);
+}
+
+void CopyDeprecatedRenderURLReplacementsFromIdlToMojo(
+    NavigatorAuction::AuctionHandle* auction_handle,
+    const mojom::blink::AuctionAdConfigAuctionId* auction_id,
+    const AuctionAdConfig& input,
+    mojom::blink::AuctionAdConfig& output) {
+  if (!base::FeatureList::IsEnabled(
+          features::kEnableDeprecatedRenderURLReplacements) ||
+      !input.hasDeprecatedRenderURLReplacements()) {
+    // If the page passed no ad replacements, do nothing and pass an empty map.
+    output.deprecated_render_url_replacements = mojom::blink::
+        AuctionAdConfigMaybePromiseDeprecatedRenderURLReplacements::NewValue(
+            {});
+    return;
+  }
+  auction_handle->QueueAttachPromiseHandler(
+      input.deprecatedRenderURLReplacements(),
+      MakeGarbageCollected<NavigatorAuction::AuctionHandle::
+                               DeprecatedRenderURLReplacementsResolved>(
+          auction_handle, auction_id->Clone(), input.seller()));
+  output.deprecated_render_url_replacements = mojom::blink::
+      AuctionAdConfigMaybePromiseDeprecatedRenderURLReplacements::NewPromise(0);
+}
+
 bool CopyAdditionalBidsFromIdlToMojo(
     NavigatorAuction::AuctionHandle* auction_handle,
     const mojom::blink::AuctionAdConfigAuctionId* auction_id,
@@ -2232,6 +2299,35 @@ bool CopyAllSlotsRequestedSizesFromIdlToMojo(
   return true;
 }
 
+bool CopyPerBuyerMultiBidsLimitsFromIdlToMojo(
+    const ScriptState& script_state,
+    ExceptionState& exception_state,
+    const AuctionAdConfig& input,
+    mojom::blink::AuctionAdConfig& output) {
+  if (!input.hasPerBuyerMultiBidLimits()) {
+    return true;
+  }
+  for (const auto& per_buyer_multibid_limit : input.perBuyerMultiBidLimits()) {
+    if (per_buyer_multibid_limit.first == "*") {
+      output.auction_ad_config_non_shared_params->all_buyers_multi_bid_limit =
+          per_buyer_multibid_limit.second;
+      continue;
+    }
+    scoped_refptr<const SecurityOrigin> buyer =
+        ParseOrigin(per_buyer_multibid_limit.first);
+    if (!buyer) {
+      exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+          input, "perBuyerMultiBidLimits buyer", per_buyer_multibid_limit.first,
+          "must be \"*\" (wildcard) or a valid https origin."));
+      return false;
+    }
+    output.auction_ad_config_non_shared_params->per_buyer_multi_bid_limits
+        .insert(buyer, per_buyer_multibid_limit.second);
+  }
+
+  return true;
+}
+
 bool CopyAuctionNonceFromIdlToMojo(const ExecutionContext& execution_context,
                                    ExceptionState& exception_state,
                                    const AuctionAdConfig& input,
@@ -2312,6 +2408,8 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
                                       *mojo_config) ||
       !CopyAllSlotsRequestedSizesFromIdlToMojo(context, exception_state, config,
                                                *mojo_config) ||
+      !CopyPerBuyerMultiBidsLimitsFromIdlToMojo(script_state, exception_state,
+                                                config, *mojo_config) ||
       !CopyAuctionNonceFromIdlToMojo(context, exception_state, config,
                                      *mojo_config) ||
       !CopyAdditionalBidsFromIdlToMojo(auction_handle, auction_id.get(),
@@ -2338,6 +2436,8 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
   CopyDirectFromSellerSignalsFromIdlToMojo(auction_handle, auction_id.get(),
                                            config, *mojo_config);
   CopyDirectFromSellerSignalsHeaderAdSlotFromIdlToMojo(
+      auction_handle, auction_id.get(), config, *mojo_config);
+  CopyDeprecatedRenderURLReplacementsFromIdlToMojo(
       auction_handle, auction_id.get(), config, *mojo_config);
   CopyPerBuyerSignalsFromIdlToMojo(auction_handle, auction_id.get(), config,
                                    *mojo_config);
@@ -2382,6 +2482,15 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
         mojo_config->expects_additional_bids) {
       exception_state.ThrowTypeError(
           "Auctions may only specify 'additionalBids' if they do not have  "
+          "'componentAuctions'.");
+      return mojom::blink::AuctionAdConfigPtr();
+    }
+
+    if (config.componentAuctions().size() > 0 &&
+        config.hasDeprecatedRenderURLReplacements()) {
+      exception_state.ThrowTypeError(
+          "Auctions may only specify 'deprecatedRenderURLReplacements' if they "
+          "do not have  "
           "'componentAuctions'.");
       return mojom::blink::AuctionAdConfigPtr();
     }
@@ -2747,6 +2856,55 @@ ScriptValue NavigatorAuction::AuctionHandle::PerBuyerSignalsResolved::CallImpl(
   if (!exception_state.HadException()) {
     auction_handle()->mojo_pipe()->ResolvedPerBuyerSignalsPromise(
         auction_id_->Clone(), std::move(per_buyer_signals));
+  } else {
+    auction_handle()->Abort();
+  }
+
+  return ScriptValue();
+}
+
+NavigatorAuction::AuctionHandle::DeprecatedRenderURLReplacementsResolved::
+    DeprecatedRenderURLReplacementsResolved(
+        AuctionHandle* auction_handle,
+        mojom::blink::AuctionAdConfigAuctionIdPtr auction_id,
+        const String& seller_name)
+    : AuctionHandleFunction(auction_handle),
+      auction_id_(std::move(auction_id)),
+      seller_name_(seller_name) {}
+
+ScriptValue NavigatorAuction::AuctionHandle::
+    DeprecatedRenderURLReplacementsResolved::CallImpl(ScriptState* script_state,
+                                                      ScriptValue value) {
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionContextType::kOperationInvoke,
+                                 "NavigatorAuction", "runAdAuction");
+  WTF::Vector<mojom::blink::AdKeywordReplacementPtr>
+      deprecated_render_url_replacements;
+  if (!value.IsEmpty()) {
+    v8::Local<v8::Value> v8_value = value.V8Value();
+    if (!v8_value->IsUndefined() && !v8_value->IsNull()) {
+      deprecated_render_url_replacements =
+          ConvertNonPromiseDeprecatedRenderURLReplacementsFromV8ToMojo(
+              *script_state, exception_state, seller_name_, v8_value);
+      for (const auto& replacement : deprecated_render_url_replacements) {
+        if (!(replacement->match.StartsWith("${") &&
+              replacement->match.EndsWith("}")) &&
+            !(replacement->match.StartsWith("%%") &&
+              replacement->match.EndsWith("%%"))) {
+          exception_state.ThrowTypeError(
+              "Replacements must be of the form '${...}' or '%%...%%'");
+          break;
+        }
+      }
+    }
+  }
+
+  if (!exception_state.HadException()) {
+    auction_handle()
+        ->mojo_pipe()
+        ->ResolvedDeprecatedRenderURLReplacementsPromise(
+            auction_id_->Clone(),
+            std::move(deprecated_render_url_replacements));
   } else {
     auction_handle()->Abort();
   }
@@ -3782,7 +3940,7 @@ void NavigatorAuction::FinalizeAdComplete(
     ScriptPromiseResolver* resolver,
     const std::optional<KURL>& creative_url) {
   if (creative_url) {
-    resolver->Resolve(creative_url);
+    resolver->Resolve(*creative_url);
   } else {
     // TODO(https://crbug.com/1249186): Add full impl of methods.
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(

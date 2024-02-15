@@ -1055,16 +1055,23 @@ void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
                              base::checked_cast<int32_t>(range.end()));
 
+  // TODO(ViewsAX): In order to update the cache whenever the offset changes,
+  // we could set this attribute in Textfield::UpdateCursorViewPosition.
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kScrollX,
+                             GetRenderText()->GetUpdatedDisplayOffset().x());
+
 #if BUILDFLAG(SUPPORTS_AX_TEXT_OFFSETS)
   std::u16string ax_value =
       node_data->GetString16Attribute(ax::mojom::StringAttribute::kValue);
   // If the accessible value changed since the last time we computed the text
   // offsets, we need to recompute them.
   if (::features::IsUiaProviderEnabled() &&
-      ax_value_used_to_compute_offsets_ != ax_value) {
+      (ax_value_used_to_compute_offsets_ != ax_value ||
+       needs_ax_text_offsets_update_)) {
     GetViewAccessibility().ClearTextOffsets();
     RefreshAccessibleTextOffsets();
     ax_value_used_to_compute_offsets_ = ax_value;
+    needs_ax_text_offsets_update_ = false;
   }
 #endif  // BUILDFLAG(SUPPORTS_AX_TEXT_OFFSETS)
 }
@@ -2496,6 +2503,12 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
       return ui::TextEditCommand::INVALID_COMMAND;
   }
 }
+
+#if BUILDFLAG(SUPPORTS_AX_TEXT_OFFSETS)
+void Textfield::SetNeedsAccessibleTextOffsetsUpdate() {
+  needs_ax_text_offsets_update_ = true;
+}
+#endif  // BUILDFLAG(SUPPORTS_AX_TEXT_OFFSETS)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, private:

@@ -197,6 +197,7 @@ source_set("settings") {
     "//ios/chrome/browser/ui/settings/google_services",
     "//ios/chrome/browser/ui/settings/google_services:constants",
     "//ios/chrome/browser/ui/settings/google_services/manage_accounts",
+    "//ios/chrome/browser/ui/settings/google_services/manage_accounts:manage_accounts_ui",
     "//ios/chrome/browser/ui/settings/language:language",
     "//ios/chrome/browser/ui/settings/language:language_ui",
     "//ios/chrome/browser/ui/settings/notifications",
@@ -255,8 +256,6 @@ source_set("test_support") {
   sources = [
     "passphrase_table_view_controller_test.h",
     "passphrase_table_view_controller_test.mm",
-    "personal_data_manager_finished_profile_tasks_waiter.cc",
-    "personal_data_manager_finished_profile_tasks_waiter.h",
   ]
   deps = [
     ":settings",

@@ -145,6 +145,26 @@ HostIndexedContentSettings::Iterator::Iterator(
   }
 }
 
+HostIndexedContentSettings::Iterator::Iterator(const Iterator& other)
+    : index_(other.index_),
+      stage_(other.stage_),
+      next_map_iterator_(other.next_map_iterator_),
+      next_map_end_(other.next_map_end_),
+      current_iterator_(other.current_iterator_),
+      current_end_(other.current_end_) {
+  index_->iterating_++;
+}
+
+HostIndexedContentSettings::Iterator::Iterator(Iterator&& other)
+    : index_(other.index_),
+      stage_(other.stage_),
+      next_map_iterator_(other.next_map_iterator_),
+      next_map_end_(other.next_map_end_),
+      current_iterator_(other.current_iterator_),
+      current_end_(other.current_end_) {
+  index_->iterating_++;
+}
+
 HostIndexedContentSettings::Iterator::~Iterator() {
   DCHECK_GT(index_->iterating_, 0);
   index_->iterating_--;
@@ -178,6 +198,13 @@ HostIndexedContentSettings::Iterator::operator++() {
     }
   }
   return *this;
+}
+
+HostIndexedContentSettings::Iterator
+HostIndexedContentSettings::Iterator::operator++(int) {
+  Iterator ret = *this;
+  operator++();
+  return ret;
 }
 
 void HostIndexedContentSettings::Iterator::SetStage(Stage stage) {
@@ -330,25 +357,6 @@ size_t HostIndexedContentSettings::size() const {
   }
   size += wildcard_settings_.size();
   return size;
-}
-
-void HostIndexedContentSettings::DcheckSameResultAsLinearLookup(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    const ContentSettingsForOneType& linear_settings) const {
-  DCHECK([&]() -> bool {
-    const ContentSettingPatternSource* found_content_setting =
-        FindContentSetting(primary_url, secondary_url, linear_settings);
-    const RuleEntry* found_indexed_content_setting =
-        Find(primary_url, secondary_url);
-
-    if (!found_content_setting || !found_indexed_content_setting) {
-      return !found_content_setting && !found_indexed_content_setting;
-    }
-    return found_content_setting->GetContentSetting() ==
-           ValueToContentSetting(found_indexed_content_setting->second.value);
-  }()) << "Different result in index lookup: "
-       << primary_url.spec() << " " << secondary_url.spec();
 }
 
 }  // namespace content_settings

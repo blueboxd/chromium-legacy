@@ -642,8 +642,7 @@ suite('FledgeSubpageWithProactiveTopicsBlockingEnabled', function() {
         page.shadowRoot!.querySelector<HTMLElement>('#secondDescription');
     assert(secondDescription);
     assertEquals(
-        secondDescription?.innerText,
-        page.i18n('fledgePageSecondaryDescriptionV2'));
+        secondDescription?.innerText, page.i18n('fledgePageExplanation'));
   });
 
   test('footerLinks', async function() {
@@ -901,6 +900,24 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
     idsToBeHidden.forEach(id => assertFalse(isChildVisible(page, id)));
   });
 
+  test('disclaimerLinks', async function() {
+    const disclaimer = page.shadowRoot!.querySelector('#disclaimer');
+    assertTrue(!!disclaimer);
+    assertTrue(isVisible(disclaimer));
+
+    const links = page.shadowRoot!.querySelectorAll<HTMLAnchorElement>(
+        '#disclaimer a[href]');
+
+    assertEquals(1, links.length);
+    assertEquals(
+        links[0]!.getAttribute('aria-description'),
+        loadTimeData.getString('opensInNewTab'),
+        'the link should indicate that it will be opened in a new tab');
+
+    assertEquals(
+        links[0]!.href, 'https://support.google.com/chrome?p=ad_privacy');
+  });
+
   function assertToastOpened() {
     const toast = page.shadowRoot!.querySelector('cr-toast');
     assert(toast);
@@ -963,7 +980,7 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
             '#blockedTopicsDescriptionV2')!;
     assertTrue(isVisible(blockedTopicsDescription));
     assertEquals(
-        loadTimeData.getString('topicsPageBlockedTopicsDescriptionV2'),
+        loadTimeData.getString('topicsPageBlockedTopicsDescriptionNew'),
         blockedTopicsDescription.innerText);
     assertEquals(1, blockedTopics.length);
     assertEquals(

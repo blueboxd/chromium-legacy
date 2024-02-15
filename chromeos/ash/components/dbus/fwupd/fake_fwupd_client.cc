@@ -9,6 +9,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "chromeos/ash/components/dbus/fwupd/fake_fwupd_client.h"
 #include "chromeos/ash/components/dbus/fwupd/fwupd_device.h"
+#include "chromeos/ash/components/dbus/fwupd/fwupd_properties.h"
+#include "chromeos/ash/components/dbus/fwupd/fwupd_properties_fake.h"
 #include "chromeos/ash/components/dbus/fwupd/fwupd_update.h"
 
 namespace {
@@ -66,8 +68,31 @@ void FakeFwupdClient::InstallUpdate(const std::string& device_id,
   if (device_id != kFakeDeviceIdForTesting)
     return;
 
+  has_update_started_ = true;
+}
+
+void FakeFwupdClient::TriggerPropertiesChangeForTesting(uint32_t percentage,
+                                                        uint32_t status) {
+  FwupdPropertiesFake progress = FwupdPropertiesFake(percentage, status);
+  for (auto& observer : observers_) {
+    observer.OnPropertiesChangedResponse(&progress);
+  }
+}
+
+void FakeFwupdClient::TriggerSuccessfulUpdateForTesting() {
   for (auto& observer : observers_) {
     observer.OnInstallResponse(/*success=*/true);
+  }
+}
+
+bool FakeFwupdClient::HasUpdateStartedForTesting() {
+  return has_update_started_;
+}
+
+void FakeFwupdClient::EmitDeviceRequestForTesting(uint32_t device_request_id) {
+  for (auto& observer : observers_) {
+    FwupdRequest request(/*id=*/device_request_id, /*kind=*/2);
+    observer.OnDeviceRequestResponse(request);
   }
 }
 

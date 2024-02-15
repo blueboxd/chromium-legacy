@@ -191,32 +191,6 @@ try_.compilator_builder(
     siso_enabled = True,
 )
 
-# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
-try_.orchestrator_builder(
-    name = "chromeos-amd64-generic-siso-rel",
-    description_html = """\
-This builder shadows chromeos-amd64-generic-rel-gtest builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating chromeos-amd64-generic-rel-gtest from Ninja to Siso. b/277863839
-""",
-    mirrors = builder_config.copy_from("try/chromeos-amd64-generic-rel-gtest"),
-    try_settings = builder_config.try_settings(
-        is_compile_only = True,
-    ),
-    gn_args = "try/chromeos-amd64-generic-rel-gtest",
-    compilator = "chromeos-amd64-generic-siso-rel-compilator",
-    main_list_view = "try",
-    siso_enabled = True,
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
-)
-
-try_.compilator_builder(
-    name = "chromeos-amd64-generic-siso-rel-compilator",
-    main_list_view = "try",
-    siso_enabled = True,
-)
-
 try_.builder(
     name = "chromeos-arm-generic-dbg",
     mirrors = [
@@ -238,9 +212,10 @@ try_.builder(
     builderless = not settings.is_main,
     experiments = {
         # crbug/940930
-        "chromium.enable_cleandead": 50,
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
+    siso_enabled = True,
     tryjob = try_.job(),
 )
 
@@ -273,6 +248,7 @@ try_.orchestrator_builder(
     compilator = "lacros-amd64-generic-rel-gtest-compilator",
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
+    siso_enabled = True,
     # TODO(crbug.com/1471166) Enable on CQ.
     tryjob = try_.job(
         equivalent_builder = "try/lacros-amd64-generic-rel-gtest-and-tast",
@@ -310,6 +286,7 @@ try_.orchestrator_builder(
     compilator = "lacros-amd64-generic-rel-gtest-and-tast-compilator",
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
+    siso_enabled = True,
     tryjob = try_.job(
         omit_from_luci_cv = True,
     ),
@@ -331,6 +308,7 @@ try_.compilator_builder(
     ],
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
+    siso_enabled = True,
 )
 
 try_.compilator_builder(
@@ -347,6 +325,7 @@ try_.compilator_builder(
     ],
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
+    siso_enabled = True,
 )
 
 try_.builder(
@@ -389,9 +368,10 @@ try_.builder(
     builderless = not settings.is_main,
     experiments = {
         # crbug/940930
-        "chromium.enable_cleandead": 50,
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
+    siso_enabled = True,
     tryjob = try_.job(),
 )
 
@@ -451,7 +431,7 @@ try_.builder(
     builderless = not settings.is_main,
     experiments = {
         # crbug/940930
-        "chromium.enable_cleandead": 50,
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
@@ -480,9 +460,9 @@ try_.builder(
     description_html = "This is a builder that runs HW test on Skylab." +
                        " This builder also build Lacros with alternative toolchain.",
     mirrors = [
-        "ci/chromeos-jacuzzi-rel-skylab-fyi",
+        "ci/chromeos-jacuzzi-rel-skylab",
     ],
-    gn_args = "ci/chromeos-jacuzzi-rel-skylab-fyi",
+    gn_args = "ci/chromeos-jacuzzi-rel-skylab",
     contact_team_email = "chromeos-velocity@google.com",
     execution_timeout = 8 * time.hour,
     main_list_view = "try",
@@ -494,9 +474,9 @@ try_.builder(
     description_html = "This builder builds public image and runs tests on octopus DUTs in the lab.<br/>" +
                        "This is experimental.",
     mirrors = [
-        "ci/chromeos-octopus-rel-skylab-fyi",
+        "ci/chromeos-octopus-rel-skylab",
     ],
-    gn_args = "ci/chromeos-octopus-rel-skylab-fyi",
+    gn_args = "ci/chromeos-octopus-rel-skylab",
     contact_team_email = "chromeos-velocity@google.com",
     execution_timeout = 8 * time.hour,
     main_list_view = "try",
@@ -663,4 +643,19 @@ try_.builder(
             "chrome/browser/ash/chromebox_for_meetings/.+",
         ],
     ),
+)
+
+try_.builder(
+    name = "linux-lacros-rel-dangling-ptr-fyi",
+    description_html = "Dangling ptr check for lacros.",
+    mirrors = [
+        "ci/linux-lacros-rel-dangling-ptr-fyi",
+    ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/linux-lacros-rel-dangling-ptr-fyi",
+        ],
+    ),
+    contact_team_email = "chrome-desktop-engprod@google.com",
+    execution_timeout = 8 * time.hour,
 )

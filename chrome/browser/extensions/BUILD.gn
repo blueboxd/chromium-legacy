@@ -966,7 +966,6 @@ static_library("extensions") {
     "//third_party/leveldatabase",
     "//third_party/libaddressinput:util",
     "//third_party/re2",
-    "//third_party/sqlite",
     "//third_party/zlib/google:compression_utils",
     "//third_party/zlib/google:zip",
     "//ui/accessibility:ax_enums_mojo",
@@ -1342,6 +1341,7 @@ static_library("extensions") {
       "system_display/display_info_provider_win.h",
     ]
     deps += [
+      "//components/app_launch_prefetch",
       "//components/device_signals/core/common/win",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",

@@ -97,11 +97,6 @@ BASE_FEATURE(kWebAuthnICloudKeychainForInactiveWithoutDrive,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enabled in M117. Remove in or after M120.
-BASE_FEATURE(kWebAuthConditionalUIExperimentation,
-             "WebAuthenticationConditionalUIExperimentation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enabled in M117. Remove in or after M120.
 BASE_FEATURE(kWebAuthnLinkingExperimentation,
              "WebAuthenticationLinkingExperimentation",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -120,11 +115,6 @@ BASE_FEATURE(kWebAuthnNewPasskeyUI,
 // ChromeOS. Remove in or after M124.
 BASE_FEATURE(kWebAuthnFilterGooglePasskeys,
              "WebAuthenticationFilterGooglePasskeys",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enabled in M119. Remove in or after M122.
-BASE_FEATURE(kWebAuthnAndroidIncognitoConfirmation,
-             "WebAuthenticationAndroidIncognitoConfirmation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enabled in M120. Remove in or after M123.

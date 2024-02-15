@@ -65,6 +65,12 @@ enum class SessionEvent {
   kMaxValue = kCloseButtonClicked,
 };
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Used by ash window manager to place the caption bubble in the correct
+// container.
+extern const ui::ClassProperty<bool>* const kIsCaptionBubbleKey;
+#endif
+
 using ResetInactivityTimerCallback = base::RepeatingCallback<void()>;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,8 +83,9 @@ using ResetInactivityTimerCallback = base::RepeatingCallback<void()>;
 //
 class CaptionBubble : public views::BubbleDialogDelegateView,
                       public gfx::AnimationDelegate {
+  METADATA_HEADER(CaptionBubble, views::BubbleDialogDelegateView)
+
  public:
-  METADATA_HEADER(CaptionBubble);
   CaptionBubble(PrefService* profile_prefs,
                 const std::string& application_locale,
                 base::OnceClosure destroyed_callback);

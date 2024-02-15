@@ -400,7 +400,7 @@ void FrameSelection::DidChangeFocus() {
 
 static DispatchEventResult DispatchSelectStart(
     const VisibleSelection& selection) {
-  Node* select_start_target = selection.Extent().ComputeContainerNode();
+  Node* select_start_target = selection.Focus().ComputeContainerNode();
   if (!select_start_target)
     return DispatchEventResult::kNotCanceled;
 
@@ -1082,7 +1082,7 @@ gfx::Rect FrameSelection::ComputeRectToScroll(
   DCHECK(selection.IsRange());
   if (reveal_extent_option == kRevealExtent) {
     return AbsoluteCaretBoundsOf(
-        CreateVisiblePosition(selection.Extent()).ToPositionWithAffinity());
+        CreateVisiblePosition(selection.Focus()).ToPositionWithAffinity());
   }
   layout_selection_->SetHasPendingSelection();
   return layout_selection_->AbsoluteSelectionBounds();
@@ -1292,21 +1292,12 @@ void FrameSelection::MoveRangeSelectionInternal(
   if (selection.IsNone())
     return;
 
-  SelectionInDOMTree::Builder builder;
-  if (selection.IsBaseFirst()) {
-    builder.SetBaseAndExtent(selection.ComputeStartPosition(),
-                             selection.ComputeEndPosition());
-  } else {
-    builder.SetBaseAndExtent(selection.ComputeEndPosition(),
-                             selection.ComputeStartPosition());
-  }
-  builder.SetAffinity(selection.Affinity());
-  SetSelection(builder.Build(), SetSelectionOptions::Builder()
-                                    .SetShouldCloseTyping(true)
-                                    .SetShouldClearTypingStyle(true)
-                                    .SetGranularity(granularity)
-                                    .SetShouldShowHandle(IsHandleVisible())
-                                    .Build());
+  SetSelection(selection, SetSelectionOptions::Builder()
+                              .SetShouldCloseTyping(true)
+                              .SetShouldClearTypingStyle(true)
+                              .SetGranularity(granularity)
+                              .SetShouldShowHandle(IsHandleVisible())
+                              .Build());
 }
 
 void FrameSelection::SetCaretEnabled(bool enabled) {

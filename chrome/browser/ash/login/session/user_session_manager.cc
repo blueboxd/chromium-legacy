@@ -86,7 +86,6 @@
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/ui/input_events_blocker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
-#include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/net/alwayson_vpn_pre_connect_url_allowlist_service.h"
 #include "chrome/browser/ash/net/alwayson_vpn_pre_connect_url_allowlist_service_factory.h"
@@ -1247,7 +1246,7 @@ void UserSessionManager::ChildAccountStatusReceivedCallback(Profile* profile) {
 void UserSessionManager::StopChildStatusObserving(Profile* profile) {
   if (waiting_for_child_account_status_ &&
       !SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
-    MaybeLaunchHelpApp(profile);
+    MaybeLaunchHelpAppForFirstRun(profile);
   }
   waiting_for_child_account_status_ = false;
 }
@@ -1434,7 +1433,7 @@ void UserSessionManager::InitProfilePreferences(
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (user->GetType() == user_manager::UserType::kKioskApp &&
       profile->IsNewProfile()) {
-    ChromeUserManager::Get()->SetIsCurrentUserNew(true);
+    user_manager::UserManager::Get()->SetIsCurrentUserNew(true);
   }
 
   if (user->is_active()) {
@@ -1923,7 +1922,7 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
   }
 }
 
-void UserSessionManager::MaybeLaunchHelpApp(Profile* profile) const {
+void UserSessionManager::MaybeLaunchHelpAppForFirstRun(Profile* profile) const {
   if (first_run::ShouldLaunchHelpApp(profile)) {
     // Don't open default Chrome window if we're going to launch the first-run
     // app. Because we don't want the first-run app to be hidden in the
@@ -1952,7 +1951,7 @@ bool UserSessionManager::MaybeStartNewUserOnboarding(Profile* profile) {
   // start URLs via policy.
   if (!SessionStartupPref::TypeIsManaged(prefs)) {
     if (child_service->IsChildAccountStatusKnown())
-      MaybeLaunchHelpApp(profile);
+      MaybeLaunchHelpAppForFirstRun(profile);
     else
       waiting_for_child_account_status_ = true;
   }

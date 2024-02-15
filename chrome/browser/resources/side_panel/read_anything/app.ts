@@ -734,18 +734,15 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
   }
 
-  highlightAndPlayMessage(): boolean {
-    // getCurrentText gets the AX Node IDs of text that should be spoken and
-    // highlighted.
-    const nextTextIds: number[] = chrome.readingMode.getCurrentText();
-    return this.highlightAndPlayTextOf(nextTextIds);
-  }
-
   // Play text of these axNodeIds. When finished, read and highlight to read the
   // following text.
   // TODO (crbug.com/1474951): Investigate using AXRange.GetText to get text
   // between start node / end nodes and their offsets.
-  private highlightAndPlayTextOf(axNodeIds: number[]): boolean {
+  highlightAndPlayMessage(): boolean {
+    // getCurrentText gets the AX Node IDs of text that should be spoken and
+    // highlighted.
+    const axNodeIds: number[] = chrome.readingMode.getCurrentText();
+
     const utteranceText = this.extractTextOf(axNodeIds);
     // Return if the utterance is empty or null.
     if (!utteranceText) {
@@ -767,10 +764,12 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     const lastCommaIndex =
         utteranceText.substring(0, this.maxSpeechLength).lastIndexOf(',');
 
-    if (lastCommaIndex >= 0) {
+    // To prevent infinite looping, only use the lastCommaIndex if it's not the
+    // first character. Otherwise, use getAccessibleBoundary to prevent
+    // repeatedly splicing on the first comma of the same substring.
+    if (lastCommaIndex > 0) {
       return lastCommaIndex;
     }
-
 
     // TODO(crbug.com/1474951): getAccessibleBoundary breaks on the nearest
     // word boundary, but if there's some type of punctuation (such as a comma),

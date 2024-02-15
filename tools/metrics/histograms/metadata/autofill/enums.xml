@@ -117,6 +117,8 @@ chromium-metrics-reviews@google.com.
   <int value="27" label="Line1 or house number requirement: Violated"/>
   <int value="28" label="Deprecated full name requirement: Fulfilled"/>
   <int value="29" label="Deprecated full name requirement: Violated"/>
+  <int value="30" label="No synthesized types: Fulfilled"/>
+  <int value="31" label="No synthesized types: Violated"/>
 </enum>
 
 <enum name="AutofillAddressProfileImportStatus">
@@ -4277,8 +4279,19 @@ Called by update_autofill_enums.py.-->
   <int value="8" label="aria-label attribute"/>
   <int value="9" label="Text node sibling (includes &lt;b&gt;, etc)"/>
   <int value="10" label="value attribute"/>
-  <int value="11" label="&lt;label&gt; for attribute"/>
-  <int value="12" label="Succeeding DOM node overlaying the input"/>
+  <int value="11"
+      label="&lt;label&gt; for attribute linked to a control element via its
+             id attribute"/>
+  <int value="12"
+      label="&lt;label&gt; for attribute linked to a control element via its
+             name attribute"/>
+  <int value="13"
+      label="&lt;label&gt; for attribute linked to a control element inside a
+             shadow DOM via its id attribute"/>
+  <int value="14"
+      label="&lt;label&gt; for attribute linked to a control element inside a
+             shadow DOM via its name attribute"/>
+  <int value="15" label="Succeeding DOM node overlaying the input"/>
 </enum>
 
 <enum name="LocalCardMigrationPrompt">

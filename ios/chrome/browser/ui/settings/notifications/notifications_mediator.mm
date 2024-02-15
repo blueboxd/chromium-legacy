@@ -84,6 +84,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
+#pragma mark - Public
+
+- (void)deniedPermissionsForClientIds:
+    (std::vector<PushNotificationClientId>)clientIds {
+  for (PushNotificationClientId clientID : clientIds) {
+    [self switchItemForClientId:clientID].on = push_notification_settings::
+        GetMobileNotificationPermissionStatusForClient(clientID, _gaiaID);
+  }
+  [self.consumer reloadData];
+}
+
 #pragma mark - Properties
 
 - (TableViewItem*)priceTrackingItem {
@@ -259,25 +270,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemType type = static_cast<ItemType>(item.type);
   switch (type) {
     case ItemTypeContentNotifications: {
-      [self setPreferenceFor:PushNotificationClientId::kContent to:value];
-      self.contentNotificationsItem.on = push_notification_settings::
-          GetMobileNotificationPermissionStatusForClient(
-              PushNotificationClientId::kContent, _gaiaID);
-      if (!value) {
-        break;
+      if (value) {
+        [self.presenter presentPushNotificationPermissionAlert];
+      } else {
+        [self disablePreferenceFor:PushNotificationClientId::kContent];
+        self.contentNotificationsItem.on = push_notification_settings::
+            GetMobileNotificationPermissionStatusForClient(
+                PushNotificationClientId::kContent, _gaiaID);
       }
-      [self.presenter presentPushNotificationPermissionAlert];
       break;
     }
     case ItemTypeTipsNotifications: {
-      [self setPreferenceFor:PushNotificationClientId::kTips to:value];
-      self.tipsNotificationsItem.on = push_notification_settings::
-          GetMobileNotificationPermissionStatusForClient(
-              PushNotificationClientId::kTips, _gaiaID);
-      if (!value) {
-        break;
+      if (value) {
+        [self.presenter presentTipsNotificationPermissionAlert];
+      } else {
+        [self disablePreferenceFor:PushNotificationClientId::kTips];
+        self.tipsNotificationsItem.on = push_notification_settings::
+            GetMobileNotificationPermissionStatusForClient(
+                PushNotificationClientId::kTips, _gaiaID);
       }
-      [self.presenter presentTipsNotificationPermissionAlert];
       break;
     }
     default:
@@ -321,10 +332,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - private
 
 // Updates the current user's permission preference for the given `client_id`.
-- (void)setPreferenceFor:(PushNotificationClientId)clientID to:(BOOL)enabled {
+- (void)disablePreferenceFor:(PushNotificationClientId)clientID {
   PushNotificationService* service =
       GetApplicationContext()->GetPushNotificationService();
-  service->SetPreference(base::SysUTF8ToNSString(_gaiaID), clientID, enabled);
+  service->SetPreference(base::SysUTF8ToNSString(_gaiaID), clientID, false);
+}
+
+// Returns the TableViewSwitchItem for the given `clientId`.
+- (TableViewSwitchItem*)switchItemForClientId:
+    (PushNotificationClientId)clientId {
+  switch (clientId) {
+    case PushNotificationClientId::kContent:
+      return _contentNotificationsItem;
+    case PushNotificationClientId::kTips:
+      return _tipsNotificationsItem;
+    case PushNotificationClientId::kCommerce:
+      // Not a switch.
+      NOTREACHED_NORETURN();
+  }
 }
 
 @end

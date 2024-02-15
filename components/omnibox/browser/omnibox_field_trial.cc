@@ -978,7 +978,7 @@ const base::FeatureParam<omnibox::CompanyEntityIconAdjustmentGroup>
     kCompanyEntityIconAdjustmentGroup{
         &omnibox::kCompanyEntityIconAdjustment,
         "OmniboxCompanyEntityAdjustmentGroup",
-        omnibox::CompanyEntityIconAdjustmentGroup::kLeastAggressive,
+        omnibox::CompanyEntityIconAdjustmentGroup::kModerate,
         &kCompanyEntityIconAdjustmentGroupOptions};
 
 const base::FeatureParam<bool> kCompanyEntityIconAdjustmentCounterfactual(
@@ -1139,6 +1139,12 @@ const base::FeatureParam<int>
         "max_prefetches_per_omnibox_session",
         5);
 // <- Touch Down Trigger For Prefetch
+// ---------------------------------------------------------
+// Site Search Starter Pack ->
+bool IsStarterPackExpansionEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kStarterPackExpansion);
+}
+// <- Site Search Starter Pack
 // ---------------------------------------------------------
 
 }  // namespace OmniboxFieldTrial

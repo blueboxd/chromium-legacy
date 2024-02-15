@@ -62,19 +62,20 @@
     "expires": "Jul 1, 2024"
   },
   {
-    "prefix": "pna-navigations-enabled",
-    "platforms": ["Linux", "Mac", "win"],
+    "prefix": "pna-navigations-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/fetch/private-network-access"],
-    "args": ["--enable-features=PrivateNetworkAccessForNavigations",
+    "args": ["--disable-features=PrivateNetworkAccessForNavigations,PrivateNetworkAccessForNavigationsWarningOnly",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["phao@google.com", "lyf@google.com"],
     "expires": "Jul 1, 2024"
   },
   {
-    "prefix": "pna-navigations-warning",
+    "prefix": "pna-navigations-enabled",
     "platforms": ["Linux", "Mac", "win"],
     "bases": ["external/wpt/fetch/private-network-access"],
-    "args": ["--enable-features=PrivateNetworkAccessForNavigations,PrivateNetworkAccessForNavigationsWarningOnly",
+    "args": ["--enable-features=PrivateNetworkAccessForNavigations",
+             "--disable-features=PrivateNetworkAccessForNavigationsWarningOnly",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["phao@google.com", "lyf@google.com"],
     "expires": "Jul 1, 2024"
@@ -520,7 +521,7 @@
     "bases": [],
     "args": ["--force-presentation-receiver-for-testing",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "Jul 1, 2023"
+    "expires": "Oct 1, 2025"
   },
   {
     "prefix": "single-renderer-process",
@@ -2164,7 +2165,6 @@
     "bases": ["external/wpt/credential-management/fedcm-login-status/"],
     "exclusive_tests": "ALL",
     "args": ["--enable-features=FedCmIdpSigninStatusEnabled",
-             "--enable-features=FedCmSameSiteLoginStatus",
              "--enable-features=FencedFramesDefaultMode",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["cbiesinger@chromium.org", "npm@chromium.org"],
@@ -2349,7 +2349,7 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-features=LCPCriticalPathPredictor",
+      "--enable-features=LCPCriticalPathPredictor:lcpp_adjust_image_load_priority/true",
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
     "expires": "Jul 10, 2024",

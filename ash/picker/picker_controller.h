@@ -25,6 +25,7 @@ namespace ash {
 class PickerAssetFetcher;
 class PickerClient;
 class PickerInsertMediaRequest;
+class PickerSearchController;
 class PickerSearchResult;
 
 // Controls a Picker widget.
@@ -77,6 +78,9 @@ class ASH_EXPORT PickerController
   // views:WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  // Disables the feature key checking. Only works in tests.
+  static void DisableFeatureKeyCheckForTesting();
+
  private:
   // Downloads a gif from `url`. If the download is successful, encoded gif data
   // is passed to `callback`. Otherwise, `callback` is run with an empty string.
@@ -88,6 +92,7 @@ class ASH_EXPORT PickerController
   views::UniqueWidgetPtr widget_;
   std::unique_ptr<PickerAssetFetcher> asset_fetcher_;
   std::unique_ptr<PickerInsertMediaRequest> insert_media_request_;
+  std::unique_ptr<PickerSearchController> search_controller_;
 
   // Periodically records usage metrics based on the Standard Feature Usage
   // Logging (SFUL) framework.

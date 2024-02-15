@@ -903,9 +903,7 @@
       status: "stable",
     },
     {
-      // Don't allow new line as preceding character for ::first-letter.
-      // See crbug.com/1477217
-      name: "CSSFirstLetterNoNewLineAsPrecedingChar",
+      name: "CSSFirstLetterTextRewrite",
       status: "stable",
     },
     {
@@ -1153,7 +1151,7 @@
     {
       // crbug.com/1463891: CSS `text-spacing-trim` property
       name: "CSSTextSpacingTrim",
-      status: "experimental",
+      status: "stable",
     },
     // Use the `ScoreLineBreaker` for `text-wrap: balance`. crbug.com/1451205
     {
@@ -1664,7 +1662,7 @@
       name: "FedCmDomainHint",
       depends_on: ["FedCm"],
       public: true,
-      status: "test",
+      status: "stable",
       base_feature: "none",
     },
     {
@@ -1850,6 +1848,9 @@
       // base::Features.
       base_feature: "none",
       public: true,
+    },
+    {
+      name: "FledgeMultiBid",
     },
     {
       name: "FledgeNegativeTargeting",
@@ -2062,13 +2063,6 @@
     },
     {
       name: "HitTestOpaqueness",
-      status: "experimental",
-      implied_by: ["HitTestTransparency"],
-    },
-    {
-      // Whether we use cc::HitTestOpaqueness::kTransparent on cc::Layer
-      // for non-hit-testable objects e.g. with pointer-events:none.
-      name: "HitTestTransparency",
       status: "experimental",
     },
     {
@@ -2521,6 +2515,10 @@
     {
       name: "MutationEvents",
       status: "stable",
+      origin_trial_feature_name: "MutationEvents",
+      origin_trial_type: "deprecation",
+      origin_trial_allows_insecure: true,
+      origin_trial_allows_third_party: true,
     },
     {
       name: "NavigateEventCommitBehavior",
@@ -2822,6 +2820,11 @@
       name: "OverscrollCustomization",
       status: "experimental",
       base_feature: "none",
+    },
+    {
+      name: "PageConcealEvent",
+      status: "experimental",
+      implied_by: ["ViewTransitionOnNavigation"],
     },
     // The following are developer opt-outs and opt-ins for page freezing. If
     // neither is specified then heuristics will be applied to determine whether
@@ -3713,7 +3716,6 @@
     {
       name: "StorageAccessAPIBeyondCookies",
       status: "experimental",
-      base_feature: "none",
       origin_trial_feature_name: "StorageAccessAPIBeyondCookies",
     },
     {
@@ -3763,6 +3765,13 @@
       name: "SystemWakeLock",
       status: "experimental",
       base_feature: "none",
+    },
+    {
+      // Killswitch for the reflection of <template shadowrootdelegatesfocus>
+      // attribute. This can be removed in M126 assuming no issues are
+      // encountered.
+      name: "TemplateDelegatesFocusReflection",
+      status: "stable",
     },
     // For unit tests.
     {
@@ -4528,12 +4537,6 @@
     // See https://crrev.com/c/4790343.
     {
       name: "XMLParserMergeAdjacentCDataSections",
-      status: "stable",
-    },
-    {
-      // Update xywh()/rect() computed value to use inset() per the spec:
-      // https://drafts.csswg.org/css-shapes-1/#basic-shape-computed-values
-      name: "XYWHAndRectComputedValue",
       status: "stable",
     },
     {

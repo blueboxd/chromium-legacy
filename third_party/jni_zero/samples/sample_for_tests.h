@@ -8,7 +8,7 @@
 #include <jni.h>
 #include <map>
 #include <string>
-#include "third_party/jni_zero/jni_zero_helper.h"
+#include "third_party/jni_zero/jni_zero.h"
 
 namespace jni_zero {
 namespace samples {
@@ -70,6 +70,7 @@ class CPPClass {
   CPPClass();
 
   CPPClass(const CPPClass&) = delete;
+  CPPClass(CPPClass&&) = default;
   CPPClass& operator=(const CPPClass&) = delete;
 
   ~CPPClass();

@@ -4,11 +4,14 @@
 
 #import "ios/chrome/browser/ui/save_to_drive/save_to_drive_mediator.h"
 
+#import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/download/model/download_manager_tab_helper.h"
 #import "ios/chrome/browser/drive/model/drive_file_uploader.h"
+#import "ios/chrome/browser/drive/model/drive_metrics.h"
 #import "ios/chrome/browser/drive/model/drive_service.h"
 #import "ios/chrome/browser/drive/model/drive_tab_helper.h"
+#import "ios/chrome/browser/drive/model/manage_storage_url_util.h"
 #import "ios/chrome/browser/shared/public/commands/account_picker_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/manage_storage_alert_commands.h"
@@ -27,27 +30,14 @@
 @interface SaveToDriveMediator () <CRWWebStateObserver, CRWDownloadTaskObserver>
 
 // Called when the storage quota has been fetched, with or without any error.
-- (void)didReceiveStorageQuotaResult:(DriveStorageQuotaResult)result;
+- (void)didReceiveStorageQuotaResult:(const DriveStorageQuotaResult&)result;
 
 @end
 
 namespace {
 
-// URL template to redirect a user to the URL given as the `continue` query
-// parameter, using the Google account given as the `Email` query parameter.
-// This way, if the URL given as the `continue` query parameter is
-// `kManageStorageURL`, the user will be redirected to manage the storage
-// of the account associated with the given email.
-constexpr char kAccountChooserRedirectionUrlTemplate[] =
-    "https://accounts.google.com/AccountChooser";
-constexpr char kAccountChooserRedirectionUrlEmailParameterName[] = "Email";
-constexpr char kAccountChooserRedirectionUrlContinueParameterName[] =
-    "continue";
-// URL to let the user manage their Google storage.
-constexpr char kManageStorageURL[] = "https://one.google.com/storage";
-
 void StorageQuotaCompletionHelper(__weak SaveToDriveMediator* mediator,
-                                  DriveStorageQuotaResult result) {
+                                  const DriveStorageQuotaResult& result) {
   [mediator didReceiveStorageQuotaResult:result];
 }
 
@@ -144,15 +134,8 @@ void StorageQuotaCompletionHelper(__weak SaveToDriveMediator* mediator,
 - (void)showManageStorageForIdentity:(id<SystemIdentity>)identity {
   // The uploading identity's user email is used to switch to the uploading
   // account before loading the "Manage Storage" web page.
-  GURL manageStorageURL(kAccountChooserRedirectionUrlTemplate);
-  // Set 'Email' query parameter.
-  manageStorageURL = net::AppendQueryParameter(
-      manageStorageURL, kAccountChooserRedirectionUrlEmailParameterName,
+  GURL manageStorageURL = GenerateManageDriveStorageUrl(
       base::SysNSStringToUTF8(identity.userEmail));
-  // Set 'continue' query parameter.
-  manageStorageURL = net::AppendQueryParameter(
-      manageStorageURL, kAccountChooserRedirectionUrlContinueParameterName,
-      kManageStorageURL);
   OpenNewTabCommand* newTabCommand =
       [OpenNewTabCommand commandWithURLFromChrome:manageStorageURL];
   [_applicationHandler openURLInNewTab:newTabCommand];
@@ -214,11 +197,14 @@ void StorageQuotaCompletionHelper(__weak SaveToDriveMediator* mediator,
 }
 
 // Called when the storage quota has been fetched, with or without any error.
-- (void)didReceiveStorageQuotaResult:(DriveStorageQuotaResult)result {
+- (void)didReceiveStorageQuotaResult:(const DriveStorageQuotaResult&)result {
   [_accountPickerConsumer stopValidationSpinner];
+  // Report storage quota histograms.
+  base::UmaHistogramBoolean(kDriveStorageQuotaResultSuccessful,
+                            result.error == nil);
   if (result.error) {
-    // TODO(crbug.com/1495352): Show an error message.
-    return;
+    base::UmaHistogramSparse(kDriveStorageQuotaResultErrorCode,
+                             result.error.code);
   }
   // Check that there is enough storage space to store an additional file of the
   // given size. The upload is expected to fail if the storage space usage after

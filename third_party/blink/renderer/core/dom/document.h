@@ -1149,11 +1149,7 @@ class CORE_EXPORT Document : public ContainerNode,
         kDOMCharacterDataModifiedListener,
   };
 
-  bool HasListenerType(ListenerType listener_type) const {
-    DCHECK(RuntimeEnabledFeatures::MutationEventsEnabled() ||
-           !(listener_types_ & kDOMMutationEventListener));
-    return (listener_types_ & listener_type);
-  }
+  bool HasListenerType(ListenerType listener_type) const;
   void AddListenerTypeIfNeeded(const AtomicString& event_type, EventTarget&);
 
   bool HasMutationObserversOfType(MutationType type) const {
@@ -2699,10 +2695,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Vector<bool> parsed_document_policies_;
 
   AtomicString override_last_modified_;
-
-  // Used to keep track of which ComputedAccessibleNodes have already been
-  // instantiated in this document to avoid constructing duplicates.
-  HeapHashMap<AXID, Member<ComputedAccessibleNode>> computed_node_mapping_;
 
   // When the document contains MimeHandlerView, this variable might hold a
   // beforeunload handler. This will be set by the blink embedder when

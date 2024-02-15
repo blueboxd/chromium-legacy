@@ -419,6 +419,10 @@ DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
   return diagnostics_provider_.get();
 }
 
+void IdentityManager::PrepareForAddingNewAccount() {
+  account_fetcher_service_->PrepareForFetchingAccountCapabilities();
+}
+
 #if BUILDFLAG(IS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject>
 IdentityManager::LegacyGetAccountTrackerServiceJavaObject() {
@@ -453,11 +457,6 @@ void IdentityManager::RefreshAccountInfoIfStale(
   if (j_core_account_id) {
     RefreshAccountInfoIfStale(
         ConvertFromJavaCoreAccountId(env, j_core_account_id));
-  } else {
-    std::vector<CoreAccountInfo> accounts = GetAccountsWithRefreshTokens();
-    for (const CoreAccountInfo& account : accounts) {
-      RefreshAccountInfoIfStale(account.account_id);
-    }
   }
 }
 
@@ -722,6 +721,11 @@ void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
 }
 
 void IdentityManager::OnAccountRemoved(const AccountInfo& info) {
+#if (BUILDFLAG(IS_ANDROID))
+  if (base::FeatureList::IsEnabled(switches::kSeedAccountsRevamp)) {
+    account_fetcher_service_->DestroyFetchers(info.account_id);
+  }
+#endif
   for (auto& observer : observer_list_)
     observer.OnExtendedAccountInfoRemoved(info);
 }

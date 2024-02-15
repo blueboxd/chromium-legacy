@@ -402,6 +402,8 @@ CloudOpenTask::~CloudOpenTask() = default;
 bool CloudOpenTask::ExecuteInternal() {
   DCHECK(!file_urls_.empty());
   if (file_urls_.empty()) {
+    LOG(ERROR) << "No files to open";
+    cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kNoFilesToOpen);
     return false;
   }
 
@@ -627,53 +629,22 @@ bool ShouldFixUpOffice(Profile* profile, const CloudProvider cloud_provider) {
 
 bool UrlIsOnAndroidOneDrive(Profile* profile, const FileSystemURL& url) {
   std::string authority;
-  std::string root_document_id;
+  std::string root_id;
   base::FilePath path;
-  return arc::ParseDocumentsProviderUrl(url, &authority, &root_document_id,
-                                        &path) &&
+  return arc::ParseDocumentsProviderUrl(url, &authority, &root_id, &path) &&
          authority == kAndroidOneDriveAuthority;
-}
-
-std::optional<std::string> GetEmailFromAndroidOneDriveRootDoc(
-    const std::string& root_document_id) {
-  // After escaping the '/', the Root Document Id is:
-  // pivots%2F<user-microsoft-account-email>.
-  // Convert back to:
-  // pivots/<user-microsoft-account-email>
-  std::string root_document_id_unescaped = base::UnescapeURLComponent(
-      root_document_id, base::UnescapeRule::PATH_SEPARATORS);
-  std::vector<base::FilePath::StringType> components =
-      base::FilePath(root_document_id_unescaped).GetComponents();
-  if (components.size() != 2) {
-    LOG(ERROR) << "Android OneDrive documents provider root document id is not "
-                  "as expected.";
-    return std::nullopt;
-  }
-  if (components[0] != "pivots") {
-    LOG(ERROR) << "Android OneDrive documents provider root document id is not "
-                  "as expected.";
-    return std::nullopt;
-  }
-  return components[1];
 }
 
 void CloudOpenTask::OpenAndroidOneDriveUrlsIfAccountMatchedODFS(
     base::OnceCallback<void(OfficeOneDriveOpenErrors)> callback) {
-  // Get email account associated with Android OneDrive.
+  // In Android OneDrive, the DocumentsProvider uses the email account
+  // associated with it as the root_id.
   std::string authority;
-  std::string root_document_id;
+  std::string android_onedrive_email;
   base::FilePath path;
   if (!arc::ParseDocumentsProviderUrl(file_urls_.front(), &authority,
-                                      &root_document_id, &path)) {
+                                      &android_onedrive_email, &path)) {
     std::move(callback).Run(OfficeOneDriveOpenErrors::kInvalidFileSystemURL);
-    return;
-  }
-
-  std::optional<std::string> android_onedrive_email =
-      GetEmailFromAndroidOneDriveRootDoc(root_document_id);
-  if (!android_onedrive_email.has_value()) {
-    std::move(callback).Run(
-        OfficeOneDriveOpenErrors::kConversionToODFSUrlError);
     return;
   }
 
@@ -687,10 +658,9 @@ void CloudOpenTask::OpenAndroidOneDriveUrlsIfAccountMatchedODFS(
         OfficeOneDriveOpenErrors::kConversionToODFSUrlError);
     return;
   }
-  GetODFSMetadata(
-      fs_and_path->file_system,
-      base::BindOnce(&CloudOpenTask::CheckEmailAndOpenURLs, this,
-                     android_onedrive_email.value(), std::move(callback)));
+  GetODFSMetadata(fs_and_path->file_system,
+                  base::BindOnce(&CloudOpenTask::CheckEmailAndOpenURLs, this,
+                                 android_onedrive_email, std::move(callback)));
 }
 
 std::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
@@ -712,10 +682,10 @@ std::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
 
   // Find the relative path from Android OneDrive Url.
   std::string authority;
-  std::string root_document_id;
+  std::string root_id;
   base::FilePath path;
   if (!arc::ParseDocumentsProviderUrl(android_onedrive_file_url, &authority,
-                                      &root_document_id, &path)) {
+                                      &root_id, &path)) {
     return std::nullopt;
   }
   // Format for Android OneDrive documents provider `path` is:
@@ -905,6 +875,15 @@ bool CloudOpenTask::InitAndShowDialog(DialogPage dialog_page) {
   // upload requests, they should either be handled simultaneously or queued.
   if (SystemWebDialogDelegate::HasInstance(
           GURL(chrome::kChromeUICloudUploadURL))) {
+    LOG(WARNING) << "Another cloud upload dialog is already being shown";
+    if (dialog_page == DialogPage::kMoveConfirmationGoogleDrive ||
+        dialog_page == DialogPage::kMoveConfirmationOneDrive) {
+      cloud_open_metrics_->LogTaskResult(
+          OfficeTaskResult::kCannotShowMoveConfirmation);
+    } else {
+      cloud_open_metrics_->LogTaskResult(
+          OfficeTaskResult::kCannotShowSetupDialog);
+    }
     return false;
   }
 
@@ -1389,6 +1368,7 @@ bool ShowConnectOneDriveDialog(gfx::NativeWindow modal_parent) {
   // WebUI for dialogs.
   if (SystemWebDialogDelegate::HasInstance(
           GURL(chrome::kChromeUICloudUploadURL))) {
+    LOG(WARNING) << "Another cloud upload dialog is already being shown";
     return false;
   }
 

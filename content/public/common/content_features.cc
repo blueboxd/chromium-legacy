@@ -351,14 +351,6 @@ BASE_FEATURE(kEnableServiceWorkersForChromeScheme,
              "EnableServiceWorkersForChromeScheme",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_WIN)
-// If enabled use the expanded range for the prefetch cmd line option.
-BASE_FEATURE(kExpandedPrefetchRange,
-             "ExpandedPrefetchRange",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-#endif  // BUILDFLAG(IS_WIN)
-
 // Enables JavaScript API to intermediate federated identity requests.
 // Note that actual exposure of the FedCM API to web content is controlled
 // by the flag in RuntimeEnabledFeatures on the blink side. See also
@@ -431,12 +423,6 @@ BASE_FEATURE(kFedCmMultipleIdentityProviders,
 // Enables the disconnect method within the FedCM API.
 BASE_FEATURE(kFedCmDisconnect,
              "FedCmDisconnect",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables setting login status from same-site subresources (instead of
-// same-origin)
-BASE_FEATURE(kFedCmSameSiteLoginStatus,
-             "FedCmSameSiteLoginStatus",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with the Selective Disclosure API at the same
@@ -739,7 +725,7 @@ BASE_FEATURE(kPrivateNetworkAccessForWorkersWarningOnly,
 //  - `kPrivateNetworkAccessRespectPreflightResults`
 BASE_FEATURE(kPrivateNetworkAccessForNavigations,
              "PrivateNetworkAccessForNavigations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Requires that CORS preflight requests succeed before sending private network
 // requests. This flag implies `kPrivateNetworkAccessSendPreflights`.

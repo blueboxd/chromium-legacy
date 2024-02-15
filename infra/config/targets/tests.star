@@ -1413,10 +1413,6 @@ targets.tests.gtest_test(
 )
 
 targets.tests.gtest_test(
-    name = "lacros_chrome_unittests",
-)
-
-targets.tests.gtest_test(
     name = "latency_unittests",
 )
 
@@ -1886,6 +1882,14 @@ targets.tests.gpu_telemetry_test(
 
 targets.tests.gpu_telemetry_test(
     name = "screenshot_sync_metal_passthrough_graphite_tests",
+    telemetry_test_name = "screenshot_sync",
+    mixins = [
+        "has_native_resultdb_integration",
+    ],
+)
+
+targets.tests.gpu_telemetry_test(
+    name = "screenshot_sync_passthrough_graphite_tests",
     telemetry_test_name = "screenshot_sync",
     mixins = [
         "has_native_resultdb_integration",

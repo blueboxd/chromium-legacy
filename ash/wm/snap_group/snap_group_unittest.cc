@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/constants/ash_features.h"
@@ -83,6 +84,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_modality_controller.h"
@@ -1221,6 +1223,54 @@ TEST_F(FasterSplitScreenTest, ClamshellTabletTransitionTwoSnappedWindows) {
   TabletModeControllerTestApi().LeaveTabletMode();
 }
 
+// Tests that there will be no overlap between two windows on window layout
+// setup complete. It used to happen because the minimum size of the window was
+// never taken into account. See http://b/324631432 for more details.
+TEST_F(FasterSplitScreenTest,
+       NoOverlapAfterSnapRatioVariesToAccommodateForMinimumSize) {
+  UpdateDisplay("900x600");
+
+  std::unique_ptr<aura::Window> window1(CreateAppWindow());
+
+  // Create `window2` with window minimum size above 1/3 of the work area.
+  aura::test::TestWindowDelegate delegate2;
+  std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithDelegate(
+      &delegate2, /*id=*/-1, gfx::Rect(600, 300)));
+  delegate2.set_minimum_size(gfx::Size(400, 200));
+
+  SnapOneTestWindow(window2.get(), chromeos::WindowStateType::kSecondarySnapped,
+                    chromeos::kOneThirdSnapRatio);
+  VerifySplitViewOverviewSession(window2.get());
+
+  auto* item1 = GetOverviewItemForWindow(window1.get());
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(
+      gfx::ToRoundedPoint(item1->target_bounds().CenterPoint()));
+  event_generator->ClickLeftButton();
+  WaitForOverviewExitAnimation();
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
+
+  // Verify that the snap ratio of `window2` will be adjusted to accommodate for
+  // the window minimum size.
+  WindowState* window2_state = WindowState::Get(window2.get());
+  ASSERT_TRUE(window2_state->snap_ratio());
+  EXPECT_EQ(window2_state->GetStateType(),
+            chromeos::WindowStateType::kSecondarySnapped);
+  EXPECT_GT(window2_state->snap_ratio().value(), chromeos::kOneThirdSnapRatio);
+
+  // Verify that the auto snap ratio of `window1` will be adjusted as well.
+  WindowState* window1_state = WindowState::Get(window1.get());
+  ASSERT_TRUE(window1_state->snap_ratio());
+  EXPECT_EQ(window1_state->GetStateType(),
+            chromeos::WindowStateType::kPrimarySnapped);
+  EXPECT_LT(window1_state->snap_ratio().value(), chromeos::kTwoThirdSnapRatio);
+
+  // Both windows will fit within the work are with no overlap
+  EXPECT_EQ(window1->GetBoundsInScreen().width() +
+                window2->GetBoundsInScreen().width(),
+            work_area_bounds().width());
+}
+
 // Tests that double tap to swap windows doesn't crash after transition to
 // tablet mode (b/308216746).
 TEST_F(FasterSplitScreenTest, NoCrashWhenDoubleTapAfterTransition) {
@@ -1251,7 +1301,7 @@ TEST_F(FasterSplitScreenTest, BasicTabKeyNavigation) {
   const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY,
                                      WindowSnapActionSource::kTest);
   WindowState::Get(window1.get())->OnWMEvent(&snap_event);
-  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
+  ASSERT_TRUE(IsInOverviewSession());
 
   // Tab until we get to the first overview item.
   SendKeyUntilOverviewItemIsFocused(ui::VKEY_TAB);
@@ -1264,13 +1314,77 @@ TEST_F(FasterSplitScreenTest, BasicTabKeyNavigation) {
 
   // Tab to the toast dismiss button.
   PressAndReleaseKey(ui::VKEY_TAB);
+  ASSERT_TRUE(IsInOverviewSession());
   EXPECT_EQ(grid->GetFasterSplitView()->toast()->dismiss_button(),
             focus_cycler->focused_view()->GetView());
 
   // Tab to the settings button.
   PressAndReleaseKey(ui::VKEY_TAB);
+  ASSERT_TRUE(IsInOverviewSession());
   EXPECT_EQ(grid->GetFasterSplitView()->settings_button(),
             focus_cycler->focused_view());
+
+  // Note we use `PressKeyAndModifierKeys()` to send modifier and key separately
+  // to simulate real user input.
+
+  // Shift + Tab reverse tabs to the dismiss button.
+  auto* event_generator = GetEventGenerator();
+  event_generator->PressKeyAndModifierKeys(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  ASSERT_TRUE(IsInOverviewSession());
+  EXPECT_EQ(grid->GetFasterSplitView()->toast()->dismiss_button(),
+            focus_cycler->focused_view()->GetView());
+
+  // Shift + Tab reverse tabs to the overview item.
+  event_generator->PressKeyAndModifierKeys(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  ASSERT_TRUE(IsInOverviewSession());
+  EXPECT_EQ(overview_windows[0]->GetWindow(), GetOverviewFocusedWindow());
+}
+
+// Tests that the chromevox keys work as expected.
+TEST_F(FasterSplitScreenTest, TabbingChromevox) {
+  Shell::Get()->accessibility_controller()->spoken_feedback().SetEnabled(true);
+
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+
+  const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY,
+                                     WindowSnapActionSource::kTest);
+  WindowState::Get(window1.get())->OnWMEvent(&snap_event);
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
+
+  // Note we use `PressKeyAndModifierKeys()` to send modifier and key separately
+  // to simulate real user input.
+
+  // Search + Right moves to the first overview item.
+  auto* event_generator = GetEventGenerator();
+  event_generator->PressKeyAndModifierKeys(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
+  const std::vector<std::unique_ptr<OverviewItemBase>>& overview_windows =
+      GetOverviewItemsForRoot(0);
+  EXPECT_EQ(overview_windows[0]->GetWindow(), GetOverviewFocusedWindow());
+
+  // Search + Right moves to the dismiss button.
+  event_generator->PressKeyAndModifierKeys(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
+  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+  OverviewFocusCycler* focus_cycler = GetOverviewSession()->focus_cycler();
+  EXPECT_EQ(grid->GetFasterSplitView()->toast()->dismiss_button(),
+            focus_cycler->focused_view()->GetView());
+
+  // Search + Right moves to the settings button.
+  event_generator->PressKeyAndModifierKeys(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
+  EXPECT_EQ(grid->GetFasterSplitView()->settings_button(),
+            focus_cycler->focused_view());
+
+  // Search + Left moves back to the dismiss button.
+  event_generator->PressKeyAndModifierKeys(ui::VKEY_LEFT, ui::EF_COMMAND_DOWN);
+  EXPECT_EQ(grid->GetFasterSplitView()->toast()->dismiss_button(),
+            focus_cycler->focused_view()->GetView());
+
+  // Search + Space activates the dismiss button.
+  event_generator->PressKeyAndModifierKeys(ui::VKEY_SPACE, ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(IsInOverviewSession());
+
+  // TODO(sophiewen): `TestShellDelegate::OpenMultitaskingSettings()` can't open
+  // the settings page so we wouldn't end overview. See how we can test this.
 }
 
 TEST_F(FasterSplitScreenTest, AccessibilityFocusAnnotator) {

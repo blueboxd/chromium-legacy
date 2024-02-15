@@ -48,17 +48,19 @@ std::optional<base::Token> IdStringToToken(const String& crop_id) {
 }
 
 void RaiseApplySubCaptureTargetException(
-    ScriptPromiseResolverWithTracker<ApplySubCaptureTargetResult>* resolver,
+    ScriptPromiseResolverWithTracker<ApplySubCaptureTargetResult, IDLUndefined>*
+        resolver,
     DOMExceptionCode exception_code,
     const WTF::String& exception_text,
     ApplySubCaptureTargetResult result) {
-  resolver->Reject(
+  resolver->Reject<DOMException>(
       MakeGarbageCollected<DOMException>(exception_code, exception_text),
       result);
 }
 
 void ResolveApplySubCaptureTargetPromiseHelper(
-    ScriptPromiseResolverWithTracker<ApplySubCaptureTargetResult>* resolver,
+    ScriptPromiseResolverWithTracker<ApplySubCaptureTargetResult, IDLUndefined>*
+        resolver,
     media::mojom::ApplySubCaptureTargetResult result) {
   DCHECK(IsMainThread());
 
@@ -244,8 +246,8 @@ ScriptPromise BrowserCaptureMediaStreamTrack::ApplySubCaptureTarget(
   // If the promise is not resolved within the |timeout_interval|, an
   // ApplySubCaptureTargetResult::kTimedOut response will be recorded in the
   // UMA.
-  auto* resolver = MakeGarbageCollected<
-      ScriptPromiseResolverWithTracker<ApplySubCaptureTargetResult>>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverWithTracker<
+      ApplySubCaptureTargetResult, IDLUndefined>>(
       script_state, metric_name_prefix,
       /*timeout_interval=*/base::Seconds(10));
   if (type == SubCaptureTarget::Type::kCropTarget) {
@@ -254,7 +256,7 @@ ScriptPromise BrowserCaptureMediaStreamTrack::ApplySubCaptureTarget(
   ScriptPromise promise = resolver->Promise();
 
 #if BUILDFLAG(IS_ANDROID)
-  resolver->Reject(
+  resolver->Reject<DOMException>(
       MakeGarbageCollected<DOMException>(DOMExceptionCode::kUnknownError,
                                          "Not supported on Android."),
       ApplySubCaptureTargetResult::kUnsupportedPlatform);
@@ -264,9 +266,10 @@ ScriptPromise BrowserCaptureMediaStreamTrack::ApplySubCaptureTarget(
   const std::optional<base::Token> token =
       IdStringToToken(target ? target->GetId() : String());
   if (!token.has_value()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-                         DOMExceptionCode::kUnknownError, "Invalid token."),
-                     ApplySubCaptureTargetResult::kInvalidTarget);
+    resolver->Reject<DOMException>(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kUnknownError,
+                                           "Invalid token."),
+        ApplySubCaptureTargetResult::kInvalidTarget);
     return promise;
   }
 
@@ -285,7 +288,7 @@ ScriptPromise BrowserCaptureMediaStreamTrack::ApplySubCaptureTarget(
   MediaStreamTrackPlatform* const native_track =
       MediaStreamTrackPlatform::GetTrack(WebMediaStreamTrack(component));
   if (!native_source || !native_track) {
-    resolver->Reject(
+    resolver->Reject<DOMException>(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kUnknownError,
                                            "Native/platform track missing."),
         ApplySubCaptureTargetResult::kRejectedWithErrorGeneric);
@@ -298,10 +301,11 @@ ScriptPromise BrowserCaptureMediaStreamTrack::ApplySubCaptureTarget(
   const std::optional<uint32_t> optional_sub_capture_target_version =
       native_source->GetNextSubCaptureTargetVersion();
   if (!optional_sub_capture_target_version.has_value()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-                         DOMExceptionCode::kOperationError,
-                         "Can't change target while clones exist."),
-                     ApplySubCaptureTargetResult::kInvalidTarget);
+    resolver->Reject<DOMException>(
+        MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kOperationError,
+            "Can't change target while clones exist."),
+        ApplySubCaptureTargetResult::kInvalidTarget);
     return promise;
   }
   const uint32_t sub_capture_target_version =
@@ -394,8 +398,9 @@ void BrowserCaptureMediaStreamTrack::MaybeFinalizeCropPromise(
     }
   }
 
-  ScriptPromiseResolverWithTracker<ApplySubCaptureTargetResult>* const
-      resolver = info->promise_resolver;
+  ScriptPromiseResolverWithTracker<ApplySubCaptureTargetResult,
+                                   IDLUndefined>* const resolver =
+      info->promise_resolver;
   pending_promises_.erase(iter);
   ResolveApplySubCaptureTargetPromiseHelper(resolver, result);
 }

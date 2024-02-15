@@ -660,7 +660,7 @@
 #include "chrome/browser/pdf/chrome_pdf_stream_delegate.h"
 #include "components/pdf/browser/pdf_navigation_throttle.h"
 #include "components/pdf/browser/pdf_url_loader_request_interceptor.h"
-#include "components/pdf/common/internal_plugin_helpers.h"
+#include "components/pdf/common/constants.h"
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -1373,6 +1373,32 @@ void NotifyMultiCaptureStopped(const std::string& label) {
 #endif
 }
 
+bool IsSubAppsPermissionGrantedByAdmins(content::WebContents* contents) {
+  if (!contents) {
+    return false;
+  }
+
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  if (!profile) {
+    return false;
+  }
+
+  PrefService* prefs = profile->GetPrefs();
+  if (!prefs) {
+    return false;
+  }
+
+  return policy::IsOriginInAllowlist(
+      contents->GetURL(), prefs,
+      prefs::kSubAppsAPIsAllowedWithoutGestureAndAuthorizationForOrigins);
+}
+
+// Checks if installation and removal of subapps require a user gesture and
+// authorization. Both requirements can be overridden via admin policy.
+bool SubAppsAPIsRequireUserGestureAndAuthorization(
+    content::WebContents* web_contents) {
+  return !IsSubAppsPermissionGrantedByAdmins(web_contents);
+}
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 std::unique_ptr<blocked_content::PopupNavigationDelegate>
@@ -1519,10 +1545,10 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       policy::policy_prefs::kForcePermissionPolicyUnloadDefaultEnabled, false);
 
-  registry->RegisterStringPref(prefs::kAllowedDomainsForApps, std::string());
-
 #if BUILDFLAG(IS_CHROMEOS)
   registry->RegisterListPref(prefs::kMandatoryExtensionsForIncognitoNavigation);
+  registry->RegisterListPref(
+      prefs::kSubAppsAPIsAllowedWithoutGestureAndAuthorizationForOrigins);
 #endif
 }
 
@@ -4117,6 +4143,11 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       IsTransientActivationRequiredForHtmlFullscreen(
           web_contents->GetPrimaryMainFrame());
 
+#if BUILDFLAG(IS_CHROMEOS)
+  web_prefs->subapps_apis_require_user_gesture_and_authorization =
+      SubAppsAPIsRequireUserGestureAndAuthorization(web_contents);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
   switch (GetWebTheme()->GetPreferredContrast()) {
     case ui::NativeTheme::PreferredContrast::kNoPreference:
       web_prefs->preferred_contrast =
@@ -4250,6 +4281,14 @@ bool ChromeContentBrowserClient::OverrideWebPreferencesAfterNavigation(
     web_prefs->force_dark_mode_enabled = force_dark_mode_new_state;
   }
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+  const bool subapps_apis_require_user_gesture_and_authorization =
+      SubAppsAPIsRequireUserGestureAndAuthorization(web_contents);
+  prefs_changed |=
+      (web_prefs->subapps_apis_require_user_gesture_and_authorization !=
+       subapps_apis_require_user_gesture_and_authorization);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   return prefs_changed;
 }

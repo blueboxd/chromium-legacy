@@ -1392,11 +1392,6 @@ const char kPipDoubleTapToResizeDescription[] =
     "Enables double-tapping on existing PiP windows to resize "
     "them depending on its current state, such as minimizng or maximizing.";
 
-const char kPipPinchToResizeName[] = "Enable pinch to resize PiP windows";
-const char kPipPinchToResizeDescription[] =
-    "Enables pinch gesture on existing PiP windows to move and "
-    "resize them.";
-
 const char kPipTiltName[] = "Enable tilt for PiP windows";
 const char kPipTiltDescription[] =
     "Enables window tilting using pinch gesture on existing PiP windows. "
@@ -2638,6 +2633,11 @@ const char kOmniboxUIMaxAutocompleteMatchesName[] =
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
+
+const char kOmniboxStarterPackExpansionName[] =
+    "Expansion pack for the Site search starter pack";
+const char kOmniboxStarterPackExpansionDescription[] =
+    "Enables additional providers for the Site search starter pack feature";
 
 #if BUILDFLAG(IS_ANDROID)
 const char kOmnibox2023RefreshConnectionSecurityIndicatorsName[] =
@@ -4982,6 +4982,12 @@ const char kNtpPhotosModuleSoftOptOutName[] = "NTP Photos Module Soft Opt-Out";
 const char kNtpPhotosModuleSoftOptOutDescription[] =
     "Enables soft opt-out option in Photos opt-in card";
 
+const char kNtpRealboxContextualAndTrendingSuggestionsName[] =
+    "NTP Realbox Contextual and Trending Suggestions";
+const char kNtpRealboxContextualAndTrendingSuggestionsDescription[] =
+    "Allows NTP Realbox's second column to display contextual and trending "
+    "text suggestions.";
+
 const char kNtpRealboxIsTallName[] = "NTP Realbox Is Tall";
 const char kNtpRealboxIsTallDescription[] =
     "Makes NTP Realbox taller when enabled.";
@@ -6530,6 +6536,10 @@ const char kFederatedServiceName[] =
 const char kFederatedServiceDescription[] =
     "If disalbed, all federated service activities are stopped.";
 
+const char kFileNotificationRevampName[] = "File notification revamp";
+const char kFileNotificationRevampDescription[] =
+    "Enable the new notifications for downloaded files and screen captures.";
+
 const char kFileTransferEnterpriseConnectorName[] =
     "Enable Files Transfer Enterprise Connector.";
 const char kFileTransferEnterpriseConnectorDescription[] =
@@ -6669,6 +6679,12 @@ const char kHelpAppHomePageAppArticlesDescription[] =
 const char kHelpAppLauncherSearchName[] = "Help App launcher search";
 const char kHelpAppLauncherSearchDescription[] =
     "Enables showing search results from the help app in the launcher.";
+
+const char kHelpAppOpensInsteadOfReleaseNotesNotificationName[] =
+    "Help App opens instead of release notes notification";
+const char kHelpAppOpensInsteadOfReleaseNotesNotificationDescription[] =
+    "Enables opening the Help App's What's New page immediately instead of "
+    "showing a notification to open the help app.";
 
 const char kDiacriticsOnPhysicalKeyboardLongpressName[] =
     "Enable diacritics and variant character selection on PK longpress.";
@@ -7063,6 +7079,13 @@ const char kReleaseNotesNotificationAllChannelsName[] =
     "Release Notes Notification All Channels";
 const char kReleaseNotesNotificationAllChannelsDescription[] =
     "Enables the release notes notification for all ChromeOS channels";
+
+const char kReleaseNotesNotificationAlwaysEligibleName[] =
+    "Release Notes Notification always eligible";
+const char kReleaseNotesNotificationAlwaysEligibleDescription[] =
+    "Makes the release notes notification always appear regardless of channel, "
+    "profile type, and whether or not the notification had already been shown "
+    "this milestone. For testing.";
 
 const char kRenderArcNotificationsByChromeName[] =
     "Render ARC notifications by ChromeOS";
@@ -7947,6 +7970,10 @@ const char kEnableAudioFocusEnforcementDescription[] =
 const char kComposeId[] = "CCO";
 const char kComposeName[] = "CCO Edits";
 const char kComposeDescription[] = "Enables CCO editing feature";
+
+const char kComposeTextSelectionName[] = "Compose Selection";
+const char kComposeTextSelectionDescription[] =
+    "Enables feature for different heuristics for selecting text for Compose";
 #endif  // BUILDFLAG(ENABLE_COMPOSE)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)

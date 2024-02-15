@@ -5,7 +5,7 @@
 /** @fileoverview Definitions for chrome.runtime API */
 // TODO(crbug.com/1203307): Auto-generate this file.
 
-import {ChromeEvent} from './chrome_event.js';
+import type {ChromeEvent} from './chrome_event.js';
 
 declare global {
   export namespace chrome {
@@ -48,6 +48,8 @@ declare global {
 
       export function getURL(path: string): string;
 
+      export function reload(): void;
+
       export interface SerializedContentScripts {
         matches: string[];
       }
@@ -64,9 +66,10 @@ declare global {
       export function getBackgroundPage(
           callback: (backgroundPage?: Window) => void): void;
 
-      // NOTE: This function supports multiple signatures, add as you need it.
       export function sendMessage(
-          extensionId: string|null, message: any,
+          extensionId: string|null, message: any, options?: {
+            includeTlsChannelId?: boolean,
+          },
           callback?: (response?: any) => void): void;
     }
   }

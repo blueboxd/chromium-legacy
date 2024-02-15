@@ -120,7 +120,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     const blink::MessagePortChannel& message_port,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    ukm::SourceId client_ukm_source_id) {
+    ukm::SourceId client_ukm_source_id,
+    const std::optional<blink::StorageKey>& storage_key_override) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHostImpl* render_frame_host =
@@ -132,6 +133,9 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     return;
   }
 
+  // We always use the render_frame_host storage key here as it doesn't matter
+  // if the storage key has been overridden, kAll access is always denied in
+  // third-party contexts.
   if (render_frame_host->GetStorageKey().IsThirdPartyContext() &&
       info->same_site_cookies !=
           blink::mojom::SharedWorkerSameSiteCookies::kNone) {
@@ -140,9 +144,17 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     return;
   }
 
+  // If we are overriding the storage key it must be to a first-party context
+  // version of the storage key in the `render_frame_host`.
+  CHECK(!storage_key_override ||
+        (storage_key_override->IsFirstPartyContext() &&
+         (storage_key_override->origin() ==
+          render_frame_host->GetStorageKey().origin())));
+  const blink::StorageKey& storage_key =
+      storage_key_override.value_or(render_frame_host->GetStorageKey());
+
   // Enforce same-origin policy.
   // data: URLs are not considered a different origin.
-  const blink::StorageKey& storage_key = render_frame_host->GetStorageKey();
   bool is_cross_origin = !info->url.SchemeIs(url::kDataScheme) &&
                          url::Origin::Create(info->url) != storage_key.origin();
   if (is_cross_origin &&
@@ -205,12 +217,11 @@ void SharedWorkerServiceImpl::ConnectToWorker(
                                 info->options->credentials, info->options->name,
                                 storage_key, creation_context_type,
                                 info->same_site_cookies);
-  // TODO(crbug.com/1484966): `info->same_site_cookies` should control which
-  // cookies are available to the shared worker.
   host = CreateWorker(
       *render_frame_host, instance, std::move(info->content_security_policies),
       std::move(info->outside_fetch_client_settings_object), partition_domain,
-      message_port, std::move(blob_url_loader_factory));
+      message_port, std::move(blob_url_loader_factory),
+      storage_key_override.has_value());
   if (!host) {
     ScriptLoadFailed(std::move(client), /*error_message=*/"");
     return;
@@ -296,7 +307,8 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
         outside_fetch_client_settings_object,
     const std::string& storage_domain,
     const blink::MessagePortChannel& message_port,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    bool has_storage_access) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!blob_url_loader_factory || instance.url().SchemeIsBlob());
 
@@ -383,7 +395,10 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       << " should be the same.";
   WorkerScriptFetcher::CreateAndStart(
       worker_process_host->GetID(), host->token(), host->instance().url(),
-      &creator, &creator, host->instance().storage_key().ToNetSiteForCookies(),
+      &creator, &creator,
+      host->instance().DoesRequireCrossSiteRequestForCookies()
+          ? net::SiteForCookies()
+          : host->instance().storage_key().ToNetSiteForCookies(),
       host->instance().storage_key().origin(), host->instance().storage_key(),
       host->instance().storage_key().ToPartialNetIsolationInfo(),
       creator.BuildClientSecurityStateForWorkers(), credentials_mode,
@@ -393,6 +408,8 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       std::move(blob_url_loader_factory), url_loader_factory_override_,
       storage_partition_, storage_domain, host->ukm_source_id(),
       SharedWorkerDevToolsAgentHost::GetFor(host), host->GetDevToolsToken(),
+      host->instance().DoesRequireCrossSiteRequestForCookies(),
+      has_storage_access,
       base::BindOnce(&SharedWorkerServiceImpl::StartWorker,
                      weak_factory_.GetWeakPtr(), weak_host, message_port,
                      std::move(cloned_outside_fetch_client_settings_object)));

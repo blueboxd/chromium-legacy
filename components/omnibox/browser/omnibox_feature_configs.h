@@ -149,6 +149,25 @@ struct LimitKeywordModeSuggestions : Config<LimitKeywordModeSuggestions> {
   bool limit_history_cluster_suggestions;
   // If enabled, limits default search engine suggestions in keyword mode.
   bool limit_dse_suggestions;
+  // If enabled, limits on device head uggestions in keyword mode.
+  bool limit_on_device_head_suggestions;
+};
+
+// If enabled, NTP Realbox second column will allow displaying contextual and
+// trending suggestions.
+struct RealboxContextualAndTrendingSuggestions
+    : Config<RealboxContextualAndTrendingSuggestions> {
+  DECLARE_FEATURE(kRealboxContextualAndTrendingSuggestions);
+  RealboxContextualAndTrendingSuggestions();
+  bool enabled;
+
+  // The total number of matches a Section can contain across all Groups.
+  size_t total_limit;
+  // The total number of matches the `omnibox::GROUP_PREVIOUS_SEARCH_RELATED`
+  // Group can contain.
+  size_t contextual_suggestions_limit;
+  // The total number of matches the `omnibox::GROUP_TRENDS` Group can contain.
+  size_t trending_suggestions_limit;
 };
 
 // If enabled, the shortcut provider is more aggressive in scoring.

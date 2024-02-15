@@ -257,6 +257,11 @@ const FeatureEntry::FeatureParam kContentPushNotificationsEnabledSetupLists[] =
     {{kContentPushNotificationsExperimentType, "2"}};
 const FeatureEntry::FeatureParam kContentPushNotificationsEnabledProvisional[] =
     {{kContentPushNotificationsExperimentType, "3"}};
+// TODO(b/322348322): Remove provisional notifications bypass conditions testing
+// flag param.
+const FeatureEntry::FeatureParam
+    kContentPushNotificationsEnabledProvisionalBypass[] = {
+        {kContentPushNotificationsExperimentType, "4"}};
 
 const FeatureEntry::FeatureVariation kContentPushNotificationsVariations[] = {
     {"Promo", kContentPushNotificationsEnabledPromo,
@@ -264,7 +269,10 @@ const FeatureEntry::FeatureVariation kContentPushNotificationsVariations[] = {
     {"Set up list", kContentPushNotificationsEnabledSetupLists,
      std::size(kContentPushNotificationsEnabledSetupLists), nullptr},
     {"Provisional Notification", kContentPushNotificationsEnabledProvisional,
-     std::size(kContentPushNotificationsEnabledProvisional), nullptr}};
+     std::size(kContentPushNotificationsEnabledProvisional), nullptr},
+    {"Provisional Ignore Conditions",
+     kContentPushNotificationsEnabledProvisionalBypass,
+     std::size(kContentPushNotificationsEnabledProvisionalBypass), nullptr}};
 
 const FeatureEntry::FeatureParam kFeedHeaderSettingDisabledStickyHeader[] = {
     {kDisableStickyHeaderForFollowingFeed, "true"}};
@@ -1600,6 +1608,26 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMinorModeRestrictionsForHistorySyncOptInDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(::switches::kMinorModeRestrictionsForHistorySyncOptIn)},
+    {"ios-iph-pull-to-refresh",
+     flag_descriptions::kIPHiOSPullToRefreshFeatureName,
+     flag_descriptions::kIPHiOSPullToRefreshFeatureDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(feature_engagement::kIPHiOSPullToRefreshFeature)},
+    {"ios-iph-swipe-back-forward",
+     flag_descriptions::kIPHiOSSwipeBackForwardFeatureName,
+     flag_descriptions::kIPHiOSSwipeBackForwardFeatureDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(feature_engagement::kIPHiOSSwipeBackForwardFeature)},
+    {"ios-iph-tab-grid-swipe-right-for-incognito",
+     flag_descriptions::kIPHiOSTabGridSwipeRightForIncognitoName,
+     flag_descriptions::kIPHiOSTabGridSwipeRightForIncognitoDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         feature_engagement::kIPHiOSTabGridSwipeRightForIncognito)},
+    {"ios-magic-stack-collection-view",
+     flag_descriptions::kIOSMagicStackCollectionViewName,
+     flag_descriptions::kIOSMagicStackCollectionViewDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kIOSMagicStackCollectionView)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

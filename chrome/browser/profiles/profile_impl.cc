@@ -382,6 +382,7 @@ void ProfileImpl::RegisterProfilePrefs(
                                 false);
   registry->RegisterIntegerPref(policy::policy_prefs::kForceYouTubeRestrict,
                                 safe_search_api::YOUTUBE_RESTRICT_OFF);
+  registry->RegisterStringPref(prefs::kAllowedDomainsForApps, std::string());
 
   registry->RegisterIntegerPref(prefs::kProfileAvatarIndex, -1);
   // Whether a profile is using an avatar without having explicitely chosen it
@@ -492,7 +493,7 @@ ProfileImpl::ProfileImpl(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(crbug.com/1325210): Move this into
-  // ChromeUserManager::OnProfileCreationStarted().
+  // ChromeUserManagerImpl::OnProfileCreationStarted().
   if (ash::ProfileHelper::IsUserProfile(this)) {
     // |ash::InitializeAccountManager| is called during a User's session
     // initialization but some tests do not properly login to a User Session.

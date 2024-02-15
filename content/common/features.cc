@@ -28,7 +28,7 @@ BASE_FEATURE(kAndroidDownloadableFontsMatching,
 // without an origin trial token.
 BASE_FEATURE(kAttributionReportingCrossAppWebOverride,
              "AttributionReportingCrossAppWebOverride",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables controlling the time to live for pages in the BackForwardCache.
 // The time to live is defined by the param 'time_to_live_seconds'; if this
@@ -377,7 +377,7 @@ BASE_FEATURE(kPrivacySandboxAdsAPIsM1Override,
 // one fails, a warning is simply displayed in DevTools.
 BASE_FEATURE(kPrivateNetworkAccessForNavigationsWarningOnly,
              "PrivateNetworkAccessForNavigationsWarningOnly",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables reporting ResourceTiming entries for document, who initiated a
 // cancelled navigation in one of their <iframe>.

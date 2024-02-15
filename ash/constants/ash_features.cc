@@ -286,6 +286,11 @@ BASE_FEATURE(kBatterySaverAlwaysOn,
              "CrosBatterySaverAlwaysOn",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Display calendar events in birch UI.
+BASE_FEATURE(kBirchCalendar,
+             "BirchCalendar",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Display weather information in birch UI.
 BASE_FEATURE(kBirchWeather, "BirchWeather", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -856,6 +861,13 @@ BASE_FEATURE(kEnableTouchscreensInDiagnosticsApp,
              "EnableTouchscreensInDiagnosticsApp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables rollback routine which will delete client keys and certificates
+// from the software backed Chaps storage. Copies of keys and certificates will
+// will continue to exist in NSS DB.
+BASE_FEATURE(kEnableNssDbClientCertsRollback,
+             "EnableNssDbClientCertsRollback",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables WiFi QoS to detect and prioritize selected egress network traffic
 // using WiFi QoS/WMM in congested WiFi environments.
 BASE_FEATURE(kEnableWifiQos,
@@ -948,6 +960,11 @@ BASE_FEATURE(kExoSurroundingTextOffset,
 // Allows RGB Keyboard to test new animations/patterns.
 BASE_FEATURE(kExperimentalRgbKeyboardPatterns,
              "ExperimentalRgbKeyboardPatterns",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Requires user opt-in to receive extended updates support.
+BASE_FEATURE(kExtendedUpdatesRequireOptIn,
+             "ExtendedUpdatesRequireOptIn",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables policy that controls feature to allow Family Link accounts on school
@@ -1110,6 +1127,11 @@ BASE_FEATURE(kFederatedLauncherQueryAnalyticsTask,
 // Enables scheduling of launcher query federated analytics version 2 tasks.
 BASE_FEATURE(kFederatedLauncherQueryAnalyticsVersion2Task,
              "FederatedLauncherQueryAnalyticsVersion2Task",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable the new notifications for downloaded files and screen captures.
+BASE_FEATURE(kFileNotificationRevamp,
+             "kFileNotificationRevamp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables experimental UI features in Files app.
@@ -1389,6 +1411,12 @@ BASE_FEATURE(kHelpAppHomePageAppArticles,
 BASE_FEATURE(kHelpAppLauncherSearch,
              "HelpAppLauncherSearch",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables opening the Help App's What's New page immediately instead of showing
+// a notification to open the help app.
+BASE_FEATURE(kHelpAppOpensInsteadOfReleaseNotesNotification,
+             "HelpAppOpensInsteadOfReleaseNotesNotification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable showing the welcome tips page in the help app. This feature
 // is dependent on the 'ScalableIph' feature being enabled as well.
@@ -1749,7 +1777,7 @@ BASE_FEATURE(kLinkCrossDeviceInternals,
 // (This feature is only available for consumer users)
 BASE_FEATURE(kLocalPasswordForConsumers,
              "LocalPasswordForConsumers",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Supports the feature to hide sensitive content in notifications on the lock
 // screen. This option is effective when |kLockScreenNotification| is enabled.
@@ -2207,11 +2235,6 @@ BASE_FEATURE(kPipDoubleTapToResize,
              "PipDoubleTapToResize",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables or disables pinch to resize feature for Picture in Picture.
-BASE_FEATURE(kPipPinchToResize,
-             "PipPinchToResize",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables or disables the tilt feature for Picture in Picture.
 BASE_FEATURE(kPipTilt, "PipTilt", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -2341,6 +2364,11 @@ BASE_FEATURE(kProjectorAccountSwitchNotification,
              "ProjectorAccountSwitchNotification",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls whether to use USM for serverside speech recognition for projector.
+BASE_FEATURE(kProjectorUseUSMForS3,
+             "kProjectorUseUSMForS3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether to show promise icons during app installations.
 BASE_FEATURE(kPromiseIcons, "PromiseIcons", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -2380,6 +2408,14 @@ BASE_FEATURE(kQuickUnlockPinAutosubmitBackfill,
 // channels. Used for testing.
 BASE_FEATURE(kReleaseNotesNotificationAllChannels,
              "ReleaseNotesNotificationAllChannels",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Makes the user always eligible to see the release notes notification.
+// Normally there are conditions that prevent the notification from appearing.
+// For example: channel, profile type, and whether or not the notification had
+// already been shown this milestone.
+BASE_FEATURE(kReleaseNotesNotificationAlwaysEligible,
+             "ReleaseNotesNotificationAlwaysEligible",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables rendering ARC notifications using ChromeOS notification framework
@@ -2498,12 +2534,6 @@ BASE_FEATURE(kShelfLauncherNudge,
 // there is not enough space for the app bar.
 BASE_FEATURE(kShelfStackedHotseat,
              "ShelfStackedHotseat",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables Shelf Palm Rejection in tablet mode by defining a pixel offset for
-// the swipe gesture to show the extended hotseat. Limited to certain apps.
-BASE_FEATURE(kShelfPalmRejectionSwipeOffset,
-             "ShelfPalmRejectionSwipeOffset",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables the OS update page in the shimless RMA flow.
@@ -2713,6 +2743,13 @@ BASE_FEATURE(kUpstreamTrustedReportsFirmware,
 // Use the Android staging SM-DS server when fetching pending eSIM profiles.
 BASE_FEATURE(kUseAndroidStagingSmds,
              "UseAndroidStagingSmds",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// This features toggles which implementation is used for authentication UIs on
+// Chrome password manager on ChromeOS. When the feature is enabled,
+// `AuthPanel` is used as an authentication UI.
+BASE_FEATURE(kUseAuthPanelInPasswordManager,
+             "UseAuthPanelInPasswordManager",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Use the staging URL as part of the "Messages" feature under "Connected
@@ -2948,7 +2985,7 @@ BASE_FEATURE(kInputMethodKoreanRightAltKeyDownFix,
 // Enables peripheral customization to be split per device.
 BASE_FEATURE(kPeripheralCustomization,
              "PeripheralCustomization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables peripherals logging.
 BASE_FEATURE(kEnablePeripheralsLogging,
@@ -3138,6 +3175,10 @@ bool IsBatterySaverAlwaysOn() {
   return base::FeatureList::IsEnabled(kBatterySaverAlwaysOn);
 }
 
+bool IsBirchCalendarEnabled() {
+  return base::FeatureList::IsEnabled(kBirchCalendar);
+}
+
 bool IsBirchWeatherEnabled() {
   return base::FeatureList::IsEnabled(kBirchWeather);
 }
@@ -3304,6 +3345,10 @@ bool IsEOLIncentiveEnabled() {
 
 bool IsExperimentalRgbKeyboardPatternsEnabled() {
   return base::FeatureList::IsEnabled(kExperimentalRgbKeyboardPatterns);
+}
+
+bool IsExtendedUpdatesRequireOptInEnabled() {
+  return base::FeatureList::IsEnabled(kExtendedUpdatesRequireOptIn);
 }
 
 bool IsExternalKeyboardInDiagnosticsAppEnabled() {
@@ -3852,6 +3897,10 @@ bool IsNotificationsInContextMenuEnabled() {
   return base::FeatureList::IsEnabled(kNotificationsInContextMenu);
 }
 
+bool IsNssDbClientCertsRollbackEnabled() {
+  return base::FeatureList::IsEnabled(kEnableNssDbClientCertsRollback);
+}
+
 bool AreOngoingProcessesEnabled() {
   return base::FeatureList::IsEnabled(kOngoingProcesses);
 }
@@ -4048,10 +4097,6 @@ bool IsPipDoubleTapToResizeEnabled() {
   return base::FeatureList::IsEnabled(kPipDoubleTapToResize);
 }
 
-bool IsPipPinchToResizeEnabled() {
-  return base::FeatureList::IsEnabled(kPipPinchToResize);
-}
-
 bool IsPipTiltEnabled() {
   return base::FeatureList::IsEnabled(kPipTilt);
 }
@@ -4136,6 +4181,10 @@ bool IsProjectorTranscriptChapterTitleEnabled() {
   return base::FeatureList::IsEnabled(kProjectorTranscriptChapterTitle);
 }
 
+bool IsProjectorUseUSMForS3Enabled() {
+  return base::FeatureList::IsEnabled(kProjectorUseUSMForS3);
+}
+
 bool IsQuickDimEnabled() {
   return base::FeatureList::IsEnabled(kQuickDim) && switches::HasHps();
 }
@@ -4210,10 +4259,6 @@ bool IsSettingsAppThemeChangeAnimationEnabled() {
 
 bool IsShelfLauncherNudgeEnabled() {
   return base::FeatureList::IsEnabled(kShelfLauncherNudge);
-}
-
-bool IsShelfPalmRejectionSwipeOffsetEnabled() {
-  return base::FeatureList::IsEnabled(kShelfPalmRejectionSwipeOffset);
 }
 
 bool IsShelfStackedHotseatEnabled() {
@@ -4452,6 +4497,10 @@ bool ShouldUseV1DeviceSync() {
 bool ShouldUseV2DeviceSync() {
   return base::FeatureList::IsEnabled(kCryptAuthV2Enrollment) &&
          base::FeatureList::IsEnabled(kCryptAuthV2DeviceSync);
+}
+
+bool IsUseAuthPanelInPasswordManagerEnabled() {
+  return base::FeatureList::IsEnabled(kUseAuthPanelInPasswordManager);
 }
 
 }  // namespace ash::features

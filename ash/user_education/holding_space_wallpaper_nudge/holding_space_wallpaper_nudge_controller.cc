@@ -44,6 +44,8 @@
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/files/file_path.h"
 #include "base/scoped_observation.h"
+#include "base/timer/elapsed_timer.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -134,6 +136,10 @@ HoldingSpaceTray* GetHoldingSpaceTrayNearestPoint(
       ->holding_space_tray();
 }
 
+PrefService* GetPrimaryUserPrefService() {
+  return Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+}
+
 WallpaperView* GetWallpaperViewNearestPoint(
     const gfx::Point& location_in_screen) {
   return RootWindowController::ForWindow(
@@ -182,6 +188,19 @@ void RecordPinInteraction(const std::vector<const HoldingSpaceItem*>& items,
       holding_space_wallpaper_nudge_metrics::RecordInteraction(
           interaction.value());
     }
+  }
+}
+
+// TODO(http://b/311411775): Relocate recording wallpaper nudge histograms
+// into the production metrics code path when cleaning up the experiment.
+void RecordUsedInteraction(const std::vector<const HoldingSpaceItem*>& items) {
+  using holding_space_wallpaper_nudge_metrics::Interaction;
+
+  for (const HoldingSpaceItem* item : items) {
+    holding_space_wallpaper_nudge_metrics::RecordInteraction(
+        item->type() == HoldingSpaceItem::Type::kPinnedFile
+            ? Interaction::kUsedPinnedItem
+            : Interaction::kUsedOtherItem);
   }
 }
 
@@ -243,6 +262,52 @@ class Highlight : public ui::LayerOwner, public views::ViewObserver {
       this};
 };
 
+// DragDropSequenceTracker -----------------------------------------------------
+
+// A class which facilitates tracking drag-and-drop sequences.
+class DragDropSequenceTracker {
+ public:
+  DragDropSequenceTracker() = default;
+  DragDropSequenceTracker(const DragDropSequenceTracker&) = delete;
+  DragDropSequenceTracker& operator=(const DragDropSequenceTracker&) = delete;
+  ~DragDropSequenceTracker() = default;
+
+  // Returns whether a new sequence is actively being tracked. A sequence is new
+  // only until it receives its first drag update.
+  bool IsTrackingNewSequence() const { return is_tracking_new_sequence_; }
+
+  // Returns whether a sequence is actively being tracked.
+  bool IsTrackingSequence() const { return !!sequence_observer_; }
+
+  // Initiates tracking a new sequence associated with the specified `client`.
+  // NOTE: This method may only be called while a drag-and-drop sequence is in
+  // progress.
+  void TrackNewSequence(aura::client::DragDropClient* client) {
+    CHECK(client->IsDragDropInProgress());
+    is_tracking_new_sequence_ = true;
+    sequence_observer_ = std::make_unique<ScopedDragDropObserver>(
+        client, base::BindRepeating(&DragDropSequenceTracker::OnDropTargetEvent,
+                                    base::Unretained(this)));
+  }
+
+ private:
+  void OnDropTargetEvent(ScopedDragDropObserver::EventType event_type,
+                         const ui::DropTargetEvent* event) {
+    is_tracking_new_sequence_ = false;
+    switch (event_type) {
+      case ScopedDragDropObserver::EventType::kDragCancelled:
+      case ScopedDragDropObserver::EventType::kDragCompleted:
+        sequence_observer_.reset();
+        break;
+      case ScopedDragDropObserver::EventType::kDragUpdated:
+        break;
+    }
+  }
+
+  bool is_tracking_new_sequence_ = false;
+  std::unique_ptr<ScopedDragDropObserver> sequence_observer_;
+};
+
 // DragDropDelegate ------------------------------------------------------------
 
 // An implementation of the singleton drag-and-drop delegate, owned by the
@@ -281,11 +346,28 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
 
   void OnDragEntered(const ui::OSExchangeData& data,
                      const gfx::Point& location_in_screen) override {
+    // Start tracking the drag-and-drop sequence if necessary.
+    if (!drag_drop_sequence_tracker_.IsTrackingSequence()) {
+      drag_drop_sequence_tracker_.TrackNewSequence(
+          GetDragDropClientNearestPoint(location_in_screen));
+    }
+
     if (features::IsHoldingSpaceWallpaperNudgeEnabledCounterfactually()) {
-      if (NudgeShouldBeShown()) {
-        // Mark the nudge as "shown" for the counterfactual experiment arm.
+      if (const auto reason = NudgeShouldBeSuppressed()) {
+        if (drag_drop_sequence_tracker_.IsTrackingNewSequence()) {
+          // Record that the nudge was suppressed for the specified `reason`.
+          // NOTE: Suppression should be recorded at most once per sequence.
+          holding_space_wallpaper_nudge_metrics::RecordNudgeSuppressed(*reason);
+        }
+      } else {
+        // Mark the nudge as "shown" and record the corresponding metrics for
+        // the counterfactual experiment arm given that the nudge won't actually
+        // be shown to the user.
         holding_space_wallpaper_nudge_prefs::MarkNudgeShown(
             Shell::Get()->session_controller()->GetLastActiveUserPrefService());
+        holding_space_wallpaper_nudge_metrics::RecordNudgeShown();
+        holding_space_wallpaper_nudge_metrics::RecordNudgeDuration(
+            base::TimeDelta());
       }
       return;
     }
@@ -447,7 +529,8 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
           std::make_unique<Shelf::ScopedDisableAutoHide>(shelf);
     }
 
-    const bool nudge_should_be_shown = NudgeShouldBeShown();
+    const auto nudge_suppressed_reason = NudgeShouldBeSuppressed();
+    const bool nudge_should_be_shown = !nudge_suppressed_reason.has_value();
 
     // The user should be directed to the tray during drag operations iff the
     // nudge will be shown or drop-to-pin is disabled. This is because we want
@@ -475,6 +558,12 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     }
 
     if (!nudge_should_be_shown || help_bubble_anchor_) {
+      if (nudge_suppressed_reason.has_value() &&
+          drag_drop_sequence_tracker_.IsTrackingNewSequence()) {
+        // NOTE: Suppression should be recorded at most once per sequence.
+        holding_space_wallpaper_nudge_metrics::RecordNudgeSuppressed(
+            *nudge_suppressed_reason);
+      }
       return;
     }
 
@@ -499,9 +588,14 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     // `shelf` or `holding_space_tray` to hide. Also reset the pointer to
     // the `help_bubble_anchor_` on close.
     base::OnceClosure close_callback = base::BindOnce(
-        [](Shelf::ScopedDisableAutoHide*,
+        [](base::ElapsedTimer elapsed_timer, Shelf::ScopedDisableAutoHide*,
            HoldingSpaceController::ScopedForceShowInShelf*,
-           const base::AutoReset<uintptr_t>&) {},
+           const base::AutoReset<uintptr_t>&) {
+          // Record the duration of time that the nudge was shown.
+          holding_space_wallpaper_nudge_metrics::RecordNudgeDuration(
+              /*duration=*/elapsed_timer.Elapsed());
+        },
+        base::ElapsedTimer(),
         base::Owned(std::make_unique<Shelf::ScopedDisableAutoHide>(shelf)),
         base::Owned(
             std::make_unique<HoldingSpaceController::ScopedForceShowInShelf>()),
@@ -515,8 +609,10 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
                 views::ElementTrackerViews::GetContextForView(
                     holding_space_tray),
                 std::move(close_callback))) {
+      // Mark the nudge as shown and record the corresponding metric.
       holding_space_wallpaper_nudge_prefs::MarkNudgeShown(
           Shell::Get()->session_controller()->GetLastActiveUserPrefService());
+      holding_space_wallpaper_nudge_metrics::RecordNudgeShown();
 
       // If we successfully created a help bubble, then it is safe to replace
       // the current `base::ScopedClosureRunner` because any previous help
@@ -577,6 +673,8 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
       case ItemAction::kRemove:
       case ItemAction::kResume:
       case ItemAction::kShowInFolder:
+        RecordUsedInteraction(items);
+        break;
       case ItemAction::kUnpin:
         break;
     }
@@ -607,7 +705,33 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
   }
 
   // SessionObserver:
-  void OnChromeTerminating() override { session_observer_.Reset(); }
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override {
+    pref_change_registrar_.Reset();
+
+    // Only observe the `pref_service` for the primary user and, even then, only
+    // if the primary user has never pinned a file to holding space.
+    if (pref_service != GetPrimaryUserPrefService() ||
+        holding_space_prefs::GetTimeOfFirstPin(pref_service).has_value()) {
+      return;
+    }
+
+    // Observe the primary user's `pref_service` only until their first pin, at
+    // which time the appropriate metrics should be recorded.
+    pref_change_registrar_.Init(pref_service);
+    holding_space_prefs::AddTimeOfFirstPinChangedCallback(
+        &pref_change_registrar_,
+        base::BindRepeating(
+            [](PrefChangeRegistrar& pref_change_registrar) {
+              holding_space_wallpaper_nudge_metrics::RecordFirstPin();
+              pref_change_registrar.Reset();
+            },
+            std::ref(pref_change_registrar_)));
+  }
+
+  void OnChromeTerminating() override {
+    pref_change_registrar_.Reset();
+    session_observer_.Reset();
+  }
 
   void OnSessionStateChanged(session_manager::SessionState state) override {
     // Eligibility is only determined on primary account activation.
@@ -688,15 +812,19 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     return !ineligible_reason.has_value();
   }
 
-  // Indicates whether the nudge should be shown based on when it was last
+  // Indicates whether the nudge should be suppressed based on when it was last
   // shown, how many times total it's been shown, and whether the user has
-  // pinned a file before. It should be no more than once in a 24 hour period,
-  // no more than 3 times total, and never if the user has pinned a file before.
-  bool NudgeShouldBeShown() {
+  // pinned a file before. It shouldn't be shown more than once a day, no more
+  // than 3 times total, and never if the user has pinned a file before.
+  std::optional<holding_space_wallpaper_nudge_metrics::SuppressedReason>
+  NudgeShouldBeSuppressed() {
+    using holding_space_wallpaper_nudge_metrics::SuppressedReason;
+
+    // If the user is not the primary user, suppress the nudge.
     // NOTE: User education in Ash is currently only supported for the primary
     // user profile. This is a self-imposed restriction.
     if (!user_education_util::IsPrimaryAccountActive()) {
-      return false;
+      return SuppressedReason::kNotPrimaryAccount;
     }
 
     const bool forced_eligibility =
@@ -704,31 +832,33 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     const bool accelerated_rate_limiting = features::
         IsHoldingSpaceWallpaperNudgeForceEligibilityAcceleratedRateLimitingEnabled();
 
+    // If eligibility is forced for testing, don't suppress the nudge.
     if (forced_eligibility && !accelerated_rate_limiting) {
-      return true;
+      return std::nullopt;
     }
 
     const auto* const session_controller = Shell::Get()->session_controller();
     PrefService* const prefs =
         session_controller->GetLastActiveUserPrefService();
 
-    // If the user has ever pinned a file, don't show the nudge.
+    // If the user has ever pinned a file, suppress the nudge.
     if (!forced_eligibility &&
         holding_space_prefs::GetTimeOfFirstPin(prefs).has_value()) {
-      return false;
+      return SuppressedReason::kUserHasPinned;
     }
 
+    // If the user is ineligible, suppress the nudge.
     if (!(forced_eligibility || DetermineEligibility())) {
-      return false;
+      return SuppressedReason::kUserNotEligible;
     }
 
     const bool should_limit_count =
         !forced_eligibility || accelerated_rate_limiting;
 
-    // If the user has seen the nudge 3 times, don't show it again.
+    // If the user has seen the nudge >= 3 times, suppress the nudge.
     if (should_limit_count &&
         holding_space_wallpaper_nudge_prefs::GetNudgeShownCount(prefs) >= 3u) {
-      return false;
+      return SuppressedReason::kCountLimitReached;
     }
 
     const base::TimeDelta timeout =
@@ -736,10 +866,23 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     const auto time_of_last_nudge =
         holding_space_wallpaper_nudge_prefs::GetLastTimeNudgeWasShown(prefs);
 
-    // Show the nudge if it has not been shown within the timeout period.
-    return !time_of_last_nudge.has_value() ||
-           base::Time::Now() - time_of_last_nudge.value() >= timeout;
+    // If the nudge was seen more recently than `timeout`, suppress the nudge.
+    if (time_of_last_nudge.has_value() &&
+        base::Time::Now() - time_of_last_nudge.value() < timeout) {
+      return SuppressedReason::kTimePeriod;
+    }
+
+    // Otherwise, don't suppress the nudge.
+    return std::nullopt;
   }
+
+  // Used to track drag-and-drop sequences so as to facilitate the recording of
+  // metrics on a once-per-sequence basis.
+  DragDropSequenceTracker drag_drop_sequence_tracker_;
+
+  // Used to observe the primary user's first pin to holding space so as to
+  // facilitate the recording of metrics.
+  PrefChangeRegistrar pref_change_registrar_;
 
   // A pointer to the `HoldingSpaceTray` anchoring the currently open help
   // bubble. Used to determine if the help bubble should be dismissed to prevent

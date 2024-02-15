@@ -215,7 +215,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDrawWebEdgeToEdge,
     &kDynamicTopChrome,
     &kEarlyInitializeStartupMetrics,
-    &kEnterprisePolicyOnSignin,
     &kExperimentsForAgsa,
     &kFocusOmniboxInIncognitoTabIntents,
     &kFullscreenInsetsApiMigration,
@@ -340,6 +339,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &segmentation_platform::features::kContextualPageActionPriceTracking,
     &segmentation_platform::features::kContextualPageActionReaderMode,
     &segmentation_platform::features::kContextualPageActionShareModel,
+    &segmentation_platform::features::
+        kSegmentationPlatformAndroidHomeModuleRanker,
     &send_tab_to_self::kSendTabToSelfV2,
     &share::kScreenshotsForAndroidV2,
     &supervised_user::kKidFriendlyContentFeed,
@@ -626,10 +627,6 @@ BASE_FEATURE(kDynamicTopChrome,
 
 BASE_FEATURE(kEarlyInitializeStartupMetrics,
              "EarlyInitializeStartupMetrics",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnterprisePolicyOnSignin,
-             "EnterprisePolicyOnSignin",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExperimentsForAgsa,

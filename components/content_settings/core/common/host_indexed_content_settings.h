@@ -47,26 +47,19 @@ class HostIndexedContentSettings {
     using pointer = const RuleEntry*;
     using reference = const RuleEntry&;
 
-    explicit Iterator(const HostIndexedContentSettings& index, bool begin);
+    Iterator(const HostIndexedContentSettings& index, bool begin);
     ~Iterator();
 
-    Iterator(Iterator&&) = delete;
+    Iterator(Iterator&&);
     Iterator& operator=(Iterator&&) = delete;
-    Iterator(const Iterator& other)
-        : index_(other.index_),
-          stage_(other.stage_),
-          next_map_iterator_(other.next_map_iterator_),
-          next_map_end_(other.next_map_end_),
-          current_iterator_(other.current_iterator_),
-          current_end_(other.current_end_) {
-      index_->iterating_++;
-    }
+    Iterator(const Iterator& other);
     Iterator& operator=(const Iterator&) = delete;
 
     reference operator*() const { return *current_iterator_; }
     pointer operator->() { return &*current_iterator_; }
 
     Iterator& operator++();
+    Iterator operator++(int);
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
       return a.current_iterator_ == b.current_iterator_;
@@ -122,13 +115,6 @@ class HostIndexedContentSettings {
 
   // Clears the object information.
   void Clear();
-
-  // Compares the output of the previous lookup algorithm on a flat vector with
-  // the optimized indexed lookup algorithm.
-  void DcheckSameResultAsLinearLookup(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      const ContentSettingsForOneType& linear_settings) const;
 
  private:
   HostToContentSettings primary_host_indexed_;

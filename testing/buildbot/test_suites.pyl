@@ -1567,7 +1567,6 @@
           'has_native_resultdb_integration',
         ],
         'args': [
-          '--no-retry-failures',
           '--test-type',
           'testharness',
           'reftest',
@@ -1575,7 +1574,7 @@
           'print-reftest',
         ],
         'swarming': {
-          'shards': 15,
+          'shards': 20,
         },
         'merge': {
           'script': '//third_party/blink/tools/merge_web_test_results.py',
@@ -1609,6 +1608,7 @@
             '--verbose',
           ],
         },
+        'experiment_percentage': 10,
       },
       'chrome_wpt_tests_old_headless': {
         'test': 'chrome_wpt_tests',
@@ -1617,7 +1617,6 @@
           'has_native_resultdb_integration',
         ],
         'args': [
-          '--no-retry-failures',
           '--test-type',
           'testharness',
           'reftest',
@@ -1634,6 +1633,7 @@
             '--verbose',
           ],
         },
+        'experiment_percentage': 100,
       },
     },
 
@@ -3221,6 +3221,34 @@
       },
     },
 
+    'gpu_passthrough_graphite_telemetry_tests': {
+      'screenshot_sync_passthrough_graphite_tests': {
+        'telemetry_test_name': 'screenshot_sync',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle  --enable-features=SkiaGraphite',
+        ],
+        'android_args': [
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'lacros_args': [
+          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
+          '--xvfb',
+          '--no-xvfb',
+          '--use-weston',
+          '--weston-use-gl',
+        ],
+        'ci_only': True,
+      },
+    },
+
     'gpu_passthrough_telemetry_tests': {
       'context_lost_passthrough_tests': {
         'telemetry_test_name': 'context_lost',
@@ -4531,6 +4559,24 @@
       },
     },
 
+    'linux_lacros_chrome_gtests': {
+      'browser_tests': {
+        'swarming': {
+          'shards': 33,
+        },
+      },
+      'interactive_ui_tests': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      'lacros_chrome_browsertests': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
+    },
+
     'linux_lacros_chrome_interactive_ui_tests_version_skew': {
       'interactive_ui_tests': {
         'args': [
@@ -4543,7 +4589,6 @@
     },
 
     'linux_lacros_specific_gtests': {
-      'lacros_chrome_unittests': {},
       'ozone_unittests': {},
     },
 
@@ -6699,8 +6744,20 @@
       'gpu_webgl_conformance_validating_telemetry_tests',
     ],
 
-    'gpu_pixel_4_and_6_telemetry_tests': [
+    'gpu_pixel_4_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
+      'gpu_passthrough_telemetry_tests',
+      'gpu_validating_telemetry_tests',
+      'gpu_webcodecs_validating_telemetry_test',
+      'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_validating_telemetry_tests',
+      'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_validating_telemetry_tests',
+    ],
+
+    'gpu_pixel_6_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_passthrough_graphite_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_validating_telemetry_tests',
       'gpu_webcodecs_validating_telemetry_test',
@@ -6996,6 +7053,7 @@
     'chromeos_jacuzzi_rel_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'mixins': [
+          'chromeos-tast-fieldtrial-enabled',
           'chromeos-jacuzzi-skylab-chrome-all-tast-tests',
         ],
         'variants': [
@@ -7003,11 +7061,17 @@
         ],
       },
       'chromeos_chrome_criticalstaging_tast_tests': {
+        'mixins': [
+          'chromeos-tast-fieldtrial-enabled',
+        ],
         'variants': [
           'CROS_JACUZZI_CQ_PUBLIC_LKGM',
         ],
       },
       'chromeos_chrome_disabled_tast_tests': {
+        'mixins': [
+          'chromeos-tast-fieldtrial-enabled',
+        ],
         'variants': [
           'CROS_JACUZZI_CQ_PUBLIC_LKGM',
         ],
@@ -7052,6 +7116,9 @@
 
     'chromeos_octopus_rel_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
+        'mixins': [
+          'chromeos-tast-fieldtrial-enabled',
+        ],
         'variants': [
           'CROS_OCTOPUS_PUBLIC_LKGM',
         ],
@@ -8038,7 +8105,11 @@
           'INTEL_UHD_630',
         ],
       },
-      'optimization_guide_nogpu_gtests': {},
+      'optimization_guide_nogpu_gtests': {
+        'mixins': [
+          'gce',
+        ],
+      },
     },
 
     'optimization_guide_linux_script_tests': {
@@ -8078,6 +8149,7 @@
         'variants': [
           'AMD_RADEON_RX_5500_XT',
           'INTEL_UHD_630',
+          'NVIDIA_GEFORCE_GTX_1660',
         ],
       },
       'optimization_guide_nogpu_gtests': {

@@ -450,6 +450,11 @@ extern const char kIOSIncognitoDownloadsWarningDescription[];
 extern const char kIOSKeyboardAccessoryUpgradeName[];
 extern const char kIOSKeyboardAccessoryUpgradeDescription[];
 
+// Title and description for the flag to use a UICollectionView for the Magic
+// Stack.
+extern const char kIOSMagicStackCollectionViewName[];
+extern const char kIOSMagicStackCollectionViewDescription[];
+
 // Title and description for the flag to enable parcel tracking.
 extern const char kIOSParcelTrackingName[];
 extern const char kIOSParcelTrackingDescription[];
@@ -513,6 +518,19 @@ extern const char kIPHForSafariSwitcherDescription[];
 // promo IPH.
 extern const char kIPHiOSPromoPasswordManagerWidgetName[];
 extern const char kIPHiOSPromoPasswordManagerWidgetDescription[];
+
+// Title and description for the flag to enable the pull-to-refreh IPH.
+extern const char kIPHiOSPullToRefreshFeatureName[];
+extern const char kIPHiOSPullToRefreshFeatureDescription[];
+
+// Title and description for the flag to enable the tab swipe back/forward IPH.
+extern const char kIPHiOSSwipeBackForwardFeatureName[];
+extern const char kIPHiOSSwipeBackForwardFeatureDescription[];
+
+// Title and description for the flag to enable the swipe-to-incognito IPH on
+// the tab grid.
+extern const char kIPHiOSTabGridSwipeRightForIncognitoName[];
+extern const char kIPHiOSTabGridSwipeRightForIncognitoDescription[];
 
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];

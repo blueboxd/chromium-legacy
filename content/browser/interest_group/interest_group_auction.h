@@ -385,6 +385,12 @@ class CONTENT_EXPORT InterestGroupAuction
     // `blink::AdDescriptor`.
     std::vector<GURL> GetAdComponentUrls() const;
 
+    // These getters are necessary for handling the replacements within the
+    // interest group auction.
+    blink::AdDescriptor GetAdDescriptorWithReplacements();
+    std::vector<blink::AdDescriptor>
+    GetComponentAdDescriptorsWithReplacements();
+
     // Which auctions the bid participates in.
     auction_worklet::mojom::BidRole bid_role;
 
@@ -725,6 +731,11 @@ class CONTENT_EXPORT InterestGroupAuction
   // join the k-anon sets if it's informed the winning ad has been navigated to,
   // so there's no need for anything else to invoke this method.
   base::flat_set<std::string> GetKAnonKeysToJoin() const;
+
+  // Gets GetDeprecatedRenderURLReplacements in order to handle the
+  // ad render url replacements within the interest group auction.
+  const std::vector<blink::AuctionConfig::AdKeywordReplacement>&
+  GetDeprecatedRenderURLReplacements();
 
   BiddingAndAuctionResponse TakeBiddingAndAuctionResponse() {
     return std::move(saved_response_).value();
@@ -1070,6 +1081,10 @@ class CONTENT_EXPORT InterestGroupAuction
       PostAuctionSignals& signals_out,
       std::optional<PostAuctionSignals>& top_level_signals_out);
 
+  // Returns the multi-bid limit configured for `buyer` by `config_`,
+  // ensuring that it's at least 1.
+  uint16_t GetBuyerMultiBidLimit(const url::Origin& buyer);
+
   // -----------------------------------
   // Methods not associated with a phase
   // -----------------------------------
@@ -1354,16 +1369,15 @@ class CONTENT_EXPORT InterestGroupAuction
       direct_from_seller_signals_header_ad_slot_ =
           base::MakeRefCounted<HeaderDirectFromSellerSignals::Result>();
 
-  // The number of buyers in the AuctionConfig that passed the
-  // IsInterestGroupApiAllowedCallback filter and interest groups were found
-  // for. Includes buyers from nested component auctions. Double-counts buyers
-  // in multiple Auctions.
+  // The number of buyers in the `AuctionConfig` that passed the
+  // `IsInterestGroupApiAllowedCallback` filter. Includes buyers from nested
+  // component auctions. Double-counts buyers in multiple auctions.
   int num_owners_loaded_ = 0;
 
-  // The number of buyers with InterestGroups participating in an auction.
-  // Includes buyers from nested component auctions, but excludes buyers with
-  // no ads or no script URL. Double-counts buyers that participate in
-  // multiple Auctions.
+  // The number of buyers with `InterestGroup`s participating in an auction.
+  // Includes buyers from nested component auctions, but excludes buyers with no
+  // ads or no script URL. Double-counts buyers that participate in multiple
+  // auctions.
   int num_owners_with_interest_groups_ = 0;
 
   // A list of all buyer owners that participated in this auction and had at

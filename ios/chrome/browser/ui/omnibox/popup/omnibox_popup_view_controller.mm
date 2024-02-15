@@ -284,9 +284,19 @@ BOOL ShouldDismissKeyboardOnScroll() {
         UIScrollViewContentInsetAdjustmentNever;
   }
 
-  [self.tableView setDirectionalLayoutMargins:NSDirectionalEdgeInsetsMake(
-                                                  0, 0, kBottomPadding, 0)];
-  self.tableView.contentInset = UIEdgeInsetsMake(kTopPadding, 0, 0, 0);
+  if (IsIpadPopoutOmniboxEnabled()) {
+    self.tableView.tableFooterView =
+        [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, FLT_MIN)];
+    [self.tableView
+        setDirectionalLayoutMargins:NSDirectionalEdgeInsetsMake(
+                                        kTopPadding, 0, kBottomPadding, 0)];
+    self.tableView.contentInset =
+        UIEdgeInsetsMake(kTopPadding, 0, kBottomPadding, 0);
+  } else {
+    [self.tableView setDirectionalLayoutMargins:NSDirectionalEdgeInsetsMake(
+                                                    0, 0, kBottomPadding, 0)];
+    self.tableView.contentInset = UIEdgeInsetsMake(kTopPadding, 0, 0, 0);
+  }
 
   self.tableView.sectionHeaderHeight = 0.1;
   self.tableView.estimatedRowHeight = 0;
@@ -768,7 +778,9 @@ BOOL ShouldDismissKeyboardOnScroll() {
                                2 / tableView.window.screen.scale)];
 
   hairline.backgroundColor =
-      [UIColor colorNamed:kOmniboxSuggestionRowSeparatorColor];
+      [UIColor colorNamed:IsIpadPopoutOmniboxEnabled()
+                              ? kOmniboxPopoutSuggestionRowSeparatorColor
+                              : kOmniboxSuggestionRowSeparatorColor];
   [footer addSubview:hairline];
   hairline.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 
@@ -1029,6 +1041,11 @@ BOOL ShouldDismissKeyboardOnScroll() {
 /// Updates the color of the background based on the incognito-ness and the size
 /// class.
 - (void)updateBackgroundColor {
+  if (IsIpadPopoutOmniboxEnabled()) {
+    self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
+    return;
+  }
+
   ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
       initWithStyle:self.incognito ? ToolbarStyle::kIncognito
                                    : ToolbarStyle::kNormal];

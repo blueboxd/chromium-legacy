@@ -274,8 +274,8 @@
     "Win x64 Builder (reclient)": "ci/Win x64 Builder (reclient)/gn-args.json",
     "android-fieldtrial-rel": "ci/android-fieldtrial-rel/gn-args.json",
     "android-perfetto-rel": "ci/android-perfetto-rel/gn-args.json",
-    "chromeos-jacuzzi-rel-skylab-fyi": "ci/chromeos-jacuzzi-rel-skylab-fyi/gn-args.json",
-    "chromeos-octopus-rel-skylab-fyi": "ci/chromeos-octopus-rel-skylab-fyi/gn-args.json",
+    "chromeos-jacuzzi-rel-skylab": "ci/chromeos-jacuzzi-rel-skylab/gn-args.json",
+    "chromeos-octopus-rel-skylab": "ci/chromeos-octopus-rel-skylab/gn-args.json",
     "ios-blink-dbg-fyi": "ci/ios-blink-dbg-fyi/gn-args.json",
     "ios-fieldtrial-rel": "ci/ios-fieldtrial-rel/gn-args.json",
     "ios-m1-simulator": "ci/ios-m1-simulator/gn-args.json",
@@ -297,6 +297,7 @@
     "linux-lacros-builder-fyi-rel": "ci/linux-lacros-builder-fyi-rel/gn-args.json",
     "linux-lacros-builder-rel (reclient)": "ci/linux-lacros-builder-rel (reclient)/gn-args.json",
     "linux-lacros-dbg-fyi": "ci/linux-lacros-dbg-fyi/gn-args.json",
+    "linux-lacros-rel-dangling-ptr-fyi": "ci/linux-lacros-rel-dangling-ptr-fyi/gn-args.json",
     "linux-network-sandbox-rel": "ci/linux-network-sandbox-rel/gn-args.json",
     "linux-perfetto-rel": "ci/linux-perfetto-rel/gn-args.json",
     "linux-rel-no-external-ip": "ci/linux-rel-no-external-ip/gn-args.json",
@@ -650,7 +651,6 @@
     "chromeos-amd64-generic-rel": "try/chromeos-amd64-generic-rel/gn-args.json",
     "chromeos-amd64-generic-rel-gtest": "try/chromeos-amd64-generic-rel-gtest/gn-args.json",
     "chromeos-amd64-generic-rel-gtest-and-tast": "try/chromeos-amd64-generic-rel-gtest-and-tast/gn-args.json",
-    "chromeos-amd64-generic-siso-rel": "try/chromeos-amd64-generic-siso-rel/gn-args.json",
     "chromeos-arm-generic-dbg": "try/chromeos-arm-generic-dbg/gn-args.json",
     "chromeos-arm-generic-rel": "try/chromeos-arm-generic-rel/gn-args.json",
     "chromeos-arm64-generic-rel": "try/chromeos-arm64-generic-rel/gn-args.json",
@@ -673,7 +673,8 @@
     "linux-chromeos-dbg": "try/linux-chromeos-dbg/gn-args.json",
     "linux-chromeos-rel": "try/linux-chromeos-rel/gn-args.json",
     "linux-lacros-dbg": "try/linux-lacros-dbg/gn-args.json",
-    "linux-lacros-rel": "try/linux-lacros-rel/gn-args.json"
+    "linux-lacros-rel": "try/linux-lacros-rel/gn-args.json",
+    "linux-lacros-rel-dangling-ptr-fyi": "try/linux-lacros-rel-dangling-ptr-fyi/gn-args.json"
   },
   "tryserver.chromium.codesearch": {
     "gen-android-try": "codesearch/gen-android-try/gn-args.json",

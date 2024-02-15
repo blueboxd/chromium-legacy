@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/birch/birch_calendar_provider.h"
 #include "ash/birch/birch_item.h"
 #include "ash/birch/birch_weather_provider.h"
 #include "ash/constants/ash_features.h"
@@ -30,9 +31,21 @@ BirchModel::BirchModel() {
   if (features::IsBirchWeatherEnabled()) {
     weather_provider_ = std::make_unique<BirchWeatherProvider>(this);
   }
+  if (features::IsBirchCalendarEnabled()) {
+    calendar_provider_ = std::make_unique<BirchCalendarProvider>(this);
+  }
 }
 
 BirchModel::~BirchModel() = default;
+
+void BirchModel::SetCalendarItems(
+    std::vector<BirchCalendarItem> calendar_items) {
+  if (calendar_items != calendar_items_) {
+    calendar_items_ = std::move(calendar_items);
+  }
+  is_calendar_data_fresh_ = true;
+  MaybeRespondToDataFetchRequest();
+}
 
 void BirchModel::SetFileSuggestItems(
     std::vector<BirchFileItem> file_suggest_items) {
@@ -75,6 +88,7 @@ void BirchModel::RequestBirchDataFetch(base::OnceClosure callback) {
     return;
   }
 
+  is_calendar_data_fresh_ = false;
   is_files_data_fresh_ = false;
   is_tabs_data_fresh_ = false;
   is_weather_data_fresh_ = false;
@@ -86,12 +100,18 @@ void BirchModel::RequestBirchDataFetch(base::OnceClosure callback) {
   if (weather_provider_) {
     weather_provider_->RequestBirchDataFetch();
   }
+  if (calendar_provider_) {
+    calendar_provider_->RequestBirchDataFetch();
+  }
 }
 
 std::vector<std::unique_ptr<BirchItem>> BirchModel::GetAllItems() const {
   std::vector<std::unique_ptr<BirchItem>> all_items;
 
   // TODO(b/305094126): Sort items by priority.
+  for (auto& event : calendar_items_) {
+    all_items.push_back(std::make_unique<BirchCalendarItem>(event));
+  }
   for (auto& tab : recent_tab_items_) {
     all_items.push_back(std::make_unique<BirchTabItem>(tab));
   }
@@ -107,7 +127,8 @@ std::vector<std::unique_ptr<BirchItem>> BirchModel::GetAllItems() const {
 
 bool BirchModel::IsDataFresh() {
   return (!birch_client_ || (is_files_data_fresh_ && is_tabs_data_fresh_)) &&
-         (!weather_provider_ || is_weather_data_fresh_);
+         (!weather_provider_ || is_weather_data_fresh_) &&
+         (!calendar_provider_ || is_calendar_data_fresh_);
 }
 
 void BirchModel::OverrideWeatherProviderForTest(

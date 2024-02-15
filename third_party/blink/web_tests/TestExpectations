@@ -219,6 +219,7 @@ crbug.com/324053529 [ Linux ] css3/filters/effect-all-on-background-hw.html [ Fa
 crbug.com/324053529 [ Linux ] css3/blending/effect-background-blend-mode-stacking.html [ Failure Pass ]
 crbug.com/324053529 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass ]
 crbug.com/324053529 [ Win ] virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass ]
+crbug.com/324053529 [ Linux ] virtual/scalefactor200/css3/filters/effect-drop-shadow-hw.html [ Failure Pass ]
 
 # --- END Skia roll test suppresions
 
@@ -718,9 +719,6 @@ crbug.com/1044742 external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-fil
 crbug.com/1044742 external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-stacking-context-001.html [ Failure ]
 
 crbug.com/1271275 external/wpt/css/compositing/background-blending/background-blend-mode-plus-lighter.html [ Failure ]
-
-# Minor pixel differences
-crbug.com/1056492 external/wpt/svg/painting/reftests/marker-path-001.svg [ Failure ]
 
 crbug.com/819617 [ Linux ] virtual/text-antialias/descent-clip-in-scaled-page.html [ Failure ]
 
@@ -2573,6 +2571,11 @@ crbug.com/626703 external/wpt/uievents/mouse/mouse_boundary_events_after_removin
 crbug.com/626703 external/wpt/css/printing/table-overflow-quirks-frameset-crash-print.html [ Crash Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win11-arm64 ] external/wpt/html/semantics/embedded-content/bfcache/embedded-html.html [ Failure Timeout ]
+crbug.com/626703 [ Win11-arm64 ] external/wpt/html/semantics/embedded-content/bfcache/embedded-mp4.html [ Timeout ]
+crbug.com/626703 [ Win11-arm64 ] virtual/fenced-frame-mparch/external/wpt/fenced-frame/popup-noopener.https.html [ Timeout ]
+crbug.com/626703 [ Win11-arm64 ] virtual/fenced-frame-mparch/external/wpt/fenced-frame/resolve-to-config-promise.https.html [ Timeout ]
+crbug.com/626703 [ Win11-arm64 ] virtual/shared-storage-fenced-frame-mparch-selecturl-limit/external/wpt/shared-storage-selecturl-limit/run-url-selection-operation-limit-multiple-sites.tentative.https.sub.html [ Timeout ]
 crbug.com/626703 [ Win11-arm64 ] external/wpt/html/cross-origin-embedder-policy/credentialless/fetch.https.window.html [ Timeout ]
 crbug.com/626703 [ Win11-arm64 ] external/wpt/webtransport/echo-large-bidirectional-streams.https.any.worker.html [ Timeout ]
 crbug.com/626703 [ Win11-arm64 ] virtual/shared-storage-fenced-frame-mparch/external/wpt/shared-storage/shared-storage-writable-service-worker-fetch.tentative.https.sub.html [ Failure Timeout ]
@@ -5398,15 +5401,6 @@ crbug.com/1370307 external/wpt/encoding-detection/yi-windows-1255-late.tentative
 crbug.com/1370307 external/wpt/encoding-detection/zh-Big5-late.tentative.html [ Failure Pass ]
 crbug.com/1370307 external/wpt/encoding-detection/zh-GBK-late.tentative.html [ Failure Pass ]
 
-# Implement lazy loading scroll margin for iframes
-crbug.com/40943726 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-loading-lazy-in-scroller-horizontal.html [ Failure ]
-crbug.com/40943726 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-loading-lazy-in-scroller-nested-2.html [ Failure ]
-crbug.com/40943726 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-loading-lazy-in-scroller-nested-3.html [ Failure ]
-crbug.com/40943726 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-loading-lazy-in-scroller-nested-4.html [ Failure ]
-crbug.com/40943726 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-loading-lazy-in-scroller-nested-5.html [ Failure ]
-crbug.com/40943726 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-loading-lazy-in-scroller-nested.html [ Failure ]
-crbug.com/40943726 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-loading-lazy-in-scroller.html [ Failure ]
-
 # Disable top flakes trigger step failure on builders
 crbug.com/1194961 [ Debug Linux ] fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Failure Pass ]
 crbug.com/1380069 [ Mac10.15 ] virtual/pending-beacon/external/wpt/pending-beacon/pending_beacon-sendonhidden.tentative.https.window.html [ Timeout ]
@@ -6065,7 +6059,7 @@ crbug.com/1428795 [ Linux ] external/wpt/dom/events/Event-dispatch-on-disabled-e
 crbug.com/1430986 http/tests/inspector-protocol/tracing/page-load-metrics.js [ Failure Pass Timeout ]
 
 # Sheriff 2023-04-06
-crbug.com/1362106 [ Linux ] media/video-source-error-no-candidate.html [ Failure Pass ]
+crbug.com/1362106 media/video-source-error-no-candidate.html [ Failure Pass ]
 crbug.com/1362106 [ Linux ] media/video-source.html [ Failure Pass ]
 
 # Sheriff 2023-04-07
@@ -6115,7 +6109,6 @@ crbug.com/1446039 [ Debug Mac13 ] external/wpt/webtransport/streams-close.https.
 [ Debug Mac13 ] http/tests/devtools/sources/debugger-breakpoints/breakpoint-manager-listeners-count.js [ Failure ]
 [ Debug Mac13 ] virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Failure ]
 [ Debug Mac13 ] http/tests/devtools/elements/edit/undo-dom-edits.js [ Skip Timeout ]
-[ Debug Mac13 ] media/video-source-error-no-candidate.html [ Failure ]
 [ Debug Mac13 ] external/wpt/permissions-policy/permissions-policy-frame-policy-timing.https.sub.html [ Failure ]
 [ Debug Mac13 ] external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Failure ]
 [ Debug Mac13 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Skip Timeout ]
@@ -6482,8 +6475,6 @@ crbug.com/1464614 [ Win11-arm64 ] virtual/pna-workers-enabled/external/wpt/fetch
 crbug.com/1464614 [ Win11-arm64 ] virtual/shared-storage-fenced-frame-mparch/external/wpt/shared-storage/shared-storage-writable-permissions-policy-default.tentative.https.sub.html [ Failure Pass Timeout ] # Flaky
 crbug.com/1464614 [ Win11-arm64 ] virtual/threaded/external/wpt/css/css-animations/animationevent-types.html [ Failure Pass Timeout ] # Flaky
 
-crbug.com/1411760 [ Debug Mac13-arm64 ] virtual/composite-clip-path-animation/external/wpt/css/css-masking/clip-path/animations/clip-path-animation-fixed-position.html [ Failure Pass ]
-
 # Gardener 2023-07-26
 crbug.com/1364187 http/tests/misc/scroll-cross-origin-iframes.html [ Failure Pass ]
 
@@ -6777,7 +6768,17 @@ crbug.com/41490297 virtual/speculation-rules-prerender-target-hint/external/wpt/
 # Flaky test in virtual suite.
 crbug.com/324113086 virtual/stable/external/wpt/performance-timeline/tentative/with-filter-options-originA.html [ Failure Pass ]
 
+# Temporarily disable for landing crrev.com/c/5273025
+crbug.com/41491846 http/tests/devtools/resource-har-conversion.js [ Failure Pass ]
+
 crbug.com/1467464 http/tests/devtools/a11y-axe-core/sources/event-listener-breakpoints-a11y-test.js [ Failure Pass ]
 
 # Gardener: 2024-02-06
 crbug.com/41491793 [ Mac ] virtual/disable-intersection-optimization/external/wpt/html/semantics/embedded-content/the-img-element/srcset/avoid-reload-on-resize.html [ Failure Pass ]
+
+# Gardener: 2024-02-14
+crbug.com/325227176 [ Linux ] http/tests/misc/resource-timing-iframe-restored-from-history-cross-origin.html [ Failure Pass ]
+crbug.com/325255315 [ Linux ] http/tests/misc/resource-timing-iframe-restored-from-history.html [ Failure Pass ]
+
+# Flaky test
+crbug.com/40275364 [ Win ] virtual/media-foundation-for-clear-dcomp/media/controls/text-track-duplicate-label.html [ Failure Pass ]

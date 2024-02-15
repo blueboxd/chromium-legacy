@@ -23161,6 +23161,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileSaveToPhotosManageStorage">
+  <owner>qpubert@google.com</owner>
+  <owner>olivierrobin@google.com</owner>
+  <owner>bling-team@google.com</owner>
+  <description>
+    Reported when the user selects &quot;Manage Storage&quot; in the alert
+    presented when attempting to upload an image to a Google Photos account with
+    insufficient storage.
+  </description>
+</action>
+
 <action name="MobileSearchEngineSettingsBack">
   <owner>gambard@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -34409,6 +34420,14 @@ should be able to be added at any place in this file.
   <description>Recorded when showing sign in entry in the menu.</description>
 </action>
 
+<action name="Signin_Impression_FromNotificationsOptInScreenContentToggle">
+  <owner>hiramahmood@google.com</owner>
+  <owner>scottyoder@google.com</owner>
+  <description>
+    Recorded when showing sign in entry in the notifications opt-in screen.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromNTP" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
@@ -35131,6 +35150,15 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_MENU.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromNotificationsOptInScreenContentToggle">
+  <owner>hiramahmood@google.com</owner>
+  <owner>scottyoder@google.com</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE.
   </description>
 </action>
 
@@ -41279,6 +41307,7 @@ should be able to be added at any place in this file.
   <suffix name="DownloadToolbarButton"
       label="For Download toolbar button feature."/>
   <suffix name="EphemeralTab" label="For Ephemeral Tab."/>
+  <suffix name="ExperimentalAIPromo" label="For Experimental AI feature."/>
   <suffix name="ExploreSitesTile" label="For Explore Sites feature."/>
   <suffix name="ExtensionsMenu" label="For Extensions menu opening."/>
   <suffix name="ExtensionsRequestAccessButton"
@@ -41340,8 +41369,6 @@ should be able to be added at any place in this file.
   <suffix name="IntentChip"
       label="In product help for opening a webpage in an app using the intent
              chip."/>
-  <suffix name="iOSBlueDotPromoEnhancedSafeBrowsing"
-      label="For iOSBlueDotPromoEnhancedSafeBrowsing feature"/>
   <suffix name="iOSChoiceScreen" label="For iOSChoiceScreen feature"/>
   <suffix name="iOSDefaultBrowserBadgeEligibility"
       label="For iOSDefaultBrowserBadgeEligibility feature"/>
@@ -41387,8 +41414,8 @@ should be able to be added at any place in this file.
       label="For iOSShareToolbarItemFeature feature"/>
   <suffix name="iOSSwipeBackForwardFeature"
       label="For iOSSwipeBackForwardFeature feature"/>
-  <suffix name="iOSTabGridSwipeLeftForIncognito"
-      label="For iOSTabGridSwipeLeftForIncognito feature"/>
+  <suffix name="iOSTabGridSwipeRightForIncognito"
+      label="For iOSTabGridSwipeRightForIncognito feature"/>
   <suffix name="iOSTabGridToolbarItemFeature"
       label="For iOSTabGridToolbarItemFeature feature"/>
   <suffix name="KeyboardAccessoryAddressFilling"
@@ -42099,6 +42126,8 @@ should be able to be added at any place in this file.
   <suffix name="HomeButton" label="Home button"/>
   <suffix name="MediaButton" label="Media button"/>
   <suffix name="NewTabButton" label="New tab button for thumbnail tab strip"/>
+  <suffix name="PinnedClearBrowsingDataButton"
+      label="Pinned clear browsing data button"/>
   <suffix name="PinnedNewIncognitoWindowButton"
       label="Pinned new incognito window button"/>
   <suffix name="PinnedPrintButton" label="Pinned print button"/>
@@ -42112,6 +42141,7 @@ should be able to be added at any place in this file.
       label="Pinned show reading list side panel button"/>
   <suffix name="PinnedShowSearchCompanionSidePanelButton"
       label="Pinned show search companion side panel button"/>
+  <suffix name="PinnedTaskManagerButton" label="Pinned task manager button"/>
   <suffix name="ShowPerformanceSidePanelButton"
       label="Show performance side panel button"/>
   <suffix name="SidePanelButton" label="Side Panel button"/>

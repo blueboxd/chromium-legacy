@@ -1582,17 +1582,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.Storage.RetryQueueSizeForRecovery" units="tasks"
-    expires_after="2022-10-04">
-  <owner>joenotcharles@google.com</owner>
-  <owner>chrome-worker@google.com</owner>
-  <summary>
-    The number of queued tasks that are waiting to be re-posted after recovering
-    from a Storage Service crash. Logged at the same time as
-    ServiceWorker.Storage.RetryCountForRecovery.
-  </summary>
-</histogram>
-
 <histogram name="ServiceWorker.Subresource.Fallbacked.Type2"
     enum="ResourceType" expires_after="2024-08-04">
   <owner>yyanagisawa@google.com</owner>
@@ -1662,7 +1651,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorkerCache.Cache.Browser.Match.Initialized" units="ms"
-    expires_after="2024-03-23">
+    expires_after="2025-03-23">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -1817,7 +1806,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorkerCache.{ServiceWorkerCacheClientType}.Scheduler.OperationDuration2"
-    units="ms" expires_after="2024-03-23">
+    units="ms" expires_after="2025-03-23">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -1831,7 +1820,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorkerCache.{ServiceWorkerCacheClientType}.Scheduler.QueueDuration2"
-    units="ms" expires_after="2024-03-23">
+    units="ms" expires_after="2025-03-23">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -1845,7 +1834,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorkerCache.{ServiceWorkerCacheClientType}.Scheduler.QueueLength"
-    units="operations" expires_after="2024-03-23">
+    units="operations" expires_after="2025-03-23">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -1872,7 +1861,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorkerCache.{ServiceWorkerCacheSchedulerOpClientType}.Scheduler.QueueDuration2.{ServiceWorkerSchedulerOp}"
-    units="ms" expires_after="2024-03-23">
+    units="ms" expires_after="2025-03-23">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -1886,7 +1875,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorkerCache.{ServiceWorkerCacheSchedulerOpClientType}.Scheduler.QueueLength.{ServiceWorkerSchedulerOp}"
-    units="operations" expires_after="2024-03-23">
+    units="operations" expires_after="2025-03-23">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>

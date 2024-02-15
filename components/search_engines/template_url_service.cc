@@ -963,8 +963,7 @@ bool TemplateURLService::CanMakeDefault(const TemplateURL* url) const {
               DefaultSearchManager::FROM_FALLBACK) &&
          (url != GetDefaultSearchProvider()) &&
          url->url_ref().SupportsReplacement(search_terms_data()) &&
-         (url->type() == TemplateURL::NORMAL) &&
-         (url->starter_pack_id() != TemplateURLStarterPackData::kTabs);
+         (url->type() == TemplateURL::NORMAL) && (url->starter_pack_id() == 0);
 }
 
 void TemplateURLService::SetUserSelectedDefaultSearchProvider(
@@ -1355,12 +1354,15 @@ void TemplateURLService::OnWebDataServiceRequestDone(
 
 std::u16string TemplateURLService::GetKeywordShortName(
     const std::u16string& keyword,
-    bool* is_omnibox_api_extension_keyword) const {
+    bool* is_omnibox_api_extension_keyword,
+    bool* is_ask_google_keyword) const {
   const TemplateURL* template_url = GetTemplateURLForKeyword(keyword);
 
   // TODO(sky): Once LocationBarView adds a listener to the TemplateURLService
   // to track changes to the model, this should become a DCHECK.
   if (template_url) {
+    *is_ask_google_keyword = template_url->starter_pack_id() ==
+                             TemplateURLStarterPackData::kAskGoogle;
     *is_omnibox_api_extension_keyword =
         template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION;
     return template_url->AdjustedShortNameForLocaleDirection();
@@ -1812,6 +1814,14 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
                            sync_data));
     UMA_HISTOGRAM_ENUMERATION(kDeleteSyncedEngineHistogramName,
         DELETE_ENGINE_EMPTY_FIELD, DELETE_ENGINE_MAX);
+    return nullptr;
+  }
+
+  // Throw out anything from sync that has an invalid starter pack ID.  This
+  // might happen occasionally when the starter pack gets new entries that are
+  // not yet supported in this version of Chrome.
+  if (specifics.starter_pack_id() >=
+      TemplateURLStarterPackData::kMaxStarterPackID) {
     return nullptr;
   }
 

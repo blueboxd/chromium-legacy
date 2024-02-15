@@ -824,6 +824,12 @@ BASE_FEATURE(kDeprecateUnloadByAllowList,
 const base::FeatureParam<std::string> kDeprecateUnloadAllowlist{
     &kDeprecateUnloadByAllowList, "allowlist", ""};
 
+// Enables using a 'deprecatedRenderURLReplacements' field within the a
+// Protected Audience ad auction config.
+BASE_FEATURE(kEnableDeprecatedRenderURLReplacements,
+             "EnableDeprecatedRenderURLReplacements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables using a base::ProtectedMemory<bool> value to provide extra protection
 // against MojoJS bindings being enabled via a data-only attack.
 BASE_FEATURE(kEnableMojoJSProtectedMemory,
@@ -1201,8 +1207,8 @@ BASE_FEATURE(kLCPCriticalPathPredictor,
              "LCPCriticalPathPredictor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::FeatureParam<bool> kLCPCriticalPathPredictorDryRun{
-    &kLCPCriticalPathPredictor, "lcpp_dry_run", false};
+const base::FeatureParam<bool> kLCPCriticalPathAdjustImageLoadPriority{
+    &kLCPCriticalPathPredictor, "lcpp_adjust_image_load_priority", false};
 
 const base::FeatureParam<int> kLCPCriticalPathPredictorMaxElementLocatorLength{
     &kLCPCriticalPathPredictor, "lcpp_max_element_locator_length", 1024};

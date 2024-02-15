@@ -9,7 +9,7 @@
           {
             "builder_id": {
               "bucket": "ci",
-              "builder": "chromeos-octopus-rel-skylab-fyi",
+              "builder": "chromeos-octopus-rel-skylab",
               "project": "chromium"
             },
             "builder_spec": {
@@ -37,7 +37,7 @@
                 "config": "chromium"
               },
               "skylab_upload_location": {
-                "gs_bucket": "chromium-skylab-ci",
+                "gs_bucket": "chromium-skylab-try",
                 "gs_extra": "ash"
               }
             }
@@ -47,7 +47,7 @@
       "builder_ids": [
         {
           "bucket": "ci",
-          "builder": "chromeos-octopus-rel-skylab-fyi",
+          "builder": "chromeos-octopus-rel-skylab",
           "project": "chromium"
         }
       ]

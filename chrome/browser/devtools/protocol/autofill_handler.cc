@@ -60,6 +60,22 @@ std::optional<std::pair<FormData, FormFieldData>> FindFieldWithFormData(
   return std::nullopt;
 }
 
+std::optional<std::string> GetRenderFrameDevtoolsToken(
+    const std::string& target_id,
+    const std::string& frame_token) {
+  auto host = content::DevToolsAgentHost::GetForId(target_id);
+  CHECK(host);
+
+  std::string result;
+  host->GetWebContents()->GetOutermostWebContents()->ForEachRenderFrameHost(
+      [&result, &frame_token](content::RenderFrameHost* rfh) {
+        if (rfh->GetFrameToken().ToString() == frame_token) {
+          result = rfh->GetDevToolsFrameToken().ToString();
+        }
+      });
+  return result;
+}
+
 }  // namespace
 
 AutofillHandler::AutofillHandler(protocol::UberDispatcher* dispatcher,
@@ -226,10 +242,17 @@ void AutofillHandler::OnFillOrPreviewDataModelForm(
             return std::make_pair(field->global_id(), field);
           });
 
+  auto filled_form_ids = base::MakeFlatSet<autofill::FormGlobalId>(
+      filled_fields, {}, &FormFieldData::renderer_form_id);
   auto filled_fields_to_be_sent_to_devtools =
       std::make_unique<protocol::Array<protocol::Autofill::FilledField>>();
   filled_fields_to_be_sent_to_devtools->reserve(filled_fields.size());
   for (const auto& autofill_field : form_structure) {
+    // `form_structure` may contains fields from multiple forms, filter out
+    // fields from forms that have no autofilled fields as irrelevant.
+    if (!filled_form_ids.contains(autofill_field->renderer_form_id())) {
+      continue;
+    }
     // Whether the field was classified from the autocomplete attribute or
     // predictions. If no autocomplete attribute exists OR the actual ServerType
     // differs from what it would have been with only autocomplete, autofill
@@ -261,6 +284,10 @@ void AutofillHandler::OnFillOrPreviewDataModelForm(
                     ? protocol::Autofill::FillingStrategyEnum::AutofillInferred
                     : protocol::Autofill::FillingStrategyEnum::
                           AutocompleteAttribute)
+            .SetFrameId(GetRenderFrameDevtoolsToken(
+                            target_id_,
+                            autofill_field->global_id().frame_token->ToString())
+                            .value_or(""))
             .SetFieldId(autofill_field->renderer_id.value())
             .Build());
   }
@@ -369,16 +396,18 @@ Response AutofillHandler::Enable() {
           autofill::features::kAutofillTestFormWithDevtools)) {
     auto host = content::DevToolsAgentHost::GetForId(target_id_);
     CHECK(host);
-    autofill_managers_observation_.Observe(
-        host->GetWebContents(),
-        autofill::ScopedAutofillManagersObservation::InitializationPolicy::
-            kObservePreexistingManagers);
+
+    autofill::ContentAutofillDriver* driver = GetAutofillDriver();
+    if (driver && host->GetType() == content::DevToolsAgentHost::kTypePage) {
+      autofill_manager_observation_.Observe(&driver->GetAutofillManager());
+    }
   }
+
   return Response::Success();
 }
 
 Response AutofillHandler::Disable() {
   enabled_ = false;
-  autofill_managers_observation_.Reset();
+  autofill_manager_observation_.Reset();
   return Response::Success();
 }

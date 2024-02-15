@@ -798,6 +798,12 @@ CHAR_LIMIT guidelines:
       <message name="IDS_PASSWORD_MIGRATION_WARNING_CANCEL" desc="The text for the cancel button in the password migration warning sheet. It closes the sheet">
         Cancel
       </message>
+      <message name="IDS_POST_PASSWORD_MIGRATION_SHEET_TITLE" desc="The title of the post password migration sheet that informs the user that the migration happened." formatter_data="android_java">
+        We changed how passwords are saved on this device
+      </message>
+      <message name="IDS_POST_PASSWORD_MIGRATION_SHEET_SUBTITLE" desc="The subtitle of the post password migration sheet." formatter_data="android_java">
+        Your lists of saved passwords for Chrome and <ph name="CHROME_CHANNEL">%1$s<ex>Chrome Dev</ex></ph> were merged. You can still autofill all your saved passwords on both apps.
+      </message>
       <message name="IDS_EXPORTED_PASSWORDS_DELETION_DIALOG_TITLE" desc="The title of the dialog that offers to delete passwords from Google Password Manager." formatter_data="android_java">
         Delete passwords from Google Password Manager?
       </message>
@@ -2169,20 +2175,20 @@ Your Google account may have other forms of browsing history like searches and a
         Encryption
       </message>
       <message name="IDS_SYNC_PASSPHRASE_TYPE_KEYSTORE" desc="Option to encrypt only passwords, using your Google credentials.">
-        Encrypt synced passwords with your Google Account
+        Use Google’s default encryption for the passwords in your Google Account
       </message>
       <message name="IDS_SYNC_PASSPHRASE_TYPE_CUSTOM" desc="Option to encrypt sync data with a custom passphrase.">
-        Encrypt synced data with your own sync passphrase
+        Use your own passphrase to encrypt all the Chrome data in your Google Account
       </message>
       <message name="IDS_SYNC_PASSPHRASE_TYPE_CUSTOM_DIALOG_TITLE" desc="Dialog title for custom passphrase creation.">
         Create passphrase
       </message>
-      <message name="IDS_SIGN_IN_GOOGLE_ACCOUNT" desc="Title of sign in account selection dialog. [CHAR_LIMIT=32]">
-        Google Account
+      <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title of dialog to ask user to enter their passphrase. [CHAR_LIMIT=32]">
+        Enter passphrase
       </message>
-      <message name="IDS_NEW_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
+      <message name="IDS_SYNC_ENCRYPTION_CREATE_PASSPHRASE" desc="Prompt user to create a custom sync password.">
         Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Chrome won’t sync.
-Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you’ll need to reset sync. <ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>Learn more<ph name="END_LINK">&lt;/learnmore&gt;</ph>
+Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome data in your account<ph name="END_LINK">END_LINK</ph>.
       </message>
       <message name="IDS_SYNC_ENTER_CUSTOM_PASSPHRASE_HINT" desc="Hint for the passphrase field when user is to type in a passphrase. [CHAR_LIMIT=30]">
         Passphrase
@@ -2190,8 +2196,8 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
       <message name="IDS_SYNC_ENTER_CUSTOM_PASSPHRASE_HINT_CONFIRM" desc="Hint for the passphrase confirmation field when user is to type in a passphrase. [CHAR_LIMIT=30]">
         Confirm passphrase
       </message>
-      <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE_ANDROID" desc="Instructions for the dialog where the user enters their Sync passphrase.">
-        Your data was encrypted with your <ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>sync passphrase<ph name="END_LINK">&lt;/learnmore&gt;</ph> on <ph name="TIME">%1$s<ex>Sept 1, 2012</ex></ph>. Enter it to start sync.
+      <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_EMAIL" desc="Instructions for the dialog where the user enters their Sync passphrase.">
+        Your data is encrypted with your passphrase. Enter it to use and save Chrome data in your Google Account.
       </message>
       <message name="IDS_SYNC_ACCOUNT_INFO"  desc="The message that appears in the options dialog indicating that the user is signed in with the given email address.">
         Signed in as <ph name="USER_EMAIL_ADDRESS">%1$s<ex>foo@gmail.com</ex></ph>.
@@ -2199,8 +2205,8 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
       <message name="IDS_SYNC_PASSPHRASE_CANNOT_BE_BLANK" desc="Inform user that they cannot use a blank password [CHAR_LIMIT=40]">
         This field cannot be blank
       </message>
-      <message name="IDS_SYNC_PASSPHRASE_RESET_INSTRUCTIONS" desc="Inform the user how they can reset their passphrase if they have forgotten it." meaning="Android">
-        If you forgot your passphrase or want to change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<ph name="END_LINK">&lt;/resetlink&gt;</ph>
+      <message name="IDS_SYNC_PASSPHRASE_RECOVER" desc="Inform the user how they can reset their passphrase if they have forgotten it." meaning="Android">
+        If you forgot your passphrase or want to change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome data in your account<ph name="END_LINK">END_LINK</ph>.
       </message>
       <message name="IDS_SYNC_PASSPHRASES_DO_NOT_MATCH" desc="Inform user that their sync password does not match.">
         Passphrases do not match
@@ -2208,7 +2214,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
       <message name="IDS_SYNC_PASSPHRASE_ENCRYPTION_RESET_INSTRUCTIONS" desc="Inform user how to change their encryption setting.">
         Passphrase encryption doesn’t include payment methods and addresses from Google Pay.
 
-To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<ph name="END_LINK">&lt;/resetlink&gt;</ph>
+To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome data in your account<ph name="END_LINK">END_LINK</ph>.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_INCORRECT" desc="Inform the user that the passphrase they entered for sync is incorrect. [CHAR_LIMIT=40]">
         Incorrect passphrase
@@ -2314,6 +2320,40 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_WIPING_PROFILE_DATA_MESSAGE" desc="Message for the progress dialog shown while profile data is being wiped after signing out of an enterprise account">
         Please wait…
+      </message>
+
+      <!-- Identity error card message strings -->
+      <message name="IDS_IDENTITY_ERROR_CARD_PASSPHRASE_REQUIRED" desc="Error message to resolve passphrase required error.">
+        To use and save Chrome data in your Google Account, enter your passphrase
+      </message>
+      <message name="IDS_IDENTITY_ERROR_CARD_CLIENT_OUT_OF_DATE" desc="Error message to resolve sync protocol error for out-of-date client.">
+        To use and save Chrome data in your Google Account, update Chrome
+      </message>
+      <message name="IDS_IDENTITY_ERROR_CARD_AUTH_ERROR" desc="Error message to resolve auth error.">
+        To use and save Chrome data in your Google Account, verify it’s you
+      </message>
+      <message name="IDS_IDENTITY_ERROR_CARD_SYNC_RETRIEVE_KEYS_FOR_EVERYTHING" desc="Error message to resolve sync encryption error, required to resume sync.">
+        To use and save Chrome data in your Google Account, verify it’s you
+      </message>
+      <message name="IDS_IDENTITY_ERROR_CARD_SYNC_RETRIEVE_KEYS_FOR_PASSWORDS" desc="Error message to resolve sync encryption error, required to resume syncing passwords.">
+        To use and save passwords in your Google Account, verify it’s you
+      </message>
+      <message name="IDS_IDENTITY_ERROR_CARD_SYNC_RECOVERABILITY_DEGRADED_FOR_EVERYTHING" desc="Error message to resolve sync degraded recoverability, for users that have not chosen to encrypt all sync data.">
+        To use and save Chrome data in your Google Account, verify it’s you
+      </message>
+      <message name="IDS_IDENTITY_ERROR_CARD_SYNC_RECOVERABILITY_DEGRADED_FOR_PASSWORDS" desc="Error message to resolve sync degraded recoverability, for users that have chosen to encrypt all sync data.">
+        To make sure you can always use the passwords in your Google Account, verify it’s you
+      </message>
+
+      <!-- Identity error card button strings -->
+      <message name="IDS_IDENTITY_ERROR_CARD_BUTTON_PASSPHRASE_REQUIRED" desc="Button label for passphrase required error.">
+        Enter passphrase
+      </message>
+      <message name="IDS_IDENTITY_ERROR_CARD_BUTTON_CLIENT_OUT_OF_DATE" desc="Button label for client out-of-date error.">
+        Update
+      </message>
+      <message name="IDS_IDENTITY_ERROR_CARD_BUTTON_VERIFY" desc="Button label for all errors requiring re-auth (auth error, degreaded recoverability, encryption error)">
+        Verify it’s you
       </message>
 
       <!-- Tab switcher -->
@@ -2906,9 +2946,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Browsing History UI -->
-      <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">
-        Pages that you visit appear here
-      </message>
       <message name="IDS_HISTORY_MANAGER_EMPTY_STATE" desc="Indicates that there are no browsing history items.">
         You’ll find your history here
       </message>

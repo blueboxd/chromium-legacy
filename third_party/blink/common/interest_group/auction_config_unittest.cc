@@ -28,6 +28,10 @@ TEST(AuctionConfigTest, SerializeComponents) {
    },
    "componentAuctions": [ "https://example.org", "https://example.com" ],
    "decisionLogicURL": "https://seller.test/foo",
+   "deprecatedRenderURLReplacements": {
+   "pending": false,
+   "value": [  ]
+},
    "expectsAdditionalBids": false,
    "expectsDirectFromSellerSignalsHeaderAdSlot": false,
    "maxTrustedScoringSignalsURLLength": 0,
@@ -45,6 +49,9 @@ TEST(AuctionConfigTest, SerializeComponents) {
    },
    "perBuyerGroupLimits": {
       "*": 65535
+   },
+   "perBuyerMultiBidLimit": {
+       "*": 1
    },
    "perBuyerPrioritySignals": {
    },
@@ -108,6 +115,10 @@ TEST(AuctionConfigTest, FullConfig) {
    "expectsAdditionalBids": true,
    "expectsDirectFromSellerSignalsHeaderAdSlot": false,
    "maxTrustedScoringSignalsURLLength": 2560,
+   "deprecatedRenderURLReplacements" : {
+      "pending": false,
+      "value": [ ]
+   },
    "interestGroupBuyers": [ "https://buyer.test" ],
    "perBuyerCumulativeTimeouts": {
       "pending": false,
@@ -130,6 +141,10 @@ TEST(AuctionConfigTest, FullConfig) {
    "perBuyerGroupLimits": {
       "*": 11,
       "https://buyer.test": 10
+   },
+   "perBuyerMultiBidLimit": {
+       "*": 5,
+       "https://buyer.test": 10
    },
    "perBuyerPrioritySignals": {
       "*": {

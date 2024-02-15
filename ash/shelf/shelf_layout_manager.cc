@@ -369,12 +369,6 @@ bool IsInImmersiveFullscreen() {
   return active_window && active_window->IsInImmersiveFullscreen();
 }
 
-int GetShelfSwipeOffset() {
-  return features::IsShelfPalmRejectionSwipeOffsetEnabled()
-             ? kShelfPalmRejectionSwipeOffset
-             : 0;
-}
-
 // Forwards gesture events to ShelfLayoutManager to hide the hotseat
 // when it is kExtended.
 class HotseatEventHandler : public ui::EventHandler,
@@ -2713,8 +2707,9 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
     // For tablet mode, we allow a certain offset between the drag event offset
     // and the hotseat location to avoid accidentally extendeing the hotseat in
     // certain conditions.
-    drag_amount_ =
-        is_tablet_mode && IsActiveWindowStylusApp() ? GetShelfSwipeOffset() : 0;
+    drag_amount_ = is_tablet_mode && IsActiveWindowStylusApp()
+                       ? kShelfPalmRejectionSwipeOffset
+                       : 0;
   }
 
   // If the start location is above the shelf (e.g., on the extended hotseat),
@@ -2761,7 +2756,12 @@ void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
     last_drag_velocity_ =
         event_in_screen.AsGestureEvent()->details().velocity_y();
   }
-  LayoutShelf();
+
+  // Prevent unnecessary layout and paint work when handling window drag from
+  // shelf.
+  if (!IsWindowDragInProgress()) {
+    LayoutShelf();
+  }
 
   // Request a new hotseat presentation time record if the hotseat bounds
   // changed while the hotseat is in drag. If hotseat bounds remained the

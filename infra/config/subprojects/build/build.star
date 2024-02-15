@@ -65,7 +65,7 @@ ci.defaults.set(
     siso_enabled = True,
 )
 
-luci.console_view(
+consoles.console_view(
     name = "chromium.build",
     repo = "https://chromium.googlesource.com/chromium/src",
 )
@@ -215,7 +215,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "linux",
         short_name = "siso",
     ),
-    siso_configs = ["builder", "remote-library-link"],
 )
 
 cq_build_perf_builder(
@@ -340,7 +339,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "cros",
         short_name = "siso",
     ),
-    siso_configs = ["builder", "remote-library-link"],
 )
 
 cq_build_perf_builder(
@@ -490,7 +488,6 @@ This builder measures build performance for Linux developer builds, by simulatin
         short_name = "dev",
     ),
     reclient_jobs = 5120,
-    siso_configs = ["remote-library-link"],
 )
 
 developer_build_perf_builder(

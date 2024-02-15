@@ -49,15 +49,9 @@ namespace blink {
     EXPECT_NEAR(expected.fA, actual.fA, error);        \
   } while (false)
 
-enum { kHitTestTransparency = 0x80 };
-
 // Tests the integration between blink and cc where a layer list is sent to cc.
-class CompositingTest : public PaintTestConfigurations,
-                        public testing::Test,
-                        private ScopedHitTestTransparencyForTest {
+class CompositingTest : public PaintTestConfigurations, public testing::Test {
  public:
-  CompositingTest()
-      : ScopedHitTestTransparencyForTest(GetParam() & kHitTestTransparency) {}
   void SetUp() override {
     web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();
     web_view_helper_->Initialize();
@@ -130,10 +124,7 @@ class CompositingTest : public PaintTestConfigurations,
   test::TaskEnvironment task_environment_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         CompositingTest,
-                         ::testing::Values(PAINT_TEST_SUITE_P_VALUES,
-                                           kHitTestTransparency));
+INSTANTIATE_PAINT_TEST_SUITE_P(CompositingTest);
 
 TEST_P(CompositingTest, DisableAndEnableAcceleratedCompositing) {
   UpdateAllLifecyclePhases();
@@ -685,7 +676,7 @@ TEST_P(CompositingTest, HitTestOpaqueness) {
   )HTML");
 
   const auto hit_test_transparent =
-      RuntimeEnabledFeatures::HitTestTransparencyEnabled()
+      RuntimeEnabledFeatures::HitTestOpaquenessEnabled()
           ? cc::HitTestOpaqueness::kTransparent
           : cc::HitTestOpaqueness::kMixed;
   EXPECT_EQ(hit_test_transparent,
@@ -747,7 +738,7 @@ TEST_P(CompositingTest, HitTestOpaquenessOnChangeOfUsedPointerEvents) {
   )HTML");
 
   const auto hit_test_transparent =
-      RuntimeEnabledFeatures::HitTestTransparencyEnabled()
+      RuntimeEnabledFeatures::HitTestOpaquenessEnabled()
           ? cc::HitTestOpaqueness::kTransparent
           : cc::HitTestOpaqueness::kMixed;
   const auto hit_test_opaque =
@@ -772,7 +763,7 @@ TEST_P(CompositingTest, HitTestOpaquenessOnChangeOfUsedPointerEvents) {
   // Change of PointerEvents should not invalidate the painting layer, but not
   // the display item client.
   EXPECT_EQ(EPointerEvents::kNone, target_box->StyleRef().UsedPointerEvents());
-  if (RuntimeEnabledFeatures::HitTestTransparencyEnabled()) {
+  if (RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
     EXPECT_TRUE(target_box->Layer()->SelfNeedsRepaint());
   }
   EXPECT_TRUE(display_item_client->IsValid());
@@ -783,7 +774,7 @@ TEST_P(CompositingTest, HitTestOpaquenessOnChangeOfUsedPointerEvents) {
   GetLocalFrameView()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest);
   EXPECT_EQ(EPointerEvents::kAuto, target_box->StyleRef().UsedPointerEvents());
-  if (RuntimeEnabledFeatures::HitTestTransparencyEnabled()) {
+  if (RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
     EXPECT_TRUE(target_box->Layer()->SelfNeedsRepaint());
   }
   EXPECT_TRUE(display_item_client->IsValid());
@@ -796,7 +787,7 @@ TEST_P(CompositingTest, HitTestOpaquenessOnChangeOfUsedPointerEvents) {
   EXPECT_EQ(EPointerEvents::kNone, target_box->StyleRef().UsedPointerEvents());
   // Change of parent inert attribute (affecting target's used pointer events)
   // should invalidate the painting layer but not the display item client.
-  if (RuntimeEnabledFeatures::HitTestTransparencyEnabled()) {
+  if (RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
     EXPECT_TRUE(target_box->Layer()->SelfNeedsRepaint());
   }
   EXPECT_TRUE(display_item_client->IsValid());
@@ -807,7 +798,7 @@ TEST_P(CompositingTest, HitTestOpaquenessOnChangeOfUsedPointerEvents) {
   GetLocalFrameView()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest);
   EXPECT_EQ(EPointerEvents::kAuto, target_box->StyleRef().UsedPointerEvents());
-  if (RuntimeEnabledFeatures::HitTestTransparencyEnabled()) {
+  if (RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
     EXPECT_TRUE(target_box->Layer()->SelfNeedsRepaint());
   }
   EXPECT_TRUE(display_item_client->IsValid());
@@ -3231,6 +3222,40 @@ TEST_P(CompositingSimTest, CompositedImageWithSubpixelOffsetAndOrientation) {
             image_layer->GetRecordingSourceForTesting()
                 ->directly_composited_image_info()
                 ->default_raster_scale);
+}
+
+TEST_P(CompositingSimTest, ScrollingContentsLayerRecordedBounds) {
+  InitializeWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      div div { width: 2000px; height: 2000px; margin-top: 2000px; }
+    </style>
+    <div id="scroller" style="overflow: scroll; will-change: scroll-position;
+                              width: 200px; height: 200px">
+      <div>1</div>
+      <div>2</div>
+      <div>3</div>
+      <div>4</div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* layer = static_cast<const cc::PictureLayer*>(
+      ScrollingContentsCcLayerByScrollElementId(RootCcLayer(),
+                                                GetElementById("scroller")
+                                                    ->GetLayoutBox()
+                                                    ->GetScrollableArea()
+                                                    ->GetScrollElementId()));
+  ASSERT_TRUE(layer);
+  if (RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
+    EXPECT_EQ(gfx::Size(2000, 16000), layer->bounds());
+    EXPECT_EQ(gfx::Rect(0, 0, 2000, 16000),
+              layer->GetRecordingSourceForTesting()->recorded_bounds());
+  } else {
+    EXPECT_EQ(gfx::Size(2000, 2000), layer->bounds());
+    EXPECT_EQ(gfx::Rect(0, 0, 2000, 2000),
+              layer->GetRecordingSourceForTesting()->recorded_bounds());
+  }
 }
 
 }  // namespace blink

@@ -45,6 +45,7 @@
 #include "base/types/optional_ref.h"
 #include "base/uuid.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/fenced_frame/fenced_frame_config.h"
 #include "content/browser/interest_group/ad_auction_page_data.h"
 #include "content/browser/interest_group/additional_bid_result.h"
 #include "content/browser/interest_group/additional_bids_util.h"
@@ -978,6 +979,44 @@ std::vector<GURL> InterestGroupAuction::Bid::GetAdComponentUrls() const {
   return ad_component_urls;
 }
 
+// If the auction config specified 'deprecatedRenderURLReplacements', this will
+// return the ad descriptor with the proper replacements.
+blink::AdDescriptor
+InterestGroupAuction::Bid::GetAdDescriptorWithReplacements() {
+  std::vector<std::pair<std::string, std::string>> local_replacements;
+  // Convert `replacements` into a vector of pairs to use within
+  // `SubstituteMappedStrings`.
+  for (const auto& replacement :
+       auction->GetDeprecatedRenderURLReplacements()) {
+    local_replacements.emplace_back(replacement.match, replacement.replacement);
+  }
+  return blink::AdDescriptor(GURL(SubstituteMappedStrings(
+                                 ad_descriptor.url.spec(), local_replacements)),
+                             ad_descriptor.size);
+}
+
+// If the auction config specified 'deprecatedRenderURLReplacements', this will
+// return the ad descriptors with the proper replacements.
+std::vector<blink::AdDescriptor>
+InterestGroupAuction::Bid::GetComponentAdDescriptorsWithReplacements() {
+  std::vector<blink::AdDescriptor> local_component_ad_descriptors;
+  std::vector<std::pair<std::string, std::string>> local_replacements;
+  // Convert `replacements` into a vector of pairs to use within
+  // `SubstituteMappedStrings`.
+  for (const auto& replacement :
+       auction->GetDeprecatedRenderURLReplacements()) {
+    local_replacements.emplace_back(replacement.match, replacement.replacement);
+  }
+
+  for (auto& ad_component_descriptor : ad_component_descriptors) {
+    local_component_ad_descriptors.emplace_back(
+        GURL(SubstituteMappedStrings(ad_component_descriptor.url.spec(),
+                                     local_replacements)),
+        ad_component_descriptor.size);
+  }
+  return local_component_ad_descriptors;
+}
+
 InterestGroupAuction::ScoredBid::ScoredBid(
     double score,
     std::optional<uint32_t> scoring_signals_data_version,
@@ -1526,6 +1565,7 @@ class InterestGroupAuction::BuyerHelper
       bid_state->handled_direct_from_seller_signals_in_begin_generate_bid =
           true;
     }
+    const url::Origin& owner = bid_state->bidder->interest_group.owner;
     bid_state->worklet_handle->GetBidderWorklet()->BeginGenerateBid(
         auction_worklet::mojom::BidderWorkletNonSharedParams::New(
             interest_group.name,
@@ -1538,8 +1578,7 @@ class InterestGroupAuction::BuyerHelper
             interest_group.ad_components,
             KAnonKeysToMojom(bid_state->kanon_keys)),
         kanon_mode, bid_state->bidder->joining_origin,
-        GetDirectFromSellerPerBuyerSignals(
-            url_builder, bid_state->bidder->interest_group.owner),
+        GetDirectFromSellerPerBuyerSignals(url_builder, owner),
         GetDirectFromSellerAuctionSignals(url_builder),
         auction_->config_->seller,
         auction_->parent_ ? auction_->parent_->config_->seller
@@ -1548,7 +1587,8 @@ class InterestGroupAuction::BuyerHelper
             .RoundToMultiple(base::Milliseconds(100)),
         bid_state->bidder->bidding_browser_signals.Clone(),
         auction_->auction_start_time_, auction_->RequestedAdSize(),
-        *bid_state->trace_id, std::move(pending_remote),
+        auction_->GetBuyerMultiBidLimit(owner), *bid_state->trace_id,
+        std::move(pending_remote),
         bid_state->bid_finalizer.BindNewEndpointAndPassReceiver());
 
     // TODO(morlovich): This should arguably be merged into BeginGenerateBid
@@ -3618,6 +3658,15 @@ void InterestGroupAuction::ComputePostAuctionSignals(
   }
 }
 
+uint16_t InterestGroupAuction::GetBuyerMultiBidLimit(const url::Origin& buyer) {
+  uint16_t val = config_->non_shared_params.all_buyers_multi_bid_limit;
+  auto it = config_->non_shared_params.per_buyer_multi_bid_limits.find(buyer);
+  if (it != config_->non_shared_params.per_buyer_multi_bid_limits.end()) {
+    val = it->second;
+  }
+  return std::max(val, uint16_t{1});
+}
+
 std::optional<uint16_t> InterestGroupAuction::GetBuyerExperimentId(
     const blink::AuctionConfig& config,
     const url::Origin& buyer) {
@@ -3736,6 +3785,11 @@ std::optional<std::string>
 InterestGroupAuction::GetDirectFromSellerSellerSignalsHeaderAdSlot(
     const HeaderDirectFromSellerSignals::Result& signals) {
   return signals.seller_signals();
+}
+
+const std::vector<blink::AuctionConfig::AdKeywordReplacement>&
+InterestGroupAuction::GetDeprecatedRenderURLReplacements() {
+  return config_->deprecated_render_url_replacements.value();
 }
 
 InterestGroupAuction::LeaderInfo::LeaderInfo() = default;
@@ -3882,6 +3936,13 @@ void InterestGroupAuction::OnOneLoadCompleted() {
           num_owners_with_interest_groups_);
       auction_metrics_recorder_->SetNumSellersWithBidders(
           num_sellers_with_bidders);
+
+      // Count the owners that passed the `IsInterestGroupApiAllowedCallback`
+      // filter, but were then excluded due to having no ads or no script URL.
+      // Double counts such buyers that participate in multiple auctions.
+      CHECK_GE(num_owners_loaded_, num_owners_with_interest_groups_);
+      auction_metrics_recorder_->SetNumOwnersWithoutInterestGroups(
+          num_owners_loaded_ - num_owners_with_interest_groups_);
     }
   }
 

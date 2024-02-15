@@ -80,6 +80,32 @@ LimitKeywordModeSuggestions::LimitKeywordModeSuggestions() {
       base::FeatureParam<bool>(&kLimitKeywordModeSuggestions,
                                "LimitDSESuggestions", true)
           .Get();
+  limit_on_device_head_suggestions =
+      base::FeatureParam<bool>(&kLimitKeywordModeSuggestions,
+                               "LimitOnDeviceHeadSuggestions", true)
+          .Get();
+}
+
+// static
+BASE_FEATURE(RealboxContextualAndTrendingSuggestions::
+                 kRealboxContextualAndTrendingSuggestions,
+             "NTPRealboxContextualAndTrendingSuggestions",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+RealboxContextualAndTrendingSuggestions::
+    RealboxContextualAndTrendingSuggestions() {
+  enabled =
+      base::FeatureList::IsEnabled(kRealboxContextualAndTrendingSuggestions);
+  total_limit = base::FeatureParam<int>(
+                    &kRealboxContextualAndTrendingSuggestions, "TotalLimit", 4)
+                    .Get();
+  contextual_suggestions_limit =
+      base::FeatureParam<int>(&kRealboxContextualAndTrendingSuggestions,
+                              "ContextualSuggestionsLimit", 4)
+          .Get();
+  trending_suggestions_limit =
+      base::FeatureParam<int>(&kRealboxContextualAndTrendingSuggestions,
+                              "TrendingSuggestionsLimit", 4)
+          .Get();
 }
 
 // static

@@ -156,21 +156,6 @@ bool IsSidePanelPinningEnabled() {
   return (IsChromeRefresh2023() &&
           base::FeatureList::IsEnabled(kSidePanelPinning));
 }
-
-BASE_FEATURE(kSidePanelMinimumWidth,
-             "SidePanelMinimumWidth",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-const base::FeatureParam<int> kSidePanelMinimumWidthParameter{
-    &kSidePanelMinimumWidth, "minPanelWidth", 360};
-int GetSidePanelMinimumWidth() {
-  if (base::FeatureList::IsEnabled(kSidePanelMinimumWidth)) {
-    return kSidePanelMinimumWidthParameter.Get();
-  }
-
-  // This is the default value used without this feature.
-  return 320;
-}
-
 #endif
 
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078
@@ -205,6 +190,12 @@ BASE_FEATURE(kSplitTabStrip,
              "SplitTabStrip",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Stores the tabs as a tree based data structure instead of a
+// vector in the tabstrip model. b/323937237
+BASE_FEATURE(kTabStripCollectionStorage,
+             "TabStripCollectionStorage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables tabs to be frozen when collapsed.
 // https://crbug.com/1110108
 BASE_FEATURE(kTabGroupsCollapseFreezing,
@@ -214,6 +205,12 @@ BASE_FEATURE(kTabGroupsCollapseFreezing,
 // Enables users to explicitly save and recall tab groups.
 // https://crbug.com/1223929
 BASE_FEATURE(kTabGroupsSave, "TabGroupsSave", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Builds off of the original TabGroupsSave feature by making some UI tweaks and
+// adjustments. b/325123353
+BASE_FEATURE(kTabGroupsSaveV2,
+             "TabGroupsSaveV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables preview images in tab-hover cards.
 // https://crbug.com/928954
@@ -244,6 +241,10 @@ bool IsTabOrganization() {
   return IsChromeRefresh2023() &&
          base::FeatureList::IsEnabled(features::kTabOrganization);
 }
+
+BASE_FEATURE(kMultiTabOrganization,
+             "MultiTabOrganization",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 const base::FeatureParam<base::TimeDelta> kTabOrganizationTriggerPeriod{
     &kTabOrganization, "trigger_period", base::Hours(6)};
@@ -332,6 +333,11 @@ BASE_FEATURE(kTearOffWebAppTabOpensWebAppWindow,
 BASE_FEATURE(kToolbarPinning,
              "ToolbarPinning",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsToolbarPinningEnabled() {
+  return (IsSidePanelPinningEnabled() &&
+          base::FeatureList::IsEnabled(kToolbarPinning));
+}
 #endif
 
 BASE_FEATURE(kToolbarUseHardwareBitmapDraw,

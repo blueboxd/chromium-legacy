@@ -302,19 +302,15 @@ enum class WebAppInstallStatus : int64_t {
 
 using ResultCallback = base::OnceCallback<void(Result)>;
 
-// Convert the uninstall source to string for easy printing.
-std::string ConvertUninstallSourceToStringType(
-    const webapps::WebappUninstallSource& uninstall_source);
-
 // Management types that can be uninstalled by the user.
+// Note: These work directly with the `webapps::IsUserUninstall` function - any
+// source that returns true there can uninstall these types but not others, and
+// will CHECK-fail in RemoveWebAppJob otherwise.
 constexpr WebAppManagementTypes kUserUninstallableSources = {
-    WebAppManagement::kDefault,
-    WebAppManagement::kSync,
-    WebAppManagement::kWebAppStore,
-    WebAppManagement::kSubApp,
-    WebAppManagement::kOem,
-    WebAppManagement::kCommandLine,
-    WebAppManagement::kOneDriveIntegration,
+    WebAppManagement::kDefault,     WebAppManagement::kApsDefault,
+    WebAppManagement::kSync,        WebAppManagement::kWebAppStore,
+    WebAppManagement::kSubApp,      WebAppManagement::kOem,
+    WebAppManagement::kCommandLine, WebAppManagement::kOneDriveIntegration,
 };
 
 // Management types that resulted from a user web app install.

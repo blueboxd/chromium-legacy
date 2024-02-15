@@ -19,7 +19,7 @@
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/fwupd/dbus_constants.h"
 #include "chromeos/ash/components/dbus/fwupd/fake_fwupd_client.h"
-#include "chromeos/ash/components/dbus/fwupd/fwupd_properties.h"
+#include "chromeos/ash/components/dbus/fwupd/fwupd_properties_dbus.h"
 #include "chromeos/ash/components/dbus/fwupd/fwupd_request.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -147,7 +147,7 @@ class FwupdClientImpl : public FwupdClient {
         base::BindOnce(&FwupdClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
 
-    properties_ = std::make_unique<FwupdProperties>(
+    properties_ = std::make_unique<FwupdDbusProperties>(
         proxy_, base::BindRepeating(&FwupdClientImpl::OnPropertyChanged,
                                     weak_ptr_factory_.GetWeakPtr()));
     properties_->ConnectSignals();
@@ -225,6 +225,21 @@ class FwupdClientImpl : public FwupdClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
         base::BindOnce(&FwupdClientImpl::InstallUpdateCallback,
                        weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void TriggerPropertiesChangeForTesting(uint32_t percentage,
+                                         uint32_t status) override {
+    // No-op, this only has an effect when called with FakeFwupdClient.
+  }
+  void TriggerSuccessfulUpdateForTesting() override {
+    // No-op, this only has an effect when called with FakeFwupdClient.
+  }
+  bool HasUpdateStartedForTesting() override {
+    // This only returns a real value when called with FakeFwupdClient.
+    return false;
+  }
+  void EmitDeviceRequestForTesting(uint32_t device_request_id) override {
+    // No-op, this only has an effect when called with FakeFwupdClient.
   }
 
  private:

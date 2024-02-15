@@ -429,7 +429,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'bb4f68479fd8fa4738339cdcc5782b04b985b72b',
+  'quiche_revision': 'efc574e1125251bc1c3195c0c183c843b4c0a1df',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1808,7 +1808,7 @@ deps = {
       'dep_type': 'cipd',
   },
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@5e57702048fad8a0ab1c0a5691d54e02c864d656',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@16c7058465af46e49cd1e976d499c07b3eb46a2b',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '56300b29fbfcc693ee6609ddad3fdd5b7a449a21',

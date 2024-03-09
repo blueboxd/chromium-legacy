@@ -199,19 +199,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.AssistedQueryStats.Length" units="chars"
-    expires_after="2024-04-28">
-  <owner>mahmadi@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Records the length of the aqs= param in the Search Result Page request URLs.
-    Recorded every time a Search Result Page URL is generated in the
-    omnibox/realbox. This happens either when the user selects a suggestion in
-    order to load Search Result Page or when a proactive request is made to
-    prefetch the Search Result Page.
-  </summary>
-</histogram>
-
 <histogram
     name="Omnibox.AsyncAutocompletionTime2.Provider.{Provider}{Completed}"
     units="ms" expires_after="2024-04-28">
@@ -1249,7 +1236,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.NumberOfVisibleCharacters" units="characters"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -1503,7 +1490,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.Search.CtrlEnter.ResolvedAsUrl" enum="Boolean"
-    expires_after="2024-04-01">
+    expires_after="2024-06-02">
   <owner>ender@google.com</owner>
   <owner>chrome-search@google.com</owner>
   <summary>
@@ -1517,7 +1504,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.Search.CtrlEnter.Used" enum="BooleanUsage"
-    expires_after="2024-04-01">
+    expires_after="2024-06-02">
   <owner>ender@google.com</owner>
   <owner>chrome-search@google.com</owner>
   <summary>
@@ -1541,7 +1528,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchboxStats.Length" units="chars"
-    expires_after="2024-04-28">
+    expires_after="2024-12-05">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1637,7 +1624,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SetText.TextLength" units="characters"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>

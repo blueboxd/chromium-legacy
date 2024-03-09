@@ -36,26 +36,6 @@ namespace performance_manager::resource_attribution {
 
 namespace {
 
-// Returns true if `resource_context` refers to a node that's been removed from
-// the PM graph.
-bool IsDeadContext(const ResourceContext& resource_context) {
-  return absl::visit(base::Overloaded{
-                         [](const FrameContext& context) {
-                           return context.GetFrameNode() == nullptr;
-                         },
-                         [](const PageContext& context) {
-                           return context.GetPageNode() == nullptr;
-                         },
-                         [](const ProcessContext& context) {
-                           return context.GetProcessNode() == nullptr;
-                         },
-                         [](const WorkerContext& context) {
-                           return context.GetWorkerNode() == nullptr;
-                         },
-                     },
-                     resource_context);
-}
-
 // Returns true if `result` is in the default-initialized state.
 bool IsEmptyCPUTimeResult(const CPUTimeResult& result) {
   if (result.metadata.measurement_time.is_null()) {
@@ -88,8 +68,9 @@ void ValidateCPUTimeResult(const CPUTimeResult& result) {
 
 // Adds the measurement in `delta` to `result`. The start time of `delta` must
 // follow the end time of `result`. Used for adding successive measurements of
-// process, frame and worker contexts. There may be gaps between deltas, such as
-// if a process died and was restarted.
+// process, frame and worker contexts, so the algorithm in the metadata for
+// `result` should match that of `delta`. There may be gaps between deltas, such
+// as if a process died and was restarted.
 void ApplySequentialDelta(CPUTimeResult& result, const CPUTimeResult& delta) {
   CHECK(!IsEmptyCPUTimeResult(delta));
   ValidateCPUTimeResult(delta);
@@ -97,6 +78,7 @@ void ApplySequentialDelta(CPUTimeResult& result, const CPUTimeResult& delta) {
     result = delta;
   } else {
     ValidateCPUTimeResult(result);
+    CHECK_EQ(result.metadata.algorithm, delta.metadata.algorithm);
     CHECK_LE(result.metadata.measurement_time, delta.start_time);
     result.metadata.measurement_time = delta.metadata.measurement_time;
     result.cumulative_cpu += delta.cumulative_cpu;
@@ -108,14 +90,17 @@ void ApplySequentialDelta(CPUTimeResult& result, const CPUTimeResult& delta) {
 
 // Adds the measurement in `delta` to `result`. Delta may start before `result`
 // or end after it. Used for adding frame and worker measurements to page
-// contexts, since the frames and workers can be added in any order.
+// contexts, since the frames and workers can be added in any order. The
+// algorithm in the metadata for `result` will be set to kSum.
 void ApplyOverlappingDelta(CPUTimeResult& result, const CPUTimeResult& delta) {
   CHECK(!IsEmptyCPUTimeResult(delta));
   ValidateCPUTimeResult(delta);
   if (IsEmptyCPUTimeResult(result)) {
     result = delta;
+    result.metadata.algorithm = MeasurementAlgorithm::kSum;
   } else {
     ValidateCPUTimeResult(result);
+    CHECK_EQ(result.metadata.algorithm, MeasurementAlgorithm::kSum);
     result.metadata.measurement_time = std::max(
         result.metadata.measurement_time, delta.metadata.measurement_time);
     result.start_time = std::min(result.start_time, delta.start_time);
@@ -194,14 +179,6 @@ CPUMeasurementMonitor::UpdateAndGetCPUMeasurements() {
     }
     results.emplace(context, QueryResult(result));
   }
-
-  // After a node is deleted its measurements should only be kept until used
-  // for one query result. This was that query.
-  std::erase_if(measurement_results_,
-                [](const std::pair<ResourceContext, CPUTimeResult>& entry) {
-                  return IsDeadContext(entry.first);
-                });
-
   return results;
 }
 
@@ -310,10 +287,6 @@ void CPUMeasurementMonitor::OnBeforeClientWorkerRemoved(
 
 void CPUMeasurementMonitor::MonitorCPUUsage(const ProcessNode* process_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Only measure renderers.
-  // TODO(crbug.com/1471683): Measure other process types, just don't distribute
-  // the measurements to frames and workers.
-  CHECK_EQ(process_node->GetProcessType(), content::PROCESS_TYPE_RENDERER);
 
   // If a process crashes and is restarted, a new process can be assigned to the
   // same ProcessNode (and the same ProcessContext). When that happens
@@ -579,7 +552,8 @@ void CPUMeasurementMonitor::CPUMeasurement::MeasureAndDistributeCPUUsage(
   auto record_cpu_deltas = [&measurement_deltas, &measurement_interval_start,
                             &measurement_interval_end](
                                const ResourceContext& context,
-                               base::TimeDelta cpu_delta) {
+                               base::TimeDelta cpu_delta,
+                               MeasurementAlgorithm algorithm) {
     // Each ProcessNode should be updated by one call to
     // MeasureAndDistributeCPUUsage(), and each FrameNode and WorkerNode is in a
     // single process, so none of these contexts should be in the map yet. Each
@@ -589,21 +563,25 @@ void CPUMeasurementMonitor::CPUMeasurement::MeasureAndDistributeCPUUsage(
     CHECK(!cpu_delta.is_negative());
     const auto [_, inserted] = measurement_deltas.emplace(
         context, CPUTimeResult{
-                     .metadata = {.measurement_time = measurement_interval_end},
+                     .metadata = {.measurement_time = measurement_interval_end,
+                                  .algorithm = algorithm},
                      .start_time = measurement_interval_start,
                      .cumulative_cpu = cpu_delta,
                  });
     CHECK(inserted);
   };
 
-  record_cpu_deltas(process_node->GetResourceContext(), cumulative_cpu_delta);
+  record_cpu_deltas(process_node->GetResourceContext(), cumulative_cpu_delta,
+                    MeasurementAlgorithm::kDirectMeasurement);
   resource_attribution::SplitResourceAmongFramesAndWorkers(
       cumulative_cpu_delta, process_node, extra_nodes, nodes_to_skip,
       [&record_cpu_deltas](const FrameNode* f, base::TimeDelta cpu_delta) {
-        record_cpu_deltas(f->GetResourceContext(), cpu_delta);
+        record_cpu_deltas(f->GetResourceContext(), cpu_delta,
+                          MeasurementAlgorithm::kSplit);
       },
       [&record_cpu_deltas](const WorkerNode* w, base::TimeDelta cpu_delta) {
-        record_cpu_deltas(w->GetResourceContext(), cpu_delta);
+        record_cpu_deltas(w->GetResourceContext(), cpu_delta,
+                          MeasurementAlgorithm::kSplit);
       });
 }
 

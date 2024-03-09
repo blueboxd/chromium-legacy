@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">Você pode mudar a visualização padrão do site para computador em Configurações &gt; Configurações de conteúdo</translation>
 <translation id="1054745118061919935">Ao continuar, você concorda com os <ph name="BEGIN_LINK" />Termos de Serviço<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Gerenciar sincronização</translation>
-<translation id="1066101356081285416">O Chrome vai detectar números de rastreamento nos sites que você visitar e mostrar atualizações de pacotes na página "Nova guia". O número de rastreamento do pacote e o nome do site serão enviados ao Google para fornecer esse recurso e melhorar os recursos de compras para todos. É possível atualizar essa opção a qualquer momento nas <ph name="BEGIN_LINK" />Configurações de rastreamento de pacote<ph name="END_LINK" />.</translation>
 <translation id="1069154182096085577">A senha já existe</translation>
 <translation id="1076421457278169141">Código lido</translation>
 <translation id="1076785341346483463">Sincronizar com a conta gerenciada</translation>
@@ -106,7 +105,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1492417797159476138">Você já salvou este nome de usuário para este site</translation>
 <translation id="1497590942294823549">Menu → Gerenciador de senhas</translation>
 <translation id="1498283581832036924">Sua conta de <ph name="WEBSITE" /> não será excluída.</translation>
-<translation id="1506063256525392513">Esse app permite que você tire fotos, faça upload delas e leia QR codes</translation>
+<translation id="1506063256525392513">Esse app permite que você tire fotos, faça upload delas e leia códigos QR</translation>
 <translation id="1509486075633541495">Fazer login no site</translation>
 <translation id="1509960214886564027">Os recursos de muitos sites podem apresentar falhas</translation>
 <translation id="152234381334907219">Nunca salvas</translation>
@@ -143,7 +142,6 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="165877110639533037">Não há guias abertas</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Solicitar o site móvel</translation>
-<translation id="168715261339224929">Para acessar seus favoritos em todos os seus dispositivos, ative a sincronização.</translation>
 <translation id="1687475363370981210">Marcar todas as entradas como lidas</translation>
 <translation id="1689333818294560261">Apelido</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selecionados</translation>
@@ -1049,7 +1047,6 @@ No entanto, eles não podem usar cookies para ver sua atividade de navegação e
 <translation id="6476253015009698798">O monitoramento de preços não está disponível para esta página.</translation>
 <translation id="6476800141292307438">Tradução da página para <ph name="LANGUAGE" />. Opções disponíveis na parte inferior da tela.</translation>
 <translation id="648164694371393720">Erro de autenticação</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens excluídos</translation>
 <translation id="6484712497741564393">Login feito como <ph name="EMAIL" />.
 
 Seus dados são criptografados com a senha longa. Digite-a para usar e salvar os dados do Chrome na sua Conta do Google.</translation>
@@ -1136,6 +1133,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="6869389390665537774">Você pode ver as páginas visitadas ou apagá-las do histórico</translation>
 <translation id="687135068089457384">Mostrar configurações</translation>
 <translation id="6873263987691478642">Visualização dividida</translation>
+<translation id="687586529977635009">O Chrome vai detectar números de rastreamento nos sites que você visitar e mostrará atualizações de pacotes na página "Nova guia". Seus dados serão compartilhados com o Google para fornecer este recurso e melhorar o Shopping para todos. Isso pode ser modificado nas <ph name="BEGIN_LINK" />Configurações de rastreamento de pacote<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Proteção padrão contra sites, downloads e extensões perigosos.</translation>
 <translation id="6888009575607455378">Tem certeza de que quer descartar suas alterações?</translation>
 <translation id="6896758677409633944">Copiar</translation>
@@ -1228,7 +1226,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7466693328838535498">Na caixa "Widgets da Pesquisa", digite "Chrome".</translation>
 <translation id="746684838091935575">3. Selecione o Chrome</translation>
 <translation id="7472734401283673885">Nome da empresa</translation>
-<translation id="7473891865547856676">Agora Não</translation>
+<translation id="7473891865547856676">Agora não</translation>
 <translation id="7488874549363591659">Entregue</translation>
 <translation id="7491131399623468277">Acessar os Ajustes…</translation>
 <translation id="7492574581995589075">Sua organização desativou a capacidade de usar e salvar dados do Chrome na Conta do Google. Novos favoritos, senhas e outros itens serão salvos apenas neste dispositivo.</translation>
@@ -1416,7 +1414,6 @@ Eles também podem usar cookies para ver sua atividade de navegação em diferen
 <translation id="8428634594422941299">Entendi</translation>
 <translation id="8446884382197647889">Saiba mais</translation>
 <translation id="8449347986464073209">Excluir e sair</translation>
-<translation id="8458397775385147834">1 item excluído</translation>
 <translation id="8459333855531264009">Não seguro</translation>
 <translation id="8487667956631253959">Ativada</translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
@@ -1470,7 +1467,7 @@ Seus dados foram criptografados com a senha longa em <ph name="TIME" />. Digite-
 <translation id="8717864919010420084">Copiar link</translation>
 <translation id="8721297211384281569">Menu Ferramentas</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
-<translation id="8730621377337864115">Concluir</translation>
+<translation id="8730621377337864115">Concluído</translation>
 <translation id="8731958888085671579">Ocultar "Localizar na página"</translation>
 <translation id="87371078663613140">Explore as opções na barra de menus</translation>
 <translation id="8737620822084008350">{count,plural, =1{{count} perfil salvo disponível acima do teclado.}one{{count} perfil salvo disponível acima do teclado.}other{{count} perfis salvos disponíveis acima do teclado.}}</translation>

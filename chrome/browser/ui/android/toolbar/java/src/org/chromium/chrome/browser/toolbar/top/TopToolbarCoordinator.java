@@ -366,19 +366,25 @@ public class TopToolbarCoordinator implements Toolbar {
             mToolbarLayout.setOverlayCoordinator(mOverlayCoordinator);
         }
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DYNAMIC_TOP_CHROME)) {
+        int tabStripHeightResource = mToolbarLayout.getTabStripHeightFromResource();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DYNAMIC_TOP_CHROME)
+                && tabStripHeightResource > 0) {
             mTabStripTransitionCoordinator =
                     new TabStripTransitionCoordinator(
                             browserControlsVisibilityManager,
                             mControlContainer,
                             mToolbarLayout,
-                            mToolbarLayout.getTabStripHeightFromResource());
+                            tabStripHeightResource);
             mToolbarLayout.getContext().registerComponentCallbacks(mTabStripTransitionCoordinator);
             addTabStripHeightObserver(
-                    (height) ->
+                    new TabStripHeightObserver() {
+                        @Override
+                        public void onHeightTransitionRequested(int newHeight) {
                             // Invalid the snapshot to make sure the tab strip is rendering
                             // correctly.
-                            mControlContainer.invalidateBitmap());
+                            mControlContainer.invalidateBitmap();
+                        }
+                    });
         }
     }
 

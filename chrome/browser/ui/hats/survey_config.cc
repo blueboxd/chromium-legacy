@@ -59,18 +59,6 @@ constexpr char kHatsSurveyTriggerTrackingProtectionControlDelayed[] =
     "tracking-protection-control-delayed";
 constexpr char kHatsSurveyTriggerTrackingProtectionTreatmentDelayed[] =
     "tracking-protection-treatment-delayed";
-constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentAccept[] =
-    "ts-ps3-consent-accept";
-constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentDecline[] =
-    "ts-ps3-consent-decline";
-constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeDismiss[] =
-    "ts-ps3-notice-dismiss";
-constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeOk[] =
-    "ts-ps3-notice-ok";
-constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeSettings[] =
-    "ts-ps3-notice-settings";
-constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeLearnMore[] =
-    "ts-ps3-notice-learn-more";
 constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox4ConsentAccept[] =
     "ts-ps4-consent-accept";
 constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox4ConsentDecline[] =
@@ -111,7 +99,6 @@ constexpr char kHatsSurveyTriggerTrustSafetyV2PrivacySandbox4NoticeSettings[] =
     "ts-v2-ps4-notice-settings";
 constexpr char kHatsSurveyTriggerTrustSafetyV2SafeBrowsingInterstitial[] =
     "ts-v2-safe-browsing-interstitial";
-constexpr char kHatsSurveyTriggerWallpaperSearch[] = "wallpaper-search";
 #else   // BUILDFLAG(IS_ANDROID)
 constexpr char kHatsSurveyTriggerAndroidStartupSurvey[] = "startup_survey";
 #endif  // #if !BUILDFLAG(IS_ANDROID)
@@ -194,7 +181,7 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopSettingsPrivacy,
       kHatsSurveyTriggerSettingsPrivacy,
-      /*presupplied_trigger_id=*/absl::nullopt,
+      /*presupplied_trigger_id=*/std::nullopt,
       std::vector<std::string>{"3P cookies blocked",
                                "Privacy Sandbox enabled"});
   survey_configs.emplace_back(
@@ -203,17 +190,16 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
       /*presupplied_trigger_id=*/
       features::kHappinessTrackingSurveysForSecurityPageTriggerId.Get(),
       std::vector<std::string>{},
-      std::vector<std::string>{"Security Page User Action",
-                               "Safe Browsing Setting Before Trigger",
-                               "Safe Browsing Setting After Trigger",
-                               "Client Channel", "Time On Page"});
+      std::vector<std::string>{
+          "Security Page User Action", "Safe Browsing Setting Before Trigger",
+          "Safe Browsing Setting After Trigger", "Client Channel"});
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopPrivacyGuide,
       kHatsSurveyTriggerPrivacyGuide);
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopPrivacySandbox,
       kHatsSurveyTriggerPrivacySandbox,
-      /*presupplied_trigger_id=*/absl::nullopt,
+      /*presupplied_trigger_id=*/std::nullopt,
       std::vector<std::string>{"3P cookies blocked",
                                "Privacy Sandbox enabled"});
 
@@ -223,22 +209,22 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopM1AdPrivacyPage,
       kHatsSurveyTriggerM1AdPrivacyPage,
-      /*presupplied_trigger_id=*/absl::nullopt,
+      /*presupplied_trigger_id=*/std::nullopt,
       ad_privacy_product_specific_bits_data);
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopM1TopicsSubpage,
       kHatsSurveyTriggerM1TopicsSubpage,
-      /*presupplied_trigger_id=*/absl::nullopt,
+      /*presupplied_trigger_id=*/std::nullopt,
       ad_privacy_product_specific_bits_data);
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopM1FledgeSubpage,
       kHatsSurveyTriggerM1FledgeSubpage,
-      /*presupplied_trigger_id=*/absl::nullopt,
+      /*presupplied_trigger_id=*/std::nullopt,
       ad_privacy_product_specific_bits_data);
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopM1AdMeasurementSubpage,
       kHatsSurveyTriggerM1AdMeasurementSubpage,
-      /*presupplied_trigger_id=*/absl::nullopt,
+      /*presupplied_trigger_id=*/std::nullopt,
       ad_privacy_product_specific_bits_data);
 
   // NTP modules survey.
@@ -304,51 +290,6 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
       kHatsSurveyTriggerTrustSafetyTransactions,
       features::kTrustSafetySentimentSurveyTransactionsTriggerId.Get(),
       std::vector<std::string>{"Saved password"});
-  survey_configs.emplace_back(
-      &features::kTrustSafetySentimentSurvey,
-      kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentAccept,
-      features::kTrustSafetySentimentSurveyPrivacySandbox3ConsentAcceptTriggerId
-          .Get(),
-      std::vector<std::string>{"Stable channel", "3P cookies blocked",
-                               "Privacy Sandbox enabled"});
-  survey_configs.emplace_back(
-      &features::kTrustSafetySentimentSurvey,
-      kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentDecline,
-      features::
-          kTrustSafetySentimentSurveyPrivacySandbox3ConsentDeclineTriggerId
-              .Get(),
-      std::vector<std::string>{"Stable channel", "3P cookies blocked",
-                               "Privacy Sandbox enabled"});
-  survey_configs.emplace_back(
-      &features::kTrustSafetySentimentSurvey,
-      kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeDismiss,
-      features::kTrustSafetySentimentSurveyPrivacySandbox3NoticeDismissTriggerId
-          .Get(),
-      std::vector<std::string>{"Stable channel", "3P cookies blocked",
-                               "Privacy Sandbox enabled"});
-  survey_configs.emplace_back(
-      &features::kTrustSafetySentimentSurvey,
-      kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeOk,
-      features::kTrustSafetySentimentSurveyPrivacySandbox3NoticeOkTriggerId
-          .Get(),
-      std::vector<std::string>{"Stable channel", "3P cookies blocked",
-                               "Privacy Sandbox enabled"});
-  survey_configs.emplace_back(
-      &features::kTrustSafetySentimentSurvey,
-      kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeSettings,
-      features::
-          kTrustSafetySentimentSurveyPrivacySandbox3NoticeSettingsTriggerId
-              .Get(),
-      std::vector<std::string>{"Stable channel", "3P cookies blocked",
-                               "Privacy Sandbox enabled"});
-  survey_configs.emplace_back(
-      &features::kTrustSafetySentimentSurvey,
-      kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeLearnMore,
-      features::
-          kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreTriggerId
-              .Get(),
-      std::vector<std::string>{"Stable channel", "3P cookies blocked",
-                               "Privacy Sandbox enabled"});
   survey_configs.emplace_back(
       &features::kTrustSafetySentimentSurvey,
       kHatsSurveyTriggerTrustSafetyPrivacySandbox4ConsentAccept,
@@ -459,11 +400,6 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
   survey_configs.emplace_back(&features::kAutofillPasswordSurvey,
                               kHatsSurveyTriggerAutofillPassword);
 
-  // Wallpaper Search survey.
-  survey_configs.emplace_back(
-      &features::kHappinessTrackingSurveysForWallpaperSearch,
-      kHatsSurveyTriggerWallpaperSearch);
-
   // What's New survey.
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopWhatsNew,
@@ -473,14 +409,14 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
   survey_configs.emplace_back(
       &performance_manager::features::kPerformanceControlsPerformanceSurvey,
       kHatsSurveyTriggerPerformanceControlsPerformance,
-      /*presupplied_trigger_id=*/absl::nullopt,
+      /*presupplied_trigger_id=*/std::nullopt,
       std::vector<std::string>{"high_efficiency_mode", "battery_saver_mode"},
       std::vector<std::string>{});
   survey_configs.emplace_back(
       &performance_manager::features::
           kPerformanceControlsBatteryPerformanceSurvey,
       kHatsSurveyTriggerPerformanceControlsBatteryPerformance,
-      /*presupplied_trigger_id=*/absl::nullopt,
+      /*presupplied_trigger_id=*/std::nullopt,
       std::vector<std::string>{"high_efficiency_mode", "battery_saver_mode"},
       std::vector<std::string>{});
   survey_configs.emplace_back(
@@ -529,7 +465,7 @@ SurveyConfig::~SurveyConfig() = default;
 SurveyConfig::SurveyConfig(
     const base::Feature* feature,
     const std::string& trigger,
-    const absl::optional<std::string>& presupplied_trigger_id,
+    const std::optional<std::string>& presupplied_trigger_id,
     const std::vector<std::string>& product_specific_bits_data_fields,
     const std::vector<std::string>& product_specific_string_data_fields)
     : trigger(trigger),

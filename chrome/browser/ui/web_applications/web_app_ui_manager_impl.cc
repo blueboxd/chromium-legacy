@@ -299,8 +299,8 @@ const webapps::AppId* WebAppUiManagerImpl::GetAppIdForWindow(
 
 void WebAppUiManagerImpl::NotifyOnAssociatedAppChanged(
     content::WebContents* web_contents,
-    const absl::optional<webapps::AppId>& previous_app_id,
-    const absl::optional<webapps::AppId>& new_app_id) const {
+    const std::optional<webapps::AppId>& previous_app_id,
+    const std::optional<webapps::AppId>& new_app_id) const {
   WebAppMetrics* web_app_metrics = WebAppMetrics::Get(profile_);
   // Unavailable in guest sessions.
   if (!web_app_metrics) {
@@ -371,7 +371,7 @@ void WebAppUiManagerImpl::LaunchWebApp(apps::AppLaunchParams params,
                                        LaunchWebAppWindowSetting launch_setting,
                                        Profile& profile,
                                        LaunchWebAppDebugValueCallback callback,
-                                       AppLock& lock) {
+                                       WithAppResources& lock) {
   ::web_app::LaunchWebApp(std::move(params), launch_setting, profile, lock,
                           std::move(callback));
 }
@@ -715,13 +715,13 @@ void WebAppUiManagerImpl::ClearWebAppSiteDataIfNeeded(
                                  return browser_context;
                                },
                                base::Unretained(profile_)),
-                           /*storage_partition_config=*/absl::nullopt,
+                           /*storage_partition_config=*/std::nullopt,
                            url::Origin::Create(app_start_url),
                            content::ClearSiteDataTypeSet::All(),
                            /*storage_buckets_to_remove=*/{},
                            /*avoid_closing_connections=*/false,
-                           /*cookie_partition_key=*/absl::nullopt,
-                           /*storage_key=*/absl::nullopt,
+                           /*cookie_partition_key=*/std::nullopt,
+                           /*storage_key=*/std::nullopt,
                            /*partitioned_state_allowed_only=*/false,
                            std::move(final_uninstall_callback));
   } else {

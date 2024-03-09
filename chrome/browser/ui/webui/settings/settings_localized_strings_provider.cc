@@ -1761,8 +1761,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_RECENT_PERMISSIONS_BLOCKED_MORE_THAN_TWO_ITEMS},
       {"networkPredictionEnabledDesc",
        IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC},
-      {"networkPredictionEnabledDescCookiesPage",
-       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC_COOKIES_PAGE},
       {"preloadingPageTitle", IDS_SETTINGS_PRELOAD_PAGES_TITLE},
       {"preloadingPageSummary", IDS_SETTINGS_PRELOAD_PAGES_SUMMARY},
       {"preloadingPageNoPreloadingTitle",
@@ -3242,9 +3240,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_ANTI_ABUSE_THINGS_TO_CONSIDER_HEADER},
     {"antiAbuseThingsToConsiderSectionOne",
      IDS_SETTINGS_ANTI_ABUSE_THINGS_TO_CONSIDER_SECTION_ONE},
-    {"siteSettingsPerformance", IDS_SITE_SETTINGS_TYPE_PERFORMANCE},
-    {"siteSettingsPerformanceSublabel",
-     IDS_SITE_SETTINGS_TYPE_PERFORMANCE_SUBLABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 

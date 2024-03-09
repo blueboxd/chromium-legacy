@@ -10,7 +10,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux ASan LSan Builder",
-              "project": "chromium-m121"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-memory-archive",
@@ -34,7 +34,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux ASan LSan Tests (1)",
-              "project": "chromium-m121"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-memory-archive",
@@ -55,7 +55,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Linux ASan LSan Builder",
-                "project": "chromium-m121"
+                "project": "chromium"
               }
             }
           }
@@ -65,14 +65,14 @@
         {
           "bucket": "ci",
           "builder": "Linux ASan LSan Builder",
-          "project": "chromium-m121"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Linux ASan LSan Tests (1)",
-          "project": "chromium-m121"
+          "project": "chromium"
         }
       ]
     }

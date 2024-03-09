@@ -12,10 +12,7 @@ import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
 import org.chromium.base.JNIUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.lifetime.Destroyable;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKeyedMap;
 import org.chromium.net.NetworkTrafficAnnotationTag;
@@ -73,7 +70,6 @@ public class SimpleHttpClient implements Destroyable {
     }
 
     public SimpleHttpClient(Profile profile) {
-        ThreadUtils.assertOnUiThread();
         mNativeBridge = SimpleHttpClientJni.get().init(profile);
     }
 
@@ -88,7 +84,6 @@ public class SimpleHttpClient implements Destroyable {
     @Override
     public void destroy() {
         SimpleHttpClientJni.get().destroy(mNativeBridge);
-        mNativeBridge = 0;
     }
 
     /**
@@ -115,20 +110,16 @@ public class SimpleHttpClient implements Destroyable {
         String[] headerValues = new String[headerKeys.length];
         JNIUtils.splitMap(headers, headerKeys, headerValues);
 
-        PostTask.runOrPostTask(
-                TaskTraits.UI_DEFAULT,
-                () -> {
-                    SimpleHttpClientJni.get()
-                            .sendNetworkRequest(
-                                    mNativeBridge,
-                                    gurl,
-                                    requestType,
-                                    body,
-                                    headerKeys,
-                                    headerValues,
-                                    annotation.getHashCode(),
-                                    responseConsumer);
-                });
+        SimpleHttpClientJni.get()
+                .sendNetworkRequest(
+                        mNativeBridge,
+                        gurl,
+                        requestType,
+                        body,
+                        headerKeys,
+                        headerValues,
+                        annotation.getHashCode(),
+                        responseConsumer);
     }
 
     /**

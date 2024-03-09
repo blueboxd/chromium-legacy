@@ -179,14 +179,21 @@ float NativeTheme::AdjustBorderRadiusByZoom(Part part,
 }
 
 NativeTheme::NativeTheme(bool should_use_dark_colors,
-                         ui::SystemTheme system_theme)
-    : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
+                         ui::SystemTheme system_theme,
+                         NativeTheme* theme_to_update)
+    : color_scheme_observer_(theme_to_update),
+      should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
       system_theme_(system_theme),
       forced_colors_(IsForcedHighContrast()),
       prefers_reduced_transparency_(false),
       inverted_colors_(false),
       preferred_color_scheme_(CalculatePreferredColorScheme()),
-      preferred_contrast_(CalculatePreferredContrast()) {}
+      preferred_contrast_(CalculatePreferredContrast()) {
+  if (theme_to_update && !IsForcedDarkMode() && !IsForcedHighContrast() &&
+      base::SequencedTaskRunner::HasCurrentDefault()) {
+    theme_observation_.Observe(this);
+  }
+}
 
 NativeTheme::~NativeTheme() = default;
 
@@ -341,13 +348,14 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     if (page_colors == PageColors::kOff) {
       forced_colors = false;
       preferred_contrast = PreferredContrast::kNoPreference;
-    } else if (page_colors != PageColors::kHighContrast) {
+    } else {
       // Set other states based on the selected theme (i.e. `kDusk`, `kDesert`,
       // `kBlack`, or `kWhite`). This block is only executed when one of these
       // themes is chosen. `kHighContrast` is not a valid theme here, as it is
       // only available in forced colors mode.
       CHECK_GE(page_colors, ui::NativeTheme::PageColors::kDusk);
       CHECK_LE(page_colors, ui::NativeTheme::PageColors::kWhite);
+      CHECK_NE(page_colors, ui::NativeTheme::PageColors::kHighContrast);
       bool is_dark_color =
           page_colors == PageColors::kBlack || page_colors == PageColors::kDusk;
       PreferredColorScheme page_colors_theme_scheme =

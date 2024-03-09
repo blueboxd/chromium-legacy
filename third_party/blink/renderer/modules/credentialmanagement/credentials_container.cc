@@ -1484,6 +1484,11 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
         UseCounter::Count(resolver->GetExecutionContext(),
                           WebFeature::kFedCmLoginHint);
       }
+      if (RuntimeEnabledFeatures::FedCmDomainHintEnabled() &&
+          provider->hasDomainHint()) {
+        UseCounter::Count(resolver->GetExecutionContext(),
+                          WebFeature::kFedCmDomainHint);
+      }
       if (RuntimeEnabledFeatures::WebIdentityDigitalCredentialsEnabled() &&
           !RuntimeEnabledFeatures::FedCmMultipleIdentityProvidersEnabled()) {
         // TODO(https://crbug.com/1416939): make sure the Digital Credentials
@@ -1494,6 +1499,14 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
           identity_provider_ptrs.push_back(std::move(identity_provider));
           continue;
         }
+      }
+
+      if (blink::RuntimeEnabledFeatures::FedCmIdPRegistrationEnabled() &&
+          provider->hasRegistered() && provider->registered()) {
+        mojom::blink::IdentityProviderPtr identity_provider =
+            blink::mojom::blink::IdentityProvider::From(*provider);
+        identity_provider_ptrs.push_back(std::move(identity_provider));
+        continue;
       }
 
       // TODO(kenrb): Add some renderer-side validation here, such as
@@ -1516,9 +1529,7 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       String client_id = provider->clientId();
 
       ++provider_index;
-      if ((!provider_url.IsValid() &&
-           (!provider->hasRegistered() || !provider->registered())) ||
-          client_id == "") {
+      if (!provider_url.IsValid() || client_id.empty()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             String::Format("Provider %i information is incomplete.",
@@ -1547,7 +1558,7 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
     base::UmaHistogramEnumeration("Blink.FedCm.RpContext", rp_context);
 
     mojom::blink::RpMode rp_mode = mojom::blink::RpMode::kWidget;
-    if (options->identity()->hasMode()) {
+    if (blink::RuntimeEnabledFeatures::FedCmButtonModeEnabled()) {
       // TODO(crbug.com/1429083): add use counters for rp mode.
       rp_mode =
           mojo::ConvertTo<mojom::blink::RpMode>(options->identity()->mode());

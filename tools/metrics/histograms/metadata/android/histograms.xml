@@ -619,19 +619,13 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.BackPress.Intercept{Direction}"
-    enum="BackPressConsumer" expires_after="2024-05-12">
+<histogram name="Android.BackPress.Intercept" enum="BackPressConsumer"
+    expires_after="2024-05-12">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
-    Recorded when a specific feature intercepted the system's back press
-    gesture{Direction}.
+    Records that a specific feature intercepted the system's back press gesture.
   </summary>
-  <token key="Direction">
-    <variant name="" summary=""/>
-    <variant name=".LeftEdge" summary="from left edge in U+."/>
-    <variant name=".RightEdge" summary="from right edge in U+."/>
-  </token>
 </histogram>
 
 <histogram name="Android.BackPress.Interval" units="ms"
@@ -662,20 +656,6 @@ chromium-metrics-reviews@google.com.
     Records the secondary activity which intercepts the back press when the user
     does the Backpress gesture and it's not handled by the system.
   </summary>
-</histogram>
-
-<histogram name="Android.BackPress.SwipeEdge{Type}" enum="SwipeEdge"
-    expires_after="2024-05-12">
-  <owner>lazzzis@chromium.org</owner>
-  <owner>src/chrome/browser/back_press/android/OWNERS</owner>
-  <summary>
-    Record the edge from which the gesture is swiped from {Type}.
-  </summary>
-  <token key="Type">
-    <variant name="" summary=""/>
-    <variant name=".TabHistoryNavigation"
-        summary="when a back gesture triggers a tab history navigation."/>
-  </token>
 </histogram>
 
 <histogram name="Android.BindingManger.ConnectionsDroppedDueToMaxSize"
@@ -837,7 +817,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.CpuAbiBitnessSupport" enum="CpuAbiBitnessSupport"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>bartekn@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -888,32 +868,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Entry that navigate the user into the Theme Settings. Recorded when the
     Theme settings is opened.
-  </summary>
-</histogram>
-
-<histogram name="Android.DefaultBrowserPromo.Outcome.{CurrentState}"
-    enum="AndroidDefaultBrowserPromoOutcomeType" expires_after="M130">
-  <owner>lazzzis@google.com</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The final default browser state (outcome) after the user has been prompted
-    to set Chrome as the default when {CurrentState} is set as the default
-    initially. Recorded when the system UI prompting the user to change their
-    default is dismissed.
-  </summary>
-  <token key="CurrentState">
-    <variant name="NoDefault" summary="no browser"/>
-    <variant name="OtherDefault" summary="another browser"/>
-  </token>
-</histogram>
-
-<histogram name="Android.DefaultBrowserPromo.RoleManagerShown"
-    enum="AndroidDefaultBrowserPromoType" expires_after="M130">
-  <owner>lazzzis@google.com</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Records the default browser state when the Android Q+ role manager dialog is
-    shown.
   </summary>
 </histogram>
 
@@ -1245,7 +1199,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Event.ActionDown" enum="InputDeviceSource"
-    expires_after="2024-04-01">
+    expires_after="2024-06-02">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <owner>src/chrome/android/OWNERS</owner>
@@ -1882,17 +1836,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Android.Messages.DismissedWithoutFullyVisible"
-    enum="MessageIdentifier" expires_after="2024-05-19">
-  <owner>lazzzis@chromium.org</owner>
-  <owner>src/components/messages/OWNERS</owner>
-  <summary>
-    Records the message identifier when the message is dismissed without being
-    fully visible before. This only tracks the case in which message is
-    dismissed by primary action, secondary action, gesture and timer.
-  </summary>
-</histogram>
-
 <histogram name="Android.Messages.Dismissed{MessageIdentifier}"
     enum="MessageDismissReason" expires_after="2024-04-28">
   <owner>lazzzis@chromium.org</owner>
@@ -1955,58 +1898,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Messages.Enqueued.{QueueState}"
-    enum="MessageIdentifier" expires_after="2024-05-19">
-  <owner>lazzzis@chromium.org</owner>
-  <owner>src/components/messages/OWNERS</owner>
-  <summary>
-    Records the message identifier when it is enqueued while the queue is
-    {QueueState}.
-  </summary>
-  <token key="QueueState">
-    <variant name="Resumed" summary="resumed"/>
-    <variant name="Suspended" summary="suspended"/>
-  </token>
-</histogram>
-
-<histogram name="Android.Messages.Enqueued.{ScopeState}"
-    enum="MessageIdentifier" expires_after="2024-05-19">
-  <owner>lazzzis@chromium.org</owner>
-  <owner>src/components/messages/OWNERS</owner>
-  <summary>
-    Records the message identifier when it is enqueued while its associated
-    scope is {ScopeState}.
-  </summary>
-  <token key="ScopeState">
-    <variant name="ScopeActive" summary="active"/>
-    <variant name="ScopeInactive" summary="inactive"/>
-  </token>
-</histogram>
-
-<histogram name="Android.Messages.Error.FullyVisibleNotInformed"
-    enum="MessageIdentifier" expires_after="2024-05-19">
-  <owner>lazzzis@chromium.org</owner>
-  <owner>src/components/messages/OWNERS</owner>
-  <summary>
-    Records the message identifier at the moment of dismissal if the message has
-    been fully visible before but the fully visible callback, if set, has never
-    been invoked. This use the dismissal type as a proxy for message having
-    become visible, inlcuding primary action, secondary action, gesture and
-    timer. It is not checked when it is dismissed by reasons, such as
-    ScopeDestroyed.
-  </summary>
-</histogram>
-
-<histogram name="Android.Messages.FullyVisible" enum="MessageIdentifier"
-    expires_after="2024-05-19">
-  <owner>lazzzis@chromium.org</owner>
-  <owner>src/components/messages/OWNERS</owner>
-  <summary>
-    Records the message identifier every time it becomes fully visible to users.
-    Can be recorded multiple times during its lifetime.
-  </summary>
-</histogram>
-
 <histogram name="Android.Messages.Stacking" enum="StackingAnimationType"
     expires_after="2024-05-19">
   <owner>lazzzis@chromium.org</owner>
@@ -2038,17 +1929,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Messages.Stacking.RequestToFullyShow"
-    enum="MessageIdentifier" expires_after="2024-05-19">
-  <owner>lazzzis@chromium.org</owner>
-  <owner>src/components/messages/OWNERS</owner>
-  <summary>
-    Records the id of front message when the candidate requests to show. The
-    recorded message is not guranteed to be displayed: it might be blocked by
-    unready browser control or unintialized container.
-  </summary>
-</histogram>
-
 <histogram name="Android.Messages.Stacking.ThreeStacked"
     enum="StackingAnimationThreeStackedType" expires_after="2024-05-19">
   <owner>lazzzis@chromium.org</owner>
@@ -2072,24 +1952,6 @@ chromium-metrics-reviews@google.com.
     <variant name="PushToFront" summary="a back message is pushed to front."/>
     <variant name="RemoveBack" summary="a back message is removed."/>
     <variant name="RemoveFront" summary="a front message is removed."/>
-  </token>
-</histogram>
-
-<histogram name="Android.Messages.Stacking.{Blocker}" enum="MessageIdentifier"
-    expires_after="2024-05-19">
-  <owner>lazzzis@chromium.org</owner>
-  <owner>src/components/messages/OWNERS</owner>
-  <summary>
-    Records the message identifier of the front message when it is waiting to
-    trigger the animation because {Blocker}.
-  </summary>
-  <token key="Blocker">
-    <variant name="BlockedByBrowserControl"
-        summary="browser controls aren't ready"/>
-    <variant name="BlockedByContainerInitializing"
-        summary="container is initializing"/>
-    <variant name="BlockedByContainerNotInitialized"
-        summary="container initialization hasn't started"/>
   </token>
 </histogram>
 
@@ -2120,18 +1982,6 @@ chromium-metrics-reviews@google.com.
     includes both enter and exit animation. The metric can be used to analyze
     the amount of time it takes for the user to understand the message and take
     an action (e.g. click a button, dismiss the message, etc.).
-  </summary>
-  <token key="MessageIdentifier" variants="MessageIdentifiers"/>
-</histogram>
-
-<histogram name="Android.Messages.TimeToFullyShow{MessageIdentifier}"
-    units="ms" expires_after="2024-06-30">
-  <owner>lazzzis@chromium.org</owner>
-  <owner>src/components/messages/OWNERS</owner>
-  <summary>
-    Recorded once per message measuring the duration from the moment it is
-    enqueued to the first time it becomes fully shown. Recorded when the message
-    becomes fully shown.
   </summary>
   <token key="MessageIdentifier" variants="MessageIdentifiers"/>
 </histogram>
@@ -2195,7 +2045,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.MultipleUserProfilesState"
-    enum="MultipleUserProfilesState" expires_after="2024-03-31">
+    enum="MultipleUserProfilesState" expires_after="2024-06-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <owner>bartekn@chromium.org</owner>
@@ -3844,7 +3694,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Sync.ActualSyncedTabCountPercentage"
-    units="% of tab count" expires_after="2024-03-31">
+    units="% of tab count" expires_after="2024-06-02">
   <owner>bjfong@google.com</owner>
   <owner>ckitagawa@chromium.org</owner>
   <summary>
@@ -4034,7 +3884,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.PlaceholderStripLeftoverTabsCount"
-    units="tabs" expires_after="2024-03-31">
+    units="tabs" expires_after="2024-06-02">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4054,7 +3904,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.TabStrip.PlaceholderStripTabsCreatedDuringRestoreCount"
-    units="tabs" expires_after="2024-03-31">
+    units="tabs" expires_after="2024-06-02">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4367,7 +4217,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.VersionCode" enum="VersionCode"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>bartekn@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>

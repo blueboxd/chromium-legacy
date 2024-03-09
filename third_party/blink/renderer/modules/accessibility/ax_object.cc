@@ -908,6 +908,9 @@ bool AXObject::IsMissingParent() const {
     // object, because hidden ones are purposely kept around without being in
     // the tree, and without a parent, for potential later reuse.
     bool is_missing = !IsRoot();
+    CHECK(!is_missing || !AXObjectCache().IsFrozen())
+        << "Should not have missing parent in frozen tree: "
+        << ToString(true, true);
     return is_missing;
   }
 
@@ -1191,12 +1194,6 @@ AXObject* AXObject::ComputeNonARIAParent(AXObjectCacheImpl& cache,
 
   Node* parent_node = GetParentNodeForComputeParent(cache, current_node);
 
-  // If the tree is not currently mutable, then new AXObjects cannot be created.
-  // Return the AXObject for the parent only if it is already part of the tree.
-  if (!cache.IsProcessingDeferredEvents()) {
-    return cache.Get(parent_node);
-  }
-
   // Will not create an object if no valid parent node is found. This occurs
   // when a DOM child isn't visited by LayoutTreeBuilderTraversal, such as an
   // element child of a <textarea>, which only supports plain text.
@@ -1341,6 +1338,8 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
 
   node_data->role = ComputeFinalRoleForSerialization();
   node_data->id = AXObjectID();
+
+  PreSerializationConsistencyCheck();
 
   // Serialize a few things that we need even for ignored nodes.
   bool is_focusable = CanSetFocusAttribute();
@@ -3016,7 +3015,10 @@ bool AXObject::AccessibilityIsIncludedInTree() const {
 }
 
 void AXObject::CheckCanAccessCachedValues() const {
-  // Removed for M121.
+  if (!IsDetached() && AXObjectCache().IsFrozen()) {
+    DUMP_WILL_BE_CHECK(!NeedsToUpdateCachedValues())
+        << "Stale values: " << ToString(true, true);
+  }
 }
 
 void AXObject::InvalidateCachedValues() {
@@ -3041,17 +3043,12 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     return;
   }
 
-  if (AXObjectCache().IsFrozen()) {
-    // All cached values must be updated before the tree is frozen
-    // serialization, because changes to the ignored state could cause tree
-    // structure changes.
-    // In M122+ this is a CHECK() that is rarely (if at all) triggered, but in
-    // M121 we fail the CHECK too often to keep it.
-    return;
-  }
-
   cached_values_need_update_ = false;
 
+  CHECK(!AXObjectCache().IsFrozen())
+      << "All cached values must be updated before the tree is frozen "
+         "serialization, because changes to the ignored state could cause tree "
+         "structure changes.";
   CHECK(AXObjectCache().IsProcessingDeferredEvents());
 
 #if DCHECK_IS_ON()  // Required in order to get Lifecycle().ToString()
@@ -3073,7 +3070,8 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   if (IsMissingParent()) {
     // TODO(accessibility) Address this more proactively and cleanly
     // pruning the a11y tree for layout changes.
-    return;
+    DUMP_WILL_BE_CHECK(!IsMissingParent())
+        << "Missing parent: " << ToString(true, true);
   }
 
   // Mock objects are created by, owned and dependent on their parents.
@@ -5596,6 +5594,8 @@ AXObject* AXObject::ParentObject() const {
     return nullptr;
   }
 
+  CHECK(!IsMissingParent()) << "Missing parent: " << ToString(true, true);
+
   return parent_.Get();
 }
 
@@ -5704,9 +5704,10 @@ void AXObject::UpdateChildrenIfNecessary() {
     return;
   }
 
-  if (AXObjectCache().IsFrozen()) {
-    return;
-  }
+  CHECK(!AXObjectCache().IsFrozen())
+      << "Object should have already had its children updated in "
+         "AXObjectCacheImpl::UpdateTreeIfNeeded(): "
+      << ToString(true, true);
 
   UpdateCachedAttributeValuesIfNeeded();
 
@@ -5721,6 +5722,7 @@ bool AXObject::NeedsToUpdateChildren() const {
 void AXObject::SetNeedsToUpdateChildren() const {
   CHECK(!IsDetached()) << "Cannot update children on a detached node: "
                        << ToString(true, true);
+  CHECK(!AXObjectCache().IsFrozen());
   CHECK(!AXObjectCache().HasBeenDisposed());
 #if defined(AX_FAIL_FAST_BUILD)
   SANITIZER_CHECK(!is_adding_children_)
@@ -5744,6 +5746,8 @@ void AXObject::SetNeedsToUpdateChildren() const {
 #endif
     return;
   }
+
+  CHECK(!AXObjectCache().UpdatingTree());
 
   children_dirty_ = true;
   SetAncestorsHaveDirtyDescendants();
@@ -7521,6 +7525,23 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
   }
 
   return common_ancestor;
+}
+
+// Extra checks that only occur during serialization.
+void AXObject::PreSerializationConsistencyCheck() {
+  CHECK(!IsDetached()) << "Do not serialize detached nodes: "
+                       << ToString(true, true);
+  // TODO(https://crbug.com/1480627): convert to CHECKs.
+  CHECK(AXObjectCache().IsFrozen());
+  CHECK(!NeedsToUpdateCachedValues());
+  CHECK(AccessibilityIsIncludedInTree())
+      << "Do not serialize unincluded nodes: " << ToString(true, true);
+#if defined(AX_FAIL_FAST_BUILD)
+  // A bit more expensive, so only check in builds used for testing.
+  CHECK_EQ(IsAriaHidden(), !!FindAncestorWithAriaHidden(this))
+      << "IsAriaHidden() doesn't match existence of an aria-hidden ancestor: "
+      << ToString(true);
+#endif
 }
 
 String AXObject::ToString(bool verbose, bool cached_values_only) const {

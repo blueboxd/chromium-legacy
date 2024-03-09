@@ -56,13 +56,9 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   // AutofillPopupDelegate implementation.
   void OnPopupShown() override;
   void OnPopupHidden() override;
-  void DidSelectSuggestion(
-      const Suggestion& suggestion,
-      AutofillSuggestionTriggerSource trigger_source) override;
-  void DidAcceptSuggestion(
-      const Suggestion& suggestion,
-      const SuggestionPosition& position,
-      AutofillSuggestionTriggerSource trigger_source) override;
+  void DidSelectSuggestion(const Suggestion& suggestion) override;
+  void DidAcceptSuggestion(const Suggestion& suggestion,
+                           const SuggestionPosition& position) override;
   void DidPerformButtonActionForSuggestion(
       const Suggestion& suggestion) override;
   bool RemoveSuggestion(const std::u16string& value,
@@ -89,14 +85,14 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   // breaks the cache.
   virtual void OnQuery(const FormData& form,
                        const FormFieldData& field,
-                       const gfx::RectF& element_bounds);
+                       const gfx::RectF& element_bounds,
+                       AutofillSuggestionTriggerSource trigger_source);
 
   // Records query results and correctly formats them before sending them off
-  // to be displayed.  Called when an Autofill query result is available.
+  // to be displayed. Called when an Autofill query result is available.
   virtual void OnSuggestionsReturned(
       FieldGlobalId field_id,
       const std::vector<Suggestion>& suggestions,
-      AutofillSuggestionTriggerSource trigger_source,
       bool is_all_server_suggestions = false);
 
   // Returns the last targeted field types to be filled. This does not
@@ -177,15 +173,15 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
                             const AutofillTriggerDetails& trigger_details);
 
   // Determines the correct data type (`AutofillProfile` or `CreditCard`) to be
-  // previewed and previews the corresponding
-  // `PopupItemId::kFieldByFieldFilling` suggestion.
+  // previewed and previews the corresponding field-by-field filling suggestion.
   void PreviewFieldByFieldFillingSuggestion(const Suggestion& suggestion);
 
   // Determines the correct data type (`AutofillProfile` or `CreditCard`) to be
-  // filled and fills the corresponding `PopupItemId::kFieldByFieldFilling`
-  // suggestion.
-  void FillFieldByFieldFillingSuggestion(const Suggestion& suggestion,
-                                         const SuggestionPosition& position);
+  // filled and fills the corresponding field-by-field filling suggestion.
+  void FillFieldByFieldFillingSuggestion(
+      const Suggestion& suggestion,
+      const SuggestionPosition& position,
+      AutofillSuggestionTriggerSource trigger_source);
 
   // Previews the value from `profile` specified in the `suggestion`.
   void PreviewAddressFieldByFieldFillingSuggestion(
@@ -202,7 +198,8 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   void FillAddressFieldByFieldFillingSuggestion(
       const AutofillProfile& profile,
       const Suggestion& suggestion,
-      const SuggestionPosition& position);
+      const SuggestionPosition& position,
+      AutofillSuggestionTriggerSource trigger_source);
 
   // Fills the main text from the `suggestion`.
   void FillCreditCardFieldByFieldFillingSuggestion(
@@ -237,15 +234,16 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   // The current form and field selected by Autofill.
   FormData query_form_;
   FormFieldData query_field_;
+  // The bounds of the form field that the user is interacting with.
+  gfx::RectF element_bounds_;
+  // The method how suggestions were triggered on the current form.
+  AutofillSuggestionTriggerSource trigger_source_;
 
   // Stores the last `AutofillTriggerDetails::field_types_to_fill`.
   // We key this information by form section to guarantee granular filling
   // side effects are specific are not "leaked" to other forms.
   base::flat_map<Section, ServerFieldTypeSet>
       last_field_types_to_fill_for_address_form_section_;
-
-  // The bounds of the form field that user is interacting with.
-  gfx::RectF element_bounds_;
 
   bool should_show_scan_credit_card_ = false;
   PopupType popup_type_ = PopupType::kUnspecified;

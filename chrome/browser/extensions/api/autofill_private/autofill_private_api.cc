@@ -386,34 +386,6 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
     if (existing_card && existing_card->Compare(credit_card) == 0)
       return RespondNow(NoArguments());
 
-    if (existing_card->cvc().empty()) {
-      if (credit_card.cvc().empty()) {
-        // Record when an existing card without CVC is edited and no CVC was
-        // added.
-        base::RecordAction(base::UserMetricsAction(
-            "AutofillCreditCardsEditedAndCvcWasLeftBlank"));
-      } else {
-        // Record when an existing card without CVC is edited and CVC was added.
-        base::RecordAction(
-            base::UserMetricsAction("AutofillCreditCardsEditedAndCvcWasAdded"));
-      }
-    } else {
-      if (credit_card.cvc().empty()) {
-        // Record when an existing card with CVC is edited and CVC was removed.
-        base::RecordAction(base::UserMetricsAction(
-            "AutofillCreditCardsEditedAndCvcWasRemoved"));
-      } else if (credit_card.cvc() != existing_card->cvc()) {
-        // Record when an existing card with CVC is edited and CVC was updated.
-        base::RecordAction(base::UserMetricsAction(
-            "AutofillCreditCardsEditedAndCvcWasUpdated"));
-      } else {
-        // Record when an existing card with CVC is edited and CVC was
-        // unchanged.
-        base::RecordAction(base::UserMetricsAction(
-            "AutofillCreditCardsEditedAndCvcWasUnchanged"));
-      }
-    }
-
     // Record when nickname is updated.
     if (credit_card.HasNonEmptyValidNickname() &&
         existing_card->nickname() != credit_card.nickname()) {
@@ -459,17 +431,6 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
 
   if (personal_data->GetIbanByGUID(parameters->guid)) {
     base::RecordAction(base::UserMetricsAction("AutofillIbanDeleted"));
-  } else if (autofill::CreditCard* credit_card =
-                 personal_data->GetCreditCardByGUID(parameters->guid)) {
-    base::RecordAction(base::UserMetricsAction("AutofillCreditCardDeleted"));
-    if (!credit_card->cvc().empty()) {
-      base::RecordAction(
-          base::UserMetricsAction("AutofillCreditCardDeletedAndHadCvc"));
-    }
-    if (credit_card->HasNonEmptyValidNickname()) {
-      base::RecordAction(
-          base::UserMetricsAction("AutofillCreditCardDeletedAndHadNickname"));
-    }
   }
   personal_data->RemoveByGUID(parameters->guid);
   return RespondNow(NoArguments());
@@ -589,6 +550,29 @@ AutofillPrivateLogServerCardLinkClickedFunction::Run() {
     return RespondNow(Error(kErrorDataUnavailable));
 
   personal_data->LogServerCardLinkClicked();
+  return RespondNow(NoArguments());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateLogServerIbanLinkClickedFunction
+
+ExtensionFunction::ResponseAction
+AutofillPrivateLogServerIbanLinkClickedFunction::Run() {
+  autofill::ContentAutofillClient* client =
+      autofill::ContentAutofillClient::FromWebContents(GetSenderWebContents());
+  if (!client) {
+    return RespondNow(Error(kErrorDataUnavailable));
+  }
+
+  // If `personal_data` is not available, then don't do anything.
+  autofill::PersonalDataManager* personal_data =
+      client->GetPersonalDataManager();
+
+  if (!personal_data || !personal_data->IsDataLoaded()) {
+    return RespondNow(Error(kErrorDataUnavailable));
+  }
+
+  personal_data->LogServerIbanLinkClicked();
   return RespondNow(NoArguments());
 }
 

@@ -139,6 +139,8 @@ ComposeSession::ComposeSession(
     ComposeCallback callback)
     : executor_(executor),
       handler_receiver_(this),
+      consent_close_reason_(
+          compose::ComposeConsentSessionCloseReason::kEndedImplicitly),
       close_reason_(compose::ComposeSessionCloseReason::kEndedImplicitly),
       final_status_(optimization_guide::proto::FinalStatus::STATUS_UNSPECIFIED),
       web_contents_(web_contents),
@@ -156,25 +158,48 @@ ComposeSession::ComposeSession(
 }
 
 ComposeSession::~ComposeSession() {
-  // Don't log any metrics for sessions that only display consent/disclaimer
+  // Log separate metrics for sessions that only display consent/disclaimer
   // dialogs.
-  // TODO(b/312295685): Add metrics for consent dialog related close reasons.
   if (initial_consent_state_ != compose::mojom::ConsentState::kConsented &&
       !consent_given_or_acknowledged_) {
+    compose::LogComposeConsentSessionCloseReason(consent_close_reason_);
+    compose::LogComposeConsentSessionDialogShownCount(consent_close_reason_,
+                                                      dialog_shown_count_);
     return;
   }
 
+  // Log whether or not the user inserted text after having
+  // accepted/acknowledged consent in the same session.
+  if (consent_given_in_session_) {
+    compose::LogComposeConsentSessionCloseReason(consent_close_reason_);
+  }
+
   LogComposeSessionCloseMetrics(close_reason_, compose_count_,
-                                dialog_shown_count_, undo_count_);
+                                dialog_shown_count_, undo_count_,
+                                consent_given_in_session_);
+
   // If we have a modeling quality log entry, upload it.
-  if (most_recent_ok_state_->modeling_log_entry()) {
+
+  // If the latest result was an error upload that state
+  if (most_recent_error_log_) {
+    most_recent_error_log_
+        ->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+        ->set_final_status(final_status_);
+  } else if (most_recent_ok_state_->modeling_log_entry()) {
     most_recent_ok_state_->modeling_log_entry()
         ->quality_data<optimization_guide::ComposeFeatureTypeMap>()
         ->set_final_status(final_status_);
-    // Quality log would automaticlaly be uploaded on the destruction of
-    // a modeling_log_entry. However in order to more easily test the qulity
-    // uploads we are calling upload directly here.
-    if (model_quality_logs_uploader_) {
+  }
+
+  // Quality log would automatically be uploaded on the destruction of
+  // a modeling_log_entry. However in order to more easily test the quality
+  // uploads we are calling upload directly here.
+  if (model_quality_logs_uploader_) {
+    if (most_recent_error_log_) {
+      model_quality_logs_uploader_->UploadModelQualityLogs(
+          std::move(most_recent_error_log_));
+    }
+    if (most_recent_ok_state_->modeling_log_entry()) {
       model_quality_logs_uploader_->UploadModelQualityLogs(
           most_recent_ok_state_->TakeModelingLogEntry());
     }
@@ -279,7 +304,8 @@ void ComposeSession::ModelExecutionCallback(
 
   // A new request has been issued, ignore this one.
   if (request_id != request_id_) {
-    SendQualityLogEntryUponError(std::move(log_entry), request_delta);
+    SetQualityLogEntryUponError(std::move(log_entry), request_delta,
+                                was_input_edited);
     return;
   }
 
@@ -291,7 +317,8 @@ void ComposeSession::ModelExecutionCallback(
   if (status != compose::mojom::ComposeStatus::kOk) {
     compose::LogComposeRequestDuration(request_delta, /* is_valid */ false);
     ProcessError(status);
-    SendQualityLogEntryUponError(std::move(log_entry), request_delta);
+    SetQualityLogEntryUponError(std::move(log_entry), request_delta,
+                                was_input_edited);
     return;
   }
 
@@ -301,7 +328,8 @@ void ComposeSession::ModelExecutionCallback(
   if (!response) {
     compose::LogComposeRequestDuration(request_delta, /* is_valid */ false);
     ProcessError(compose::mojom::ComposeStatus::kTryAgain);
-    SendQualityLogEntryUponError(std::move(log_entry), request_delta);
+    SetQualityLogEntryUponError(std::move(log_entry), request_delta,
+                                was_input_edited);
     return;
   }
   DCHECK(result->is_complete ||
@@ -337,6 +365,8 @@ void ComposeSession::ModelExecutionCallback(
     token->set_high(session_id_.high());
     token->set_low(session_id_.low());
     most_recent_ok_state_->SetModelingLogEntry(std::move(log_entry));
+    // if we have a valid most recent state we no longer need an error state.
+    most_recent_error_log_.reset();
   }
 }
 
@@ -433,11 +463,12 @@ void ComposeSession::OpenFeedbackSurveyLink() {
 }
 
 void ComposeSession::OpenFeedbackPage(std::string feedback_id) {
-  Browser* browser = chrome::FindLastActive();
   base::Value::Dict feedback_metadata;
   feedback_metadata.Set("log_id", feedback_id);
   chrome::ShowFeedbackPage(
-      browser, chrome::kFeedbackSourceAI,
+      web_contents_->GetLastCommittedURL(),
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+      chrome::kFeedbackSourceAI,
       /*description_template=*/std::string(),
       /*description_placeholder_text=*/
       l10n_util::GetStringUTF8(IDS_COMPOSE_FEEDBACK_PLACEHOLDER),
@@ -452,15 +483,6 @@ void ComposeSession::SetUserFeedback(compose::mojom::UserFeedback feedback) {
     // feedback to.
     return;
   }
-  OptimizationGuideKeyedService* opt_guide_keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
-  if (!opt_guide_keyed_service ||
-      !opt_guide_keyed_service->ShouldFeatureBeCurrentlyAllowedForLogging(
-          optimization_guide::proto::MODEL_EXECUTION_FEATURE_COMPOSE)) {
-    return;
-  }
-
   // Add to most_recent_ok_state_ in case of undos.
   most_recent_ok_state_->mojo_state()->feedback = feedback;
 
@@ -569,6 +591,23 @@ void ComposeSession::RefreshInnerText() {
           weak_ptr_factory_.GetWeakPtr()));
 }
 
+void ComposeSession::HandleEndOfConsentSession() {
+  compose::LogComposeConsentSessionDialogShownCount(consent_close_reason_,
+                                                    dialog_shown_count_);
+
+  // If consent was given or the disclaimer was acknowledged, then the Compose
+  // session persists and transitions to the main dialog. Reset the dialog shown
+  // count so that metrics for the main dialog are unaffected by the consent
+  // session.
+  dialog_shown_count_ = 1;
+  consent_given_in_session_ = true;
+}
+
+void ComposeSession::SetConsentCloseReason(
+    compose::ComposeConsentSessionCloseReason close_reason) {
+  consent_close_reason_ = close_reason;
+}
+
 void ComposeSession::SetCloseReason(
     compose::ComposeSessionCloseReason close_reason) {
   close_reason_ = close_reason;
@@ -590,12 +629,23 @@ void ComposeSession::SetCloseReason(
   }
 }
 
-void ComposeSession::SendQualityLogEntryUponError(
+void ComposeSession::SetQualityLogEntryUponError(
     std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry,
-    base::TimeDelta request_time) {
-  if (log_entry && model_quality_logs_uploader_) {
+    base::TimeDelta request_time,
+    bool was_input_edited) {
+  if (log_entry) {
     log_entry->quality_data<optimization_guide::ComposeFeatureTypeMap>()
         ->set_request_latency_ms(request_time.InMilliseconds());
-    model_quality_logs_uploader_->UploadModelQualityLogs(std::move(log_entry));
+    optimization_guide::proto::Int128* token =
+        log_entry->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+            ->mutable_session_id();
+
+    token->set_high(session_id_.high());
+    token->set_low(session_id_.low());
+
+    log_entry->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+        ->set_was_generated_via_edit(was_input_edited);
+
+    most_recent_error_log_ = std::move(log_entry);
   }
 }

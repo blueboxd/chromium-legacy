@@ -218,8 +218,6 @@ class ASH_EXPORT AshMessagePopupCollection
 
   raw_ptr<display::Screen, ExperimentalAsh> screen_;
   gfx::Rect work_area_;
-
-  // Outlives this class.
   raw_ptr<Shelf, ExperimentalAsh> shelf_;
 
   std::set<views::Widget*> tracked_widgets_;

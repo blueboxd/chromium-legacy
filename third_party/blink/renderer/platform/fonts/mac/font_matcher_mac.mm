@@ -28,6 +28,7 @@
  */
 
 #import "third_party/blink/renderer/platform/fonts/mac/font_matcher_mac.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
@@ -108,22 +109,6 @@ BOOL BetterChoice(NSFontTraitMask desired_traits,
   return candidate_weight_delta_magnitude < chosen_weight_delta_magnitude;
 }
 
-NSFontWeight ToFontWeight(blink::FontSelectionValue font_weight) {
-  if (font_weight <= 50 || font_weight >= 950) {
-    return NSFontWeightRegular;
-  }
-
-  const NSFontWeight ns_font_weights[] = {
-      NSFontWeightUltraLight, NSFontWeightThin,   NSFontWeightLight,
-      NSFontWeightRegular,    NSFontWeightMedium, NSFontWeightSemibold,
-      NSFontWeightBold,       NSFontWeightHeavy,  NSFontWeightBlack,
-  };
-  size_t select_weight = roundf(font_weight / 100) - 1;
-  DCHECK_GE(select_weight, 0ul);
-  DCHECK_LE(select_weight, std::size(ns_font_weights));
-  return ns_font_weights[select_weight];
-}
-
 }  // namespace
 
 ScopedCFTypeRef<CTFontRef> MatchUniqueFont(const AtomicString& unique_font_name,
@@ -161,9 +146,6 @@ void ClampVariationValuesToFontAcceptableRange(
     FontSelectionValue& weight,
     FontSelectionValue& width) {
   ScopedCFTypeRef<CFArrayRef> all_axes(CTFontCopyVariationAxes(ct_font.get()));
-  if (!all_axes) {
-    return;
-  }
   for (CFIndex i = 0; i < CFArrayGetCount(all_axes.get()); ++i) {
     CFDictionaryRef axis = base::apple::CFCast<CFDictionaryRef>(
         CFArrayGetValueAtIndex(all_axes.get(), i));
@@ -218,19 +200,9 @@ ScopedCFTypeRef<CTFontRef> MatchSystemUIFont(FontSelectionValue desired_weight,
   ScopedCFTypeRef<CTFontRef> ct_font(
       CTFontCreateUIFontForLanguage(kCTFontUIFontSystem, size, nullptr));
 
-  CTFontSymbolicTraits desired_traits = 0;
-
   if (desired_slant != kNormalSlopeValue) {
-    desired_traits |= kCTFontItalicTrait;
-  }
-
-  if (desired_weight >= kBoldThreshold) {
-    desired_traits |= kCTFontBoldTrait;
-  }
-
-  if (desired_traits) {
     ct_font.reset(CTFontCreateCopyWithSymbolicTraits(
-        ct_font.get(), size, nullptr, desired_traits, desired_traits));
+        ct_font.get(), size, nullptr, kCTFontItalicTrait, kCTFontItalicTrait));
   }
 
   if (desired_weight == kNormalWeightValue &&
@@ -408,6 +380,10 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
 
   if (!font)
     return nil;
+
+  if (RuntimeEnabledFeatures::MacFontsDeprecateFontTraitsWorkaroundEnabled()) {
+    return font;
+  }
 
   NSFontTraitMask actual_traits = 0;
   if (desired_traits & NSFontItalicTrait)

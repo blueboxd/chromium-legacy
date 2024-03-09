@@ -110,7 +110,8 @@ class AutofillAgent : public content::RenderFrameObserver,
       base::OnceCallback<void(bool)> callback) override;
   void ApplyFormAction(mojom::ActionType action_type,
                        mojom::ActionPersistence action_persistence,
-                       const FormData& form) override;
+                       FormRendererId form_renderer_id,
+                       const std::vector<FormFieldData>& fields) override;
   void ApplyFieldAction(mojom::ActionPersistence action_persistence,
                         mojom::TextReplacement text_replacement,
                         FieldRendererId field_id,
@@ -375,12 +376,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Called when current form is no longer submittable, submitted_forms_ is
   // cleared in this method.
   void OnFormNoLongerSubmittable();
-
-  // Trigger a refill if the `form` has just changed dynamically (other than the
-  // field values). The refill is triggered by informing the browser process
-  // about the form. The browser process makes the final decision whether or not
-  // to execute a refill.
-  void TriggerRefillIfNeeded(const FormData& form);
 
   // Helpers for SelectOrSelectListFieldOptionsChanged() and
   // DataListOptionsChanged(), which get called after a timer that is restarted

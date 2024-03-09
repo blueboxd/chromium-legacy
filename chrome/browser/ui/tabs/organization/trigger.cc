@@ -7,38 +7,20 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/organization/tab_data.h"
-#include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
-#include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/ui/tabs/organization/trigger_policies.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "tab_sensitivity_cache.h"
 
 namespace {
 
 // Just counts the number of tabs in the browser.
-float ScoringFunction(float sensitivity_threshold, TabStripModel* const model) {
-  // Feature may be disabled in tests, in which case GetForProfile will CHECK.
-  const TabOrganizationService* const service =
-      base::FeatureList::IsEnabled(features::kTabOrganization)
-          ? TabOrganizationServiceFactory::GetForProfile(model->profile())
-          : nullptr;
-
+float MVPScoringFunction(TabStripModel* const model) {
   int num_eligible_tabs = 0;
   for (int i = 0; i < model->count(); i++) {
-    const TabData tab = TabData(model, model->GetWebContentsAt(i));
-    if (service) {
-      const absl::optional<float> score =
-          service->tab_sensitivity_cache()->GetScore(tab.original_url());
-      if (score && score.value() > sensitivity_threshold) {
-        continue;
-      }
+    if (TabData(model, model->GetWebContentsAt(i)).IsValidForOrganizing()) {
+      num_eligible_tabs++;
     }
-    if (!tab.IsValidForOrganizing()) {
-      continue;
-    }
-    num_eligible_tabs++;
   }
   return num_eligible_tabs;
 }
@@ -64,24 +46,16 @@ bool TabOrganizationTrigger::ShouldTrigger(
   return policy_->ShouldTrigger(score);
 }
 
-TriggerScoringFunction GetTriggerScoringFunction() {
-  return base::BindRepeating(&ScoringFunction, GetSensitivityThreshold());
+TriggerScoringFunction GetDefaultTriggerScoringFunction() {
+  return base::BindRepeating(&MVPScoringFunction);
 }
 
-float GetTriggerScoreThreshold() {
+float GetDefaultTriggerScoreThreshold() {
   return features::kTabOrganizationTriggerThreshold.Get();
 }
 
-float GetSensitivityThreshold() {
-  return features::kTabOrganizationTriggerSensitivityThreshold.Get();
-}
-
-std::unique_ptr<TriggerPolicy> GetTriggerPolicy(
-    BackoffLevelProvider* backoff_level_provider) {
-  if (features::KTabOrganizationTriggerDemoMode.Get()) {
-    return std::make_unique<DemoTriggerPolicy>();
-  }
-
+std::unique_ptr<TriggerPolicy> GetDefaultTriggerPolicy(
+    std::unique_ptr<BackoffLevelProvider> backoff_level_provider) {
   return std::make_unique<TargetFrequencyTriggerPolicy>(
       std::make_unique<UsageTickClock>(base::DefaultTickClock::GetInstance()),
       features::kTabOrganizationTriggerPeriod.Get(),
@@ -89,9 +63,9 @@ std::unique_ptr<TriggerPolicy> GetTriggerPolicy(
       std::move(backoff_level_provider));
 }
 
-std::unique_ptr<TabOrganizationTrigger> MakeTrigger(
-    BackoffLevelProvider* backoff_level_provider) {
+std::unique_ptr<TabOrganizationTrigger> MakeMVPTrigger(
+    std::unique_ptr<BackoffLevelProvider> backoff_level_provider) {
   return std::make_unique<TabOrganizationTrigger>(
-      GetTriggerScoringFunction(), GetTriggerScoreThreshold(),
-      GetTriggerPolicy(backoff_level_provider));
+      GetDefaultTriggerScoringFunction(), GetDefaultTriggerScoreThreshold(),
+      GetDefaultTriggerPolicy(std::move(backoff_level_provider)));
 }

@@ -76,6 +76,13 @@ public interface SelectionPopupController {
     void setActionModeCallback(ActionModeCallback callback);
 
     /**
+     * Sets the {@link AdditionalSelectionMenuItemProvider} used by {@link SelectionPopupController}
+     * when no text is selected.
+     */
+    void setNonSelectionAdditionalMenuItemProvider(
+            @Nullable AdditionalSelectionMenuItemProvider provider);
+
+    /**
      * @return {@link SelectionClient.ResultCallback} instance.
      */
     SelectionClient.ResultCallback getResultCallback();
@@ -161,8 +168,8 @@ public interface SelectionPopupController {
     void setDropdownMenuDelegate(@NonNull SelectionDropdownMenuDelegate dropdownMenuDelegate);
 
     /**
-     * Set the {@link SelectionActionMenuDelegate} used by {@link SelectionPopupController} while
-     * modifying menu items.
+     * Sets the {@link SelectionActionMenuDelegate} used by {@link SelectionPopupController} while
+     * ordering default menu items.
      */
     void setSelectionActionMenuDelegate(@Nullable SelectionActionMenuDelegate delegate);
 }

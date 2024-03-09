@@ -358,8 +358,14 @@ bool HasLayoutText(const blink::AXObject* obj) {
     return false;
   }
 
+  // Display-locked nodes do not have layout objects with which to use for
+  // retrieving inline textbox children.
+  const blink::AXObject* ax_ancestor_with_node = obj;
+  while (!ax_ancestor_with_node->GetNode()) {
+    ax_ancestor_with_node = ax_ancestor_with_node->CachedParentObject();
+  }
   if (blink::DisplayLockUtilities::LockedAncestorPreventingPaint(
-          *obj->GetLayoutObject())) {
+          *ax_ancestor_with_node->GetNode())) {
     return false;
   }
 
@@ -368,15 +374,12 @@ bool HasLayoutText(const blink::AXObject* obj) {
     return false;
   }
 
-  // TODO(accessibility): Unclear why text would need layout if it's not display
-  // locked and the document is currently in a clean layout state.
-  // It seems to be fairly rare, but is creating some crashes, and there is
-  // no repro case yet.
-  if (obj->GetLayoutObject()->NeedsLayout()) {
-    DCHECK(false) << "LayoutText needed layout but was not display locked: "
-                  << obj->ToString(true, true);
-    return false;
-  }
+  // Layout for this node must be clean, since we are in clean layout, and any
+  // node that needs layout because of display locking would have returned early
+  // above.
+  DUMP_WILL_BE_CHECK(!obj->GetLayoutObject()->NeedsLayout())
+      << "LayoutText needed layout but was not display locked: "
+      << obj->ToString(true, true);
 
   return true;
 }
@@ -4406,7 +4409,7 @@ void AXNodeObject::LoadInlineTextBoxesHelper() {
     // If inline text box children were added, mark the node dirty so that the
     // results are serialized.
     if (!CachedChildrenIncludingIgnored().empty()) {
-      AXObjectCache().MarkAXObjectDirtyWithDetails(
+      AXObjectCache().AddDirtyObjectToSerializationQueue(
           this, /*subtree*/ false, ax::mojom::blink::EventFrom::kNone,
           ax::mojom::blink::Action::kNone, {});
     }

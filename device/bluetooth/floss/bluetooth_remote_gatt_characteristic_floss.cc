@@ -32,11 +32,9 @@ BluetoothRemoteGattCharacteristicFloss::BluetoothRemoteGattCharacteristicFloss(
     GattCharacteristic* characteristic)
     : characteristic_(characteristic), service_(service) {
   DCHECK(service);
-  DCHECK(service->GetDevice());
   DCHECK(characteristic);
 
   service_->AddObserverForHandle(characteristic_->instance_id, this);
-  device_address_ = service_->GetDevice()->GetAddress();
 
   for (GattDescriptor& d : characteristic_->descriptors) {
     AddDescriptor(
@@ -107,7 +105,7 @@ void BluetoothRemoteGattCharacteristicFloss::ReadRemoteCharacteristic(
       base::BindOnce(
           &BluetoothRemoteGattCharacteristicFloss::OnReadCharacteristic,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      device_address_, characteristic_->instance_id, auth);
+      service_->GetDevice()->GetAddress(), characteristic_->instance_id, auth);
 }
 
 void BluetoothRemoteGattCharacteristicFloss::WriteRemoteCharacteristic(
@@ -168,7 +166,8 @@ void BluetoothRemoteGattCharacteristicFloss::WriteRemoteCharacteristicImpl(
           &BluetoothRemoteGattCharacteristicFloss::OnWriteCharacteristic,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
           std::move(error_callback), value),
-      device_address_, characteristic_->instance_id, write_type, auth, value);
+      service_->GetDevice()->GetAddress(), characteristic_->instance_id,
+      write_type, auth, value);
 }
 
 void BluetoothRemoteGattCharacteristicFloss::GattCharacteristicRead(
@@ -176,8 +175,8 @@ void BluetoothRemoteGattCharacteristicFloss::GattCharacteristicRead(
     GattStatus status,
     int32_t handle,
     const std::vector<uint8_t>& data) {
-  // Make sure this notification is for this characteristic.
-  if (handle != characteristic_->instance_id || address != device_address_) {
+  if (handle != characteristic_->instance_id ||
+      address != service_->GetDevice()->GetAddress()) {
     return;
   }
 
@@ -203,8 +202,8 @@ void BluetoothRemoteGattCharacteristicFloss::GattCharacteristicWrite(
     std::string address,
     GattStatus status,
     int32_t handle) {
-  // Make sure this notification is for this characteristic.
-  if (handle != characteristic_->instance_id || address != device_address_) {
+  if (handle != characteristic_->instance_id ||
+      address != service_->GetDevice()->GetAddress()) {
     return;
   }
 
@@ -228,8 +227,8 @@ void BluetoothRemoteGattCharacteristicFloss::GattNotify(
     std::string address,
     int32_t handle,
     const std::vector<uint8_t>& data) {
-  // Make sure this notification is for this characteristic.
-  if (handle != characteristic_->instance_id || address != device_address_) {
+  if (handle != characteristic_->instance_id ||
+      address != service_->GetDevice()->GetAddress()) {
     return;
   }
 
@@ -296,7 +295,7 @@ void BluetoothRemoteGattCharacteristicFloss::SubscribeToNotifications(
           &BluetoothRemoteGattCharacteristicFloss::OnRegisterForNotification,
           weak_ptr_factory_.GetWeakPtr(), ccc_descriptor, value,
           std::move(callback), std::move(error_callback)),
-      device_address_, characteristic_->instance_id);
+      service_->GetDevice()->GetAddress(), characteristic_->instance_id);
 }
 
 void BluetoothRemoteGattCharacteristicFloss::UnsubscribeFromNotifications(
@@ -312,7 +311,7 @@ void BluetoothRemoteGattCharacteristicFloss::UnsubscribeFromNotifications(
           &BluetoothRemoteGattCharacteristicFloss::OnRegisterForNotification,
           weak_ptr_factory_.GetWeakPtr(), ccc_descriptor, value,
           std::move(callback), std::move(error_callback)),
-      device_address_, characteristic_->instance_id);
+      service_->GetDevice()->GetAddress(), characteristic_->instance_id);
 }
 
 void BluetoothRemoteGattCharacteristicFloss::OnRegisterForNotification(

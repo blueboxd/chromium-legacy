@@ -124,7 +124,6 @@ class Future : public FutureBase {
   // Installs |callback| to be run when the response is received.
   void OnResponse(Callback callback) {
     if (!impl()) {
-      std::move(callback).Run({nullptr, nullptr});
       return;
     }
 
@@ -169,7 +168,6 @@ inline Response<void> Future<void>::Sync() {
 template <>
 inline void Future<void>::OnResponse(Callback callback) {
   if (!impl()) {
-    std::move(callback).Run(Response<void>(nullptr));
     return;
   }
 

@@ -8,14 +8,17 @@ import {CurrentDirectory, EntryType, FileData} from '../../externs/ts/state.js';
 import type {VolumeInfo} from '../../externs/volume_info.js';
 import type {VolumeManager} from '../../externs/volume_manager.js';
 import {constants} from '../../foreground/js/constants.js';
+import type {DirectoryItem} from '../../foreground/js/ui/directory_tree.js';
+import type {TreeItem} from '../../foreground/js/ui/tree.js';
 import {driveRootEntryListKey, myFilesEntryListKey} from '../../state/ducks/volumes.js';
-import {getStore} from '../../state/store.js';
+import {getEntry, getStore} from '../../state/store.js';
+import type {XfTreeItem} from '../../widgets/xf_tree_item.js';
 
 import {createDOMError} from './dom_utils.js';
 import {EntryList, FakeEntryImpl, VolumeEntry} from './files_app_entry_types.js';
-import {isArcVmEnabled, isPluginVmEnabled} from './flags.js';
+import {isArcVmEnabled, isNewDirectoryTreeEnabled, isPluginVmEnabled} from './flags.js';
 import {collator, getEntryLabel} from './translations.js';
-import {TrashEntry} from './trash.js';
+import type {TrashEntry} from './trash.js';
 import {FileErrorToDomError} from './util.js';
 import {COMPUTERS_DIRECTORY_NAME, COMPUTERS_DIRECTORY_PATH, RootType, SHARED_DRIVES_DIRECTORY_NAME, SHARED_DRIVES_DIRECTORY_PATH, VolumeType} from './volume_manager_types.js';
 
@@ -180,7 +183,7 @@ export function sortEntries(
       const compareFunction = compareLabelAndGroupBottomEntries(
           locationInfo,
           // Only Linux/Play/GuestOS files are in the UI children.
-          parentEntry.getUIChildren(),
+          parentEntry.getUiChildren(),
       );
       return entries.filter(entry => fileFilter.filter(entry))
           .sort(compareFunction);
@@ -226,7 +229,7 @@ export function isTeamDriveRoot(entry: Entry|FilesAppEntry) {
 /**
  * Obtains whether an entry is the grand root directory of Shared Drives.
  */
-export function isTeamDrivesGrandRoot(entry: Entry|FakeEntry) {
+export function isTeamDrivesGrandRoot(entry: Entry|FilesAppEntry) {
   if (!entry.fullPath) {
     return false;
   }
@@ -328,8 +331,8 @@ export function isTrashEntry(entry: Entry|FilesAppEntry): entry is TrashEntry {
  *     directory. Returns true if both entries are null.
  */
 export function isSameEntry(
-    entry1: Entry|FilesAppEntry|undefined,
-    entry2: Entry|FilesAppEntry|undefined): boolean {
+    entry1: Entry|FilesAppEntry|null|undefined,
+    entry2: Entry|FilesAppEntry|null|undefined): boolean {
   if (!entry1 && !entry2) {
     return true;
   }
@@ -344,7 +347,9 @@ export function isSameEntry(
  * @return True if the both arrays contain same files or directories
  *     in the same order. Returns true if both arrays are null.
  */
-export function isSameEntries(entries1: Entry[], entries2: Entry[]): boolean {
+export function isSameEntries(
+    entries1: Array<Entry|FilesAppEntry>,
+    entries2: Array<Entry|FilesAppEntry>): boolean {
   if (!entries1 && !entries2) {
     return true;
   }
@@ -382,7 +387,8 @@ export function isSameFileSystem(
  * Checks if given two entries are in the same directory.
  * @return True if given entries are in the same directory.
  */
-export function isSiblingEntry(entry1: Entry, entry2: Entry): boolean {
+export function isSiblingEntry(
+    entry1: Entry|FilesAppEntry, entry2: Entry|FilesAppEntry): boolean {
   const path1 = entry1.fullPath.split('/');
   const path2 = entry2.fullPath.split('/');
   if (path1.length != path2.length) {
@@ -413,8 +419,8 @@ export function isDescendantEntry(
   }
 
   // For EntryList and VolumeEntry they can contain entries from different
-  // files systems, so we should check its getUIChildren.
-  if ('getUIChildren' in ancestorEntry) {
+  // files systems, so we should check its getUiChildren.
+  if ('getUiChildren' in ancestorEntry) {
     const volumeOrEntryList = ancestorEntry as VolumeEntry | EntryList;
     // VolumeEntry has to check to root entry descendant entry.
     if ('getNativeEntry' in volumeOrEntryList) {
@@ -425,7 +431,7 @@ export function isDescendantEntry(
       }
     }
 
-    return volumeOrEntryList.getUIChildren().some(
+    return volumeOrEntryList.getUiChildren().some(
         (ancestorChild: Entry|FilesAppEntry) => {
           if (isSameEntry(ancestorChild, childEntry)) {
             return true;
@@ -616,7 +622,7 @@ export function urlToEntry(url: string) {
  * which cannot be modified such as deleted/cut or renamed.
  */
 export function isNonModifiable(
-    volumeManager: VolumeManager, entry: Entry|FilesAppEntry) {
+    volumeManager: VolumeManager, entry: Entry|FilesAppEntry|undefined) {
   if (!entry) {
     return false;
   }
@@ -766,7 +772,7 @@ export function readEntriesRecursively(
  * returns false if it's FakeEntry or any one of the FilesAppEntry types.
  */
 export function isNativeEntry(entry: Entry|FilesAppEntry) {
-  return !('type_name' in entry);
+  return !('typeName' in entry);
 }
 
 /**
@@ -783,18 +789,7 @@ export function unwrapEntry<T extends AllEntryTypes>(entry: T): AllEntryTypes {
   }
 
   const nativeEntry = 'getNativeEntry' in entry && entry.getNativeEntry();
-  if (nativeEntry) {
-    if (isDirectoryEntry(nativeEntry)) {
-      return nativeEntry;
-    }
-    return nativeEntry;
-  }
-
-  if (isDirectoryEntry(entry)) {
-    return entry;
-  }
-
-  return entry;
+  return nativeEntry || entry;
 }
 
 /**
@@ -906,4 +901,24 @@ export function shouldSupportDriveSpecificIcons(fileData: FileData): boolean {
   return (isEntryInsideMyDrive(fileData) && !isVolumeEntry(fileData.entry)) ||
       (isEntryInsideComputers(fileData) &&
        !isGrandRootEntryInDrives(fileData.entry));
+}
+
+/**
+ * Extracts the `entry` from the supplied `treeItem` depending on if the new
+ * directory tree is enabled or not.
+ */
+export function getTreeItemEntry(treeItem: DirectoryItem|XfTreeItem|TreeItem|
+                                 null|undefined): Entry|FilesAppEntry|null {
+  if (!treeItem) {
+    return null;
+  }
+
+  if (isNewDirectoryTreeEnabled()) {
+    const item = treeItem as XfTreeItem;
+    const state = getStore().getState();
+    return getEntry(state, item.dataset['navigationKey']!);
+  }
+
+  const item = treeItem as DirectoryItem;
+  return item.entry;
 }

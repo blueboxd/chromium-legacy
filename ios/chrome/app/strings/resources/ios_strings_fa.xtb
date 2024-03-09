@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">می‌توانید در «تنظیمات &gt; تنظیمات محتوا»، نمای پیش‌فرض سایت را به رایانه تغییر دهید</translation>
 <translation id="1054745118061919935">درصورت ادامه دادن، با <ph name="BEGIN_LINK" />شرایط خدمات<ph name="END_LINK" /> موافقت می‌کنید.</translation>
 <translation id="1066060668811609597">مدیریت همگام‌سازی</translation>
-<translation id="1066101356081285416">‏‫Chrome شماره‌های رهگیری را در سایت‌هایی که از آن‌ها بازدید می‌کنید شناسایی می‌کند و به‌روزرسانی‌های بسته را در صفحه «برگه جدید» نشان می‌دهد. برای ارائه این ویژگی و بهبود ویژگی‌های Google Shopping برای همه، شماره رهگیری بسته و نام وب‌سایت به Google ارسال می‌شود. هرزمان خواستید می‌توانید این مورد را در <ph name="BEGIN_LINK" />تنظیمات رهگیری بسته<ph name="END_LINK" /> به‌روزرسانی کنید.</translation>
 <translation id="1069154182096085577">این گذرواژه ازقبل وجود دارد</translation>
 <translation id="1076421457278169141">کد اسکن شد</translation>
 <translation id="1076785341346483463">همگام‌سازی با حساب مدیریت‌شده</translation>
@@ -143,7 +142,6 @@
 <translation id="165877110639533037">برگه‌ای باز نیست</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> به<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">درخواست سایت ویژه تلفن همراه</translation>
-<translation id="168715261339224929">برای دریافت نشانک‌ها در همه دستگاه‌هایتان، همگام‌سازی را روشن کنید.</translation>
 <translation id="1687475363370981210">علامت‌گذاری همه به‌‌عنوان خوانده‌شده</translation>
 <translation id="1689333818294560261">نام مستعار</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> نشانک انتخاب شده است</translation>
@@ -544,7 +542,7 @@
 <translation id="3832419617903252251">گذرواژه فقط در این دستگاه ذخیره شده است</translation>
 <translation id="3835964409414434850">رفتن به برگه بعدی</translation>
 <translation id="3838691874161539578">برای تقویت امنیت و ایمنی بیشتر در اینترنت، گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید</translation>
-<translation id="385051799172605136">برگشتن</translation>
+<translation id="385051799172605136">بازگشت</translation>
 <translation id="3851938967634752633">گذرواژه‌های <ph name="WEBSITE" />، <ph name="SECOND_WEBSITE" />، و <ph name="NUMBER_OF_ACCOUNTS" /> مورد دیگر حذف خواهد شد. حساب‌هایتان حذف نخواهد شد.</translation>
 <translation id="3858860766373142691">نام</translation>
 <translation id="3861486700625780712">لغو دنبال کردن</translation>
@@ -1049,7 +1047,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6476253015009698798">پیگیری قیمت برای این صفحه دردسترس نیست.</translation>
 <translation id="6476800141292307438">ترجمه صفحه به <ph name="LANGUAGE" />. گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند.</translation>
 <translation id="648164694371393720">خطای اصالت‌سنجی</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد حذف شد</translation>
 <translation id="6484712497741564393">‏با ایمیل <ph name="EMAIL" /> به سیستم وارد شده‌اید.
 
 داده‌هایتان بااستفاده از گذرعبارت شما رمزگذاری شده است. برای استفاده از داده‌های Chrome و ذخیره کردن این داده‌ها در «حساب Google»، این گذرعبارت را وارد کنید.</translation>
@@ -1136,6 +1133,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6869389390665537774">‏می‌توانید صفحه‌هایی را که از آن‌‎ها بازدید کرده‌اید ببینید یا آن‌ها را از سابقه پاک کنید</translation>
 <translation id="687135068089457384">نمایش تنظیمات</translation>
 <translation id="6873263987691478642">نمای تقسیم</translation>
+<translation id="687586529977635009">‏‫Chrome شماره‌های پیگیری را در سایت‌هایی که از آن‌ها بازدید می‌کنید شناسایی می‌کند و به‌روزرسانی‌های بسته را در صفحه «برگه جدید» نشان می‌دهد. برای ارائه این ویژگی و بهبود Shopping برای همه، داده‌هایتان با Google هم‌رسانی خواهد شد. می‌توانید این مورد را در <ph name="BEGIN_LINK" />تنظیمات پیگیری بسته پستی<ph name="END_LINK" /> تغییر دهید.</translation>
 <translation id="6882836635272038266">محافظت استاندارد دربرابر وب‌سایت‌ها، بارگیری‌ها، و افزونه‌هایی که خطرناک بودنشان مشخص شده است.</translation>
 <translation id="6888009575607455378">مطمئن هستید می‌خواهید از تغییراتتان صرف‌نظر کنید؟</translation>
 <translation id="6896758677409633944">کپی</translation>
@@ -1378,7 +1376,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8206354486702514201">این تنظیم توسط سرپرست شما اجباری شده است.</translation>
 <translation id="8211030355252954494">چند گذرواژه برای <ph name="WEBSITE" /> دریافت کردید</translation>
 <translation id="8214293972734702249">سنجاق‌شده، <ph name="TAB_TITLE" /></translation>
-<translation id="8225985093977202398">تصاویر و فایل‌های قرار گرفته در حافظه نهان</translation>
+<translation id="8225985093977202398">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>
 <translation id="823133356836493038">«فهرست خواندن» پنهان شده است</translation>
 <translation id="8237382152611443140">‏AutoFill Password Settings (تنظیمات تکمیل خودکار گذرواژه) را باز کنید</translation>
 <translation id="8248969482078657578">«برگه‌های غیرفعال» کمک می‌کند تمرکزتان را حفظ کنید</translation>
@@ -1416,7 +1414,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8428634594422941299">متوجه شدم</translation>
 <translation id="8446884382197647889">بیشتر بدانید</translation>
 <translation id="8449347986464073209">حذف و خروج از سیستم</translation>
-<translation id="8458397775385147834">۱ مورد حذف شد</translation>
 <translation id="8459333855531264009">امن نیست</translation>
 <translation id="8487667956631253959">فعال</translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
@@ -1482,7 +1479,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8766790350274092814">گذرواژه‌های <ph name="WEBSITE" /> و <ph name="SECOND_WEBSITE" /> حذف خواهد شد. حساب‌هایتان حذف نخواهد شد.</translation>
 <translation id="8775144690796719618">نشانی وب نامعتبر</translation>
 <translation id="8780076847684176174">{count,plural, =1{مرور برگه…}one{مرور برگه…}other{مرور همه برگه‌ها…}}</translation>
-<translation id="8782570580170191813">همیشه بسته‌ها ردیابی شود</translation>
 <translation id="8787968206789828143">جستجو در وب</translation>
 <translation id="8792626944327216835">میکروفون</translation>
 <translation id="8803639129939845298">ایمن</translation>

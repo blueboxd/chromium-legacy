@@ -72,10 +72,10 @@
 <translation id="6615455863669487791">Démonstration</translation>
 <translation id="661742612106409204">Vous trouverez les onglets fermés dans le menu principal de Chrome, sous "Onglets récents".</translation>
 <translation id="6840760312327750441">Pour regrouper des onglets, appuyez de manière prolongée sur un onglet, puis faites-le glisser vers un autre.</translation>
-<translation id="6856809498882026482">Masquer le mode multi-sélection</translation>
+<translation id="6856809498882026482">Masquer le mode de sélection multiple</translation>
 <translation id="7100731960740376323">{TABS_COUNT,plural, =1{Partager l'onglet}one{Partager l'onglet}other{Partager les onglets}}</translation>
 <translation id="7129458170538955174">Fiche d'infos sur ce magasin ouverte à mi-hauteur</translation>
-<translation id="7204204600596740190">Mode multi-sélection</translation>
+<translation id="7204204600596740190">Mode de sélection multiple</translation>
 <translation id="7326879924029668159">Voir les conditions de retour et plus</translation>
 <translation id="7352298686197644113">Affichez l'article le moins cher parmi ceux présentés dans les onglets ouverts</translation>
 <translation id="753732157349120914">Sélecteur d'onglets</translation>
@@ -88,7 +88,6 @@
 <translation id="7885132941432959125">Déplacer l'onglet vers la droite</translation>
 <translation id="7966321538264951561">Fermer les suggestions.</translation>
 <translation id="8029301326595421733">Fiche d'infos sur ce magasin ouverte à pleine hauteur</translation>
-<translation id="814503310257431685">Tout afficher</translation>
 <translation id="8205266828577616993">Déplacer l'onglet vers le haut</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Fermer l'onglet sélectionné (<ph name="TABS_COUNT_ONE" />)}one{Fermer l'onglet sélectionné (<ph name="TABS_COUNT_MANY" />)}other{Fermer les onglets sélectionnés (<ph name="TABS_COUNT_MANY" />)}}</translation>
 <translation id="8398929769197326728">Nouveau dossier – <ph name="CURRENT_TIMESTAMP_MS" /></translation>

@@ -447,6 +447,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2914580577416829331">Captures d'écran</translation>
 <translation id="2924416280450782352">Impossible d'afficher les éléments. Essayez de rouvrir ce panneau.</translation>
 <translation id="2931572158271115754">Rien sur cette liste de tâches.</translation>
+<translation id="2935225303485967257">Gérer les profils</translation>
 <translation id="2941112035454246133">Faible</translation>
 <translation id="2942350706960889382">Loupe en mode ancré</translation>
 <translation id="2942516765047364088">Position de l'étagère</translation>
@@ -624,7 +625,6 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3593646411856133110">Balayez l'écran vers le haut et maintenez le doigt sur l'écran pour afficher les applications ouvertes</translation>
 <translation id="3595596368722241419">Batterie entièrement chargée</translation>
 <translation id="3596012367874587041">Paramètres de l'application</translation>
-<translation id="3598452309062311481">recherche+h</translation>
 <translation id="3600061223661453002">Désactivé</translation>
 <translation id="3604801046548457007">Bureau <ph name="DESK_TITILE" /> créé</translation>
 <translation id="3606978283550408104">L'afficheur braille est connecté.</translation>
@@ -775,7 +775,6 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4190780880566297084">Ignorer la configuration de l'affichage des photos, des applications et du contenu multimédia récents de votre téléphone</translation>
 <translation id="4192112279662688596">ou</translation>
 <translation id="4193857202545160520">Afficher les clics et les clés</translation>
-<translation id="4193969623755915875">Ouvrez « Aide » dans l'application Explorer avec « <ph name="NEW_SHORTCUT" /> ».</translation>
 <translation id="4195579532193195633">Version actuelle : <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">Reprendre vos activités en ligne là où vous vous étiez arrêté</translation>
 <translation id="4195877955194704651">Bouton de clics automatiques</translation>
@@ -958,7 +957,6 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4889868803215848840">Fournissez des commentaires facultatifs pour améliorer les suggestions :</translation>
 <translation id="4890187583552566966">L'Assistant Google est désactivé par votre administrateur.</translation>
 <translation id="4890408602550914571">Assurez-vous que votre téléphone est à proximité et que le Bluetooth est activé.</translation>
-<translation id="4892981359753171125">Commande par reconnaissance faciale</translation>
 <translation id="4895488851634969361">La batterie est pleinement chargée.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="490788395437447240">Pile chargée à <ph name="BATTERY_PERCENTAGE" /> %</translation>
@@ -1267,7 +1265,7 @@ Certaines fonctionnalités sont limitées pour augmenter l'autonomie de la pile.
 <translation id="6073451960410192870">Arrêter l'enregistrement</translation>
 <translation id="6074087755403037157">Version bêta</translation>
 <translation id="6093867385179428431">Désactivé par l'administrateur</translation>
-<translation id="6095008505822982596">Débit</translation>
+<translation id="6095008505822982596">Vitesse de la voix</translation>
 <translation id="6095425951508823973">Ajouter une connexion avec <ph name="PROVIDER" /></translation>
 <translation id="6099678161144790572">Modifié au cours du dernier mois</translation>
 <translation id="6103838137565245112">système</translation>

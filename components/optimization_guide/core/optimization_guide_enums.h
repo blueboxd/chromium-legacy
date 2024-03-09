@@ -190,17 +190,6 @@ enum class ModelDeliveryEvent {
   kMaxValue = kModelDownloadDueToModelLoadFailure,
 };
 
-// The various model quality user feedback.
-enum class ModelQualityUserFeedback {
-  kUnknown = 0,
-  kThumbsUp = 1,
-  kThumbsDown = 2,
-
-  // Keep in sync with OptimizationGuideUserFeedback in
-  // tools/metrics/histograms/metadata/optimization/enums.xml.
-  kMaxValue = kThumbsDown,
-};
-
 // The various results of an access token request.
 //
 // Keep in sync with OptimizationGuideAccessTokenResult in enums.xml.
@@ -275,27 +264,6 @@ enum class OnDeviceModelEligibilityReason {
 
   // Insert new values before this line.
   kMaxValue = kTooManyRecentTimeouts,
-};
-
-// Status of a model quality logs upload request.
-enum class ModelQualityLogsUploadStatus {
-  kUnknown = 0,
-  // Logs upload was successful.
-  kUploadSuccessful = 1,
-  // Upload is disabled due to logging feature not enabled.
-  kLoggingNotEnabled = 2,
-  // Upload was not successful because of network error.
-  kNetError = 3,
-  // Upload is disabled due to user's metrics consent.
-  kNoMetricsConsent = 4,
-  // Upload is disabled due to enterprise policy.
-  kDisabledDueToEnterprisePolicy = 5,
-
-  // Insert new values before this line.
-  // This enum must remain synchronized with the enum
-  // |OptimizationGuideModelQualityLogsUploadStatus| in
-  // tools/metrics/histograms/enums.xml.
-  kMaxValue = kDisabledDueToEnterprisePolicy,
 };
 
 // Performance class of this device.

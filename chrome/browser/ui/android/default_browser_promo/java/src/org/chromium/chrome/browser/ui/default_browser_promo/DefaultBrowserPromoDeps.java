@@ -167,8 +167,4 @@ public class DefaultBrowserPromoDeps {
         boolean isRoleHeld = roleManager.isRoleHeld(RoleManager.ROLE_BROWSER);
         return isRoleAvailable && !isRoleHeld;
     }
-
-    static void setInstanceForTesting(DefaultBrowserPromoDeps instance) {
-        sInstance = instance;
-    }
 }

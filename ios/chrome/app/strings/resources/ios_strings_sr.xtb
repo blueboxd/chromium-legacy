@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">Можете да промените подразумевани приказ сајта на рачунар у одељку Подешавања, па Подешавања садржаја</translation>
 <translation id="1054745118061919935">Ако наставите, прихватате <ph name="BEGIN_LINK" />Услове коришћења услуге<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Управљајте синхронизацијом</translation>
-<translation id="1066101356081285416">Chrome открива бројеве за праћење на сајтовима које посећујете и приказује вам новости о пакетима на страници Нова картица. Број за праћење пакета и назив веб-сајта се шаљу Google-у ради пружања ове функције и побољшања функција Google куповине за све. То можете да ажурирате у сваком тренутку у <ph name="BEGIN_LINK" />подешавањима праћења пакета<ph name="END_LINK" />.</translation>
 <translation id="1069154182096085577">Лозинка већ постоји</translation>
 <translation id="1076421457278169141">Скенирали сте кôд</translation>
 <translation id="1076785341346483463">Синхронизација са управљаним налогом</translation>
@@ -143,7 +142,6 @@
 <translation id="165877110639533037">Нема отворених картица</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Захтевај мобилни сајт</translation>
-<translation id="168715261339224929">Да би вам обележивачи били доступни на свим уређајима, укључите синхронизацију.</translation>
 <translation id="1687475363370981210">Означи све као прочитано</translation>
 <translation id="1689333818294560261">Надимак</translation>
 <translation id="1700629756560807968">Број изабраних ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -1049,7 +1047,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6476253015009698798">Праћење цена није доступно за ову страницу.</translation>
 <translation id="6476800141292307438">Страница се преводи на: <ph name="LANGUAGE" />. Опције су доступне у дну екрана.</translation>
 <translation id="648164694371393720">Грешка при потврди идентитета</translation>
-<translation id="6482629121755362506">Број избрисаних ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6484712497741564393">Пријављени сте као <ph name="EMAIL" />.
 
 Подаци се шифрују помоћу приступне фразе. Унесите је да бисте користили и сачували Chrome податке на Google налогу.</translation>
@@ -1136,6 +1133,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6869389390665537774">Можете да видите странице које сте посетили или да их обришете из историје</translation>
 <translation id="687135068089457384">Приказује подешавања</translation>
 <translation id="6873263987691478642">Подељени приказ</translation>
+<translation id="687586529977635009">Chrome открива бројеве за праћење на сајтовима које посећујете и приказује вам новости о пакетима на страници Нова картица. Подаци ће се делити са Google-ом ради пружања ове функције и побољшања Куповине за све. То можете да промените у <ph name="BEGIN_LINK" />подешавањима праћења пакета<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Стандардна заштита од веб-сајтова, преузимања и додатака за које се зна да су штетни.</translation>
 <translation id="6888009575607455378">Желите ли стварно да одбаците промене?</translation>
 <translation id="6896758677409633944">Копирај</translation>
@@ -1416,7 +1414,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8428634594422941299">Важи</translation>
 <translation id="8446884382197647889">Сазнајте више</translation>
 <translation id="8449347986464073209">Избриши и одјави ме</translation>
-<translation id="8458397775385147834">1 ставка је избрисана</translation>
 <translation id="8459333855531264009">Није безбедан</translation>
 <translation id="8487667956631253959">Укључено</translation>
 <translation id="8487700953926739672">Доступно ван мреже</translation>

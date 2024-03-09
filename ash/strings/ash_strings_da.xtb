@@ -447,6 +447,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2914580577416829331">Screenshots</translation>
 <translation id="2924416280450782352">Elementerne kan ikke vises. Prøv at åbne panelet igen.</translation>
 <translation id="2931572158271115754">Der er intet på denne huskeliste.</translation>
+<translation id="2935225303485967257">Administrer profiler</translation>
 <translation id="2941112035454246133">Lav</translation>
 <translation id="2942350706960889382">Fastgjort lupvindue</translation>
 <translation id="2942516765047364088">Hyldeplacering</translation>
@@ -558,7 +559,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3349345708646875009">Åbn Jobliste</translation>
 <translation id="3364721542077212959">Styluspenværktøjer</translation>
 <translation id="3365977133351922112">Din telefon er for langt væk. Prøv at flytte telefonen tættere på.</translation>
-<translation id="3368922792935385530">Forbundet</translation>
+<translation id="3368922792935385530">Tilsluttet</translation>
 <translation id="3369111525500416043">Skal snart afleveres</translation>
 <translation id="3371140690572404006">USB-C-enhed (porten foran i højre side)</translation>
 <translation id="3375634426936648815">Forbundet</translation>
@@ -624,7 +625,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3593646411856133110">Stryg opad, og hold fingeren nede for at se åbne apps</translation>
 <translation id="3595596368722241419">Batteri helt opladet</translation>
 <translation id="3596012367874587041">Appindstillinger</translation>
-<translation id="3598452309062311481">søgetasten + h</translation>
 <translation id="3600061223661453002">Fra</translation>
 <translation id="3604801046548457007">Skrivebord <ph name="DESK_TITILE" /> blev oprettet</translation>
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
@@ -776,7 +776,6 @@ Nogle funktioner er begrænset for at forlænge batteritiden.</translation>
 <translation id="4190780880566297084">Afvis konfiguration af visning af din telefons seneste billeder, medier og apps</translation>
 <translation id="4192112279662688596">Eller</translation>
 <translation id="4193857202545160520">Vis klik og taster</translation>
-<translation id="4193969623755915875">Åbn "Hjælp" i appen Udforsk med "<ph name="NEW_SHORTCUT" />".</translation>
 <translation id="4195579532193195633">Aktuel version <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">Fortsæt, hvor du slap</translation>
 <translation id="4195877955194704651">Knap til automatisk klik</translation>
@@ -959,7 +958,6 @@ Nogle funktioner er begrænset for at forlænge batteritiden.</translation>
 <translation id="4889868803215848840">Giv valgfri feedback for at forbedre forslagene:</translation>
 <translation id="4890187583552566966">Google Assistent er deaktiveret af din administrator.</translation>
 <translation id="4890408602550914571">Sørg for, at din telefon er i nærheden, og at Bluetooth er aktiveret.</translation>
-<translation id="4892981359753171125">Ansigtsstyring</translation>
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
 <translation id="490375751687810070">Lodret</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
@@ -1099,7 +1097,7 @@ Nogle funktioner er begrænset for at forlænge batteritiden.</translation>
 <translation id="5428899915242071344">Gå i gang med at vælge</translation>
 <translation id="5429993543155113935">Inkognitovinduer understøttes ikke i øjeblikket</translation>
 <translation id="5431318178759467895">Farve</translation>
-<translation id="5433020815079095860">Lydindgang</translation>
+<translation id="5433020815079095860">Lydinput</translation>
 <translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
 <translation id="54609108002486618">Administreret</translation>
 <translation id="5460938382730614333">Tuschen er aktiveret.</translation>
@@ -1416,7 +1414,7 @@ Installeret for nylig</translation>
 <translation id="6707693040195709527">Der skal skiftes til en tidligere version af enheden</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6723839937902243910">Strøm</translation>
-<translation id="6727969043791803658">Forbundet, <ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
+<translation id="6727969043791803658">Tilsluttet, <ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
 <translation id="6732087373923685049">kamera</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
 <translation id="6737983188036277605">Kameraet og mikrofonen er i brug</translation>

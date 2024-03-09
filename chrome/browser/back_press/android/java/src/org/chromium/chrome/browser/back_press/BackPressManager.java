@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.back_press;
 
-import android.annotation.SuppressLint;
 import android.text.format.DateUtils;
 import android.util.SparseIntArray;
 
@@ -82,25 +81,11 @@ public class BackPressManager implements Destroyable {
     private final OnBackPressedCallback mCallback =
             new OnBackPressedCallback(false) {
                 private BackPressHandler mActiveHandler;
-                private BackEventCompat mLastBackEvent;
 
-                @SuppressLint("WrongConstant") // Suppress mLastCalledHandlerType assignment warning
                 @Override
                 public void handleOnBackPressed() {
-                    mLastCalledHandlerType = -1;
                     BackPressManager.this.handleBackPress();
-                    // This means this back is triggered by a gesture rather than the back button.
-                    if (mLastBackEvent != null && mLastCalledHandlerType != -1) {
-                        BackPressMetrics.recordBackPressFromEdge(
-                                mLastCalledHandlerType, mLastBackEvent.getSwipeEdge());
-
-                        if (mLastCalledHandlerType == Type.TAB_HISTORY) {
-                            BackPressMetrics.recordTabNavigationSwipedFromEdge(
-                                    mLastBackEvent.getSwipeEdge());
-                        }
-                    }
                     mActiveHandler = null;
-                    mLastBackEvent = null;
                 }
 
                 // Following methods are only triggered on API 34+.
@@ -109,7 +94,6 @@ public class BackPressManager implements Destroyable {
                     mActiveHandler = getEnabledBackPressHandler();
                     assert mActiveHandler != null;
                     mActiveHandler.handleOnBackStarted(backEvent);
-                    mLastBackEvent = backEvent;
                 }
 
                 @Override
@@ -117,7 +101,6 @@ public class BackPressManager implements Destroyable {
                     if (mActiveHandler == null) return;
                     mActiveHandler.handleOnBackCancelled();
                     mActiveHandler = null;
-                    mLastBackEvent = null;
                 }
 
                 @Override
@@ -137,7 +120,7 @@ public class BackPressManager implements Destroyable {
 
     private final Callback<Boolean>[] mObserverCallbacks = new Callback[Type.NUM_TYPES];
     private Runnable mFallbackOnBackPressed;
-    private int mLastCalledHandlerType = -1;
+    private int mLastCalledHandlerForTesting = -1;
     // Do not use static; otherwise the data might be corrupted because of multi-window usage.
     private long mLastPressMs = -1;
 
@@ -184,14 +167,6 @@ public class BackPressManager implements Destroyable {
     public static void record(@Type int type) {
         RecordHistogram.recordEnumeratedHistogram(
                 HISTOGRAM, sMetricsMap.get(type), sMetricsMaxValue);
-    }
-
-    /**
-     * @param type The {@link Type} of the back press handler.
-     * @return The corresponding histogram value.
-     */
-    public static int getHistogramValue(@Type int type) {
-        return sMetricsMap.get(type);
     }
 
     /**
@@ -333,7 +308,7 @@ public class BackPressManager implements Destroyable {
             Boolean enabled = handler.getHandleBackPressChangedSupplier().get();
             if (enabled != null && enabled) {
                 int res = handler.handleBackPress();
-                mLastCalledHandlerType = i;
+                mLastCalledHandlerForTesting = i;
                 if (res == BackPressResult.FAILURE) {
                     failed.add(i + "");
                     recordFailure(i);
@@ -382,15 +357,18 @@ public class BackPressManager implements Destroyable {
     }
 
     public int getLastCalledHandlerForTesting() {
-        return mLastCalledHandlerType;
+        return mLastCalledHandlerForTesting;
     }
 
     public void resetLastCalledHandlerForTesting() {
-        mLastCalledHandlerType = -1;
+        mLastCalledHandlerForTesting = -1;
     }
 
     public static String getHistogramForTesting() {
         return HISTOGRAM;
     }
 
+    public static int getHistogramValueForTesting(int type) {
+        return sMetricsMap.get(type);
+    }
 }

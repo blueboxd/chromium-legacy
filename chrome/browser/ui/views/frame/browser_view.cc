@@ -27,6 +27,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -43,8 +44,6 @@
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/native_window_notification_source.h"
-#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
-#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -227,13 +226,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/command.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
@@ -827,10 +825,7 @@ class BrowserView::AccessibilityModeObserver : public ui::AXModeObserver {
  public:
   explicit AccessibilityModeObserver(BrowserView* browser_view)
       : browser_view_(browser_view) {
-    ui::AXPlatformNode::AddAXModeObserver(this);
-  }
-  ~AccessibilityModeObserver() override {
-    ui::AXPlatformNode::RemoveAXModeObserver(this);
+    ax_mode_observation_.Observe(&ui::AXPlatform::GetInstance());
   }
 
  private:
@@ -859,6 +854,8 @@ class BrowserView::AccessibilityModeObserver : public ui::AXModeObserver {
   }
 
   const raw_ptr<BrowserView> browser_view_;
+  base::ScopedObservation<ui::AXPlatform, ui::AXModeObserver>
+      ax_mode_observation_{this};
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -870,7 +867,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       accessibility_mode_observer_(
           std::make_unique<AccessibilityModeObserver>(this)) {
   // Store the actions so that the access is available for other classes.
-  if (features::IsSidePanelPinningEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
     browser_->SetUserData(BrowserActions::UserDataKey(),
                           std::make_unique<BrowserActions>(*browser_));
   }
@@ -1185,15 +1182,12 @@ bool BrowserView::UsesImmersiveFullscreenTabbedMode() const {
 #endif
 
 TabSearchBubbleHost* BrowserView::GetTabSearchBubbleHost() {
-  if (auto* tab_search_host =
-          frame_->GetFrameView()->GetTabSearchBubbleHost()) {
+  if (auto* tab_search_host = frame_->GetFrameView()->GetTabSearchBubbleHost())
     return tab_search_host;
-  }
-  if (auto* tab_search_container =
-          tab_strip_region_view_->tab_search_container()) {
-    return tab_search_container->tab_search_button()->tab_search_bubble_host();
-  }
-  return nullptr;
+  auto* const tab_search_button =
+      tab_strip_region_view_->tab_search_container()->tab_search_button();
+  return tab_search_button ? tab_search_button->tab_search_bubble_host()
+                           : nullptr;
 }
 
 bool BrowserView::GetTabStripVisible() const {
@@ -1291,19 +1285,19 @@ bool BrowserView::GetIsPictureInPictureType() const {
 }
 
 float BrowserView::GetInitialAspectRatio() const {
-  const absl::optional<blink::mojom::PictureInPictureWindowOptions>
-      pip_options = browser_->create_params().pip_options;
+  const std::optional<blink::mojom::PictureInPictureWindowOptions> pip_options =
+      browser_->create_params().pip_options;
   return pip_options.has_value() ? pip_options->initial_aspect_ratio : 1.0;
 }
 
-absl::optional<blink::mojom::PictureInPictureWindowOptions>
+std::optional<blink::mojom::PictureInPictureWindowOptions>
 BrowserView::GetDocumentPictureInPictureOptions() const {
   return browser_->create_params().pip_options;
 }
 
 bool BrowserView::GetLockAspectRatio() const {
-  const absl::optional<blink::mojom::PictureInPictureWindowOptions>
-      pip_options = browser_->create_params().pip_options;
+  const std::optional<blink::mojom::PictureInPictureWindowOptions> pip_options =
+      browser_->create_params().pip_options;
   return pip_options.has_value() ? pip_options->lock_aspect_ratio : false;
 }
 
@@ -1442,7 +1436,7 @@ bool BrowserView::IsOnCurrentWorkspace() const {
   return chromeos::DesksHelper::Get(native_win)
       ->BelongsToActiveDesk(native_win);
 #elif BUILDFLAG(IS_WIN)
-  absl::optional<bool> on_current_workspace =
+  std::optional<bool> on_current_workspace =
       native_win->GetHost()->on_current_workspace();
   if (on_current_workspace.has_value())
     return on_current_workspace.value();
@@ -2533,10 +2527,10 @@ void BrowserView::OnWidgetVisibilityChanged(views::Widget* widget,
   }
 }
 
-absl::optional<bool> BrowserView::GetCanResizeFromWebAPI() const {
+std::optional<bool> BrowserView::GetCanResizeFromWebAPI() const {
   // TODO(laurila, crbug.com/1493617): Support multi-tab apps.
   if (browser()->tab_strip_model()->count() > 1) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // The value can only be set in web apps, where there currently can only be 1
@@ -2544,7 +2538,7 @@ absl::optional<bool> BrowserView::GetCanResizeFromWebAPI() const {
   // value set by the active WebContents' primary page.
   content::WebContents* web_contents = GetActiveWebContents();
   if (!web_contents || !web_contents->GetPrimaryMainFrame()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return web_contents->GetPrimaryPage().GetResizable();
@@ -2583,7 +2577,7 @@ void BrowserView::OnCanResizeFromWebAPIChanged() {
     return;
   }
 
-  // Setting it to absl::nullopt should never be blocked.
+  // Setting it to std::nullopt should never be blocked.
   if (can_resize.has_value() && browser()->tab_strip_model()->count() > 1) {
     // This adds a warning to the active tab, even when another tab makes the
     // call, which also needs to be fixed as part of the multi-apps support.
@@ -2599,10 +2593,6 @@ void BrowserView::OnCanResizeFromWebAPIChanged() {
 }
 
 void BrowserView::SynchronizeRenderWidgetHostVisualPropertiesForMainFrame() {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kDesktopPWAsAdditionalWindowingControls)) {
-    return;
-  }
   content::WebContents* web_contents = GetActiveWebContents();
   if (!web_contents || !web_contents->GetPrimaryMainFrame()) {
     return;
@@ -2659,17 +2649,6 @@ void BrowserView::MaybeShowReadingListInSidePanelIPH() {
           reading_list::prefs::kReadingListDesktopFirstUseExperienceShown)) {
     MaybeShowFeaturePromo(
         feature_engagement::kIPHReadingListInSidePanelFeature);
-  }
-}
-
-void BrowserView::MaybeShowExperimentalAIIPH() {
-  if (!browser()->is_type_normal()) {
-    return;
-  }
-  auto* opt_guide_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser_->profile());
-  if (opt_guide_service && opt_guide_service->ShouldShowExperimentalAIPromo()) {
-    MaybeShowFeaturePromo(feature_engagement::kIPHExperimentalAIPromoFeature);
   }
 }
 
@@ -2747,7 +2726,7 @@ void BrowserView::ShowIntentPickerBubble(
     bool show_stay_in_chrome,
     bool show_remember_selection,
     apps::IntentPickerBubbleType bubble_type,
-    const absl::optional<url::Origin>& initiating_origin,
+    const std::optional<url::Origin>& initiating_origin,
     IntentPickerResponse callback) {
   toolbar_->ShowIntentPickerBubble(std::move(app_info), show_stay_in_chrome,
                                    show_remember_selection, bubble_type,
@@ -2761,11 +2740,6 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void BrowserView::VerifyUserEligibilityIOSPasswordPromoBubble() {
   if (!browser_) {
-    return;
-  }
-
-  if (promos_utils::IsActivationCriteriaOverriddenIOSPasswordPromo()) {
-    ShowIOSPasswordPromoBubble();
     return;
   }
 
@@ -2826,20 +2800,11 @@ void BrowserView::ShowIOSPasswordPromoBubble() {
       BrowserView::GetBrowserViewForBrowser(browser_.get())
           ->toolbar_button_provider();
 
-  IOSPromoPasswordBubble::PromoVariant variant;
-  if (promos_utils::IsDirectVariantIOSPasswordPromo()) {
-    variant = IOSPromoPasswordBubble::PromoVariant::QR_CODE_VARIANT;
-  } else if (promos_utils::IsIndirectVariantIOSPasswordPromo()) {
-    variant = IOSPromoPasswordBubble::PromoVariant::GET_STARTED_BUTTON_VARIANT;
-  } else {
-    NOTREACHED_NORETURN();
-  }
-
   IOSPromoPasswordBubble::ShowBubble(
       button_provider->GetAnchorView(PageActionIconType::kManagePasswords),
       button_provider->GetPageActionIconView(
           PageActionIconType::kManagePasswords),
-      variant, browser_.get());
+      browser_.get());
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -3494,7 +3459,7 @@ std::u16string BrowserView::GetAccessibleTabLabel(int index,
                                                   bool is_for_tab) const {
   std::u16string title = browser_->GetWindowTitleForTab(index);
 
-  absl::optional<tab_groups::TabGroupId> group =
+  std::optional<tab_groups::TabGroupId> group =
       tabstrip_->tab_at(index)->group();
   if (group.has_value()) {
     std::u16string group_title = tabstrip_->GetGroupTitle(group.value());
@@ -3532,7 +3497,7 @@ std::u16string BrowserView::GetAccessibleTabLabel(int index,
   }
 
   // Alert tab states.
-  absl::optional<TabAlertState> alert = tabstrip_->GetTabAlertState(index);
+  std::optional<TabAlertState> alert = tabstrip_->GetTabAlertState(index);
   if (alert.has_value()) {
     switch (alert.value()) {
       case TabAlertState::AUDIO_PLAYING:
@@ -3562,6 +3527,14 @@ std::u16string BrowserView::GetAccessibleTabLabel(int index,
       case TabAlertState::MEDIA_RECORDING:
         title = l10n_util::GetStringFUTF16(
             IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT, title);
+        break;
+      case TabAlertState::AUDIO_RECORDING:
+        title = l10n_util::GetStringFUTF16(
+            IDS_TAB_AX_LABEL_AUDIO_RECORDING_FORMAT, title);
+        break;
+      case TabAlertState::VIDEO_RECORDING:
+        title = l10n_util::GetStringFUTF16(
+            IDS_TAB_AX_LABEL_VIDEO_RECORDING_FORMAT, title);
         break;
       case TabAlertState::AUDIO_MUTING:
         title = l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_AUDIO_MUTING_FORMAT,
@@ -4022,7 +3995,7 @@ const views::Widget* BrowserView::GetWidget() const {
   return View::GetWidget();
 }
 
-void BrowserView::CreateTabSearchBubble(const int tab_index) {
+void BrowserView::CreateTabSearchBubble() {
   // Do not spawn the bubble if using the WebUITabStrip.
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   if (WebUITabStripContainerView::UseTouchableTabStrip(browser_.get()))
@@ -4030,7 +4003,7 @@ void BrowserView::CreateTabSearchBubble(const int tab_index) {
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   if (auto* tab_search_host = GetTabSearchBubbleHost())
-    tab_search_host->ShowTabSearchBubble(true, tab_index);
+    tab_search_host->ShowTabSearchBubble(true);
 }
 
 void BrowserView::CloseTabSearchBubble() {
@@ -4359,11 +4332,6 @@ void BrowserView::AddedToWidget() {
       FROM_HERE,
       base::BindOnce(&BrowserView::MaybeShowReadingListInSidePanelIPH,
                      GetAsWeakPtr()),
-      base::Minutes(5));
-
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&BrowserView::MaybeShowExperimentalAIIPH, GetAsWeakPtr()),
       base::Minutes(5));
 
   initialized_ = true;

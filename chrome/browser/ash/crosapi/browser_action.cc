@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/crosapi/browser_action.h"
-#include <cstdint>
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
@@ -41,7 +40,7 @@ class NewWindowAction final : public BrowserAction {
   NewWindowAction(bool incognito,
                   bool should_trigger_session_restore,
                   int64_t target_display_id,
-                  absl::optional<uint64_t> profile_id = absl::nullopt)
+                  std::optional<uint64_t> profile_id = std::nullopt)
       : BrowserAction(true),
         incognito_(incognito),
         should_trigger_session_restore_(should_trigger_session_restore),
@@ -67,7 +66,7 @@ class NewWindowAction final : public BrowserAction {
   const bool incognito_;
   const bool should_trigger_session_restore_;
   const int64_t target_display_id_;
-  const absl::optional<uint64_t> profile_id_;
+  const std::optional<uint64_t> profile_id_;
   base::WeakPtrFactory<NewWindowAction> weak_ptr_factory_;
 };
 
@@ -137,7 +136,7 @@ class NewTabAction final : public BrowserAction {
 class LaunchAction final : public BrowserAction {
  public:
   explicit LaunchAction(int64_t target_display_id,
-                        absl::optional<uint64_t> profile_id = absl::nullopt)
+                        std::optional<uint64_t> profile_id = std::nullopt)
       : BrowserAction(true),
         target_display_id_(target_display_id),
         profile_id_(profile_id),
@@ -161,7 +160,7 @@ class LaunchAction final : public BrowserAction {
 
  private:
   int64_t target_display_id_;
-  absl::optional<uint64_t> profile_id_;
+  std::optional<uint64_t> profile_id_;
   base::WeakPtrFactory<LaunchAction> weak_ptr_factory_;
 };
 
@@ -394,9 +393,10 @@ class OpenProfileManagerAction final : public BrowserAction {
 std::unique_ptr<BrowserAction> BrowserAction::NewWindow(
     bool incognito,
     bool should_trigger_session_restore,
-    int64_t target_display_id) {
+    int64_t target_display_id,
+    std::optional<uint64_t> profile_id) {
   return std::make_unique<NewWindowAction>(
-      incognito, should_trigger_session_restore, target_display_id);
+      incognito, should_trigger_session_restore, target_display_id, profile_id);
 }
 
 // static
@@ -406,8 +406,9 @@ std::unique_ptr<BrowserAction> BrowserAction::NewTab() {
 
 // static
 std::unique_ptr<BrowserAction> BrowserAction::Launch(
-    int64_t target_display_id) {
-  return std::make_unique<LaunchAction>(target_display_id);
+    int64_t target_display_id,
+    std::optional<uint64_t> profile_id) {
+  return std::make_unique<LaunchAction>(target_display_id, profile_id);
 }
 
 // static

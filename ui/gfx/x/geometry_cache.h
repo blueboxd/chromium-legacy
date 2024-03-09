@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/functional/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/connection.h"
@@ -20,7 +21,8 @@ namespace x11 {
 // Keeps track of the geometry of a window relative to the root window.
 class COMPONENT_EXPORT(X11) GeometryCache final : public EventObserver {
  public:
-  using BoundsChangedCallback = base::RepeatingCallback<void(const gfx::Rect&)>;
+  using BoundsChangedCallback =
+      base::RepeatingCallback<void(const gfx::Rect&, const gfx::Rect&)>;
 
   GeometryCache(Connection* connection,
                 Window window,
@@ -42,7 +44,8 @@ class COMPONENT_EXPORT(X11) GeometryCache final : public EventObserver {
 
   bool Ready() const;
 
-  void OnParentGeometryChanged(const gfx::Rect& parent_bounds);
+  void OnParentGeometryChanged(const gfx::Rect& old_parent_bounds,
+                               const gfx::Rect& new_parent_bounds);
 
   // EventObserver:
   void OnEvent(const Event& xevent) override;
@@ -61,6 +64,8 @@ class COMPONENT_EXPORT(X11) GeometryCache final : public EventObserver {
   ScopedEventSelector window_events_;
 
   base::ScopedObservation<Connection, EventObserver> scoped_observation_{this};
+
+  base::WeakPtrFactory<GeometryCache> weak_ptr_factory_{this};
 };
 
 }  // namespace x11

@@ -173,11 +173,10 @@ public class AndroidStylusWritingHandlerTest {
 
     @Test
     public void testStylusHandwritingLogsApiOption() {
-        ViewGroup containerView = mock(ViewGroup.class);
         HistogramWatcher histogramWatcher =
                 HistogramWatcher.newSingleRecordWatcher(
                         "InputMethod.StylusHandwriting.Triggered", StylusApiOption.Api.ANDROID);
-        mHandler.requestStartStylusWriting(containerView);
+        mHandler.requestStartStylusWriting();
         histogramWatcher.assertExpected();
     }
 

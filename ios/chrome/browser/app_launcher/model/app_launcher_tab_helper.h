@@ -48,8 +48,7 @@ class AppLauncherTabHelper
   void RequestToLaunchApp(const GURL& url,
                           const GURL& source_page_url,
                           bool link_transition,
-                          bool is_user_initiated,
-                          bool user_tapped_recently);
+                          bool is_user_initiated);
 
   // web::WebStatePolicyDecider implementation
   void ShouldAllowRequest(
@@ -96,8 +95,7 @@ class AppLauncherTabHelper
     GURL url;
     GURL source_page_url;
     bool link_transition;
-    bool is_user_initiated;
-    bool user_tapped_recently;
+    bool has_user_gesture;
   };
   using PolicyDecisionAndOptionalAppLaunchRequest =
       std::pair<web::WebStatePolicyDecider::PolicyDecision,

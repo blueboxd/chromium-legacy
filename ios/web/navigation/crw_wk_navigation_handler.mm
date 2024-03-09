@@ -431,8 +431,6 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
   }
 
   BOOL isUserInitiated = [self.delegate isUserInitiatedAction:action];
-  BOOL hasTappedRecently =
-      self.userInteractionState->HasUserTappedRecently(webView);
 
   BOOL isCrossOriginTargetFrame = NO;
   if (action.sourceFrame && action.targetFrame &&
@@ -454,7 +452,7 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
 
   const web::WebStatePolicyDecider::RequestInfo requestInfo(
       transition, isMainFrameNavigationAction, isCrossOriginTargetFrame,
-      isUserInitiated, hasTappedRecently);
+      isUserInitiated);
 
   self.webStateImpl->ShouldAllowRequest(action.request, requestInfo,
                                         std::move(callback));

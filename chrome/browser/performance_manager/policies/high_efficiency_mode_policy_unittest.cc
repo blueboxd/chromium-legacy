@@ -87,12 +87,6 @@ class HighEfficiencyModeTest
     return other_page_node_.get();
   }
 
-  void ResetOtherPage() {
-    other_main_frame_node_.reset();
-    other_page_node_.reset();
-    other_page_node_.reset();
-  }
-
   TestTabRevisitTracker* tab_revisit_tracker() { return tab_revisit_tracker_; }
 
  private:
@@ -340,18 +334,12 @@ TEST_F(HighEfficiencyModeTest, DontDiscardIfAlreadyNotVisibleWhenModeEnabled) {
 }
 
 TEST_F(HighEfficiencyModeTest, NoDiscardIfPageNodeRemoved) {
-  // This case will be using a different page node, so make the default one
-  // visible so it's not discarded.
+  page_node()->SetType(PageType::kTab);
   page_node()->SetIsVisible(true);
   policy()->OnHighEfficiencyModeChanged(true);
 
-  PageNodeImpl* page_node = CreateOtherPageNode();
-  EXPECT_EQ(PageType::kUnknown, page_node->GetType());
-
-  page_node->SetType(PageType::kTab);
-
-  page_node->SetIsVisible(false);
-  ResetOtherPage();
+  page_node()->SetIsVisible(false);
+  policy()->OnBeforePageNodeRemoved(page_node());
 
   task_env().FastForwardUntilNoTasksRemain();
   ::testing::Mock::VerifyAndClearExpectations(discarder());
@@ -367,7 +355,7 @@ TEST_F(HighEfficiencyModeTest, UnknownPageNodeNeverAddedToMap) {
   EXPECT_EQ(PageType::kUnknown, page_node->GetType());
 
   page_node->SetIsVisible(false);
-  ResetOtherPage();
+  policy()->OnBeforePageNodeRemoved(page_node);
 
   task_env().FastForwardUntilNoTasksRemain();
   ::testing::Mock::VerifyAndClearExpectations(discarder());

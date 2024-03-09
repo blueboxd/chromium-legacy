@@ -76,17 +76,11 @@ using password_manager::GetRegexForPSLMatching;
 using JobId = PasswordStoreAndroidBackendReceiverBridge::JobId;
 using SuccessStatus = PasswordStoreBackendMetricsRecorder::SuccessStatus;
 
-absl::optional<std::string> GetSyncingAccount(
-    const syncer::SyncService* sync_service) {
+std::string GetSyncingAccount(const syncer::SyncService* sync_service) {
   // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
   // Android.
-  std::string email =
-      sync_util::GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(
-          sync_service);
-  if (email.empty()) {
-    return absl::nullopt;
-  }
-  return email;
+  return sync_util::GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(
+      sync_service);
 }
 
 std::string FormToSignonRealmQuery(const PasswordFormDigest& form,
@@ -223,10 +217,10 @@ LoginsResultOrError JoinRetrievedLoginsOrError(
 }
 
 PasswordStoreAndroidBackendDispatcherBridge::Account GetAccount(
-    std::optional<std::string> syncing_account) {
-  if (syncing_account.has_value()) {
+    std::string syncing_account) {
+  if (!syncing_account.empty()) {
     return PasswordStoreAndroidBackendDispatcherBridge::SyncingAccount(
-        syncing_account.value());
+        syncing_account);
   }
   return PasswordStoreOperationTarget::kLocalStorage;
 }
@@ -323,7 +317,6 @@ bool IsRetriableOperation(PasswordStoreOperation operation) {
     case PasswordStoreOperation::kFillMatchingLoginsAsync:
     case PasswordStoreOperation::kAddLoginAsync:
     case PasswordStoreOperation::kUpdateLoginAsync:
-    case PasswordStoreOperation::kRemoveLoginForAccount:
     case PasswordStoreOperation::kRemoveLoginAsync:
     case PasswordStoreOperation::kRemoveLoginsByURLAndTimeAsync:
     case PasswordStoreOperation::kRemoveLoginsCreatedBetweenAsync:
@@ -350,8 +343,6 @@ std::string GetOperationName(PasswordStoreOperation operation) {
       return "AddLoginAsync";
     case PasswordStoreOperation::kUpdateLoginAsync:
       return "UpdateLoginAsync";
-    case PasswordStoreOperation::kRemoveLoginForAccount:
-      return "RemoveLoginForAccount";
     case PasswordStoreOperation::kRemoveLoginAsync:
       return "RemoveLoginAsync";
     case PasswordStoreOperation::kRemoveLoginsByURLAndTimeAsync:
@@ -656,9 +647,9 @@ void PasswordStoreAndroidBackend::GetAutofillableLoginsAsync(
 }
 
 void PasswordStoreAndroidBackend::GetAllLoginsForAccountAsync(
-    std::optional<std::string> account,
+    std::string account,
     LoginsOrErrorReply callback) {
-  DCHECK(account.has_value());
+  CHECK(!account.empty());
   GetAllLoginsForAccount(GetAccount(account), std::move(callback));
 }
 
@@ -1024,7 +1015,6 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
         case PasswordStoreOperation::kFillMatchingLoginsAsync:
         case PasswordStoreOperation::kAddLoginAsync:
         case PasswordStoreOperation::kUpdateLoginAsync:
-        case PasswordStoreOperation::kRemoveLoginForAccount:
         case PasswordStoreOperation::kRemoveLoginAsync:
         case PasswordStoreOperation::kRemoveLoginsByURLAndTimeAsync:
         case PasswordStoreOperation::kRemoveLoginsCreatedBetweenAsync:
@@ -1199,15 +1189,6 @@ void PasswordStoreAndroidBackend::GetAllLoginsForAccount(
       account, std::move(callback),
       PasswordStoreOperation::kGetAllLoginsForAccountAsync,
       /*delay=*/base::Seconds(0));
-}
-
-void PasswordStoreAndroidBackend::RemoveLoginForAccount(
-    const PasswordForm& form,
-    PasswordStoreAndroidBackendDispatcherBridge::Account account,
-    PasswordChangesOrErrorReply callback) {
-  RemoveLoginForAccountInternal(form, std::move(account), std::move(callback),
-                                PasswordStoreOperation::kRemoveLoginForAccount,
-                                /*delay=*/base::Seconds(0));
 }
 
 void PasswordStoreAndroidBackend::OnForegroundSessionStart() {

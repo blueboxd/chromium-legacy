@@ -27,15 +27,14 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
 
 class PinnedToolbarActionsContainerTest : public TestWithBrowserView {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kSidePanelPinning, features::kChromeRefresh2023}, {});
+    scoped_feature_list_.InitAndEnableFeature(features::kSidePanelPinning);
     TestWithBrowserView::SetUp();
     AddTab(browser_view()->browser(), GURL("http://foo1.com"));
     browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
@@ -350,7 +349,12 @@ TEST_F(PinnedToolbarActionsContainerTest, MovingActionsUpdateOrder) {
   ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
   std::move(drop_cb).Run(drop_event, output_drag_op,
                          /*drag_image_layer_owner=*/nullptr);
-
+#if BUILDFLAG(IS_MAC)
+  // TODO(crbug.com/1045212): we avoid using animations on Mac due to the lack
+  // of support in unit tests. Therefore this is a no-op.
+#else
+  views::test::WaitForAnimatingLayoutManager(container());
+#endif
   // Verify the order gets updated in the ui.
   toolbar_buttons = GetChildToolbarButtons();
   ASSERT_EQ(toolbar_buttons.size(), 2u);

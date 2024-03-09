@@ -715,8 +715,10 @@ targets.legacy_basic_suite(
             # put the stub string here.
             tast_expr = "STUB_STRING_TO_RUN_TAST_TESTS",
             test_level_retries = 2,
-            timeout_sec = 21600,
-            shards = 10,
+            # Timeout including DUT privisioning.
+            timeout_sec = 14400,
+            # Number of shards. Might be overriden for slower boards.
+            shards = 15,
         ),
     },
 )
@@ -764,11 +766,7 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "chromeos_device_only_gtests",
     tests = {
-        "base_unittests": targets.legacy_test_config(
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter",
-            ],
-        ),
+        "base_unittests": targets.legacy_test_config(),
     },
 )
 
@@ -1816,7 +1814,6 @@ targets.legacy_basic_suite(
                 "crashtest",
                 "print-reftest",
             ],
-            ci_only = True,
             swarming = targets.swarming(
                 shards = 15,
             ),
@@ -4155,6 +4152,54 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "gpu_webcodecs_gl_passthrough_ganesh_telemetry_test",
+    tests = {
+        "webcodecs_gl_passthrough_ganesh_tests": targets.legacy_test_config(
+            telemetry_test_name = "webcodecs",
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
+            args = [
+                "--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle --use-angle=gl --disable-features=SkiaGraphite",
+                "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
+            ],
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
+    name = "gpu_webcodecs_metal_passthrough_ganesh_telemetry_test",
+    tests = {
+        "webcodecs_metal_passthrough_ganesh_tests": targets.legacy_test_config(
+            telemetry_test_name = "webcodecs",
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
+            args = [
+                "--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle --use-angle=metal --disable-features=SkiaGraphite",
+                "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
+            ],
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
+    name = "gpu_webcodecs_metal_passthrough_graphite_telemetry_test",
+    tests = {
+        "webcodecs_metal_passthrough_graphite_tests": targets.legacy_test_config(
+            telemetry_test_name = "webcodecs",
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
+            args = [
+                "--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle --use-angle=metal --enable-features=SkiaGraphite",
+                "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
+            ],
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "gpu_webcodecs_validating_telemetry_test",
     tests = {
         "webcodecs_tests": targets.legacy_test_config(
@@ -4198,6 +4243,43 @@ targets.legacy_basic_suite(
                 # On dual-GPU devices we want the high-performance GPU to be active
                 "--extra-browser-args=--use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
                 "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
+            ],
+            swarming = targets.swarming(
+                # These tests currently take about an hour and fifteen minutes
+                # to run. Split them into roughly 5-minute shards.
+                shards = 20,
+            ),
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
+    name = "gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests",
+    tests = {
+        "webgl2_conformance_gl_passthrough_ganesh_tests": targets.legacy_test_config(
+            telemetry_test_name = "webgl2_conformance",
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
+            args = [
+                "--webgl-conformance-version=2.0.1",
+                "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+                # On dual-GPU devices we want the high-performance GPU to be active
+                "--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu --disable-features=SkiaGraphite",
+                "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
+            ],
+            android_args = [
+                "$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices",
+            ],
+            chromeos_args = [
+                "$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote",
+            ],
+            lacros_args = [
+                "--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland",
+                "--xvfb",
+                "--no-xvfb",
+                "--use-weston",
+                "--weston-use-gl",
             ],
             swarming = targets.swarming(
                 # These tests currently take about an hour and fifteen minutes
@@ -4276,9 +4358,9 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
-    name = "gpu_webgl2_conformance_metal_passthrough_telemetry_tests",
+    name = "gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests",
     tests = {
-        "webgl2_conformance_metal_passthrough_tests": targets.legacy_test_config(
+        "webgl2_conformance_metal_passthrough_graphite_tests": targets.legacy_test_config(
             telemetry_test_name = "webgl2_conformance",
             mixins = [
                 "has_native_resultdb_integration",
@@ -4287,7 +4369,7 @@ targets.legacy_basic_suite(
                 "--webgl-conformance-version=2.0.1",
                 "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
                 # On dual-GPU devices we want the high-performance GPU to be active
-                "--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL",
+                "--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL,SkiaGraphite",
                 "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
                 "--enable-metal-debug-layers",
             ],
@@ -4378,6 +4460,40 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests",
+    tests = {
+        "webgl_conformance_gl_passthrough_ganesh_tests": targets.legacy_test_config(
+            telemetry_test_name = "webgl1_conformance",
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
+            args = [
+                # On dual-GPU devices we want the high-performance GPU to be active
+                "--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu --disable-features=SkiaGraphite",
+                "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+                "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
+            ],
+            android_args = [
+                "$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices",
+            ],
+            chromeos_args = [
+                "$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote",
+            ],
+            lacros_args = [
+                "--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland",
+                "--xvfb",
+                "--no-xvfb",
+                "--use-weston",
+                "--weston-use-gl",
+            ],
+            swarming = targets.swarming(
+                shards = 2,
+            ),
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "gpu_webgl_conformance_gl_passthrough_telemetry_tests",
     tests = {
         "webgl_conformance_gl_passthrough_tests": targets.legacy_test_config(
@@ -4446,16 +4562,35 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
-    name = "gpu_webgl_conformance_metal_passthrough_telemetry_tests",
+    name = "gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests",
     tests = {
-        "webgl_conformance_metal_passthrough_tests": targets.legacy_test_config(
+        "webgl_conformance_metal_passthrough_ganesh_tests": targets.legacy_test_config(
             telemetry_test_name = "webgl1_conformance",
             mixins = [
                 "has_native_resultdb_integration",
             ],
             args = [
                 # On dual-GPU devices we want the high-performance GPU to be active
-                "--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL",
+                "--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL --disable-features=SkiaGraphite",
+                "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+                "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
+                "--enable-metal-debug-layers",
+            ],
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
+    name = "gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests",
+    tests = {
+        "webgl_conformance_metal_passthrough_graphite_tests": targets.legacy_test_config(
+            telemetry_test_name = "webgl1_conformance",
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
+            args = [
+                # On dual-GPU devices we want the high-performance GPU to be active
+                "--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL,SkiaGraphite",
                 "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
                 "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
                 "--enable-metal-debug-layers",
@@ -4658,7 +4793,13 @@ targets.legacy_basic_suite(
             ),
             timeout_sec = 14400,
         ),
-        "content_unittests": None,
+        "content_unittests": targets.legacy_test_config(
+            test = "content_unittests",
+            args = [
+                "--test-launcher-bot-mode",
+                "--test-launcher-filter-file=testing/buildbot/filters/ios.content_unittests.filter",
+            ],
+        ),
         "crashpad_tests": None,
         "crypto_unittests": None,
         "device_unittests": None,
@@ -4698,9 +4839,11 @@ targets.legacy_basic_suite(
         ),
         "midi_unittests": None,
         "mojo_unittests": None,
+        "native_theme_unittests": None,
         "net_unittests": None,
         "perfetto_unittests": None,
         "printing_unittests": None,
+        "sandbox_unittests": None,
         "services_unittests": None,
         "shell_dialogs_unittests": None,
         "skia_unittests": None,
@@ -4862,20 +5005,6 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
-    name = "lacros_all_tast_tests_informational",
-    tests = {
-        "lacros_all_tast_tests_informational": targets.legacy_test_config(
-            mixins = [
-                "has_native_resultdb_integration",
-            ],
-            swarming = targets.swarming(
-                idempotent = False,  # https://crbug.com/923426#c27
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
     name = "lacros_cq_tast_tests_eve",
     tests = {
         "lacros_cq_tast_tests_eve": targets.legacy_test_config(
@@ -4908,52 +5037,6 @@ targets.legacy_basic_suite(
                 "libfake",
                 "--gtest_filter=\"VaapiTest.*\"",
             ],
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "lacros_fyi_tast_tests",
-    tests = {
-        "lacros_fyi_tast_tests": targets.legacy_test_config(
-            mixins = [
-                "has_native_resultdb_integration",
-            ],
-            swarming = targets.swarming(
-                idempotent = False,  # https://crbug.com/923426#c27
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "lacros_skylab_amd64_fyi",
-    tests = {
-        "lacros_fyi_tast_tests": targets.legacy_test_config(
-            tast_expr = "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-            timeout_sec = 10800,
-        ),
-        "ozone_unittests": targets.legacy_test_config(
-            timeout_sec = 3600,
-        ),
-    },
-)
-
-# create this temporary lacros arm test suites that runs on skylab
-# TODO(crbug.com/1247425): remove it if it is the same as
-# lacros_skylab
-targets.legacy_basic_suite(
-    name = "lacros_skylab_arm_tests_fyi",
-    tests = {
-        "lacros_all_tast_tests": targets.legacy_test_config(
-            tast_expr = "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-            timeout_sec = 10800,
-        ),
-        "ozone_unittests": targets.legacy_test_config(
-            timeout_sec = 3600,
-        ),
-        "viz_unittests": targets.legacy_test_config(
-            timeout_sec = 3600,
         ),
     },
 )
@@ -4997,6 +5080,16 @@ targets.legacy_basic_suite(
 
 targets.legacy_basic_suite(
     name = "lacros_skylab_tests_with_gtests",
+    tests = {
+        "chromeos_integration_tests": None,
+    },
+)
+
+# This target should usually be the same as `lacros_skylab_tests_with_gtests`. We use
+# a different target for version skew so we can easily disable all version skew
+# tests during an outage.
+targets.legacy_basic_suite(
+    name = "lacros_skylab_tests_with_gtests_version_skew",
     tests = {
         "chromeos_integration_tests": None,
     },
@@ -5407,7 +5500,7 @@ targets.legacy_basic_suite(
             ],
             swarming = targets.swarming(
                 dimensions = {
-                    "os": "Ubuntu-22.04",
+                    "os": "Ubuntu-18.04",
                     "cpu": "x86-64",
                     "device_os": None,
                     "device_os_flavor": None,
@@ -6213,22 +6306,6 @@ targets.legacy_basic_suite(
     name = "upload_perfetto",
     tests = {
         "upload_trace_processor": None,
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "variations_smoke_tests",
-    tests = {
-        "variations_smoke_tests": targets.legacy_test_config(
-            test = "variations_smoke_tests",
-            mixins = [
-                "skia_gold_test",
-            ],
-            resultdb = targets.resultdb(
-                enable = True,
-                result_format = "single",
-            ),
-        ),
     },
 )
 

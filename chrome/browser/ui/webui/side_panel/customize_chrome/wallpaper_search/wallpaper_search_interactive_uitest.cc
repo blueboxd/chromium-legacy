@@ -87,7 +87,7 @@ class WallpaperSearchInteractiveTest : public InteractiveBrowserTest {
                       })";
                 content::URLLoaderInterceptor::WriteResponse(
                     headers, body, params->client.get(),
-                    absl::optional<net::SSLInfo>());
+                    std::optional<net::SSLInfo>());
                 return true;
               }
               return false;
@@ -285,12 +285,6 @@ IN_PROC_BROWSER_TEST_F(WallpaperSearchInteractiveTest,
 #if !BUILDFLAG(IS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(WallpaperSearchInteractiveTest,
                        FeedbackDialogShowsOnThumbsDown) {
-  EXPECT_CALL(mock_optimization_guide_keyed_service(),
-              ShouldFeatureBeCurrentlyAllowedForLogging(
-                  optimization_guide::proto::ModelExecutionFeature::
-                      MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH))
-      .WillOnce(testing::Return(true));
-
   // Intercept Wallpaper Search descriptor fetches, and respond with data.
   std::unique_ptr<content::URLLoaderInterceptor> descriptors_fetch_interceptor =
       SetUpDescriptorsResponseWithData();

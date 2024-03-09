@@ -93,7 +93,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_helper.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator+private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
@@ -335,7 +334,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 - (void)stopChildCoordinatorsWithCompletion:(ProceduralBlock)completion {
   // A modal may be presented on top of the Recent Tabs or tab grid.
   [self.baseViewController dismissModals];
-  [self setActiveMode:TabGridModeNormal];
+  self.baseViewController.tabGridMode = TabGridModeNormal;
 
   [_incognitoGridCoordinator stopChildCoordinators];
   [_regularGridCoordinator stopChildCoordinators];
@@ -363,7 +362,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 }
 
 - (void)setActiveMode:(TabGridMode)mode {
-  [_mediator setModeOnCurrentPage:mode];
+  self.baseViewController.tabGridMode = mode;
 }
 
 - (UIViewController*)activeViewController {
@@ -528,7 +527,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
       // In search mode, the tabgrid mode is not reset before the animation so
       // the animation can start from the correct cell. Once the animation is
       // complete, reset the tab grid mode.
-      [self setActiveMode:TabGridModeNormal];
+      self.baseViewController.tabGridMode = TabGridModeNormal;
     }
     Browser* browser = self.bvcContainer.incognito ? self.incognitoBrowser
                                                    : self.regularBrowser;
@@ -1025,6 +1024,13 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
                              title:nil
                            message:nil
                      barButtonItem:buttonAnchor];
+
+    // IOS 17 Bug: The alert arrow direction presentation is broken.
+    // Workaround: Specifically set the popover arrow direction. (crbug/1490535)
+    if (@available(iOS 17, *)) {
+      self.actionSheetCoordinator.popoverArrowDirection =
+          UIPopoverArrowDirectionDown | UIPopoverArrowDirectionUp;
+    }
   } else {
     base::RecordAction(base::UserMetricsAction(
         "MobileTabGridSelectionCloseIncognitoTabsConfirmationPresented"));
@@ -1340,7 +1346,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 - (void)selectTabs {
   base::RecordAction(
       base::UserMetricsAction("MobileTabGridTabContextMenuSelectTabs"));
-  [self setActiveMode:TabGridModeSelection];
+  self.baseViewController.tabGridMode = TabGridModeSelection;
 }
 
 - (void)removeSessionAtTableSectionWithIdentifier:(NSInteger)sectionIdentifier {

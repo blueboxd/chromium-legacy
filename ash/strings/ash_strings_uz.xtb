@@ -447,6 +447,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="2914580577416829331">Ekran tasvirlari</translation>
 <translation id="2924416280450782352">Elementlar chiqmadi. Bu panelni qaytadan oching.</translation>
 <translation id="2931572158271115754">Topshiriqlar roʻyxati boʻm-boʻsh.</translation>
+<translation id="2935225303485967257">Profillarni boshqarish</translation>
 <translation id="2941112035454246133">Past</translation>
 <translation id="2942350706960889382">Mahkamlangan lupa</translation>
 <translation id="2942516765047364088">Javon o‘rni</translation>
@@ -624,7 +625,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3593646411856133110">Ochiq ilovalarni chiqarish uchun tepaga suring va ushlab turing.</translation>
 <translation id="3595596368722241419">Batareya to‘ldi</translation>
 <translation id="3596012367874587041">Ilova sozlamalari</translation>
-<translation id="3598452309062311481">Qidiruv + h</translation>
 <translation id="3600061223661453002">Oʻchiq</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> ish stoli yaratildi</translation>
 <translation id="3606978283550408104">Brayl displeyi ulandi.</translation>
@@ -776,7 +776,6 @@ Quvvatni tejash uchun ayrim funksiyalar ishlashi cheklandi.</translation>
 <translation id="4190780880566297084">Telefondagi oxirgi suratlar, bildirishnomalar va ilovalarni koʻrishni sozlash oynasini yopish</translation>
 <translation id="4192112279662688596">Yoki</translation>
 <translation id="4193857202545160520">Kliklar va tugmalar chiqsin</translation>
-<translation id="4193969623755915875">Explore ilovasida <ph name="NEW_SHORTCUT" /> bilan “Yordam” sahifasini oching.</translation>
 <translation id="4195579532193195633">Joriy versiya: <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">Avval ochilgan ichki oynalar</translation>
 <translation id="4195877955194704651">Avtomatik bosish menyusi</translation>
@@ -959,7 +958,6 @@ Quvvatni tejash uchun ayrim funksiyalar ishlashi cheklandi.</translation>
 <translation id="4889868803215848840">Takliflarni yaxshilash uchun ixtiyoriy fikr-mulohazangizni taqdim eting:</translation>
 <translation id="4890187583552566966">Google Assistent administrator tomonidan o‘chirib qo‘yilgan.</translation>
 <translation id="4890408602550914571">Telefoningiz yoningizda va undagi Bluetooth yoniqligini tekshiring.</translation>
-<translation id="4892981359753171125">Yuz nazorati</translation>
 <translation id="4895488851634969361">Batareya to‘ldi.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="490788395437447240">Batareya quvvati: <ph name="BATTERY_PERCENTAGE" />%</translation>

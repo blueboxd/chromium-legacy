@@ -4,11 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs.features.minimizedcustomtab;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -18,16 +15,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.CustomTabMinimizationManager.KEY_CCT_MINIMIZATION_SYSTEM_TIME;
-import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.CustomTabMinimizationManager.KEY_IS_CCT_MINIMIZED;
-import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedCardProperties.TITLE;
 import static org.chromium.chrome.browser.tab.TabLoadIfNeededCaller.ON_ACTIVITY_SHOWN_THEN_SHOW;
 import static org.chromium.chrome.browser.tab.TabSelectionType.FROM_USER;
 
 import android.app.PictureInPictureParams;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
-import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,20 +27,17 @@ import androidx.core.app.PictureInPictureModeChangedInfo;
 import androidx.lifecycle.Lifecycle.State;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.HistogramWatcher;
@@ -60,8 +49,6 @@ import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntent
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.test.util.browser.Features;
@@ -69,8 +56,6 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtilsJni;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
-
-import java.lang.ref.WeakReference;
 
 /** Unit tests for {@link CustomTabMinimizationManager}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -102,9 +87,6 @@ public class CustomTabMinimizationManagerUnitTest {
     @Mock private Runnable mCloseTabRunnable;
     @Mock private DomDistillerUrlUtilsJni mDomDistillerUrlUtilsJni;
     @Mock private CustomTabMinimizeDelegate.Observer mMinimizationObserver;
-    @Mock private CustomTabMinimizeDelegate mOtherMinimizeDelegate;
-    @Mock private ActivityLifecycleDispatcher mLifecycleDispatcher;
-    @Mock private Supplier<Bundle> mSavedInstanceStateSupplier;
 
     private CustomTabMinimizationManager mManager;
 
@@ -127,15 +109,8 @@ public class CustomTabMinimizationManagerUnitTest {
                         mTabProvider,
                         mFeatureEngagementDelegate,
                         mCloseTabRunnable,
-                        mIntentData,
-                        mLifecycleDispatcher,
-                        mSavedInstanceStateSupplier);
+                        mIntentData);
         mManager.addObserver(mMinimizationObserver);
-    }
-
-    @After
-    public void tearDown() {
-        CustomTabMinimizationManager.sLastMinimizeDelegate = null;
     }
 
     @Test
@@ -250,87 +225,5 @@ public class CustomTabMinimizationManagerUnitTest {
         mManager.accept(new PictureInPictureModeChangedInfo(true));
         // It should still be minimized once we actually go in PiP.
         assertTrue(mManager.isMinimized());
-    }
-
-    @Test
-    @Config(sdk = Build.VERSION_CODES.S)
-    public void testMinimizeWhenThereIsAlreadyPip_S() {
-        // Simulate having another Custom Tab in PiP.
-        CustomTabMinimizationManager.sLastMinimizeDelegate =
-                new WeakReference<>(mOtherMinimizeDelegate);
-        mManager.minimize();
-        mManager.accept(new PictureInPictureModeChangedInfo(true));
-
-        // This should dismiss the other PiPed Custom Tab.
-        verify(mOtherMinimizeDelegate).dismiss();
-        // And replace sLastMinimizeDelegate.
-        assertEquals(mManager, CustomTabMinimizationManager.sLastMinimizeDelegate.get());
-
-        // Simulate restoring
-        mManager.accept(new PictureInPictureModeChangedInfo(false));
-        // This should clear the last.
-        assertNull(CustomTabMinimizationManager.sLastMinimizeDelegate);
-    }
-
-    @Test
-    @Config(sdk = VERSION_CODES.TIRAMISU)
-    public void testMinimizeWhenThereIsAlreadyPip_T() {
-        mManager.minimize();
-        mManager.accept(new PictureInPictureModeChangedInfo(true));
-
-        // This shouldn't save the last delegate.
-        assertNull(CustomTabMinimizationManager.sLastMinimizeDelegate);
-
-        mManager.accept(new PictureInPictureModeChangedInfo(false));
-        // Last delegate should still be null.
-        assertNull(CustomTabMinimizationManager.sLastMinimizeDelegate);
-    }
-
-    @Test
-    public void testMinimizeIsFalseWithoutSavedInstanceState() {
-        assertFalse(mManager.isMinimized());
-    }
-
-    @Test
-    public void testSaveInstanceStateAddsData() {
-        mManager.minimize();
-        mManager.accept(new PictureInPictureModeChangedInfo(true));
-
-        var outBundle = new Bundle();
-        mManager.onSaveInstanceState(outBundle);
-
-        assertTrue(outBundle.getBoolean(KEY_IS_CCT_MINIMIZED));
-        assertThat(outBundle.getLong(KEY_CCT_MINIMIZATION_SYSTEM_TIME), greaterThan(0L));
-        assertEquals(TITLE, outBundle.getString(MinimizedCardProperties.TITLE.toString()));
-        assertEquals(HOST, outBundle.getString(MinimizedCardProperties.URL.toString()));
-    }
-
-    @Test
-    public void testInitWithInstanceState() {
-        var bundle = new Bundle();
-        bundle.putBoolean(KEY_IS_CCT_MINIMIZED, true);
-        bundle.putLong(KEY_CCT_MINIMIZATION_SYSTEM_TIME, 999999L);
-        bundle.putString(MinimizedCardProperties.TITLE.toString(), TITLE);
-        bundle.putString(MinimizedCardProperties.URL.toString(), HOST);
-
-        when(mSavedInstanceStateSupplier.hasValue()).thenReturn(true);
-        when(mSavedInstanceStateSupplier.get()).thenReturn(bundle);
-        var manager =
-                new CustomTabMinimizationManager(
-                        mActivity,
-                        mTabProvider,
-                        mFeatureEngagementDelegate,
-                        mCloseTabRunnable,
-                        mIntentData,
-                        mLifecycleDispatcher,
-                        mSavedInstanceStateSupplier);
-
-        var captor = ArgumentCaptor.forClass(InflationObserver.class);
-        verify(mLifecycleDispatcher).register(captor.capture());
-        captor.getValue().onPostInflationStartup();
-
-        assertTrue(manager.isMinimized());
-        assertEquals(TITLE, ((TextView) mActivity.findViewById(R.id.title)).getText());
-        assertEquals(HOST, ((TextView) mActivity.findViewById(R.id.url)).getText());
     }
 }

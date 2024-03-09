@@ -33,8 +33,7 @@ class CrxDownloaderFactoryChromium : public CrxDownloaderFactory {
       absl::optional<base::FilePath> background_downloader_cache_path)
       : network_fetcher_factory_(network_fetcher_factory) {
 #if BUILDFLAG(IS_MAC)
-    if (__builtin_available(macOS 10.11, *) &&
-        background_downloader_cache_path) {
+    if (background_downloader_cache_path) {
       background_sequence_ = base::ThreadPool::CreateSequencedTaskRunner(
           kTaskTraitsBackgroundDownloader);
       background_downloader_shared_session_ =
@@ -68,8 +67,7 @@ scoped_refptr<CrxDownloader> CrxDownloaderFactoryChromium::MakeCrxDownloader(
   if (background_download_enabled) {
 #if BUILDFLAG(IS_MAC)
     if (background_downloader_shared_session_ &&
-        base::FeatureList::IsEnabled(features::kBackgroundCrxDownloaderMac) &&
-        __builtin_available(macOS 10.11, *)) {
+        base::FeatureList::IsEnabled(features::kBackgroundCrxDownloaderMac)) {
       return base::MakeRefCounted<BackgroundDownloader>(
           url_fetcher_downloader, background_downloader_shared_session_,
           background_sequence_);

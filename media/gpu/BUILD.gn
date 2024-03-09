@@ -58,6 +58,7 @@ component("gpu") {
     "//media/mojo/*",
     "//remoting/codec:encoder",
     "//third_party/blink/renderer/modules:unit_tests",
+    "//third_party/blink/renderer/modules:unit_tests_v2",
     "//ui/gl:gl_unittests",
 
     # TODO(crbug.com/1184041): Remove //remoting/host:common when the usage is removed.
@@ -387,8 +388,6 @@ source_set("common") {
     sources += [
       "vp9_svc_layers.cc",
       "vp9_svc_layers.h",
-      "vp9_svc_layers_stateful.cc",
-      "vp9_svc_layers_stateful.h",
     ]
     configs += [ "//third_party/libvpx:libvpx_config" ]
     deps += [
@@ -420,6 +419,14 @@ component("buffer_validation") {
     "//base",
     "//media",
   ]
+
+  if (is_linux || is_chromeos) {
+    deps = [ "//build/config/linux/libdrm" ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//ui/gfx:gfx_switches" ]
+  }
 }
 
 source_set("command_buffer_helper") {
@@ -655,7 +662,6 @@ source_set("unit_tests") {
   }
 
   if (is_win || use_vaapi) {
-    sources += [ "vp9_svc_layers_stateful_unittest.cc" ]
     sources += [ "vp9_svc_layers_unittest.cc" ]
   }
 }

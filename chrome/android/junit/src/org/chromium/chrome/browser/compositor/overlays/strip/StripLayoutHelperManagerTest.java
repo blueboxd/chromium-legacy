@@ -16,13 +16,13 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestUtils.enableMultiInstance;
 
 import android.content.Context;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.RectF;
 import android.os.Build.VERSION_CODES;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewStub;
 
+import androidx.annotation.ColorInt;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.ColorUtils;
 import androidx.test.core.app.ApplicationProvider;
@@ -221,6 +221,7 @@ public class StripLayoutHelperManagerTest {
         when(msb.isHovered()).thenReturn(true);
         when(msb.isPressedFromMouse()).thenReturn(false);
 
+        @ColorInt
         int hoverBackgroundDefaultColor =
                 ColorUtils.setAlphaComponent(
                         SemanticColorUtils.getDefaultTextColor(mContext), (int) (0.08 * 255));
@@ -233,6 +234,7 @@ public class StripLayoutHelperManagerTest {
         when(msb.isPressed()).thenReturn(true);
         when(msb.isHovered()).thenReturn(false);
         when(msb.isPressedFromMouse()).thenReturn(true);
+        @ColorInt
         int hoverBackgroundPressedColor =
                 ColorUtils.setAlphaComponent(
                         SemanticColorUtils.getDefaultTextColor(mContext), (int) (0.12 * 255));
@@ -245,9 +247,10 @@ public class StripLayoutHelperManagerTest {
         // Verify model selector button incognito hover highlight default tint.
         when(msb.isHovered()).thenReturn(true);
         when(msb.isIncognito()).thenReturn(true);
+        @ColorInt
         int hoverBackgroundDefaultIncognitoColor =
                 ColorUtils.setAlphaComponent(
-                        mContext.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        mContext.getColor(R.color.tab_strip_button_hover_bg_color),
                         (int) (0.08 * 255));
         assertEquals(
                 "Model selector button hover highlight pressed tint is not as expected",
@@ -258,9 +261,10 @@ public class StripLayoutHelperManagerTest {
         when(msb.isPressed()).thenReturn(true);
         when(msb.isHovered()).thenReturn(false);
         when(msb.isPressedFromMouse()).thenReturn(true);
+        @ColorInt
         int hoverBackgroundPressedIncognitoColor =
                 ColorUtils.setAlphaComponent(
-                        mContext.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        mContext.getColor(R.color.tab_strip_button_hover_bg_color),
                         (int) (0.12 * 255));
         assertEquals(
                 "Model selector button hover highlight pressed tint is not as expected",
@@ -480,7 +484,7 @@ public class StripLayoutHelperManagerTest {
     @Test
     @Config(sdk = VERSION_CODES.R)
     @EnableFeatures(ChromeFeatureList.TAB_LINK_DRAG_DROP_ANDROID)
-    public void testDragDropInstances_Success() throws NameNotFoundException {
+    public void testDragDropInstances_Success() {
         enableMultiInstance();
         initializeTest();
         assertNotNull(
@@ -491,9 +495,7 @@ public class StripLayoutHelperManagerTest {
     @Test
     @Config(sdk = VERSION_CODES.Q)
     @EnableFeatures(ChromeFeatureList.TAB_LINK_DRAG_DROP_ANDROID)
-    public void testDragDropInstances_MultiInstanceNotEnabled_ReturnsNull()
-            throws NameNotFoundException {
-        enableMultiInstance();
+    public void testDragDropInstances_MultiInstanceNotEnabled_ReturnsNull() {
         initializeTest();
         assertNull(
                 "Tab drag source should not be set.",
@@ -505,7 +507,7 @@ public class StripLayoutHelperManagerTest {
         ChromeFeatureList.TAB_LINK_DRAG_DROP_ANDROID,
         ChromeFeatureList.TAB_DRAG_DROP_ANDROID
     })
-    public void testDragDropInstances_FlagsDisabled_ReturnsNull() throws NameNotFoundException {
+    public void testDragDropInstances_FlagsDisabled_ReturnsNull() {
         enableMultiInstance();
         initializeTest();
         assertNull(
@@ -516,7 +518,7 @@ public class StripLayoutHelperManagerTest {
     @Test
     @Config(sdk = VERSION_CODES.S)
     @EnableFeatures(ChromeFeatureList.TAB_LINK_DRAG_DROP_ANDROID)
-    public void testGetDragListener() throws NameNotFoundException {
+    public void testGetDragListener() {
         enableMultiInstance();
         initializeTest();
         assertNotNull("DragListener should be set.", mStripLayoutHelperManager.getDragListener());

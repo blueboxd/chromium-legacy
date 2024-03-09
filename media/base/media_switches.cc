@@ -69,28 +69,6 @@ const char kAlsaOutputDevice[] = "alsa-output-device";
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
         // BUILDFLAG(IS_FREEBSD) || BUILDFLAG(IS_SOLARIS)
 
-#if BUILDFLAG(IS_WIN)
-// Use exclusive mode audio streaming for Windows Vista and higher.
-// Leads to lower latencies for audio streams which uses the
-// AudioParameters::AUDIO_PCM_LOW_LATENCY audio path.
-// See http://msdn.microsoft.com/en-us/library/windows/desktop/dd370844.aspx
-// for details.
-const char kEnableExclusiveAudio[] = "enable-exclusive-audio";
-
-// Use Windows WaveOut/In audio API even if Core Audio is supported.
-const char kForceWaveAudio[] = "force-wave-audio";
-
-// Instead of always using the hardware channel layout, check if a driver
-// supports the source channel layout.  Avoids outputting empty channels and
-// permits drivers to enable stereo to multichannel expansion.  Kept behind a
-// flag since some drivers lie about supported layouts and hang when used.  See
-// http://crbug.com/259165 for more details.
-const char kTrySupportedChannelLayouts[] = "try-supported-channel-layouts";
-
-// Number of buffers to use for WaveOut.
-const char kWaveOutBuffers[] = "waveout-buffers";
-#endif  // BUILDFLAG(IS_WIN)
-
 #if BUILDFLAG(IS_FUCHSIA)
 // Enables protected buffers for encrypted video streams.
 const char kEnableProtectedVideoBuffers[] = "enable-protected-video-buffers";
@@ -162,11 +140,6 @@ const char kUseFakeMjpegDecodeAccelerator[] =
 // available.
 const char kDisableAcceleratedMjpegDecode[] =
     "disable-accelerated-mjpeg-decode";
-
-// When running tests on a system without the required hardware or libraries,
-// this flag will cause the tests to fail. Otherwise, they silently succeed.
-const char kRequireAudioHardwareForTesting[] =
-    "require-audio-hardware-for-testing";
 
 // Mutes audio sent to the audio device so it is not audible during
 // automated testing.
@@ -270,20 +243,6 @@ const char kUserGestureRequiredPolicy[] = "user-gesture-required";
 // This provides a mechanism during testing to lock the decoder framerate
 // to a specific value.
 const char kHardwareVideoDecodeFrameRate[] = "hardware-video-decode-framerate";
-// Set the task runner strategy used for hardware video decoding on ChromeOS.
-// If the option value of --chromeos-decoder-task-runner is
-// * OneThreadPoolSequenceSharedByAllDecoders, then SequencedTaskRunner.
-// * OneThreadPoolThreadSharedByAllDecoders, then SingleThreadTaskRunner
-//   (one of the threads in ThreadPool).
-// * OneDedicatedThreadSharedByAllDecoders, then SingleThreadTaskRunner of
-//   base::Thread("VDdecThread"), which is unique and only used for video
-//   decoders.
-// * OneThreadPoolThreadPerDecoder (default), then SingleThreadTaskRunner
-//   of a dedicated thread newly created in ThreadPool per decoder.
-// TODO(b/195769334): Propagate this to Chrome utility process for
-// Out-of-Process video decoding.
-const char kChromeOSVideoDecoderTaskRunner[] =
-    "chromeos-video-decoder-task-runner";
 #endif
 
 const char kCastStreamingForceDisableHardwareH264[] =
@@ -454,7 +413,7 @@ BASE_FEATURE(kCdmProcessSiteIsolation,
 // Enables the "Save Video Frame As" context menu item.
 BASE_FEATURE(kContextMenuSaveVideoFrameAs,
              "ContextMenuSaveVideoFrameAs",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the "Search Video Frame with <Search Provider>" context menu item.
 BASE_FEATURE(kContextMenuSearchForVideoFrame,
@@ -645,12 +604,6 @@ BASE_FEATURE(kMultiPlaneVideoCaptureSharedImages,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
-
-// Controls whether the Open Screen libcast SenderSession is used for
-// initializing and managing streaming sessions, or the legacy implementation.
-BASE_FEATURE(kOpenscreenCastStreamingSession,
-             "OpenscreenCastStreamingSession",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the Mirroring Service will fetch, analyze, and store
 // information on the quality of the session using RTCP logs.
@@ -1130,6 +1083,11 @@ BASE_FEATURE(kAllowNonSecureOverlays,
              "AllowNonSecureOverlays",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables support for playback of encrypted AV1 content.
+BASE_FEATURE(kEnableEncryptedAV1,
+             "EnableEncryptedAV1",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Allow FrameInfoHelper to guess coded size information for MediaCodec frames.
 BASE_FEATURE(kMediaCodecCodedSizeGuessing,
              "MediaCodecCodedSizeGuessing",
@@ -1283,8 +1241,9 @@ BASE_FEATURE(kIncludeIRCamerasInDeviceEnumeration,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables software rate controller encoding acceleration for Windows.
-const base::Feature MEDIA_EXPORT kMediaFoundationUseSoftwareRateCtrl{
-    "MediaFoundationUseSoftwareRateCtrl", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kMediaFoundationUseSoftwareRateCtrl,
+             "MediaFoundationUseSoftwareRateCtrl",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables MediaFoundation based video capture
 BASE_FEATURE(kMediaFoundationVideoCapture,
@@ -1304,8 +1263,9 @@ BASE_FEATURE(kMediaFoundationD3D11VideoCaptureZeroCopy,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables VP8 decode acceleration for Windows.
-const base::Feature MEDIA_EXPORT kMediaFoundationVP8Decoding{
-    "MediaFoundationVP8Decoding", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kMediaFoundationVP8Decoding,
+             "MediaFoundationVP8Decoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the use of MediaFoundationRenderer for clear content on supported
 // systems.
@@ -1384,29 +1344,30 @@ BASE_FEATURE(kAllowClearDolbyVisionInMseWhenPlatformEncryptedDvEnabled,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Expose the out-of-process video decoding feature from ash-chrome to
 // lacros-chrome through the crosapi.
-const base::Feature MEDIA_EXPORT kExposeOutOfProcessVideoDecodingToLacros{
-    "ExposeOutOfProcessVideoDecodingToLacros",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kExposeOutOfProcessVideoDecodingToLacros,
+             "ExposeOutOfProcessVideoDecodingToLacros",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 // Spawn utility processes to perform hardware decode acceleration instead of
 // using the GPU process.
-const base::Feature MEDIA_EXPORT kUseOutOfProcessVideoDecoding{
-  "UseOutOfProcessVideoDecoding",
+BASE_FEATURE(kUseOutOfProcessVideoDecoding,
+             "UseOutOfProcessVideoDecoding",
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-      base::FEATURE_ENABLED_BY_DEFAULT
+             base::FEATURE_ENABLED_BY_DEFAULT
 #else
-      base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #endif
-};
+);
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // Spawn utility processes to perform hardware encode acceleration instead of
 // using the GPU process.
-const base::Feature MEDIA_EXPORT kUseOutOfProcessVideoEncoding{
-    "UseOutOfProcessVideoEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kUseOutOfProcessVideoEncoding,
+             "UseOutOfProcessVideoEncoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 // Use SequencedTaskRunner for MediaService.

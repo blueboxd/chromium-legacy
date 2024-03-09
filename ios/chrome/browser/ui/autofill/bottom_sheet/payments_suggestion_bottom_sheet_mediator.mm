@@ -30,8 +30,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/resource/resource_bundle.h"
 
-using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
-
 // Structure which contains all the required information to display about a
 // credit card.
 @interface PaymentsSuggestionBottomSheetCreditCardInfo
@@ -306,25 +304,14 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
   }
 
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
+  _needsRefocus = false;
 
   FormSuggestionTabHelper* tabHelper =
       FormSuggestionTabHelper::FromWebState(activeWebState);
   DCHECK(tabHelper);
 
-  id<FormInputSuggestionsProvider> provider =
-      tabHelper->GetAccessoryViewProvider();
-  DCHECK(provider);
-
-  if (provider.type != SuggestionProviderTypeAutofill) {
-    // Last resort safety exit: On the unlikely event that the provider was set
-    // incorrectly (for example if local predictions and server predictions are
-    // different), simply exit and open the keyboard.
-    _needsRefocus = true;
-    [self disableBottomSheet];
-    [self logExitReason:kBadProvider];
-    return;
-  }
-  _needsRefocus = false;
+  id<FormSuggestionClient> client = tabHelper->GetAccessoryViewProvider();
+  DCHECK(client);
 
   // Create a form suggestion containing the selected credit card's backend id
   // so that the suggestion provider can properly fill the form.
@@ -340,7 +327,7 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
           base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
               IDS_AUTOFILL_A11Y_ANNOUNCE_FILLED_FORM))];
 
-  [provider didSelectSuggestion:suggestion params:_params];
+  [client didSelectSuggestion:suggestion params:_params];
 }
 
 - (void)disableBottomSheet {

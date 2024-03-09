@@ -14,7 +14,7 @@ import {constants} from '../../foreground/js/constants.js';
 import {Slice} from '../../lib/base_store.js';
 import {getEntry, getFileData} from '../store.js';
 
-import {cacheEntries, getMyFiles, updateFileData} from './all_entries.js';
+import {cacheEntries, getMyFiles, updateFileDataInPlace} from './all_entries.js';
 import {updateDeviceConnectionState} from './device.js';
 
 /**
@@ -161,7 +161,7 @@ function addVolumeReducer(currentState: State, payload: {
     // the same object might be referenced in the UI.
     const myFilesFileData = {...getFileData(currentState, myFilesEntryKey)!};
     // Nest the entry for the new volume info in MyFiles.
-    const uiEntryPlaceholder = myFilesEntry.getUIChildren().find(
+    const uiEntryPlaceholder = myFilesEntry.getUiChildren().find(
         childEntry => childEntry.name === newVolumeEntry.name);
     // Remove a placeholder for the currently mounting volume.
     if (uiEntryPlaceholder) {
@@ -213,7 +213,7 @@ function addVolumeReducer(currentState: State, payload: {
     if (myFilesEntryList) {
       // We need to copy the children of the entry list to the real volume
       // entry.
-      const uiChildren = [...myFilesEntryList.getUIChildren()];
+      const uiChildren = [...myFilesEntryList.getUiChildren()];
       for (const childEntry of uiChildren) {
         appendChildIfNotExisted(newVolumeEntry, childEntry);
         myFilesEntryList.removeChildEntry(childEntry);
@@ -337,16 +337,24 @@ function addVolumeReducer(currentState: State, payload: {
       // Update the siblings too.
       Object.values<Volume>(currentState.volumes)
           .filter(
-              // volume with `prefixKey` has already been processed.
-              v => !v.prefixKey && v.volumeType === VolumeType.REMOVABLE &&
+              v => v.volumeType === VolumeType.REMOVABLE &&
                   removableGroupKey(v) === groupingKey,
               )
           .forEach(v => {
-            v.prefixKey = parentEntry!.toURL();
             const fileData = getFileData(currentState, v.rootKey!);
-            if (fileData?.entry) {
+            if (!fileData) {
+              return;
+            }
+            // Volume with `prefixKey` has already been processed, however,
+            // regardless of processed or not we always need to put it in
+            // `partitionChildEntries` because we are trying to construct the
+            // full children array here, at the end we will use
+            // `partitionChildEntries` to replace the current
+            // `FileData.children`.
+            partitionChildEntries.push(fileData.entry);
+            if (!v.prefixKey) {
+              v.prefixKey = parentEntry!.toURL();
               appendChildIfNotExisted(parentEntry!, fileData.entry);
-              partitionChildEntries.push(fileData.entry);
               // For sub-partition from a removable volume, its children icon
               // should be UNKNOWN_REMOVABLE, and it shouldn't be ejectable.
               currentState.allEntries[v.rootKey!] = {
@@ -391,7 +399,7 @@ function addVolumeReducer(currentState: State, payload: {
 function appendChildIfNotExisted(
     parentEntry: VolumeEntry|EntryList,
     childEntry: Entry|FilesAppEntry): boolean {
-  if (!parentEntry.getUIChildren().find(
+  if (!parentEntry.getUiChildren().find(
           (entry) => isSameEntry(entry, childEntry))) {
     parentEntry.addEntry(childEntry);
     return true;
@@ -525,7 +533,8 @@ function updateDeviceConnectionStateReducer(
     }
     // Make the ODFS FileData/VolumeEntry consistent with its volume in the
     // store.
-    updateFileData(currentState, volume.rootKey!, {disabled: disableODFS});
+    updateFileDataInPlace(
+        currentState, volume.rootKey!, {disabled: disableODFS});
     const odfsVolumeEntry =
         getEntry(currentState, volume.rootKey!) as VolumeEntry;
     if (odfsVolumeEntry) {

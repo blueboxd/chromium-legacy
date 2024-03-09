@@ -31,10 +31,11 @@ void FencedDocumentData::UpdateAutomaticBeaconData(
         attribution_reporting_runtime_features,
     bool once,
     bool cross_origin_exposed) {
-  automatic_beacon_info_[event_type] =
-      AutomaticBeaconInfo(event_data, destinations,
-                          attribution_reporting_runtime_features,
-                          once, cross_origin_exposed);
+  // For an ad component, the event data from its automatic beacon is ignored.
+  automatic_beacon_info_.emplace(
+      event_type, AutomaticBeaconInfo(event_data, destinations,
+                                      attribution_reporting_runtime_features,
+                                      once, cross_origin_exposed));
 }
 
 void FencedDocumentData::MaybeResetAutomaticBeaconData(

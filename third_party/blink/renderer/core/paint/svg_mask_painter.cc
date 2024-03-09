@@ -406,7 +406,7 @@ struct FillInfo {
 
  public:
   const InterpolationQuality interpolation_quality;
-  const cc::PaintFlags::DynamicRangeLimit dynamic_range_limit;
+  const DynamicRangeLimit dynamic_range_limit;
   const RespectImageOrientationEnum respect_orientation;
   const LayoutObject& object;
 };
@@ -463,12 +463,11 @@ void PaintMaskLayer(const FillLayer& layer,
   // should have no effect.
   if (const auto* mask_source = ToMaskSourceIfSVGMask(*style_image)) {
     const ComputedStyle& style = info.object.StyleRef();
-    const float zoom =
-        info.object.IsSVGForeignObject() ? style.EffectiveZoom() : 1;
-    gfx::RectF reference_box = SVGResources::ReferenceBoxForEffects(
+    const gfx::RectF reference_box = SVGResources::ReferenceBoxForEffects(
         info.object, GeometryBox::kFillBox,
         SVGResources::ForeignObjectQuirk::kDisabled);
-    reference_box.Scale(zoom);
+    const float zoom =
+        info.object.IsSVGForeignObject() ? style.EffectiveZoom() : 1;
 
     saver.Save();
     SVGMaskPainter::PaintSVGMaskLayer(
@@ -539,7 +538,7 @@ void PaintMaskLayers(GraphicsContext& context, const LayoutObject& object) {
   }
   const FillInfo fill_info = {
       style.GetInterpolationQuality(),
-      static_cast<cc::PaintFlags::DynamicRangeLimit>(style.DynamicRangeLimit()),
+      style.GetDynamicRangeLimit(),
       style.ImageOrientation(),
       object,
   };

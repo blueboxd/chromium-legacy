@@ -9,8 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
@@ -46,8 +44,11 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.language.AppLocaleUtils;
 import org.chromium.chrome.browser.layouts.LayoutManager;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.search_engines.SearchEngineType;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.translate.FakeTranslateBridgeJni;
@@ -61,11 +62,12 @@ import org.chromium.chrome.modules.readaloud.Player;
 import org.chromium.chrome.modules.readaloud.ReadAloudPlaybackHooks;
 import org.chromium.chrome.modules.readaloud.contentjs.Highlighter;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.prefs.PrefService;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.content_public.browser.GlobalRenderFrameHostId;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -78,7 +80,7 @@ import java.util.List;
 /** Unit tests for {@link ReadAloudController}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@EnableFeatures({ChromeFeatureList.READALOUD, ChromeFeatureList.READALOUD_PLAYBACK})
+@EnableFeatures(ChromeFeatureList.READALOUD)
 public class ReadAloudControllerUnitTest {
     private static final GURL sTestGURL = JUnitTestGURLs.EXAMPLE_URL;
 
@@ -104,6 +106,7 @@ public class ReadAloudControllerUnitTest {
     @Mock private ReadAloudPrefs.Natives mReadAloudPrefsNatives;
     @Mock private UserPrefsJni mUserPrefsNatives;
     @Mock private PrefService mPrefService;
+    @Mock private TemplateUrlService mTemplateUrlService;
 
     MockTabModelSelector mTabModelSelector;
 
@@ -115,6 +118,7 @@ public class ReadAloudControllerUnitTest {
     @Mock private Playback.Metadata mMetadata;
     @Mock private WebContents mWebContents;
     @Mock private RenderFrameHost mRenderFrameHost;
+    @Mock private TemplateUrl mSearchEngine;
     private GlobalRenderFrameHostId mGlobalRenderFrameHostId = new GlobalRenderFrameHostId(1, 1);
 
     @Before
@@ -137,6 +141,7 @@ public class ReadAloudControllerUnitTest {
         mJniMocker.mock(ReadAloudPrefsJni.TEST_HOOKS, mReadAloudPrefsNatives);
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsNatives);
         doReturn(mPrefService).when(mUserPrefsNatives).get(any());
+        when(mPrefService.getBoolean(Pref.LISTEN_TO_THIS_PAGE_ENABLED)).thenReturn(true);
         mTabModelSelector =
                 new MockTabModelSelector(
                         mMockProfile,
@@ -152,6 +157,14 @@ public class ReadAloudControllerUnitTest {
         when(mPlaybackHooks.createPlayer(any())).thenReturn(mPlayerCoordinator);
         ReadAloudController.setReadabilityHooks(mHooksImpl);
         ReadAloudController.setPlaybackHooks(mPlaybackHooks);
+
+        TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
+        doReturn(SearchEngineType.SEARCH_ENGINE_GOOGLE)
+                .when(mTemplateUrlService)
+                .getSearchEngineTypeFromTemplateUrl(anyString());
+        doReturn("Google").when(mSearchEngine).getKeyword();
+        doReturn(mSearchEngine).when(mTemplateUrlService).getDefaultSearchEngineTemplateUrl();
+
         mController =
                 new ReadAloudController(
                         mActivity,
@@ -179,8 +192,12 @@ public class ReadAloudControllerUnitTest {
 
     @Test
     public void testIsAvailable() {
-        // test set up: non incognito profile + MSBB Accepted
+        // test set up: non incognito profile + MSBB Accepted + policy pref returns true
         assertTrue(mController.isAvailable());
+
+        // test returns false when policy pref is false
+        when(mPrefService.getBoolean("readaloud.listen_to_this_page_enabled")).thenReturn(false);
+        assertFalse(mController.isAvailable());
     }
 
     @Test
@@ -888,14 +905,12 @@ public class ReadAloudControllerUnitTest {
         doReturn(List.of(new PlaybackVoice("en", "voiceA", "")))
                 .when(mPlaybackHooks)
                 .getVoicesFor(anyString());
+
         // User changes voices before the first playback is ready.
         mController.setVoiceOverrideAndApplyToPlayback(new PlaybackVoice("en", "1234", ""));
-        verify(mPlaybackHooks).createPlayback(any(), mPlaybackCallbackCaptor.capture());
-
-        // Playback succeeds just once. No seeking.
-        onPlaybackSuccess(mPlayback);
-        verify(mPlayback, times(1)).play();
-        verify(mPlayback, never()).seekToParagraph(anyInt(), anyLong());
+        // TODO(b/315028038): If changing voice during loading is possible, then we
+        // should instead cancel the first request and request again.
+        verify(mPlaybackHooks, never()).createPlayback(any(), any());
     }
 
     @Test
@@ -959,7 +974,7 @@ public class ReadAloudControllerUnitTest {
     }
 
     @Test
-    public void testTranslationStopsPlayback() {
+    public void testIsTranslatedChangedStopsPlayback() {
         // Play tab.
         mFakeTranslateBridge.setCurrentLanguage("en");
         mTab.setGurlOverrideForTesting(new GURL("https://en.wikipedia.org/wiki/Google"));
@@ -967,11 +982,39 @@ public class ReadAloudControllerUnitTest {
         verify(mPlaybackHooks).createPlayback(any(), mPlaybackCallbackCaptor.capture());
         onPlaybackSuccess(mPlayback);
 
-        // trigger translation. Playback should stop
+        // Trigger isTranslated state changed. Playback should stop.
         mController
                 .getTranslationObserverForTest()
                 .onIsPageTranslatedChanged(mTab.getWebContents());
         verify(mPlayback).release();
+    }
+
+    @Test
+    public void testSuccessfulTranslationStopsPlayback() {
+        // Play tab.
+        mFakeTranslateBridge.setCurrentLanguage("en");
+        mTab.setGurlOverrideForTesting(new GURL("https://en.wikipedia.org/wiki/Google"));
+        mController.playTab(mTab);
+        verify(mPlaybackHooks).createPlayback(any(), mPlaybackCallbackCaptor.capture());
+        onPlaybackSuccess(mPlayback);
+
+        // Finish translating (status code 0 means "no error"). Playback should stop.
+        mController.getTranslationObserverForTest().onPageTranslated("en", "es", 0);
+        verify(mPlayback).release();
+    }
+
+    @Test
+    public void testFailedTranslationDoesNotStopPlayback() {
+        // Play tab.
+        mFakeTranslateBridge.setCurrentLanguage("en");
+        mTab.setGurlOverrideForTesting(new GURL("https://en.wikipedia.org/wiki/Google"));
+        mController.playTab(mTab);
+        verify(mPlaybackHooks).createPlayback(any(), mPlaybackCallbackCaptor.capture());
+        onPlaybackSuccess(mPlayback);
+
+        // Fail to translate (status code 1). Playback should not stop.
+        mController.getTranslationObserverForTest().onPageTranslated("en", "es", 1);
+        verify(mPlayback, never()).release();
     }
 
     @Test
@@ -1025,14 +1068,16 @@ public class ReadAloudControllerUnitTest {
     }
 
     @Test
-    @DisableFeatures(ChromeFeatureList.READALOUD_PLAYBACK)
-    public void testReadAloudPlaybackFlagCheckedAfterReadability() {
-        mController.maybeCheckReadability(sTestGURL);
-        verify(mHooksImpl, times(1))
-                .isPageReadable(eq(sTestGURL.getSpec()), mCallbackCaptor.capture());
-        mCallbackCaptor.getValue().onSuccess(sTestGURL.getSpec(), true, false);
+    public void testReadabilitySupplier() {
+        String testUrl = "https://en.wikipedia.org/wiki/Google";
 
-        assertFalse(mController.isReadable(mTab));
+        mController.maybeCheckReadability(new GURL(testUrl));
+
+        verify(mHooksImpl, times(1)).isPageReadable(eq(testUrl), mCallbackCaptor.capture());
+
+        mCallbackCaptor.getValue().onSuccess(testUrl, true, false);
+
+        assertEquals(mController.getReadabilitySupplier().get(), testUrl);
     }
 
     private void onPlaybackSuccess(Playback playback) {

@@ -2058,6 +2058,7 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
 }
 
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
   // We may get here while detaching, when the WebFrame has been deleted.  Do
   // not process any messages in this state.
   if (!frame_)
@@ -2073,7 +2074,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     if (observer.OnMessageReceived(msg))
       return true;
   }
-
+#endif
   return false;
 }
 
@@ -2844,6 +2845,10 @@ void RenderFrameImpl::CommitNavigationWithParams(
                .Get() ||
       frame_->IsOutermostMainFrame()) {
     frame_->SetLCPPHint(std::move(commit_params->lcpp_hint));
+  } else {
+    // When there's a pre-existing LCPP hint on frame, we want to remove the
+    // existing hint. Hence calling SetLCPPHint(nullptr) is required.
+    frame_->SetLCPPHint(nullptr);
   }
 
   // Note: this intentionally does not call |Detach()| before |reset()|. If
@@ -3589,8 +3594,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 
   // Now create the child frame in the browser via an asynchronous call.
   GetFrameHost()->CreateChildFrame(
-      child_routing_id,
-      pending_frame_receiver.InitWithNewEndpointAndPassRemote(),
+      frame_token, pending_frame_receiver.InitWithNewEndpointAndPassRemote(),
       browser_interface_broker.InitWithNewPipeAndPassReceiver(),
       blink::mojom::PolicyContainerBindParams::New(
           std::move(policy_container_bind_params.receiver)),

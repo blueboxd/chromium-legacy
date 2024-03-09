@@ -106,7 +106,8 @@ void SelectSearchEngineCellWithName(NSString* search_engine_name,
                                  search_engine_name];
   id<GREYMatcher> searchEngineRowMatcher =
       grey_allOf(grey_userInteractionEnabled(),
-                 grey_accessibilityID(searchEngineAccessibiltyIdentifier), nil);
+                 grey_accessibilityID(searchEngineAccessibiltyIdentifier),
+                 grey_sufficientlyVisible(), nil);
   // Scroll down to find the search engine cell.
   id<GREYMatcher> scrollView =
       grey_accessibilityID(kSearchEngineTableViewIdentifier);
@@ -1328,10 +1329,10 @@ void DismissScreensAfterSigninAndSync() {
   [self verifyDefaultSearchEngineSetting:searchEngineToSelect];
 }
 
-// Tests that the Search Engine Choice screen is displayed, that the primary
-// button is correctly updated when the user scolls down then selects a search
-// engine and that it correctly sets the default search engine.
-- (void)testSearchEngineChoiceScreenScollThenSelect {
+// Tests that the Search Engine Choice screen is displayed, that the
+// primary button is correctly updated when the user scrolls down then selects a
+// search engine and that it correctly sets the default search engine.
+- (void)testSearchEngineChoiceScreenScrollThenSelect {
   if (![ChromeEarlGreyAppInterface IsSearchEngineChoiceScreenEnabledFre]) {
     // Do not run this test if the choice screen is not enabled.
     return;

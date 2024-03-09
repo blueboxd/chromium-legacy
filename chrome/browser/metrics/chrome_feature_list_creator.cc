@@ -35,7 +35,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/language/core/browser/pref_names.h"
@@ -111,10 +110,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
       // Enable FedCM to test behavior for third-party cookie phaseout.
       {network::switches::kTestThirdPartyCookiePhaseout,
        std::cref(features::kFedCmWithoutThirdPartyCookies),
-       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-      // Enable 3PCD tracking protection UI.
-      {network::switches::kTestThirdPartyCookiePhaseout,
-       std::cref(content_settings::features::kTrackingProtection3pcd),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
   };
 

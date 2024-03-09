@@ -98,10 +98,10 @@ class TestNotificationListView : public NotificationListView {
   }
 
   // NotificationListView:
-  std::unique_ptr<message_center::MessageView> CreateMessageView(
+  message_center::MessageView* CreateMessageView(
       const message_center::Notification& notification) override {
-    auto message_view = std::make_unique<TestNotificationView>(notification);
-    ConfigureMessageView(message_view.get());
+    auto* message_view = new TestNotificationView(notification);
+    ConfigureMessageView(message_view);
     return message_view;
   }
 

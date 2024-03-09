@@ -41,6 +41,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
+import org.chromium.chrome.browser.toolbar.top.TabStripTransitionCoordinator.TabStripHeightObserver;
 import org.chromium.ui.base.TestActivity;
 
 import java.util.concurrent.TimeUnit;
@@ -65,6 +66,9 @@ public class TabStripTransitionCoordinatorUnitTest {
     private TestActivity mActivity;
     private TestControlContainer mSpyControlContainer;
 
+    private int mObservedOnHeightRequested = -1;
+    private int mObservedOnHeightChanged = -1;
+
     @Before
     public void setup() {
         mActivityScenario.getScenario().onActivity(activity -> mActivity = activity);
@@ -77,125 +81,104 @@ public class TabStripTransitionCoordinatorUnitTest {
                         mSpyControlContainer,
                         mSpyControlContainer.toolbarLayout,
                         TEST_TAB_STRIP_HEIGHT);
+        TabStripHeightObserver observer =
+                new TabStripHeightObserver() {
+                    @Override
+                    public void onHeightTransitionRequested(int newHeight) {
+                        mObservedOnHeightRequested = newHeight;
+                    }
+
+                    @Override
+                    public void onHeightChanged(int newHeight) {
+                        mObservedOnHeightChanged = newHeight;
+                    }
+                };
+        mCoordinator.addObserver(observer);
+
         doNothing()
                 .when(mBrowserControlsVisibilityManager)
                 .addObserver(mBrowserControlsObserver.capture());
         doReturn(View.VISIBLE)
                 .when(mBrowserControlsVisibilityManager)
                 .getAndroidControlsVisibility();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     }
 
     @Test
-    public void updateTabStripHeight_WideWindow() {
-        simulateConfigurationChanged(null);
+    public void initWithWideWindow() {
         Assert.assertEquals(
                 "Tab strip height is wrong.",
                 TEST_TAB_STRIP_HEIGHT,
                 mCoordinator.getTabStripHeight());
 
         setDeviceWidthDp(480);
-        Assert.assertEquals("Tab strip height is wrong.", 0, mCoordinator.getTabStripHeight());
+        Assert.assertEquals("Tab strip height is wrong.", 0, mObservedOnHeightRequested);
     }
 
     @Test
     @Config(qualifiers = "w480dp")
-    public void updateTabStripHeight_NarrowWindow() {
-        simulateConfigurationChanged(null);
-        Assert.assertEquals("Tab strip height is wrong.", 0, mCoordinator.getTabStripHeight());
+    public void initWithNarrowWindow() {
+        Assert.assertEquals(
+                "Init will not change the tab strip height.",
+                TEST_TAB_STRIP_HEIGHT,
+                mCoordinator.getTabStripHeight());
+        Assert.assertEquals(
+                "Tab strip height requested changing to 0.", 0, mObservedOnHeightRequested);
 
         setDeviceWidthDp(600);
         Assert.assertEquals(
-                "Tab strip height is wrong.",
+                "Changing the window to wide will request for full-size tab strip.",
                 TEST_TAB_STRIP_HEIGHT,
-                mCoordinator.getTabStripHeight());
-    }
-
-    @Test
-    public void updateTabStripHeight_DuringLayout() {
-        simulateConfigurationChanged(null);
-        Assert.assertEquals(
-                "Tab strip height is wrong.",
-                TEST_TAB_STRIP_HEIGHT,
-                mCoordinator.getTabStripHeight());
-
-        doReturn(true).when(mSpyControlContainer).isInLayout();
-        setDeviceWidthDp(480);
-        Assert.assertEquals(
-                "Tab strip height is not updated yet during layout.",
-                TEST_TAB_STRIP_HEIGHT,
-                mCoordinator.getTabStripHeight());
-        simulateLayoutChange();
-        Assert.assertEquals(
-                "Tab strip height should be updated after layout.",
-                0,
-                mCoordinator.getTabStripHeight());
-    }
-
-    @Test
-    public void updateTabStripHeight_BrowserControlsHidden() {
-        doReturn(true).when(mSpyControlContainer).isInLayout();
-        doReturn(View.GONE).when(mBrowserControlsVisibilityManager).getAndroidControlsVisibility();
-        simulateConfigurationChanged(null);
-        Assert.assertEquals(
-                "Tab strip update should be instant.",
-                TEST_TAB_STRIP_HEIGHT,
-                mCoordinator.getTabStripHeight());
-
-        setDeviceWidthDp(480);
-        Assert.assertEquals(
-                "Tab strip update should be instant.", 0, mCoordinator.getTabStripHeight());
+                mObservedOnHeightRequested);
     }
 
     @Test
     public void hideTabStrip() {
-        simulateConfigurationChanged(null);
-
         setDeviceWidthDp(480);
 
         // Simulate top controls size change from browser. Input values doesn't matter in this call.
         mBrowserControlsObserver.getValue().onControlsOffsetChanged(0, 0, 0, 0, false);
         assertTabStripHeightForMargins(0);
+        assertObservedHeight(0);
     }
 
     @Test
     public void hideTabStripWithOffsetOverride() {
-        simulateConfigurationChanged(null);
-
         setDeviceWidthDp(480);
 
         // Simulate top controls size change from browser.
         doReturn(true).when(mBrowserControlsVisibilityManager).offsetOverridden();
         mBrowserControlsObserver.getValue().onTopControlsHeightChanged(TEST_TOOLBAR_HEIGHT, 0);
         assertTabStripHeightForMargins(0);
+        assertObservedHeight(0);
     }
 
     @Test
     @Config(qualifiers = "w480dp")
     public void showTabStrip() {
-        simulateConfigurationChanged(null);
-
         setDeviceWidthDp(600);
 
         // Simulate top controls size change from browser. Input values doesn't matter in this call.
         mBrowserControlsObserver.getValue().onControlsOffsetChanged(0, 0, 0, 0, false);
         assertTabStripHeightForMargins(TEST_TAB_STRIP_HEIGHT);
+        assertObservedHeight(TEST_TAB_STRIP_HEIGHT);
     }
 
     @Test
     @Config(qualifiers = "w480dp")
     public void showTabStripWithOffsetOverride() {
-        simulateConfigurationChanged(null);
-
         setDeviceWidthDp(600);
         // Simulate top controls size change from browser.
         doReturn(true).when(mBrowserControlsVisibilityManager).offsetOverridden();
         mBrowserControlsObserver.getValue().onTopControlsHeightChanged(TEST_TOOLBAR_HEIGHT, 0);
         assertTabStripHeightForMargins(TEST_TAB_STRIP_HEIGHT);
+        assertObservedHeight(TEST_TAB_STRIP_HEIGHT);
     }
 
     @Test
     public void configurationChangedDuringDelayedTask() {
         setConfigurationWithNewWidth(480);
+        simulateLayoutChange(480);
         ShadowLooper.idleMainLooper(100, TimeUnit.MILLISECONDS);
         // Tab strip still visible before the delayed transition started.
         assertTabStripHeightForMargins(TEST_TAB_STRIP_HEIGHT);
@@ -207,6 +190,7 @@ public class TabStripTransitionCoordinatorUnitTest {
     @Test
     public void destroyDuringDelayedTask() {
         setConfigurationWithNewWidth(480);
+        simulateLayoutChange(480);
         ShadowLooper.idleMainLooper(100, TimeUnit.MILLISECONDS);
         // Tab strip still visible before the delayed transition started.
         assertTabStripHeightForMargins(TEST_TAB_STRIP_HEIGHT);
@@ -220,6 +204,8 @@ public class TabStripTransitionCoordinatorUnitTest {
     private void setDeviceWidthDp(int widthDp) {
         Configuration configuration = setConfigurationWithNewWidth(widthDp);
         simulateConfigurationChanged(configuration);
+        simulateLayoutChange(widthDp);
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     }
 
     private Configuration setConfigurationWithNewWidth(int widthDp) {
@@ -248,15 +234,34 @@ public class TabStripTransitionCoordinatorUnitTest {
                 mSpyControlContainer.toolbarHairline.getTopMargin());
     }
 
-    private void simulateLayoutChange() {
+    private void assertObservedHeight(int tabStripHeight) {
+        Assert.assertEquals(
+                "#getHeight has a different value.",
+                tabStripHeight,
+                mCoordinator.getTabStripHeight());
+
+        Assert.assertEquals(
+                "Observer#onHeightChanged received a different value.",
+                tabStripHeight,
+                mObservedOnHeightChanged);
+    }
+
+    private void simulateLayoutChange(int width) {
         Assert.assertNotNull(mSpyControlContainer.onLayoutChangeListener);
         mSpyControlContainer.onLayoutChangeListener.onLayoutChange(
-                mSpyControlContainer, 0, 0, 0, 0, 0, 0, 0, 0);
+                mSpyControlContainer,
+                /* left= */ 0,
+                /* top= */ 0,
+                /* right= */ width,
+                /* bottom= */ 0,
+                0,
+                0,
+                0,
+                0);
     }
 
     private void simulateConfigurationChanged(Configuration newConfig) {
         mCoordinator.onConfigurationChanged(newConfig != null ? newConfig : new Configuration());
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     }
 
     // Due to the complexity to use the real views for top toolbar in robolectric tests, use view
@@ -281,7 +286,9 @@ public class TabStripTransitionCoordinatorUnitTest {
             doReturn(controlContainer.findToolbar)
                     .when(controlContainer)
                     .findViewById(R.id.find_toolbar);
-
+            doReturn(context.getResources().getDisplayMetrics().widthPixels)
+                    .when(controlContainer)
+                    .getWidth();
             doAnswer(
                             args -> {
                                 controlContainer.onLayoutChangeListener = args.getArgument(0);

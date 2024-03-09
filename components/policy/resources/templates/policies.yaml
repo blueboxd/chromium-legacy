@@ -1086,7 +1086,7 @@ policies:
   1085: MandatoryExtensionsForIncognitoNavigation
   1086: CredentialProviderPromoEnabled
   1087: RemoteAccessHostAllowEnterpriseRemoteSupportConnections
-  1088: ClientSidePhishingProtectionAllowed
+  1088: ''
   1089: UserAvatarCustomizationSelectorsEnabled
   1090: DefaultThirdPartyStoragePartitioningSetting
   1091: ThirdPartyStoragePartitioningBlockedForOrigins
@@ -1184,9 +1184,10 @@ policies:
   1183: DeskAPIDeskSaveAndShareEnabled
   1184: OopPrintDriversAllowed
   1185: DeviceHardwareVideoDecodingEnabled
-  1186: TabOrganizerSettings
-  1187: HelpMeWriteSettings
-  1188: CreateThemesSettings
+  1186: TabOrganizationAllowed
+  1187: ComposeAllowed
+  1188: WallpaperSearchAllowed
+  1189: ListenToThisPageEnabled
 atomic_groups:
   1: Homepage
   2: RemoteAccess

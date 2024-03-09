@@ -52,9 +52,6 @@ BASE_FEATURE(kIPHDesktopNewTabPageModulesCustomizeFeature,
 BASE_FEATURE(kIPHDownloadToolbarButtonFeature,
              "IPH_DownloadToolbarButton",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHExperimentalAIPromoFeature,
-             "IPH_ExperimentalAIPromo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 BASE_FEATURE(kIPHExtensionsMenuFeature,
              "IPH_ExtensionsMenu",
@@ -161,7 +158,7 @@ BASE_FEATURE(kIPHDesktopSnoozeFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHDesktopPwaInstallFeature,
              "IPH_DesktopPwaInstall",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHProfileSwitchFeature,
              "IPH_ProfileSwitch",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -571,6 +568,9 @@ BASE_FEATURE(kIPHiOSReplaceSyncPromosWithSignInPromos,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHiOSBlueDotPromoEnhancedSafeBrowsingFeature,
              "IPH_iOSBlueDotPromoEnhancedSafeBrowsing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHiOSInlinePromoEnhancedSafeBrowsingFeature,
+             "IPH_iOSInlinePromoEnhancedSafeBrowsing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Non-FET feature.

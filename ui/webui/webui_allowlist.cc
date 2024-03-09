@@ -120,15 +120,16 @@ void WebUIAllowlist::SetContentSettingsAndNotifyProvider(
 
   {
     base::AutoLock auto_lock(value_map_.GetLock());
-    if (!value_map_.SetValue(primary_pattern, secondary_pattern, type,
-                             base::Value(setting),
-                             /* metadata */ {})) {
-      return;
-    }
+    value_map_.SetValue(primary_pattern, secondary_pattern, type,
+                        base::Value(setting),
+                        /* metadata */ {});
   }
 
   // Notify the provider. |provider_| can be nullptr if
   // HostContentSettingsRegistry is shutting down i.e. when Chrome shuts down.
+  //
+  // It's okay to notify the provider multiple times even if the setting isn't
+  // changed.
   if (provider_) {
     provider_->NotifyContentSettingChange(primary_pattern, secondary_pattern,
                                           type);

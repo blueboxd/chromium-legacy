@@ -8,14 +8,14 @@ import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
 import {entriesToURLs} from '../../common/js/entry_utils.js';
 import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
 import {installMockChrome, MockMetrics} from '../../common/js/mock_chrome.js';
-import {MockDirectoryEntry, MockEntry} from '../../common/js/mock_entry.js';
+import {MockDirectoryEntry, MockEntry, MockFileSystem} from '../../common/js/mock_entry.js';
 import {waitUntil} from '../../common/js/test_error_reporting.js';
 import {RootType, VolumeType} from '../../common/js/volume_manager_types.js';
 import {addVolume, convertVolumeInfoAndMetadataToVolume, updateIsInteractiveVolume} from '../../state/ducks/volumes.js';
 import {createMyFilesDataWithVolumeEntry} from '../../state/ducks/volumes_unittest.js';
 import {createFakeVolumeMetadata, setUpFileManagerOnWindow, setupStore, waitDeepEquals} from '../../state/for_tests.js';
 
-import {CommandHandler} from './file_manager_commands.js';
+import {CommandHandler, ValidMenuCommandsForUma} from './command_handler.js';
 
 /** @type {!MockMetrics} */
 let mockMetrics;
@@ -25,7 +25,7 @@ let mockMetrics;
  * @returns {string|undefined}
  */
 function getMetricName(metricIndex) {
-  return CommandHandler.ValidMenuCommandsForUMA[metricIndex];
+  return ValidMenuCommandsForUma[metricIndex];
 }
 
 /**
@@ -66,12 +66,14 @@ export async function testToggleHoldingSpaceCommand() {
   // Create `DOWNLOADS` volume.
   const downloadsVolumeInfo = volumeManager.createVolumeInfo(
       VolumeType.DOWNLOADS, 'downloadsVolumeId', 'Downloads volume');
-  const downloadsFileSystem = downloadsVolumeInfo.fileSystem;
+  const downloadsFileSystem =
+      /** @type{MockFileSystem} */ (downloadsVolumeInfo.fileSystem);
 
   // Create `REMOVABLE` volume.
   const removableVolumeInfo = volumeManager.createVolumeInfo(
       VolumeType.REMOVABLE, 'removableVolumeId', 'Removable volume');
-  const removableFileSystem = removableVolumeInfo.fileSystem;
+  const removableFileSystem =
+      /** @type{MockFileSystem} */ (removableVolumeInfo.fileSystem);
 
   // Mock file/folder entries.
   const audioFileEntry = new MockEntry(downloadsFileSystem, '/audio.mp3');
@@ -303,7 +305,8 @@ export async function testExtractAllCommand() {
   // Create `DOWNLOADS` volume.
   const downloadsVolumeInfo = volumeManager.createVolumeInfo(
       VolumeType.DOWNLOADS, 'downloadsVolumeId', 'Downloads volume');
-  const downloadsFileSystem = downloadsVolumeInfo.fileSystem;
+  const downloadsFileSystem =
+      /** @type{MockFileSystem} */ (downloadsVolumeInfo.fileSystem);
 
   // Mock file entries.
   const folderEntry = MockDirectoryEntry.create(downloadsFileSystem, '/folder');
@@ -431,7 +434,8 @@ export async function testRenameCommand() {
   // Mock file entries.
   const recentEntry = new FakeEntryImpl('Recent', RootType.RECENT);
   const pdfEntry = MockDirectoryEntry.create(
-      documentsRootVolumeInfo.fileSystem, 'Documents/abc.pdf');
+      /** @type{MockFileSystem} */ (documentsRootVolumeInfo.fileSystem),
+      'Documents/abc.pdf');
 
   // Mock `Event`.
   const event = {
@@ -576,12 +580,13 @@ export async function testCommandsForNonInteractiveVolumeAndNoEntries() {
   };
 
   // Check each command is disabled and hidden.
-  const commandNames = [
-    'paste',
-    'cut',
-    'copy',
-    'new-folder',
-  ];
+  const commandNames =
+      /** @type {import('./command_handler.js').FilesCommandId[]} */ ([
+        'paste',
+        'cut',
+        'copy',
+        'new-folder',
+      ]);
   for (const commandName of commandNames) {
     // Check: command exists.
     const command = CommandHandler.getCommand(commandName);
@@ -630,8 +635,9 @@ export async function testCommandsForEntriesOnNonInteractiveVolume() {
   const volumeManager = new MockVolumeManager();
 
   // Create file entry on non-interactive volume.
-  const nonInteractiveVolumeEntry =
-      MockDirectoryEntry.create(nonInteractiveVolumeInfo.fileSystem, 'abc.pdf');
+  const nonInteractiveVolumeEntry = MockDirectoryEntry.create(
+      /** @type{MockFileSystem} */ (nonInteractiveVolumeInfo.fileSystem),
+      'abc.pdf');
   const currentSelection = {
     entries: [nonInteractiveVolumeEntry],
     iconType: 'none',
@@ -666,18 +672,19 @@ export async function testCommandsForEntriesOnNonInteractiveVolume() {
   };
 
   // Check each command is disabled and hidden.
-  const commandNames = [
-    'paste',
-    'cut',
-    'copy',
-    'new-folder',
-    'delete',
-    'move-to-trash',
-    'paste-into-folder',
-    'rename',
-    'extract-all',
-    'zip-selection',
-  ];
+  const commandNames =
+      /** @type {import('./command_handler.js').FilesCommandId[]} */ ([
+        'paste',
+        'cut',
+        'copy',
+        'new-folder',
+        'delete',
+        'move-to-trash',
+        'paste-into-folder',
+        'rename',
+        'extract-all',
+        'zip-selection',
+      ]);
   for (const commandName of commandNames) {
     // Check: command exists.
     const command = CommandHandler.getCommand(commandName);

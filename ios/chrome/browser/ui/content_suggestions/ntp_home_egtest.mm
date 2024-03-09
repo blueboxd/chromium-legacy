@@ -1253,9 +1253,13 @@ id<GREYMatcher> mostlyNotVisible() {
 
 // Test that signing in and signing out results in the NTP scrolled to the top
 // and not in some unexpected layout state.
-// TODO(crbug.com/1433014): Non-stop animation on discover feed after signing
-// out.
-- (void)FLAKY_testSignInSignOutScrolledToTop {
+- (void)testSignInSignOutScrolledToTop {
+// TODO(crbug.com/1433014): test failing on ipad device
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
+  }
+#endif
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPLogo()]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]

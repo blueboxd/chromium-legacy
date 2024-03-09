@@ -259,7 +259,6 @@
 <translation id="1455413310270022028">ជ័រលុប</translation>
 <translation id="1458140305240870199">ខោអាវ​ទ្រនាប់</translation>
 <translation id="1459693405370120464">អាកាសធាតុ</translation>
-<translation id="1461041542809785877">ប្រតិបត្តិការ</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1462951478840426066">ប្រើពុម្ពអក្សរ​នៅលើកុំព្យូទ័រ​របស់អ្នក ដើម្បីអាចឱ្យអ្នកបង្កើត​ខ្លឹមសារ​ដែលមានសុក្រឹតភាពកម្រិតខ្ពស់</translation>
 <translation id="1467432559032391204">ឆ្វេង</translation>
@@ -832,6 +831,7 @@
           <ph name="LIST_ITEM" />ខូគី និង​ទិន្នន័យ​គេហទំព័រ
           <ph name="LIST_ITEM" />ព័ត៌មាន​ដែលបាន​បញ្ចូល​ក្នុង​ទម្រង់​បែបបទ
         <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">ដាក់ចូល</translation>
 <translation id="2625385379895617796">ម៉ោងរបស់អ្នកដើរលឿន</translation>
 <translation id="262745152991669301">អាចស្នើសុំភ្ជាប់​ជាមួយ​ឧបករណ៍ USB</translation>
 <translation id="2629325967560697240">ដើម្បីទទួលបានកម្រិតសុវត្ថិភាពខ្ពស់បំផុតរបស់ Chrome <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />សូមបើកការការពារ​ដែលប្រសើរជាងមុន<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -1593,6 +1593,7 @@
 <translation id="4177501066905053472">ប្រធានបទនៃការផ្សាយពាណិជ្ជកម្ម</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">ឈប់​តាមដាន​តម្លៃ</translation>
+<translation id="4191334393248735295">ប្រវែង</translation>
 <translation id="4195459680867822611">ប៊ូតុង "មើលគន្លឹះ Chrome", បើកដំណើរការ ដើម្បី​ស្វែងយល់អំពី​មុខងារ Chrome</translation>
 <translation id="4195643157523330669">បើកនៅក្នុងផ្ទាំងថ្មី</translation>
 <translation id="4196861286325780578">ធ្វើការផ្លាស់ទីឡើងវិញ</translation>
@@ -2610,7 +2611,6 @@
 <translation id="6232271601416750929">សម្រស់​បែបធម្មជាតិ</translation>
 <translation id="6234122620015464377">តម្រឹម​បន្ទាប់ពី​ឯកសារ​នីមួយៗ</translation>
 <translation id="6236290670123303279">គ្រប់គ្រង​ការកំណត់</translation>
-<translation id="623825323736974198">គ្រប់គ្រងគេហទំព័រដែលនឹងបន្តសកម្មជានិច្ច ហើយអង្គចងចាំនឹងមិនត្រូវបានសម្អាតពីគេហទំព័រទាំងនោះទេ</translation>
 <translation id="6240447795304464094">និមិត្តសញ្ញា Google Pay</translation>
 <translation id="6241121617266208201">លាក់​ការ​ណែនាំ</translation>
 <translation id="624499991300733384">សេវាកម្ម​រៀបចំ​បោះពុម្ព</translation>

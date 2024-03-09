@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/picker/views/picker_search_field_view.h"
+#include "ash/picker/views/picker_user_education_view.h"
 #include "ash/public/cpp/ash_web_view.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
@@ -57,7 +58,9 @@ std::unique_ptr<AshWebView> CreateWebView(PickerView::Delegate& delegate) {
 
 }  // namespace
 
-PickerView::PickerView(std::unique_ptr<Delegate> delegate) {
+PickerView::PickerView(std::unique_ptr<Delegate> delegate,
+                       const base::TimeTicks trigger_event_timestamp)
+    : session_metrics_(trigger_event_timestamp) {
   SetShowCloseButton(false);
   SetBackground(views::CreateThemedSolidBackground(kBackgroundColor));
   SetPreferredSize(kPickerSize);
@@ -65,23 +68,28 @@ PickerView::PickerView(std::unique_ptr<Delegate> delegate) {
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
   // TODO(b/310088250): Perform a search when the search callback is called.
-  search_field_view_ =
-      AddChildView(std::make_unique<PickerSearchFieldView>(base::DoNothing()));
+  search_field_view_ = AddChildView(std::make_unique<PickerSearchFieldView>(
+      base::DoNothing(), &session_metrics_));
   search_field_view_->SetProperty(views::kMarginsKey, kSearchFieldMargins);
 
   // Automatically focus on the search field.
   SetInitiallyFocusedView(search_field_view_);
 
   web_view_ = AddChildView(CreateWebView(*delegate));
+
+  user_education_view_ =
+      AddChildView(std::make_unique<PickerUserEducationView>());
 }
 
 PickerView::~PickerView() = default;
 
 views::UniqueWidgetPtr PickerView::CreateWidget(
-    std::unique_ptr<PickerView::Delegate> delegate) {
+    std::unique_ptr<PickerView::Delegate> delegate,
+    const base::TimeTicks trigger_event_timestamp) {
   views::Widget::InitParams params;
   params.activatable = views::Widget::InitParams::Activatable::kYes;
-  params.delegate = new PickerView(std::move(delegate));
+  params.delegate =
+      new PickerView(std::move(delegate), trigger_event_timestamp);
   params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.type = views::Widget::InitParams::TYPE_BUBBLE;

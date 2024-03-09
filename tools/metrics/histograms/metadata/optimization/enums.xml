@@ -49,9 +49,6 @@ chromium-metrics-reviews@google.com.
   <int value="4"
       label="Returned result as not enabled because feature was disabled by
              enterprise policy"/>
-  <int value="5"
-      label="Returned result as not enabled because model execution
-             capability was disabled for the user account"/>
 </enum>
 
 <enum name="FeaturesSettingsVisibilityResult">
@@ -63,9 +60,6 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="Visible because field trial is enabled"/>
   <int value="5"
       label="Not visible because feature was disabled by enterprise policy"/>
-  <int value="6"
-      label="Not visible because model execution capability was disabled for
-             the user account"/>
 </enum>
 
 <enum name="HintCacheStoreEntryType">
@@ -243,23 +237,6 @@ chromium-metrics-reviews@google.com.
   <int value="8" label="Request was filtered"/>
   <int value="9" label="Response was disabled"/>
   <int value="10" label="The request was cancelled"/>
-</enum>
-
-<enum name="OptimizationGuideModelQualityLogsUploadStatus">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="UploadSuccessful">Logs upload was successful.</int>
-  <int value="2" label="Logging Not Enabled">
-    Upload is disabled due to logging feature not enabled.
-  </int>
-  <int value="3" label="Net Error">
-    Upload was not successful because of network error.
-  </int>
-  <int value="4" label="No User Metrics Consent">
-    Upload was not allowed due to user metrics consent.
-  </int>
-  <int value="5" label="Disabled due to Enterprise Policy">
-    Upload was disabled due to enterprise policy.
-  </int>
 </enum>
 
 <enum name="OptimizationGuideOnDeviceAddContextResult">
@@ -562,12 +539,6 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Success"/>
   <int value="2" label="Invalid protobuf"/>
   <int value="3" label="Base64 decoding error"/>
-</enum>
-
-<enum name="OptimizationGuideUserFeedback">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Thumbs Up"/>
-  <int value="2" label="Thumbs Down"/>
 </enum>
 
 <enum name="OptimizationType">

@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">Anda dapat mengubah tampilan situs default ke mode desktop di Setelan lalu Setelan Konten</translation>
 <translation id="1054745118061919935">Dengan melanjutkan, Anda menyetujui <ph name="BEGIN_LINK" />Persyaratan Layanan<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Kelola Sinkronisasi</translation>
-<translation id="1066101356081285416">Chrome akan mendeteksi nomor pelacakan di situs yang Anda buka dan menampilkan info terbaru terkait paket di halaman Tab Baru. Nomor pelacakan paket dan nama situs akan dikirim ke Google untuk menyediakan fitur ini dan meningkatkan kualitas fitur belanja Google bagi semua orang. Anda dapat memperbaruinya kapan saja di <ph name="BEGIN_LINK" />Setelan Pelacakan Paket<ph name="END_LINK" />.</translation>
 <translation id="1069154182096085577">Sandi Sudah Ada</translation>
 <translation id="1076421457278169141">Kode telah dipindai</translation>
 <translation id="1076785341346483463">Sinkronkan dengan Akun Terkelola</translation>
@@ -143,7 +142,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />hapus data Chrome di akun An
 <translation id="165877110639533037">Tidak Ada Tab yang Terbuka</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Minta Situs Seluler</translation>
-<translation id="168715261339224929">Agar bookmark tersedia di semua perangkat Anda, aktifkan sinkronisasi.</translation>
 <translation id="1687475363370981210">Tandai Semua Sudah Dibaca</translation>
 <translation id="1689333818294560261">Nama panggilan</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dipilih</translation>
@@ -1049,7 +1047,6 @@ Situs tidak dapat menggunakan cookie untuk melihat aktivitas penjelajahan Anda d
 <translation id="6476253015009698798">Pemantauan harga tidak tersedia untuk halaman ini.</translation>
 <translation id="6476800141292307438">Menerjemahkan halaman ke dalam bahasa <ph name="LANGUAGE" />. Opsi tersedia di dekat bagian bawah layar.</translation>
 <translation id="648164694371393720">Error saat Autentikasi</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dihapus</translation>
 <translation id="6484712497741564393">Login sebagai <ph name="EMAIL" />.
 
 Data Anda dienkripsi dengan frasa sandi. Masukkan frasa sandi untuk menggunakan dan menyimpan data Chrome di Akun Google Anda.</translation>
@@ -1136,6 +1133,7 @@ Selama dalam mode Samaran, situs tidak dapat menggunakan cookie untuk melihat ak
 <translation id="6869389390665537774">Anda dapat melihat halaman yang pernah Anda kunjungi atau menghapusnya dari histori</translation>
 <translation id="687135068089457384">Tampilkan Setelan</translation>
 <translation id="6873263987691478642">Layar Terpisah</translation>
+<translation id="687586529977635009">Chrome akan mendeteksi nomor pelacakan di situs yang Anda buka dan menampilkan info terbaru terkait paket di halaman Tab Baru. Data Anda akan dibagikan kepada Google untuk menyediakan fitur ini dan meningkatkan layanan Shopping bagi semua orang. Anda dapat mengubahnya di <ph name="BEGIN_LINK" />Setelan Pelacakan Paket<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Perlindungan standar terhadap situs, download, dan ekstensi yang bereputasi berbahaya.</translation>
 <translation id="6888009575607455378">Yakin ingin menghapus perubahan?</translation>
 <translation id="6896758677409633944">Salin</translation>
@@ -1416,7 +1414,6 @@ Situs dapat menggunakan cookie untuk melihat aktivitas penjelajahan Anda di berb
 <translation id="8428634594422941299">Mengerti</translation>
 <translation id="8446884382197647889">Pelajari Lebih Lanjut</translation>
 <translation id="8449347986464073209">Hapus dan Logout</translation>
-<translation id="8458397775385147834">1 item dihapus</translation>
 <translation id="8459333855531264009">Tidak Aman</translation>
 <translation id="8487667956631253959">Aktif</translation>
 <translation id="8487700953926739672">Tersedia secara offline</translation>
@@ -1482,7 +1479,6 @@ Data Anda dienkripsi dengan frasa sandi pada <ph name="TIME" />. Masukkan frasa 
 <translation id="8766790350274092814">Sandi untuk <ph name="WEBSITE" /> dan <ph name="SECOND_WEBSITE" /> akan dihapus. Akun Anda tidak akan dihapus.</translation>
 <translation id="8775144690796719618">URL tidak valid</translation>
 <translation id="8780076847684176174">{count,plural, =1{Tinjau tab...}other{Tinjau semua tab...}}</translation>
-<translation id="8782570580170191813">Selalu Lacak Paket</translation>
 <translation id="8787968206789828143">Telusuri di Web</translation>
 <translation id="8792626944327216835">mikrofon</translation>
 <translation id="8803639129939845298">Aman</translation>

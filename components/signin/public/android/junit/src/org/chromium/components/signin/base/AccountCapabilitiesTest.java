@@ -54,8 +54,6 @@ public final class AccountCapabilitiesTest {
                 return capabilities.canToggleAutoUpdates();
             case AccountCapabilitiesConstants.CAN_USE_CHROME_IP_PROTECTION_NAME:
                 return capabilities.canUseChromeIpProtection();
-            case AccountCapabilitiesConstants.CAN_USE_MODEL_EXECUTION_FEATURES_NAME:
-                return capabilities.canUseModelExecutionFeatures();
             case AccountCapabilitiesConstants.IS_ALLOWED_FOR_MACHINE_LEARNING_CAPABILITY_NAME:
                 return capabilities.isAllowedForMachineLearning();
             case AccountCapabilitiesConstants
@@ -113,11 +111,6 @@ public final class AccountCapabilitiesTest {
                                 .value(
                                         AccountCapabilitiesConstants
                                                 .CAN_USE_CHROME_IP_PROTECTION_NAME),
-                        new ParameterSet()
-                                .name("CanUseModelExecutionFeatures")
-                                .value(
-                                        AccountCapabilitiesConstants
-                                                .CAN_USE_MODEL_EXECUTION_FEATURES_NAME),
                         new ParameterSet()
                                 .name("IsAllowedForMachineLearning")
                                 .value(

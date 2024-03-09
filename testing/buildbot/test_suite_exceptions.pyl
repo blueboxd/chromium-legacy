@@ -26,13 +26,6 @@
   'accessibility_unittests': {
     'modifications': {
       'Linux ASan LSan Tests (1)': {
-        'args': [
-            # TODO(crbug.com/1442303): Re-enable.
-          '--gtest_filter=-AXPlatformNodeAuraLinuxTest.AtkComponentScrollTo:'
-          'AtkUtilAuraLinuxTest.*',
-        ],
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
         'swarming': {
           'dimensions': {
             # TODO(crbug.com/1442303): Move to Jammy when it's compatible.
@@ -1224,14 +1217,6 @@
           'shards': 50,
         },
       },
-      'linux-exp-asan-lsan-fyi-rel': {
-        'ci_only': True,
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 40,
-        },
-      },
       'linux-exp-msan-fyi-rel': {
         'swarming': {
           'shards': 23,
@@ -1669,7 +1654,7 @@
         'swarming': {
           'dimensions': {
             'cpu': 'x86-64',
-            'os': 'Ubuntu-22.04',
+            'os': 'Ubuntu-18.04',
           },
         },
       },
@@ -1677,7 +1662,7 @@
         'swarming': {
           'dimensions': {
             'cpu': 'x86-64',
-            'os': 'Ubuntu-22.04',
+            'os': 'Ubuntu-18.04',
           },
         },
       },
@@ -1685,17 +1670,9 @@
         'swarming': {
           'dimensions': {
             'cpu': 'x86-64',
-            'os': 'Ubuntu-22.04',
+            'os': 'Ubuntu-18.04',
           },
         },
-      },
-    },
-  },
-  # TODO(weizhong): Remove this once experiment completes
-  'chrome_wpt_tests': {
-    'modifications': {
-      'linux-wpt-chromium-rel': {
-        'ci_only': False,
       },
     },
   },
@@ -1796,13 +1773,6 @@
           # TODO(crbug.com/1192348): Fix the test failure
           '--gtest_filter=-FieldFormatterTest.DifferentLocales',
         ],
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 5,
-        },
       },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
@@ -2150,11 +2120,6 @@
           'shards': 12,
         },
       },
-      'linux-exp-asan-lsan-fyi-rel': {
-        'swarming': {
-          'shards': 24,
-        },
-      },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
           'shards': 30,
@@ -2328,13 +2293,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.content_unittests.filter',
         ],
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 2,
-        },
       },
       'linux-rel-dev': {
         'swarming': {
@@ -2744,7 +2702,6 @@
       'ToTLinuxASan',  # https://crbug.com/831667
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
-      'linux-exp-asan-lsan-fyi-rel',  # https://crbug.com/831667
     ],
     'modifications': {
       'android-arm64-proguard-rel': {
@@ -2812,20 +2769,6 @@
         },
       },
       'Linux TSan Tests': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          # This must be kept in sync with linux_nvidia_gtx_1660_stable mixin
-          'dimensions': {
-            'gpu': '10de:2184-440.100',
-            'os': 'Ubuntu-18.04.5|Ubuntu-18.04.6',
-            'pool': 'chromium.tests.gpu',
-          },
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
         'args': [
           '--use-gpu-in-tests',
           '--no-xvfb',
@@ -3178,12 +3121,6 @@
       'linux-code-coverage': {
         'swarming': {
           'shards': 10,
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are slow on the ASan trybot for some reason, crbug.com/1257927
-        'swarming': {
-          'shards': 12,
         },
       },
       'linux-exp-msan-fyi-rel': {
@@ -3589,13 +3526,6 @@
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 2,
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 16,
         },
       },
       'linux-exp-tsan-fyi-rel': {
@@ -4148,11 +4078,6 @@
           'shards': 4,
         },
       },
-      'linux-exp-asan-lsan-fyi-rel': {
-        'swarming': {
-          'shards': 4,
-        },
-      },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
           'shards': 6,
@@ -4477,13 +4402,6 @@
           'shards': 2,
         },
       },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 4,
-        },
-      },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
           'shards': 2,
@@ -4670,7 +4588,13 @@
       },
     },
   },
-  'webcodecs_tests': {
+  'webcodecs_metal_passthrough_ganesh_tests': {
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
+  },
+  'webcodecs_metal_passthrough_graphite_tests': {
     'remove_from': [
       # crbug.com/1458020 for Mac Retina ASAN removal
       'Mac FYI Retina ASAN (AMD)',
@@ -4696,13 +4620,17 @@
       'Win V8 FYI Release (NVIDIA)',
     ],
   },
+  'webgl2_conformance_gl_passthrough_ganesh_tests': {
+    'remove_from': [
+      'Mac V8 FYI Release (Intel)',
+    ],
+  },
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
       # Removed from V8 builders since WebGL 1 should provide reasonable
       # upstream test coverage without the capacity hit from WebGL 2.
       'Linux V8 FYI Release (NVIDIA)',
       'Linux V8 FYI Release - pointer compression (NVIDIA)',
-      'Mac V8 FYI Release (Intel)',
     ],
   },
   'webgl2_conformance_gles_passthrough_tests': {
@@ -4743,7 +4671,7 @@
       },
     },
   },
-  'webgl2_conformance_metal_passthrough_tests': {
+  'webgl2_conformance_metal_passthrough_graphite_tests': {
     'remove_from': [
       # crbug.com/1270755
       'Mac FYI ASAN (Intel)',
@@ -4799,7 +4727,7 @@
       },
     },
   },
-  'webgl_conformance_gl_passthrough_tests 1002:67ef': {
+  'webgl_conformance_gl_passthrough_ganesh_tests 1002:67ef': {
     'modifications': {
       'mac_optional_gpu_tests_rel': {
         'args': [
@@ -4825,7 +4753,14 @@
       },
     },
   },
-  'webgl_conformance_metal_passthrough_tests': {
+  'webgl_conformance_metal_passthrough_ganesh_tests': {
+    'remove_from': [
+      # crbug.com/1270755
+      'Mac FYI ASAN (Intel)',
+      'Mac FYI Retina ASAN (AMD)',
+    ],
+  },
+  'webgl_conformance_metal_passthrough_graphite_tests': {
     'remove_from': [
       # crbug.com/1270755
       'Mac FYI ASAN (Intel)',
@@ -5067,13 +5002,6 @@
       'Linux TSan Tests': {
         'swarming': {
           'shards': 2,
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 5,
         },
       },
       'linux-exp-tsan-fyi-rel': {

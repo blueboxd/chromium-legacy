@@ -258,7 +258,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="1455413310270022028">Viskelær</translation>
 <translation id="1458140305240870199">Undertøy</translation>
 <translation id="1459693405370120464">Vær</translation>
-<translation id="1461041542809785877">Ytelse</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1462951478840426066">bruke skrifttypene på datamaskinen din, slik at du kan lage innhold av høy kvalitet</translation>
 <translation id="1467432559032391204">Venstre</translation>
@@ -829,6 +828,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
           <ph name="LIST_ITEM" />Informasjonskapsler og nettstedsdata
           <ph name="LIST_ITEM" />Informasjon du legger inn i skjemaer
         <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">Sett inn</translation>
 <translation id="2625385379895617796">Klokken går for fort</translation>
 <translation id="262745152991669301">Kan be om å få koble til USB-enheter</translation>
 <translation id="2629325967560697240">For å få det høyeste sikkerhetsnivået som Chrome tilbyr, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />slå på økt beskyttelse<ph name="END_ENHANCED_PROTECTION_LINK" />.</translation>
@@ -1590,6 +1590,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="4177501066905053472">Annonseemner</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">Slutt å spore prisen</translation>
+<translation id="4191334393248735295">Lengde</translation>
 <translation id="4195459680867822611">Knappen «Se Chrome-tips» – aktiver for å lære om Chrome-funksjoner</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="4196861286325780578">&amp;Flytt likevel</translation>
@@ -2606,7 +2607,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="6232271601416750929">Ren skjønnhet</translation>
 <translation id="6234122620015464377">Beskjær etter hvert dokument</translation>
 <translation id="6236290670123303279">Administrer innstillinger</translation>
-<translation id="623825323736974198">Administrer nettsteder som alltid skal holdes aktive og ikke frigjøres minne fra</translation>
 <translation id="6240447795304464094">Google Pay-logo</translation>
 <translation id="6241121617266208201">Skjul forslag</translation>
 <translation id="624499991300733384">Utskriftskomposisjonstjeneste</translation>

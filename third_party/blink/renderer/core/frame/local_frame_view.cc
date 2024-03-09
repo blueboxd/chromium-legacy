@@ -2461,6 +2461,18 @@ bool LocalFrameView::ShouldDeferLayoutSnap() const {
   return false;
 }
 
+void LocalFrameView::EnqueueSnapChangingFromImplIfNecessary() {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    const auto* scrollable_areas = frame_view.UserScrollableAreas();
+    if (!scrollable_areas) {
+      return;
+    }
+    for (const auto& area : *scrollable_areas) {
+      area->EnqueueSnapChangingEventFromImplIfNeeded();
+    }
+  });
+}
+
 bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     DocumentLifecycle::LifecycleState target_state) {
   TRACE_EVENT0("blink,benchmark",
@@ -2489,6 +2501,9 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
   });
 
   ExecutePendingSnapUpdates();
+
+  // Fire snapchanging events based on the new layout if necessary.
+  EnqueueSnapChangingFromImplIfNecessary();
 
   EnqueueScrollEvents();
 
@@ -2917,7 +2932,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
 
   if (!paint_artifact_compositor_) {
     paint_artifact_compositor_ = std::make_unique<PaintArtifactCompositor>(
-        page->GetScrollingCoordinator()->GetWeakPtr());
+        page->GetScrollingCoordinator()->GetScrollCallbacks());
     page->GetChromeClient().AttachRootLayer(
         paint_artifact_compositor_->RootLayer(), &GetFrame());
   }

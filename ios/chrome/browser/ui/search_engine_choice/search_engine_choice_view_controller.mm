@@ -9,9 +9,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/search_engine_choice/fake_omnibox/fake_omnibox_view.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_constants.h"
-#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/cells/snippet_search_engine_item.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/search_engine_choice_table_view_controller.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -70,9 +68,9 @@ const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
   UIStackView* _topZoneStackView;
   // A fake empty omnibox illustration, shown before the user has made any
   // selection.
-  FakeOmniboxView* _fakeEmptyOmniboxView;
+  UIView* _fakeEmptyOmniboxView;
   // A fake empty omnibox illustration, with the user's selection.
-  FakeOmniboxView* _fakeOmniboxView;
+  UIView* _fakeOmniboxView;
   // The chrome logo.
   UIImageView* _logoView;
   // The view title.
@@ -152,14 +150,12 @@ const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
   _titleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
   _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
-  _fakeEmptyOmniboxView =
-      [[FakeOmniboxView alloc] initWithSearchEngineName:nil faviconImage:nil];
+  _fakeEmptyOmniboxView = CreateFakeEmptyOmnibox();
   [_topZoneStackView addArrangedSubview:_fakeEmptyOmniboxView];
   if (self.traitCollection.verticalSizeClass ==
       UIUserInterfaceSizeClassCompact) {
     _fakeEmptyOmniboxView.hidden = YES;
   }
-  _fakeEmptyOmniboxView.translatesAutoresizingMaskIntoConstraints = NO;
 
   NSMutableAttributedString* subtitleText = [[NSMutableAttributedString alloc]
       initWithString:[l10n_util::GetNSString(
@@ -293,72 +289,66 @@ const char* const kLearnMoreURL = "internal://choice-screen-learn-more";
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+
   // Reset the title font to make sure that it is
   // properly scaled.
   _titleLabel.font = GetTitleFontWithTraitCollection(self.traitCollection);
+  if (previousTraitCollection.userInterfaceStyle !=
+      self.traitCollection.userInterfaceStyle) {
+    // Re-draw the fake empty omnibox in order to take color updates into
+    // account.
+    _fakeEmptyOmniboxView = CreateFakeEmptyOmnibox();
+    [_fakeEmptyOmniboxView layoutIfNeeded];
+  }
 }
 
 #pragma mark - SearchEngineChoiceConsumer
 
-- (void)updateFakeOmniboxWithFaviconImage:(UIImage*)icon
-                         searchEngineName:(NSString*)name {
-  UIView* exitingFakeOmniboxView = _fakeOmniboxView;
-  _fakeOmniboxView = [[FakeOmniboxView alloc] initWithSearchEngineName:name
-                                                          faviconImage:icon];
-  _fakeOmniboxView.translatesAutoresizingMaskIntoConstraints = NO;
-  [_topZoneStackView addSubview:_fakeOmniboxView];
-  AddSameConstraints(_fakeOmniboxView, _fakeEmptyOmniboxView);
-  if (self.traitCollection.verticalSizeClass ==
-      UIUserInterfaceSizeClassCompact) {
-    // If the vertical size is compact, the new fake omnibox should be added but
-    // hidden (just in case the user rotate the device in portrait mode).
-    // And the previous fake omnibox should be removed.
-    [exitingFakeOmniboxView removeFromSuperview];
-    _fakeOmniboxView.hidden = YES;
-    return;
-  }
-  if (exitingFakeOmniboxView) {
-    // Animate the exiting fake omnibox view.
+- (void)updateFakeOmniboxWithFavicon:(UIImageView*)icon
+                    SearchEngineName:(NSString*)name {
+  CGRect startingFrame = _fakeEmptyOmniboxView.frame;
+  startingFrame.origin.y += kTravelDistance;
+  CGRect endFrame = _fakeEmptyOmniboxView.frame;
+  UIView* existingFakeOmniboxView = _fakeOmniboxView;
+  if (existingFakeOmniboxView) {
     [UIView animateWithDuration:kExitAnimationDuration
         delay:0
         usingSpringWithDamping:1
         initialSpringVelocity:0
         options:UIViewAnimationCurveEaseIn
         animations:^{
-          exitingFakeOmniboxView.alpha = 0;
-          CGAffineTransform rotate =
+          existingFakeOmniboxView.alpha = 0;
+          existingFakeOmniboxView.transform =
               CGAffineTransformMakeRotation(kRotationAngle);
-          CGAffineTransform translate =
-              CGAffineTransformMakeTranslation(0, kTravelDistance);
-          exitingFakeOmniboxView.transform =
-              CGAffineTransformConcat(rotate, translate);
+          existingFakeOmniboxView.frame = startingFrame;
         }
         completion:^(BOOL finished) {
-          [exitingFakeOmniboxView removeFromSuperview];
+          [existingFakeOmniboxView removeFromSuperview];
         }];
   }
-  // Animate the entering fake omnibox view.
-  CGAffineTransform rotate = CGAffineTransformMakeRotation(kRotationAngle);
-  CGAffineTransform translate =
-      CGAffineTransformMakeTranslation(0, kTravelDistance);
-  _fakeOmniboxView.transform = CGAffineTransformConcat(rotate, translate);
-  FakeOmniboxView* enteringFakeOmniboxView = _fakeOmniboxView;
+  // No need to add a new fake omnibox when it is hidden.
+  if (self.traitCollection.verticalSizeClass ==
+      UIUserInterfaceSizeClassCompact) {
+    return;
+  }
+
+  UIView* newFakeOmniboxView = CreateFakeOmnibox(icon, name);
+  [_topZoneStackView addSubview:newFakeOmniboxView];
+  newFakeOmniboxView.frame = startingFrame;
+  newFakeOmniboxView.transform = CGAffineTransformMakeRotation(kRotationAngle);
+
   [UIView animateWithDuration:kEntranceAnimationDuration
-                        delay:0
-       usingSpringWithDamping:kSpringDamping
-        initialSpringVelocity:0
-                      options:UIViewAnimationCurveEaseOut
-                   animations:^{
-                     enteringFakeOmniboxView.transform =
-                         CGAffineTransformIdentity;
-                   }
-                   completion:nil];
-}
-
-#pragma mark - SearchEngineChoiceFaviconUpdateConsumer
-
-- (void)updateFaviconImageForItem:(SnippetSearchEngineItem*)item {
-  _fakeOmniboxView.faviconImage = item.faviconImage;
+      delay:0
+      usingSpringWithDamping:kSpringDamping
+      initialSpringVelocity:0
+      options:UIViewAnimationCurveEaseOut
+      animations:^{
+        newFakeOmniboxView.transform = CGAffineTransformIdentity;
+        newFakeOmniboxView.frame = endFrame;
+      }
+      completion:^(BOOL finished) {
+        self->_fakeOmniboxView = newFakeOmniboxView;
+      }];
 }
 
 #pragma mark - Private

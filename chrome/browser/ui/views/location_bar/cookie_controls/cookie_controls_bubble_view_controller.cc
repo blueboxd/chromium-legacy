@@ -81,7 +81,7 @@ CookieControlsBubbleViewController::CookieControlsBubbleViewController(
 }
 
 void CookieControlsBubbleViewController::OnUserClosedContentView() {
-  if (!controller_->HasCookieBlockingChangedForSite()) {
+  if (!controller_->HasUserChangedCookieBlockingForSite()) {
     controller_observation_.Reset();
     bubble_view_->CloseWidget();
     return;
@@ -381,7 +381,7 @@ CookieControlsBubbleViewController::InitReloadingView(
 
   auto progress_bar = std::make_unique<views::ProgressBar>();
   progress_bar->SetPreferredHeight(kProgressBarHeight);
-  progress_bar->SetPreferredCornerRadii(absl::nullopt);
+  progress_bar->SetPreferredCornerRadii(std::nullopt);
   progress_bar->SetValue(-1);
 
   auto reloading_content = std::make_unique<views::View>();

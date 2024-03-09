@@ -7,7 +7,6 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_selections.h"
-#include "chrome/browser/tpcd/experiment/tpcd_experiment_features.h"
 #include "chrome/common/channel_info.h"
 
 TrackingProtectionOnboardingFactory*
@@ -36,6 +35,5 @@ TrackingProtectionOnboardingFactory::BuildServiceInstanceForBrowserContext(
   Profile* profile = Profile::FromBrowserContext(context);
 
   return std::make_unique<privacy_sandbox::TrackingProtectionOnboarding>(
-      profile->GetPrefs(), chrome::GetChannel(),
-      tpcd::experiment::kEnableSilentOnboarding.Get());
+      profile->GetPrefs(), chrome::GetChannel());
 }

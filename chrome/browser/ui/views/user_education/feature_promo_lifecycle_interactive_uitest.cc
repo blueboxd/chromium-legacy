@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -33,7 +34,6 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -45,13 +45,13 @@ using ::testing::Return;
 
 namespace {
 BASE_FEATURE(kFeaturePromoLifecycleTestPromo,
-             "FeaturePromoLifecycleTestPromo",
+             "TEST_FeaturePromoLifecycleTestPromo",
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kFeaturePromoLifecycleTestPromo2,
-             "FeaturePromoLifecycleTestPromo2",
+             "TEST_FeaturePromoLifecycleTestPromo2",
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kFeaturePromoLifecycleTestPromo3,
-             "FeaturePromoLifecycleTestPromo3",
+             "TEST_FeaturePromoLifecycleTestPromo3",
              base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace
 

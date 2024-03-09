@@ -13,8 +13,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Picture;
 import android.graphics.Point;
@@ -72,7 +70,7 @@ import org.chromium.android_webview.metrics.AwSiteVisitLogger;
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
-import org.chromium.android_webview.selection.AwSelectionActionMenuDelegate;
+import org.chromium.android_webview.selection.SamsungSelectionActionMenuDelegate;
 import org.chromium.base.BaseFeatures;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
@@ -97,7 +95,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.components.autofill.AutofillProvider;
-import org.chromium.components.autofill.AutofillSelectionMenuItemHelper;
+import org.chromium.components.autofill.AutofillSelectionMenuItemProvider;
 import org.chromium.components.content_capture.OnscreenContentProvider;
 import org.chromium.components.embedder_support.util.TouchEventFilter;
 import org.chromium.components.embedder_support.util.WebResourceResponseInfo;
@@ -1329,8 +1327,7 @@ public class AwContents implements SmartClipProvider {
             InternalAccessDelegate internalDispatcher,
             WebContents webContents,
             WindowAndroid windowAndroid,
-            WebContentsInternalsHolder internalsHolder,
-            AwSelectionActionMenuDelegate selectionActionMenuDelegate) {
+            WebContentsInternalsHolder internalsHolder) {
         webContents.initialize(
                 PRODUCT_VERSION, viewDelegate, internalDispatcher, windowAndroid, internalsHolder);
         mViewEventSink = ViewEventSink.from(mWebContents);
@@ -1338,7 +1335,7 @@ public class AwContents implements SmartClipProvider {
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
         controller.setActionModeCallback(new AwActionModeCallback(mContext, this, webContents));
         controller.setSelectionClient(SelectionClient.createSmartSelectionClient(webContents));
-        controller.setSelectionActionMenuDelegate(selectionActionMenuDelegate);
+        SamsungSelectionActionMenuDelegate.maybeAttachActionMenuDelegate(controller);
 
         // Listen for dpad events from IMEs (e.g. Samsung Cursor Control) so we know to enable
         // spatial navigation mode to allow these events to move focus out of the WebView.
@@ -1354,10 +1351,7 @@ public class AwContents implements SmartClipProvider {
                         });
     }
 
-    private void initializeAutofillProviderIfNecessary(
-            AwSelectionActionMenuDelegate selectionActionMenuDelegate) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-
+    private void initializeAutofillProviderIfNecessary() {
         if (AndroidAutofillSafeModeAction.isAndroidAutofillDisabled()) {
             Log.i(TAG, "Android autofill is disabled by SafeMode");
             return;
@@ -1369,8 +1363,9 @@ public class AwContents implements SmartClipProvider {
         } else {
             mAutofillProvider.setWebContents(mWebContents);
         }
-        selectionActionMenuDelegate.setAutofillSelectionMenuItemHelper(
-                new AutofillSelectionMenuItemHelper(mContext, mAutofillProvider));
+        SelectionPopupController.fromWebContents(mWebContents)
+                .setNonSelectionAdditionalMenuItemProvider(
+                        new AutofillSelectionMenuItemProvider(mContext, mAutofillProvider));
         AwContentsJni.get().initializeAndroidAutofill(mNativeAwContents);
     }
 
@@ -1601,9 +1596,7 @@ public class AwContents implements SmartClipProvider {
         awViewMethodsImpl.onWindowFocusChanged(mContainerView.hasWindowFocus());
         awViewMethodsImpl.onFocusChanged(mContainerView.hasFocus(), 0, null);
         ViewUtils.requestLayout(mContainerView, "AwContents.onContainerViewChanged");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (mAutofillProvider != null) mAutofillProvider.onContainerViewChanged(mContainerView);
-        }
+        if (mAutofillProvider != null) mAutofillProvider.onContainerViewChanged(mContainerView);
         mDisplayModeController.setCurrentContainerView(mContainerView);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             if (mDisplayCutoutController != null) {
@@ -1785,23 +1778,8 @@ public class AwContents implements SmartClipProvider {
      * ^^^^^^^^^  See the native class declaration for more details on relative object lifetimes.
      */
     private void setNewAwContents(long newAwContentsPtr) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            setNewAwContentsPreO(newAwContentsPtr);
-        } else {
-            // Move the TextClassifier to the new WebContents.
-            TextClassifier textClassifier = mWebContents != null ? getTextClassifier() : null;
-            setNewAwContentsPreO(newAwContentsPtr);
-            if (textClassifier != null) setTextClassifier(textClassifier);
-        }
-        if (mOnscreenContentProvider != null) {
-            mOnscreenContentProvider.onWebContentsChanged(mWebContents);
-        }
-
-        mStylusWritingController.onWebContentsChanged(mWebContents);
-    }
-
-    // Helper for setNewAwContents containing everything which applies to pre-O.
-    private void setNewAwContentsPreO(long newAwContentsPtr) {
+        // Move the TextClassifier to the new WebContents.
+        TextClassifier textClassifier = mWebContents != null ? getTextClassifier() : null;
         if (mNativeAwContents != 0) {
             destroyNatives();
             mWebContents = null;
@@ -1826,15 +1804,12 @@ public class AwContents implements SmartClipProvider {
         mViewAndroidDelegate =
                 new AwViewAndroidDelegate(mContainerView, mContentsClient, mScrollOffsetManager);
         mWebContentsInternalsHolder = new WebContentsInternalsHolder(this);
-        AwSelectionActionMenuDelegate selectionActionMenuDelegate =
-                new AwSelectionActionMenuDelegate();
         initWebContents(
                 mViewAndroidDelegate,
                 mInternalAccessAdapter,
                 mWebContents,
                 mWindowAndroid.getWindowAndroid(),
-                mWebContentsInternalsHolder,
-                selectionActionMenuDelegate);
+                mWebContentsInternalsHolder);
         AwContentsJni.get()
                 .setJavaPeers(
                         mNativeAwContents,
@@ -1850,7 +1825,7 @@ public class AwContents implements SmartClipProvider {
         installWebContentsObservers();
         mSettings.setWebContents(mWebContents);
         mAwDarkMode.setWebContents(mWebContents);
-        initializeAutofillProviderIfNecessary(selectionActionMenuDelegate);
+        initializeAutofillProviderIfNecessary();
 
         mDisplayObserver.onDIPScaleChanged(getDeviceScaleFactor());
 
@@ -1861,6 +1836,12 @@ public class AwContents implements SmartClipProvider {
         mCleanupReference =
                 new CleanupReference(
                         this, new AwContentsDestroyRunnable(mNativeAwContents, mWindowAndroid));
+        if (textClassifier != null) setTextClassifier(textClassifier);
+        if (mOnscreenContentProvider != null) {
+            mOnscreenContentProvider.onWebContentsChanged(mWebContents);
+        }
+
+        mStylusWritingController.onWebContentsChanged(mWebContents);
     }
 
     private void installWebContentsObservers() {
@@ -2032,11 +2013,9 @@ public class AwContents implements SmartClipProvider {
             mOnscreenContentProvider = null;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (mAutofillProvider != null) {
-                mAutofillProvider.destroy();
-                mAutofillProvider = null;
-            }
+        if (mAutofillProvider != null) {
+            mAutofillProvider.destroy();
+            mAutofillProvider = null;
         }
 
         if (mAwDarkMode != null) {
@@ -3381,7 +3360,6 @@ public class AwContents implements SmartClipProvider {
 
     public void onProvideAutoFillVirtualStructure(ViewStructure structure, int flags) {
         if (TRACE) Log.i(TAG, "%s onProvideAutoFillVirtualStructure", this);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         if (mAutofillProvider != null) {
             mAutofillProvider.onProvideAutoFillVirtualStructure(structure, flags);
         }
@@ -3389,7 +3367,6 @@ public class AwContents implements SmartClipProvider {
 
     public void autofill(final SparseArray<AutofillValue> values) {
         if (TRACE) Log.i(TAG, "%s autofill", this);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         if (mAutofillProvider != null) {
             mAutofillProvider.autofill(values);
         }
@@ -3778,10 +3755,8 @@ public class AwContents implements SmartClipProvider {
         if (mAwAutofillClient != null) {
             mAwAutofillClient.hideAutofillPopup();
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (mAutofillProvider != null) {
-                mAutofillProvider.hideDatalistPopup();
-            }
+        if (mAutofillProvider != null) {
+            mAutofillProvider.hideDatalistPopup();
         }
     }
 
@@ -3817,7 +3792,8 @@ public class AwContents implements SmartClipProvider {
         if (TRACE) Log.i(TAG, "%s insertVisualStateCallback", this);
         if (isDestroyed(NO_WARN)) {
             throw new IllegalStateException(
-                    "insertVisualStateCallback cannot be called after the WebView has been destroyed");
+                    "insertVisualStateCallback cannot be called after the WebView has been"
+                            + " destroyed");
         }
         if (callback == null) {
             throw new IllegalArgumentException("VisualStateCallback shouldn't be null");
@@ -4470,20 +4446,6 @@ public class AwContents implements SmartClipProvider {
                 }
             }
 
-            // Workaround for bug in libhwui on N that does not swap if inserting functor is the
-            // only operation in a canvas. See crbug.com/704212.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                if (mPaintForNWorkaround == null) {
-                    mPaintForNWorkaround = new Paint();
-                    // Note a completely transparent color will get optimized out. So draw almost
-                    // transparent black, but then scale alpha down to effectively 0.
-                    mPaintForNWorkaround.setColor(Color.argb(1, 0, 0, 0));
-                    ColorMatrix colorMatrix = new ColorMatrix();
-                    colorMatrix.setScale(0.f, 0.f, 0.f, 0.1f);
-                    mPaintForNWorkaround.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
-                }
-                canvas.drawRect(0, 0, 1, 1, mPaintForNWorkaround);
-            }
             boolean did_draw =
                     AwContentsJni.get()
                             .onDraw(

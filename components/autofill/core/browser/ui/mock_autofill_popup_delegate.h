@@ -24,14 +24,12 @@ class MockAutofillPopupDelegate : public AutofillPopupDelegate {
   MOCK_METHOD(void, OnPopupHidden, (), (override));
   MOCK_METHOD(void,
               DidSelectSuggestion,
-              (const Suggestion& suggestion,
-               AutofillSuggestionTriggerSource trigger_source),
+              (const Suggestion& suggestion),
               (override));
   MOCK_METHOD(void,
               DidAcceptSuggestion,
               (const Suggestion& suggestion,
-               const AutofillPopupDelegate::SuggestionPosition& position,
-               AutofillSuggestionTriggerSource trigger_source),
+               const AutofillPopupDelegate::SuggestionPosition& position),
               (override));
   MOCK_METHOD(void,
               DidPerformButtonActionForSuggestion,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_view_controller+Testing.h"
 
 #import <optional>
 
@@ -27,7 +28,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_mediator_items_provider.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_view_controller+private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_view_controller+subclassing.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
@@ -199,8 +199,6 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   // If this stays as the default `YES`, then cells aren't highlighted
   // immediately on touch, but after a short delay.
   collectionView.delaysContentTouches = NO;
-  collectionView.alwaysBounceVertical =
-      base::FeatureList::IsEnabled(kTabGridAlwaysBounce);
 
   [self createRegistrations];
 
@@ -222,9 +220,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
       };
   collectionView.dataSource = self.diffableDataSource;
 
-  GridSnapshot* snapshot = [[GridSnapshot alloc] init];
-  [snapshot appendSectionsWithIdentifiers:@[ kGridOpenTabsSectionIdentifier ]];
-  [self.diffableDataSource applySnapshotUsingReloadData:snapshot];
+  [self reloadDataSource];
 
   // UICollectionViewDropPlaceholder uses a GridCell and needs the class to be
   // registered.
@@ -522,6 +518,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   } else {
     ObjCCastStrict<LegacyGridLayout>(self.gridLayout).animatesItemUpdates = YES;
   }
+  [self reloadDataSource];
   // Selection is invalid if there are no items.
   if ([self shouldShowEmptyState]) {
     [self animateEmptyStateIn];
@@ -556,6 +553,30 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
 }
 
 #pragma mark - UICollectionView Diffable Data Source Helpers
+
+- (void)reloadDataSource {
+  GridSnapshot* snapshot = [[GridSnapshot alloc] init];
+
+  // Open Tabs section.
+  [snapshot appendSectionsWithIdentifiers:@[ kGridOpenTabsSectionIdentifier ]];
+  NSMutableArray<GridItemIdentifier*>* itemIdentifiers =
+      [NSMutableArray arrayWithCapacity:self.items.count];
+  for (TabSwitcherItem* item in self.items) {
+    [itemIdentifiers addObject:[GridItemIdentifier tabIdentifier:item]];
+  }
+  [snapshot appendItemsWithIdentifiers:itemIdentifiers];
+
+  // Optional Suggested Actions section.
+  if (self.showingSuggestedActions) {
+    [snapshot
+        appendSectionsWithIdentifiers:@[ kSuggestedActionsSectionIdentifier ]];
+    GridItemIdentifier* itemIdentifier =
+        [GridItemIdentifier suggestedActionsIdentifier];
+    [snapshot appendItemsWithIdentifiers:@[ itemIdentifier ]];
+  }
+
+  [self.diffableDataSource applySnapshotUsingReloadData:snapshot];
+}
 
 // Configures the grid header for the given section.
 - (void)configureGridHeader:(GridHeader*)gridHeader
@@ -1038,35 +1059,13 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
 
 - (void)populateItems:(NSArray<TabSwitcherItem*>*)items
        selectedItemID:(web::WebStateID)selectedItemID {
-  CHECK(!HasDuplicateIdentifiers(items));
-  // Call self.view to ensure that the collection view is created.
-  [self view];
-  CHECK(self.diffableDataSource);
+  // Note: Keep as a DCHECK, as this can be costly.
+  DCHECK(!HasDuplicateIdentifiers(items));
 
   self.items = [items mutableCopy];
   self.selectedItemID = selectedItemID;
 
-  GridSnapshot* snapshot = [[GridSnapshot alloc] init];
-
-  // Open Tabs section.
-  [snapshot appendSectionsWithIdentifiers:@[ kGridOpenTabsSectionIdentifier ]];
-  NSMutableArray<GridItemIdentifier*>* itemIdentifiers =
-      [NSMutableArray arrayWithCapacity:items.count];
-  for (TabSwitcherItem* item in items) {
-    [itemIdentifiers addObject:[GridItemIdentifier tabIdentifier:item]];
-  }
-  [snapshot appendItemsWithIdentifiers:itemIdentifiers];
-
-  // Optional Suggested Actions section.
-  if (self.showingSuggestedActions) {
-    [snapshot
-        appendSectionsWithIdentifiers:@[ kSuggestedActionsSectionIdentifier ]];
-    GridItemIdentifier* itemIdentifier =
-        [GridItemIdentifier suggestedActionsIdentifier];
-    [snapshot appendItemsWithIdentifiers:@[ itemIdentifier ]];
-  }
-
-  [self.diffableDataSource applySnapshotUsingReloadData:snapshot];
+  [self reloadDataSource];
 
   [self updateSelectedCollectionViewItemRingAndBringIntoView:YES];
 
@@ -1076,8 +1075,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
     [self removeEmptyStateAnimated:YES];
   }
   // Whether the view is visible or not, the delegate must be updated.
-  [self.delegate gridViewController:self
-                 didChangeItemCount:self.items.count];
+  [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   if (_mode == TabGridModeSearch) {
     if (_searchText.length) {
       [self updateSearchResultsHeader];
@@ -1155,8 +1153,8 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   }
   // Consistency check: `newItem`'s ID is either `existingItemID` or not in
   // `self.items`.
-  CHECK(newItem.identifier == existingItemID ||
-        [self indexOfItemWithID:newItem.identifier] == NSNotFound);
+  DCHECK(newItem.identifier == existingItemID ||
+         [self indexOfItemWithID:newItem.identifier] == NSNotFound);
   TabSwitcherItem* existingItem = self.items[index];
   self.items[index] = newItem;
 
@@ -1313,8 +1311,8 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
                                         (web::WebStateID)selectedItemID
                                           snapshot:(GridSnapshot*)snapshot {
   // Consistency check: `item`'s ID is not in `items`.
-  // (using DCHECK rather than DCHECK_EQ to avoid a checked_cast on NSNotFound).
-  DCHECK([self indexOfItemWithID:item.identifier] == NSNotFound);
+  DCHECK_EQ(static_cast<NSInteger>([self indexOfItemWithID:item.identifier]),
+            NSNotFound);
 
   // Store the identifier of the current item at the given index, if any, prior
   // to model updates.
@@ -1591,6 +1589,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
 // Returns the index in `self.items` of the first item whose identifier is
 // `identifier`.
 - (NSUInteger)indexOfItemWithID:(web::WebStateID)identifier {
+  DUMP_WILL_BE_CHECK(self.items);
   auto selectedTest =
       ^BOOL(TabSwitcherItem* item, NSUInteger index, BOOL* stop) {
         return item.identifier == identifier;

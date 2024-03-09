@@ -89,7 +89,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2024-03-03">
+    enum="WebSchedulerTrackedFeature" expires_after="2024-06-02">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -568,27 +568,6 @@ chromium-metrics-reviews@google.com.
     Measures the amount of time it takes to call
     RenderFrameHostImpl::DidCommitSameDocumentNavigation(). Logged once per call
     to RenderFrameHostImpl::DidCommitSameDocumentNavigation().
-  </summary>
-</histogram>
-
-<histogram name="Navigation.DownloadPolicy.LogArbitraryPolicyPerDownload"
-    enum="NavigationDownloadPolicy" expires_after="2020-11-01">
-  <owner>csharrison@chromium.org</owner>
-  <owner>yaoxia@chromium.org</owner>
-  <summary>
-    When a navigation results in a download, logs the download policy applied to
-    that navigation. This is logged once per download and when multiple policies
-    exist, an arbitrary one will be chosen.
-  </summary>
-</histogram>
-
-<histogram name="Navigation.DownloadPolicy.LogPerPolicyApplied"
-    enum="NavigationDownloadPolicy" expires_after="2020-11-01">
-  <owner>csharrison@chromium.org</owner>
-  <owner>yaoxia@chromium.org</owner>
-  <summary>
-    When a navigation results in a download, for each download policy applied to
-    that navigation, logs the policy.
   </summary>
 </histogram>
 
@@ -1666,7 +1645,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Prerender.Experimental.ActivationIPCDelay" units="ms"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>

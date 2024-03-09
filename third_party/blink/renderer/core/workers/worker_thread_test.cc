@@ -296,15 +296,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart) {
               ExitCode::kSyncForciblyTerminated == exit_code);
 }
 
-// TODO(crbug.com/1503519): The test is flaky on Linux TSan
-#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_AsyncTerminate_WhileTaskIsRunning \
-  DISABLED_AsyncTerminate_WhileTaskIsRunning
-#else
-#define MAYBE_AsyncTerminate_WhileTaskIsRunning \
-  AsyncTerminate_WhileTaskIsRunning
-#endif
-TEST_F(WorkerThreadTest, MAYBE_AsyncTerminate_WhileTaskIsRunning) {
+TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning) {
   constexpr base::TimeDelta kDelay = base::Milliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
@@ -506,15 +498,7 @@ TEST_F(WorkerThreadTest, DISABLED_TerminateWorkerWhileChildIsLoading) {
 }
 
 // Tests terminating a worker when debugger is paused.
-// TODO(crbug.com/1503316): The test is flaky on Linux TSan
-#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_TerminateWhileWorkerPausedByDebugger \
-  DISABLED_TerminateWhileWorkerPausedByDebugger
-#else
-#define MAYBE_TerminateWhileWorkerPausedByDebugger \
-  TerminateWhileWorkerPausedByDebugger
-#endif
-TEST_F(WorkerThreadTest, MAYBE_TerminateWhileWorkerPausedByDebugger) {
+TEST_F(WorkerThreadTest, TerminateWhileWorkerPausedByDebugger) {
   constexpr base::TimeDelta kDelay = base::Milliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
@@ -535,13 +519,7 @@ TEST_F(WorkerThreadTest, MAYBE_TerminateWhileWorkerPausedByDebugger) {
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }
 
-// TODO(crbug.com/1503287): The test is flaky on Linux TSan
-#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_TerminateFrozenScript DISABLED_TerminateFrozenScript
-#else
-#define MAYBE_TerminateFrozenScript TerminateFrozenScript
-#endif
-TEST_F(WorkerThreadTest, MAYBE_TerminateFrozenScript) {
+TEST_F(WorkerThreadTest, TerminateFrozenScript) {
   constexpr base::TimeDelta kDelay = base::Milliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
@@ -569,7 +547,13 @@ TEST_F(WorkerThreadTest, MAYBE_TerminateFrozenScript) {
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }
 
-TEST_F(WorkerThreadTest, NestedPauseFreeze) {
+// TODO(crbug.com/1508694): The test is flaky on Linux TSan
+#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_NestedPauseFreeze DISABLED_NestedPauseFreeze
+#else
+#define MAYBE_NestedPauseFreeze NestedPauseFreeze
+#endif
+TEST_F(WorkerThreadTest, MAYBE_NestedPauseFreeze) {
   constexpr base::TimeDelta kDelay = base::Milliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
@@ -608,7 +592,14 @@ TEST_F(WorkerThreadTest, NestedPauseFreeze) {
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }
 
-TEST_F(WorkerThreadTest, NestedPauseFreezeNoInterrupts) {
+// TODO(crbug.com/1508694): The test is flaky on Linux TSan
+#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_NestedPauseFreezeNoInterrupts \
+  DISABLED_NestedPauseFreezeNoInterrupts
+#else
+#define MAYBE_NestedPauseFreezeNoInterrupts NestedPauseFreezeNoInterrupts
+#endif
+TEST_F(WorkerThreadTest, MAYBE_NestedPauseFreezeNoInterrupts) {
   constexpr base::TimeDelta kDelay = base::Milliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 

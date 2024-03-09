@@ -93,9 +93,9 @@ bool ShouldShowAvatar() {
 
 // The avatar button shows in the quick setting bubble.
 class UserAvatarButton : public views::Button {
-  METADATA_HEADER(UserAvatarButton, views::Button)
-
  public:
+  METADATA_HEADER(UserAvatarButton);
+
   explicit UserAvatarButton(PressedCallback callback)
       : views::Button(std::move(callback)) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -114,7 +114,7 @@ class UserAvatarButton : public views::Button {
   ~UserAvatarButton() override = default;
 };
 
-BEGIN_METADATA(UserAvatarButton)
+BEGIN_METADATA(UserAvatarButton, views::Button)
 END_METADATA
 
 }  // namespace
@@ -212,7 +212,7 @@ void QsBatteryInfoViewBase::ConfigureIcon(bool bsm_active) {
                     info, kUnifiedTrayBatteryIconSize, GetColorProvider())));
 }
 
-BEGIN_METADATA(QsBatteryInfoViewBase)
+BEGIN_METADATA(QsBatteryInfoViewBase, PillButton)
 END_METADATA
 
 QsBatteryLabelView::QsBatteryLabelView(UnifiedSystemTrayController* controller)
@@ -238,7 +238,7 @@ void QsBatteryLabelView::Update() {
   }
 }
 
-BEGIN_METADATA(QsBatteryLabelView)
+BEGIN_METADATA(QsBatteryLabelView, QsBatteryInfoViewBase)
 END_METADATA
 
 QsBatteryIconView::QsBatteryIconView(UnifiedSystemTrayController* controller)
@@ -254,7 +254,7 @@ void QsBatteryIconView::Update() {
   UpdateIconAndText(PowerStatus::Get()->IsBatterySaverActive());
 }
 
-BEGIN_METADATA(QsBatteryIconView)
+BEGIN_METADATA(QsBatteryIconView, QsBatteryIconView)
 END_METADATA
 
 QuickSettingsFooter::QuickSettingsFooter(
@@ -389,7 +389,7 @@ views::View* QuickSettingsFooter::CreateEndContainer() {
   return end_container;
 }
 
-BEGIN_METADATA(QuickSettingsFooter)
+BEGIN_METADATA(QuickSettingsFooter, views::View)
 END_METADATA
 
 }  // namespace ash

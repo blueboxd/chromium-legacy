@@ -271,7 +271,7 @@ TEST_F(ModelExecutionFetcherTest, TestRequestCanceled) {
       "OptimizationGuide.ModelExecutionFetcher.RequestStatus."
       "WallpaperSearch",
       FetcherRequestStatus::kRequestCanceled, 1);
-  EXPECT_EQ(ModelExecutionError::kCancelled,
+  EXPECT_EQ(ModelExecutionError::kGenericFailure,
             last_execute_response_->error().error());
 }
 

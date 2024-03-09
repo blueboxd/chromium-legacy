@@ -438,9 +438,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         ViewStub minimizeButtonStub = findViewById(R.id.minimize_button_stub);
         minimizeButtonStub.inflate();
         var minimizeButton = (ImageButton) findViewById(R.id.custom_tabs_minimize_button);
-        var d =
-                UiUtils.getTintedDrawable(
-                        getContext(), MinimizedFeatureUtils.getMinimizeIcon(), mTint);
+        var d = UiUtils.getTintedDrawable(getContext(), R.drawable.ic_minimize, mTint);
         minimizeButton.setTag(R.id.custom_tabs_toolbar_tintable, true);
         minimizeButton.setImageDrawable(d);
         updateButtonTint(minimizeButton);
@@ -460,20 +458,19 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             return;
         }
 
-        // Find the title/url width threshold that turns the minimize button visible.
+        // Find the title/url width threshold that turns the maximize button visible.
         int containerWidthPx = mLocationBar.mTitleUrlContainer.getWidth();
         int minUrlWidthPx =
                 getResources().getDimensionPixelSize(R.dimen.location_bar_min_url_width);
         if (containerWidthPx == 0) return;
         if (containerWidthPx < minUrlWidthPx) {
-            // We expect to see at least as much URL text as the width of the minimize button.
+            // We expect to see at least as much URL text as the width of the maximize button.
             // Hide the button if we can't.
             mMinimizeButton.setVisibility(View.GONE);
         } else {
             mMinimizeButton.setVisibility(View.VISIBLE);
             mLocationBar.removeButtonsVisibilityUpdater();
         }
-        updateToolbarLayoutMargin();
     }
 
     private boolean isInMultiWindowMode() {
@@ -1392,6 +1389,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             if (mSecurityButton.getVisibility() == View.GONE) {
                 leftMargin -= mSecurityButton.getMeasuredWidth();
             }
+
             lp.leftMargin = leftMargin;
             mTitleUrlContainer.setLayoutParams(lp);
         }

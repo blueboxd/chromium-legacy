@@ -85,13 +85,11 @@ class WebStatePolicyDecider : public base::CheckedObserver {
     RequestInfo(ui::PageTransition transition_type,
                 bool target_frame_is_main,
                 bool target_frame_is_cross_origin,
-                bool is_user_initiated,
-                bool user_tapped_recently)
+                bool has_user_gesture)
         : transition_type(transition_type),
           target_frame_is_main(target_frame_is_main),
           target_frame_is_cross_origin(target_frame_is_cross_origin),
-          is_user_initiated(is_user_initiated),
-          user_tapped_recently(user_tapped_recently) {}
+          has_user_gesture(has_user_gesture) {}
     // The navigation page transition type.
     ui::PageTransition transition_type =
         ui::PageTransition::PAGE_TRANSITION_FIRST;
@@ -100,12 +98,8 @@ class WebStatePolicyDecider : public base::CheckedObserver {
     // Indicates whether the navigation target frame is cross-origin with
     // respect to the the navigation source frame.
     bool target_frame_is_cross_origin = false;
-    // Indicates if the request is user initiated (to the best of our
-    // knowledge).
-    bool is_user_initiated = false;
-    // Indicates if there was a recent user interaction with the web view (not
-    // necessarily on the page).
-    bool user_tapped_recently = false;
+    // Indicates if there was a recent user interaction with the request frame.
+    bool has_user_gesture = false;
   };
 
   // Data Transfer Object for the additional information about response

@@ -62,11 +62,6 @@ ci.gpu.linux_builder(
         ),
         build_gs_bucket = "chromium-angle-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Android|Builder|Chromium",
-        short_name = "arm64",
-    ),
-    contact_team_email = "angle-team@google.com",
     gn_args = gn_args.config(
         configs = [
             "gpu_tests",
@@ -79,6 +74,11 @@ ci.gpu.linux_builder(
             "android_fastbuild",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Android|Builder|Chromium",
+        short_name = "arm64",
+    ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.thin_tester(
@@ -132,11 +132,6 @@ ci.gpu.linux_builder(
         ),
         build_gs_bucket = "chromium-angle-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Fuchsia|Builder|ANGLE",
-        short_name = "x64",
-    ),
-    contact_team_email = "angle-team@google.com",
     gn_args = gn_args.config(
         configs = [
             "angle_deqp_tests",
@@ -148,6 +143,11 @@ ci.gpu.linux_builder(
             "fuchsia",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Fuchsia|Builder|ANGLE",
+        short_name = "x64",
+    ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.gpu.linux_builder(
@@ -170,11 +170,6 @@ ci.gpu.linux_builder(
         ),
         build_gs_bucket = "chromium-angle-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|Builder|Chromium",
-        short_name = "x64",
-    ),
-    contact_team_email = "angle-team@google.com",
     gn_args = gn_args.config(
         configs = [
             "gpu_tests",
@@ -182,9 +177,13 @@ ci.gpu.linux_builder(
             "reclient",
             "minimal_symbols",
             "dcheck_always_on",
-            "use_dummy_lastchange",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Linux|Builder|Chromium",
+        short_name = "x64",
+    ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.thin_tester(
@@ -268,11 +267,6 @@ ci.gpu.mac_builder(
         ),
         build_gs_bucket = "chromium-angle-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Builder|Chromium",
-        short_name = "x64",
-    ),
-    contact_team_email = "angle-team@google.com",
     gn_args = gn_args.config(
         configs = [
             "gpu_tests",
@@ -280,10 +274,14 @@ ci.gpu.mac_builder(
             "reclient",
             "minimal_symbols",
             "dcheck_always_on",
-            "use_dummy_lastchange",
             "x64",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Mac|Builder|Chromium",
+        short_name = "x64",
+    ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.thin_tester(
@@ -370,11 +368,6 @@ ci.gpu.mac_builder(
         ),
         build_gs_bucket = "chromium-angle-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "iOS|Builder|ANGLE",
-        short_name = "x64",
-    ),
-    contact_team_email = "angle-team@google.com",
     gn_args = gn_args.config(
         configs = [
             "angle_deqp_tests",
@@ -382,12 +375,16 @@ ci.gpu.mac_builder(
             "reclient",
             "minimal_symbols",
             "dcheck_always_on",
-            "use_dummy_lastchange",
             "ios_simulator",
             "x64",
             "xctest",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "iOS|Builder|ANGLE",
+        short_name = "x64",
+    ),
+    contact_team_email = "angle-team@google.com",
     xcode = xcode.x14main,
 )
 
@@ -443,11 +440,6 @@ ci.gpu.windows_builder(
         ),
         build_gs_bucket = "chromium-angle-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|Chromium",
-        short_name = "x64",
-    ),
-    contact_team_email = "angle-team@google.com",
     gn_args = gn_args.config(
         configs = [
             "gpu_tests",
@@ -455,9 +447,13 @@ ci.gpu.windows_builder(
             "reclient",
             "minimal_symbols",
             "dcheck_always_on",
-            "use_dummy_lastchange",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Windows|Builder|Chromium",
+        short_name = "x64",
+    ),
+    contact_team_email = "angle-team@google.com",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )
 
@@ -541,11 +537,6 @@ ci.gpu.windows_builder(
         ),
         build_gs_bucket = "chromium-angle-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|Chromium",
-        short_name = "x86",
-    ),
-    contact_team_email = "angle-team@google.com",
     gn_args = gn_args.config(
         configs = [
             "gpu_tests",
@@ -553,9 +544,13 @@ ci.gpu.windows_builder(
             "reclient",
             "minimal_symbols",
             "dcheck_always_on",
-            "use_dummy_lastchange",
             "x86",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Windows|Builder|Chromium",
+        short_name = "x86",
+    ),
+    contact_team_email = "angle-team@google.com",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )

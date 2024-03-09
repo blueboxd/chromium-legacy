@@ -32,6 +32,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/notreached.h"
 #include "cc/input/scroll_snap_data.h"
+#include "cc/input/snap_selection_strategy.h"
 #include "cc/paint/element_id.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
@@ -62,6 +63,10 @@ class AnimationHost;
 class AnimationTimeline;
 class Layer;
 }  // namespace cc
+
+namespace ui {
+class ColorProvider;
+}  // namespace ui
 
 namespace blink {
 class ChromeClient;
@@ -242,6 +247,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return static_cast<ScrollbarOverlayColorTheme>(
         scrollbar_overlay_color_theme_);
   }
+
+  // Returns the color provider for this scrollbar.
+  const ui::ColorProvider* GetColorProvider(mojom::blink::ColorScheme) const;
 
   // This getter will create a MacScrollAnimator if it doesn't already exist,
   // only on MacOS.
@@ -590,6 +598,12 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
       absl::optional<cc::SnappedTargetData>) {}
   virtual void UpdateSnapChangingTargetsAndEnqueueSnapChanging(
       const gfx::PointF&) {}
+  virtual const cc::SnapSelectionStrategy* GetImplSnapStrategy() const {
+    return nullptr;
+  }
+  virtual void SetImplSnapStrategy(std::unique_ptr<cc::SnapSelectionStrategy>) {
+  }
+  virtual void EnqueueSnapChangingEventFromImplIfNeeded() {}
 
  protected:
   // Deduces the mojom::blink::ScrollBehavior based on the

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -20,7 +21,6 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 class Profile;
@@ -115,10 +115,12 @@ class AutofillPopupControllerImpl
 
   // AutofillPopupController:
   void OnSuggestionsChanged() override;
-  void SelectSuggestion(absl::optional<size_t> index) override;
+  void SelectSuggestion(std::optional<size_t> index) override;
   void AcceptSuggestion(int index, base::TimeTicks event_time) override;
   void PerformButtonActionForSuggestion(int index) override;
-  bool RemoveSuggestion(int list_index) override;
+  bool RemoveSuggestion(
+      int list_index,
+      AutofillMetrics::SingleEntryRemovalMethod removal_method) override;
   int GetLineCount() const override;
   std::vector<Suggestion> GetSuggestions() const override;
   const Suggestion& GetSuggestionAt(int row) const override;
@@ -130,8 +132,6 @@ class AutofillPopupControllerImpl
                                   std::u16string* title,
                                   std::u16string* body) override;
   PopupType GetPopupType() const override;
-  AutofillSuggestionTriggerSource GetAutofillSuggestionTriggerSource()
-      const override;
   bool ShouldIgnoreMouseObservedOutsideItemBoundsCheck() const override;
   base::WeakPtr<AutofillPopupController> OpenSubPopup(
       const gfx::RectF& anchor_bounds,
@@ -170,8 +170,7 @@ class AutofillPopupControllerImpl
           Profile*,
           password_manager::metrics_util::PasswordMigrationWarningTriggers)>
           show_pwd_migration_warning_callback,
-      absl::optional<base::WeakPtr<ExpandablePopupParentControllerImpl>>
-          parent);
+      std::optional<base::WeakPtr<ExpandablePopupParentControllerImpl>> parent);
   ~AutofillPopupControllerImpl() override;
 
   gfx::NativeView container_view() const override;
@@ -281,7 +280,7 @@ class AutofillPopupControllerImpl
 
   // Parent's popup controller. The root popup doesn't have a parent, but in
   // sub-popups it must be present.
-  const absl::optional<base::WeakPtr<ExpandablePopupParentControllerImpl>>
+  const std::optional<base::WeakPtr<ExpandablePopupParentControllerImpl>>
       parent_controller_;
 
   // The open sub-popup controller if any, `nullptr` otherwise.

@@ -87,7 +87,6 @@
 <translation id="11635448457105324">ठेगानाहरू व्यवस्थापन गर्ने बटन, Chrome का सेटिङमा गई ठेगानाहरू हाल्न तथा व्यवस्थापन गर्न यो बटन थिच्नुहोस्</translation>
 <translation id="1165039591588034296">त्रुटि</translation>
 <translation id="1165174597379888365">पृष्ठ खोलिएको छ</translation>
-<translation id="1165813024716836071">{COUNT,plural, =0{कुनै पनि साइटले कुकी प्रयोग गर्दैन}=1{एउटा साइटबाट (तपाईं आफ्नो Google खातामा साइन इन अवस्थामा रहिरहनु हुने छ)}other{# वटा साइटबाट (तपाईं आफ्नो Google खातामा साइन इन अवस्थामा रहिरहनु हुने छ)}}</translation>
 <translation id="1165852471352757509">टिभी वृत्तचित्र तथा गैरआख्यान</translation>
 <translation id="1174644974616730562">Envelope Chinese #1</translation>
 <translation id="1174723505405632867">तपाईं <ph name="EMBEDDED_URL" /> लाई <ph name="TOP_LEVEL_URL" /> का कुकी र साइटको डेटा प्रयोग गर्ने अनुमति दिन चाहनुहुन्छ?
@@ -117,7 +116,6 @@
 <translation id="1206967143813997005">प्रारम्भिक हस्ताक्षर त्रुटिपूर्ण छ</translation>
 <translation id="1209206284964581585">अहिलेका लागि लुकाउनुहोस्</translation>
 <translation id="121201262018556460">तपाईंले <ph name="DOMAIN" /> मा पुग्ने प्रयत्न गर्नुभयो, तर सर्भरले एउटा कमजोर कुञ्जी भएको प्रमाणपत्र प्रस्तुत गर्‍यो। कुनै आक्रमणकारीले निजी कुञ्जीलाई तोडेको हुन सक्छ, र त्यो सर्भर तपाईंले अपेक्षा गर्नुभएको सर्भर नहुन सक्छ (तपाईं एउटा आक्रमणकारीसँग सञ्चारण गरिरहनुभएको हुन सक्छ)।</translation>
-<translation id="1212527389003717329">डाउनलोड सुरु भयो। डाउनलोडको स्थिति हेर्न |<ph name="ACCELERATOR" />| थिचिराख्नुहोस्।</translation>
 <translation id="1219129156119358924">प्रणाली सुरक्षा</translation>
 <translation id="1222060260947439312">दायाँ ट्रे</translation>
 <translation id="1224330468394120478">A3x6</translation>
@@ -258,7 +256,6 @@
 <translation id="1455413310270022028">मेट्ने साधन</translation>
 <translation id="1458140305240870199">भित्री वस्त्रहरू</translation>
 <translation id="1459693405370120464">मौसम</translation>
-<translation id="1461041542809785877">प्रदर्शन</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1462951478840426066">आफ्नो कम्प्युटरमा भएका फन्टहरू प्रयोग गर्नुहोस्। यसो गर्दा तपाईं उच्च गुणस्तरका सामग्री बनाउन सक्नुहुन्छ</translation>
 <translation id="1467432559032391204">बाँया</translation>
@@ -289,7 +286,6 @@
 <translation id="1521655867290435174">Google पाना</translation>
 <translation id="1524669537550112617">फर्निचर भाडामा लिने सेवा</translation>
 <translation id="1527263332363067270">जडानको लागि प्रतिक्षा गर्दै...</translation>
-<translation id="1528311629279578926">तपाईंको निजी नेटवर्कमा भएका डिभाइस वा सर्भरहरूमा सार्वजनिक पेजमार्फत कनेक्ट गर्ने प्रयास गरिएको हुनाले कनेक्सन ब्लक गरिएको छ। कनेक्ट गर्ने अनुमति दिन यो पेज रिलोड गर्नुहोस्।</translation>
 <translation id="1529789484829130889">ट्रे ८</translation>
 <translation id="1530707389502320859">तपाईंले भर्खरै भ्रमण गर्न खोज्नुभएको साइट नक्कली हो जस्तो छ। आक्रमणकारीहरूले कहिलेकाहीँ URL मा ससाना, स्पष्ट नदेखिने परिवर्तनहरू गरी नक्कली साइट सिर्जना गर्न सक्छन्।</translation>
 <translation id="1532118530259321453">यो पृष्ठले यसो भन्छ</translation>
@@ -829,6 +825,7 @@
           <ph name="LIST_ITEM" />कुकी तथा साइट डेटा
           <ph name="LIST_ITEM" />फारामहरूमा भरिएको जानकारी
         <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">घुसाउनुहोस्</translation>
 <translation id="2625385379895617796">तपाईंको घडी धेरै छिटो छ</translation>
 <translation id="262745152991669301">USB डिभाइसमा कनेक्ट गर्ने अनुमति माग्न सक्छ</translation>
 <translation id="2629325967560697240">Chrome को सबैभन्दा उच्च स्तरको सुरक्षा सुविधा प्रयोग गर्न <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />परिष्कृत सुरक्षा<ph name="END_ENHANCED_PROTECTION_LINK" /> अन गर्नुहोस्</translation>
@@ -1161,7 +1158,6 @@
 <translation id="3325027355611702542">क्याम्पर तथा RV हरू</translation>
 <translation id="3329013043687509092">संतृप्तीकरण</translation>
 <translation id="3333762389743153920">भर्चुअल कार्डका रूपमा प्रयोग गर्न मिल्दैन</translation>
-<translation id="3336044043987989409">आफ्नो निजी नेटवर्कमा भएका डिभाइस वा सर्भरहरूमा कनेक्ट गर्ने अनुमति दिन "रिलोड गर्नुहोस्" बटन थिच्नुहोस्।</translation>
 <translation id="3338095232262050444">सुरक्षित छ</translation>
 <translation id="333839153442689579">हाई इन्टेन्सिटी इन्टरभल ट्रेनिङ</translation>
 <translation id="3339440062908617027">दौड तथा हिँड्डुल</translation>
@@ -1588,6 +1584,7 @@
 <translation id="4177501066905053472">विज्ञापनका विषयहरू</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">मूल्य ट्र्याक गर्न छाड्नुहोस्</translation>
+<translation id="4191334393248735295">लम्बाइ</translation>
 <translation id="4195459680867822611">Chrome सम्बन्धी सुझावहरू हेर्ने बटन, Chrome का सुविधाहरूका बारेमा जान्न यो बटन थिच्नुहोस्</translation>
 <translation id="4195643157523330669">नयाँ ट्याबमा खोल्नुहोस्</translation>
 <translation id="4196861286325780578">सार्ने कार्य &amp;पुन: गर्नुहोस्</translation>
@@ -2604,7 +2601,6 @@
 <translation id="6232271601416750929">स्वास्थ्य तथा वातावरणमैत्री सौन्दर्य प्रसाधन</translation>
 <translation id="6234122620015464377">हरेक कागजातपछि छाँटकाँट गर्नुहोस्</translation>
 <translation id="6236290670123303279">सेटिङहरूको व्यवस्थापन गर्नुहोस्</translation>
-<translation id="623825323736974198">सदैव सक्रिय रहने र मेमोरी खाली नगरिएका साइटहरूको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="6240447795304464094">Google Pay को लोगो</translation>
 <translation id="6241121617266208201">सुझावहरू लुकाउनुहोस्</translation>
 <translation id="624499991300733384">छाप्नका लागि अक्षर मिलाइदिने सेवा</translation>
@@ -3670,7 +3666,7 @@
 <translation id="8279611986089885641">Chrome मार्फत सूचना देखाउने सुविधा अन हुनु पर्छ। तपाईं <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /> मा गई यो सुविधा अन गर्न सक्नुहुन्छ।</translation>
 <translation id="8280630997017109758">ट्रे ११</translation>
 <translation id="8281730697546299650">विज्ञापनको गोपनीयतासम्बन्धी अन्य सुविधाहरू उपलब्ध भएका छन्</translation>
-<translation id="8281886186245836920">स्किप गर्नुहोस्</translation>
+<translation id="8281886186245836920">त्याग्नुहोस्</translation>
 <translation id="8282409409360764263">आँगन मर्मत गर्ने सेवा</translation>
 <translation id="8282947398454257691">तपाईँको अद्वितीय यन्त्र पहिचानकर्ता जान्नुहोस्</translation>
 <translation id="8284769179630993263">Chrome का सेटिङमा गई Safe Browsing सम्बन्धी सेटिङ तथा सुरक्षासम्बन्धी अन्य सेटिङ मिलाउनुहोस्</translation>

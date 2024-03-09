@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/app_service/publishers/arc_apps.h"
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 
 #include "ash/components/arc/arc_util.h"
@@ -19,7 +20,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/containers/contains.h"
-#include "base/containers/fixed_flat_set.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -44,7 +44,9 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
@@ -55,6 +57,8 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/arc/common/intent_helper/arc_intent_helper_package.h"
 #include "components/arc/intent_helper/intent_constants.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/capability_access.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
@@ -66,7 +70,6 @@
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
@@ -79,7 +82,7 @@
 
 namespace {
 
-absl::optional<int> g_test_arc_version_;
+std::optional<int> g_test_arc_version_;
 
 apps::PermissionType GetPermissionType(
     arc::mojom::AppPermission arc_permission_type) {
@@ -149,13 +152,13 @@ apps::Permissions CreatePermissions(
   return permissions;
 }
 
-absl::optional<arc::UserInteractionType> GetUserInterationType(
+std::optional<arc::UserInteractionType> GetUserInterationType(
     apps::LaunchSource launch_source) {
   auto user_interaction_type = arc::UserInteractionType::NOT_USER_INITIATED;
   switch (launch_source) {
     // kUnknown is not set anywhere, this case is not valid.
     case apps::LaunchSource::kUnknown:
-      return absl::nullopt;
+      return std::nullopt;
     case apps::LaunchSource::kFromChromeInternal:
       user_interaction_type = arc::UserInteractionType::NOT_USER_INITIATED;
       break;
@@ -215,7 +218,7 @@ absl::optional<arc::UserInteractionType> GetUserInterationType(
       break;
     default:
       NOTREACHED();
-      return absl::nullopt;
+      return std::nullopt;
   }
   return user_interaction_type;
 }
@@ -348,14 +351,14 @@ apps::WindowInfoPtr SetSessionId(apps::WindowInfoPtr window_info) {
   return window_info;
 }
 
-absl::optional<bool> GetResizeLocked(ArcAppListPrefs* prefs,
-                                     const std::string& app_id) {
+std::optional<bool> GetResizeLocked(ArcAppListPrefs* prefs,
+                                    const std::string& app_id) {
   // Set null to resize lock state until the Mojo connection to ARC++ has been
   // established. This prevents Chrome and ARC++ from having inconsistent
   // states.
   auto* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // If we don't have the connection (e.g. for non-supported Android versions),
@@ -363,7 +366,7 @@ absl::optional<bool> GetResizeLocked(ArcAppListPrefs* prefs,
   auto* compatibility_mode =
       arc_service_manager->arc_bridge_service()->compatibility_mode();
   if (!compatibility_mode->IsConnected()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Check if |SetResizeLockState| is available to see if Android is ready to
@@ -372,7 +375,7 @@ absl::optional<bool> GetResizeLocked(ArcAppListPrefs* prefs,
   auto* instance =
       ARC_GET_INSTANCE_FOR_METHOD(compatibility_mode, SetResizeLockState);
   if (!instance) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   auto resize_lock_state = prefs->GetResizeLockState(app_id);
@@ -386,7 +389,7 @@ absl::optional<bool> GetResizeLocked(ArcAppListPrefs* prefs,
     // FULLY_LOCKED means the resize-lock-related features are not available
     // including the resizability toggle in the app management page.
     case arc::mojom::ArcResizeLockState::FULLY_LOCKED:
-      return absl::nullopt;
+      return std::nullopt;
   }
 }
 
@@ -416,22 +419,9 @@ bool AppShouldDefaultHandleLinksInApp(const std::string& app_id) {
   return app_id == arc::kPlayStoreAppId;
 }
 
-// Returns true if the package with the given |package_name| should open
-// supported links inside the browser by default, on managed devices.
-bool PackageShouldDefaultHandleLinksInBrowser(const std::string& package_name) {
-  constexpr auto allowlist = base::MakeFixedFlatSet<std::string_view>({
-      "com.google.android.apps.docs",                 // Google Drive
-      "com.google.android.apps.docs.editors.docs",    // Google Docs
-      "com.google.android.apps.docs.editors.sheets",  // Google Sheets
-      "com.google.android.apps.docs.editors.slides",  // Google Slides
-  });
-
-  return allowlist.contains(package_name);
-}
-
-// Returns true if the given `profile` is managed, and therefore should open
-// supported links inside the app by default.
-bool IsProfileManaged(Profile* profile) {
+// Returns true if the given `profile` should open supported links inside the
+// app by default.
+bool ProfileShouldDefaultHandleLinksInApp(Profile* profile) {
   // TODO(crbug.com/1454381): Remove once we have policy control over link
   // capturing behavior.
   return profile->GetProfilePolicyConnector()->IsManaged();
@@ -573,6 +563,8 @@ void ArcApps::Initialize() {
   }
   AppPublisher::Publish(std::move(apps), AppType::kArc,
                         /*should_notify_initialized=*/true);
+
+  ObserveDisabledSystemFeaturesPolicy();
 }
 
 void ArcApps::Shutdown() {
@@ -1139,7 +1131,7 @@ void ArcApps::OnTaskDestroyed(int32_t task_id) {
 }
 
 void ArcApps::OnIntentFiltersUpdated(
-    const absl::optional<std::string>& package_name) {
+    const std::optional<std::string>& package_name) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (!prefs) {
     return;
@@ -1159,7 +1151,7 @@ void ArcApps::OnIntentFiltersUpdated(
   // Note: Cannot combine the two for-loops because the return type of
   // GetAppIds() is std::vector<std::string> and the return type of
   // GetAppsForPackage() is std::unordered_set<std::string>.
-  if (package_name == absl::nullopt) {
+  if (package_name == std::nullopt) {
     for (const auto& app_id : prefs->GetAppIds()) {
       GetAppInfoAndPublish(app_id);
     }
@@ -1187,28 +1179,16 @@ void ArcApps::OnArcSupportedLinksChanged(
     }
 
     // ARC apps may handle links by default on the ARC side, but do not handle
-    // links by default on the Ash side. This means that the default setting may
-    // be different between Ash and ARC. Any user action to change the setting
-    // will make it the same between both sides.
-    //
-    // To make this work, we need to ignore request from the ARC system to
-    // update the supported links setting. We allow updates in the following
-    // cases:
+    // links by default on the Ash side. Therefore, we ignore any requests from
+    // the ARC system to change the default setting. We allow changes if they
+    // were initiated by user action, if the app already has a non-default
+    // setting on the Ash side, or if the app/profile should have an exception
+    // to the default behavior.
     bool allow_update =
-        // When the user explicitly changes the setting in Android Settings.
         source == arc::mojom::SupportedLinkChangeSource::kUserPreference ||
-        // If the app is already marked as preferred on the Ash side.
         proxy()->PreferredAppsList().IsPreferredAppForSupportedLinks(app_id) ||
-        // If the app is specifically allowed to handle links by default.
-        AppShouldDefaultHandleLinksInApp(app_id);
-
-    // Managed users are temporarily opted out of this behavior (b/280056133)
-    // and always apply updates from the ARC side, except for an allowlist of
-    // apps which handle links in the browser to improve the user experience.
-    if (IsProfileManaged(profile_) && !PackageShouldDefaultHandleLinksInBrowser(
-                                          supported_link->package_name)) {
-      allow_update = true;
-    }
+        AppShouldDefaultHandleLinksInApp(app_id) ||
+        ProfileShouldDefaultHandleLinksInApp(profile_);
 
     if (!allow_update) {
       continue;
@@ -1369,7 +1349,8 @@ AppPtr ArcApps::CreateApp(ArcAppListPrefs* prefs,
   auto install_reason = GetInstallReason(prefs, app_id, app_info);
   auto app = AppPublisher::MakeApp(
       AppType::kArc, app_id,
-      app_info.suspended ? Readiness::kDisabledByPolicy : Readiness::kReady,
+      IsAppSuspended(app_id, app_info) ? Readiness::kDisabledByPolicy
+                                       : Readiness::kReady,
       app_info.name, install_reason,
       install_reason == InstallReason::kSystem ? InstallSource::kSystem
                                                : InstallSource::kPlayStore);
@@ -1475,7 +1456,7 @@ void ArcApps::ConvertAndPublishPackageApps(
 IconEffects ArcApps::GetIconEffects(const std::string& app_id,
                                     const ArcAppListPrefs::AppInfo& app_info) {
   IconEffects icon_effects = IconEffects::kNone;
-  if (app_info.suspended) {
+  if (IsAppSuspended(app_id, app_info)) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
   }
@@ -1635,4 +1616,81 @@ void ArcApps::OnInstallationFinished(const std::string& package_name,
   }
 }
 
+void ArcApps::ObserveDisabledSystemFeaturesPolicy() {
+  PrefService* const local_state = g_browser_process->local_state();
+  if (!local_state) {  // Sometimes it's not available in tests.
+    return;
+  }
+
+  local_state_pref_change_registrar_.Init(local_state);
+  local_state_pref_change_registrar_.Add(
+      policy::policy_prefs::kSystemFeaturesDisableList,
+      base::BindRepeating(&ArcApps::OnDisableListPolicyChanged,
+                          base::Unretained(this)));
+}
+
+void ArcApps::OnDisableListPolicyChanged() {
+  PrefService* const local_state = g_browser_process->local_state();
+  if (!local_state) {
+    return;
+  }
+
+  const base::Value::List& disabled_system_features_pref =
+      local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
+  bool disable_arc_settings = false;
+  for (const auto& entry : disabled_system_features_pref) {
+    if (static_cast<policy::SystemFeature>(entry.GetInt()) ==
+        policy::SystemFeature::kOsSettings) {
+      disable_arc_settings = true;
+      break;
+    }
+  }
+
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
+  if (!arc_prefs) {
+    return;
+  }
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(arc::kSettingsAppId);
+  if (!app_info) {
+    return;
+  }
+
+  bool is_disabled = false;
+  bool found = proxy()->AppRegistryCache().ForOneApp(
+      arc::kSettingsAppId, [&is_disabled](const apps::AppUpdate& update) {
+        is_disabled = (update.Readiness() == Readiness::kDisabledByPolicy);
+      });
+  if (!found) {
+    return;
+  }
+
+  if (disable_arc_settings == is_disabled) {
+    return;
+  }
+
+  auto app = std::make_unique<App>(AppType::kArc, arc::kSettingsAppId);
+  if (disable_arc_settings) {
+    settings_app_is_disabled_ = true;
+    app->readiness = Readiness::kDisabledByPolicy;
+    app->icon_key = IconKey(/*raw_icon_updated=*/false, IconEffects::kBlocked);
+  } else {
+    settings_app_is_disabled_ = false;
+    app->readiness =
+        app_info->suspended ? Readiness::kDisabledByPolicy : Readiness::kReady;
+    app->icon_key = IconKey(GetIconEffects(arc::kSettingsAppId, *app_info));
+  }
+
+  AppPublisher::Publish(std::move(app));
+}
+
+bool ArcApps::IsAppSuspended(const std::string& app_id,
+                             const ArcAppListPrefs::AppInfo& app_info) {
+  if (app_id == arc::kSettingsAppId && settings_app_is_disabled_) {
+    return true;
+  }
+
+  return app_info.suspended;
+}
 }  // namespace apps

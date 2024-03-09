@@ -21,7 +21,7 @@
 #import "ios/chrome/browser/signin/model/system_identity.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_configuration.h"
 #import "ios/chrome/browser/ui/save_to_photos/save_to_photos_mediator_delegate.h"
-#import "ios/chrome/browser/web/image_fetch/image_fetch_tab_helper.h"
+#import "ios/chrome/browser/web/model/image_fetch/image_fetch_tab_helper.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -29,9 +29,6 @@ namespace {
 
 // Maximum length of the suggested image name passed to the Photos service.
 constexpr size_t kSuggestedImageNameMaxLength = 100;
-NSString* const kNotEnoughStorageErrorLocalizedDescription =
-    @"The remaining storage in the user's account is not enough to perform "
-    @"this operation.";
 
 NSURL* GetGooglePhotosAppURL() {
   NSURLComponents* photosAppURLComponents = [[NSURLComponents alloc] init];
@@ -69,15 +66,6 @@ NSString* const kGooglePhotosRecentlyAddedURLString =
 
 NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
 
-@interface SaveToPhotosMediator ()
-
-// Identity used to perform an upload. Should be set when the user selects an
-// identity, right before starting to upload. If the upload fails, should be
-// reset to nil.
-@property(nonatomic, strong) id<SystemIdentity> identity;
-
-@end
-
 @implementation SaveToPhotosMediator {
   PhotosService* _photosService;
   PrefService* _prefService;
@@ -85,6 +73,7 @@ NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
   signin::IdentityManager* _identityManager;
   NSString* _imageName;
   NSData* _imageData;
+  id<SystemIdentity> _identity;
   BOOL _userTappedSuccessSnackbarButton;
   base::TimeTicks _uploadStart;
   BOOL _showingAccountPicker;
@@ -319,35 +308,20 @@ NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
 
 // Called when the Photos service reports upload completion.
 - (void)photosServiceFinishedUploadWithResult:
-    (PhotosService::UploadResult)result {
+    (const PhotosService::UploadResult&)result {
   if (!result.successful) {
-    // `_identity` is used to determine whether an upload is ongoing or was
-    // successful. If the upload failed, `_identity` should be reset.
-    id<SystemIdentity> failureIdentity = _identity;
-    _identity = nil;
-    base::UmaHistogramTimes(kSaveToPhotosUploadFailureLatencyHistogram,
+    base::UmaHistogramTimes("IOS.SaveToPhotos.UploadFailureLatency",
                             base::TimeTicks::Now() - _uploadStart);
-    // TODO(crbug.com/1513891): Emit the failure type as-is once the service is
-    // able to identify out-of-storage errors by itself.
-    if (result.failure_type == PhotosServiceUploadFailureType::kUploadPhoto2 &&
-        [result.error.localizedDescription
-            isEqualToString:kNotEnoughStorageErrorLocalizedDescription]) {
-      result.failure_type =
-          PhotosServiceUploadFailureType::kUploadPhoto2NotEnoughStorage;
-    }
-    base::UmaHistogramEnumeration(kSaveToPhotosUploadFailureTypeHistogram,
-                                  result.failure_type);
     __weak __typeof(self) weakSelf = self;
     [self.delegate stopValidationSpinnerForAccountPicker];
     [self showTryAgainOrCancelAlertWithTryAgainBlock:^{
-      weakSelf.identity = failureIdentity;
       [weakSelf.delegate startValidationSpinnerForAccountPicker];
       [weakSelf tryUploadImage];
     }];
     return;
   }
 
-  base::UmaHistogramTimes(kSaveToPhotosUploadSuccessLatencyHistogram,
+  base::UmaHistogramTimes("IOS.SaveToPhotos.UploadSuccessLatency",
                           base::TimeTicks::Now() - _uploadStart);
   _uploadCompletedSuccessfully = YES;
 

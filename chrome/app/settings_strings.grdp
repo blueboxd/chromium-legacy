@@ -2013,9 +2013,6 @@
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC" desc="In the advanced options tab, the secondary text next to the checkbox that enables prediction of network actions.">
     Uses cookies to remember your preferences, even if you don’t visit those pages
   </message>
-  <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC_COOKIES_PAGE" desc="On the cookies page, the secondary text next to the checkbox that enables prediction of network actions.">
-    Preloads pages that Chrome thinks you might visit. To do this, Chrome may use cookies, if you allow cookies, and may encrypt and send pages through Google to hide your identity from sites.
-  </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION" desc="The section title of 'Protects you and your device from dangerous sites'">
     Safe Browsing (protects you and your device from dangerous sites)
   </message>
@@ -4340,14 +4337,14 @@
   <message name="IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE_MAIN_SUBLABEL" desc="Toggle secondary description" translateable="false">
     These features use AI, are in early development, and won’t always get it right.
   </message>
-  <message name="IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE1_LABEL" desc="Toggle primary description" translateable="false">
-    Autofill helper
+  <message name="IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE1_LABEL" desc="The primary description for the 'Help me write' feature." translateable="false">
+    Help me write
   </message>
-  <message name="IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE1_SUBLABEL" desc="Toggle secondary description" translateable="false">
-    Enables autofill helper on certain input fields
+  <message name="IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE1_SUBLABEL" desc="Secondary description explaining the 'Help me write' feature." translateable="false">
+    Helps you write short-form content for things on the web, like reviews. Suggested content is based on your prompts and the content of the web page. To use this feature, right-click on a text box.
   </message>
   <message name="IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE2_LABEL" desc="Toggle primary description" translateable="false">
-    Tab organizer
+    Tab Organizer
   </message>
   <message name="IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE2_SUBLABEL" desc="Toggle secondary description" translateable="false">
     Automatically creates tab groups based on your open tabs. To use this feature, right-click on a tab and click Organize similar tabs.

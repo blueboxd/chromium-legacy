@@ -25,119 +25,6 @@ namespace {
 
 constexpr char kGoogleAPITypeName[] = "type.googleapis.com/";
 
-net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
-    proto::ModelExecutionFeature feature) {
-  switch (feature) {
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH:
-      return net::DefineNetworkTrafficAnnotation(
-          "wallpaper_create_themes_model_execution",
-          R"(
-        semantics {
-          sender: "Create themes with AI"
-          description: "Create a wallpaper with AI for custom themes."
-          trigger: "User opens a new tab and clicks Customize Chrome."
-          destination: GOOGLE_OWNED_SERVICE
-          data:
-            "User selected characteristics of the theme such as subject, mood,"
-            " visual style and color."
-          internal {
-            contacts {
-              email: "chrome-intelligence-core@google.com"
-            }
-          }
-          user_data {
-            type: ACCESS_TOKEN
-            type: USER_CONTENT
-          }
-          last_reviewed: "2024-01-11"
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "Users can control this by signing-in to Chrome, and from Settings."
-          chrome_policy {
-            CreateThemesSettings {
-              CreateThemesSettings: 2
-            }
-          }
-        })");
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION:
-      return net::DefineNetworkTrafficAnnotation(
-          "tab_organizer_model_execution", R"(
-        semantics {
-          sender: "Tab organizer"
-          description:
-            "Automatically creates tab groups based on the open tabs."
-          trigger:
-            "User right-clicks on a tab and clicks Organize Similar Tabs."
-          destination: GOOGLE_OWNED_SERVICE
-          data:
-            "URL and title of the tabs to organize."
-          internal {
-            contacts {
-              email: "chrome-intelligence-core@google.com"
-            }
-          }
-          user_data {
-            type: ACCESS_TOKEN
-            type: SENSITIVE_URL
-            type: WEB_CONTENT
-          }
-          last_reviewed: "2024-01-11"
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "Users can control this by signing-in to Chrome, and from Settings."
-          chrome_policy {
-            TabOrganizerSettings {
-              TabOrganizerSettings: 2
-            }
-          }
-        })");
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE:
-      return net::DefineNetworkTrafficAnnotation(
-          "help_me_write_model_execution", R"(
-        semantics {
-          sender: "Help me write"
-          description:
-            "Helps users to write content in a web form, such as for product "
-            "reviews or emails."
-          trigger: "User right-clicks on a text box and clicks Help me write."
-          destination: GOOGLE_OWNED_SERVICE
-          data:
-            "User written input text, title, URL, and content of the page"
-          internal {
-            contacts {
-              email: "chrome-intelligence-core@google.com"
-            }
-          }
-          user_data {
-            type: ACCESS_TOKEN
-            type: SENSITIVE_URL
-            type: WEB_CONTENT
-            type: USER_CONTENT
-          }
-          last_reviewed: "2024-01-11"
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "Users can control this by signing-in to Chrome, and from Settings."
-          chrome_policy {
-            HelpMeWriteSettings {
-              HelpMeWriteSettings: 2
-            }
-          }
-        })");
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST:
-      // Used for testing purposes. No real features use this.
-      return MISSING_TRAFFIC_ANNOTATION;
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED:
-      return MISSING_TRAFFIC_ANNOTATION;
-  }
-}
-
 void RecordRequestStatusHistogram(proto::ModelExecutionFeature feature,
                                   FetcherRequestStatus status) {
   base::UmaHistogramEnumeration(
@@ -170,7 +57,7 @@ ModelExecutionFetcher::~ModelExecutionFetcher() {
     std::move(model_execution_callback_)
         .Run(base::unexpected(
             OptimizationGuideModelExecutionError::FromModelExecutionError(
-                ModelExecutionError::kCancelled)));
+                ModelExecutionError::kGenericFailure)));
   }
 }
 
@@ -183,7 +70,7 @@ void ModelExecutionFetcher::ExecuteModel(
   DCHECK_NE(proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED,
             feature);
 
-  if (model_execution_callback_) {
+  if (active_url_loader_) {
     RecordRequestStatusHistogram(feature, FetcherRequestStatus::kFetcherBusy);
     std::move(callback).Run(base::unexpected(
         OptimizationGuideModelExecutionError::FromModelExecutionError(
@@ -238,7 +125,9 @@ void ModelExecutionFetcher::OnAccessTokenReceived(
       // This is always InIncognito::kNo as the server model execution is not
       // enabled on incognito sessions and is rechecked before each fetch.
       variations::InIncognito::kNo, variations::SignedIn::kNo,
-      GetNetworkTrafficAnnotation(model_execution_feature_));
+      // TODO(crbug/1485313): Update the traffic annotations with more details
+      // about the features.
+      MISSING_TRAFFIC_ANNOTATION);
 
   active_url_loader_->AttachStringForUpload(serialized_request,
                                             "application/x-protobuf");

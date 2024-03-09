@@ -285,7 +285,7 @@ void PinnedToolbarActionsContainer::PinnedActionToolbarButton::
   actions::ActionId action_id = action_item_->GetActionId().value();
 
   const bool updated_pin_state = !container_->IsActionPinned(action_id);
-  const absl::optional<std::string> metrics_name =
+  const std::optional<std::string> metrics_name =
       actions::ActionIdMap::ActionIdToString(action_id);
   CHECK(metrics_name.has_value());
   base::RecordComputedAction(
@@ -326,7 +326,8 @@ PinnedToolbarActionsContainer::DropInfo::DropInfo(actions::ActionId action_id,
 
 PinnedToolbarActionsContainer::PinnedToolbarActionsContainer(
     BrowserView* browser_view)
-    : browser_view_(browser_view),
+    : ToolbarIconContainerView(/*uses_highlight=*/false),
+      browser_view_(browser_view),
       model_(PinnedToolbarActionsModel::Get(browser_view->GetProfile())) {
   SetProperty(views::kElementIdentifierKey,
               kPinnedToolbarActionsContainerElementId);
@@ -337,22 +338,17 @@ PinnedToolbarActionsContainer::PinnedToolbarActionsContainer(
 
   model_observation_.Observe(model_.get());
 
-  const int default_margin = GetLayoutConstant(TOOLBAR_ICON_DEFAULT_MARGIN);
   const views::FlexSpecification hide_icon_flex_specification =
       views::FlexSpecification(views::LayoutOrientation::kHorizontal,
                                views::MinimumFlexSizeRule::kPreferredSnapToZero,
                                views::MaximumFlexSizeRule::kPreferred)
           .WithWeight(0);
-
-  auto* flex_layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
-  flex_layout->SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse)
+  GetTargetLayoutManager()
+      ->SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse)
       .SetDefault(views::kFlexBehaviorKey,
-                  hide_icon_flex_specification.WithOrder(1))
-      .SetCollapseMargins(true)
-      .SetIgnoreDefaultMainAxisMargins(true)
-      .SetDefault(views::kMarginsKey, gfx::Insets::VH(0, default_margin))
-      .SetInteriorMargin(gfx::Insets());
-  flex_layout->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
+                  hide_icon_flex_specification.WithOrder(1));
+  GetTargetLayoutManager()->SetCrossAxisAlignment(
+      views::LayoutAlignment::kCenter);
 
   // Create the toolbar divider.
   toolbar_divider_ = AddChildView(std::make_unique<views::View>());
@@ -437,7 +433,7 @@ void PinnedToolbarActionsContainer::OnThemeChanged() {
       GetColorProvider()->GetColor(kColorToolbarExtensionSeparatorEnabled);
   toolbar_divider_->SetBackground(views::CreateRoundedRectBackground(
       toolbar_divider_color, GetLayoutConstant(TOOLBAR_DIVIDER_CORNER_RADIUS)));
-  View::OnThemeChanged();
+  ToolbarIconContainerView::OnThemeChanged();
 }
 
 bool PinnedToolbarActionsContainer::GetDropFormats(
@@ -469,7 +465,7 @@ int PinnedToolbarActionsContainer::OnDragUpdated(
 
   // Check if the action item for the dragged icon is pinned (e.g. an action
   // item could be unpinned through a sync update while dragging its icon).
-  absl::optional<actions::ActionId> action_id =
+  std::optional<actions::ActionId> action_id =
       actions::ActionIdMap::StringToActionId(data.id());
   if (!action_id.has_value() || !model_->Contains(*action_id)) {
     return ui::DragDropTypes::DRAG_NONE;
@@ -708,16 +704,6 @@ bool PinnedToolbarActionsContainer::IsActionPinned(
   return button != nullptr;
 }
 
-bool PinnedToolbarActionsContainer::IsOverflowed(const actions::ActionId& id) {
-  const auto* const pinned_button = GetPinnedButtonFor(id);
-  // TODO(crbug.com/1508656): If this container is not visible treat the
-  // elements inside as overflowed.
-  // TODO(pengchaocai): Support popped out buttons overflow.
-  return static_cast<views::LayoutManagerBase*>(GetLayoutManager())
-             ->CanBeVisible(pinned_button) &&
-         (!GetVisible() || !pinned_button->GetVisible());
-}
-
 void PinnedToolbarActionsContainer::ReorderViews() {
   size_t index = 0;
   // Pinned buttons appear first. Use the model's ordering of pinned ActionIds
@@ -821,7 +807,9 @@ void PinnedToolbarActionsContainer::MovePinnedAction(
 void PinnedToolbarActionsContainer::DragDropCleanup(
     const actions::ActionId& dragged_action_id) {
   ReorderViews();
-  SetActionButtonIconVisibility(dragged_action_id, true);
+  GetAnimatingLayoutManager()->PostOrQueueAction(base::BindOnce(
+      &PinnedToolbarActionsContainer::SetActionButtonIconVisibility,
+      weak_ptr_factory_.GetWeakPtr(), dragged_action_id, true));
 }
 
 size_t PinnedToolbarActionsContainer::WidthToIconCount(int x_offset) {

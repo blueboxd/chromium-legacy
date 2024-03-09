@@ -7,10 +7,9 @@
  * #css_wrapper_metadata_end */
 
 .tab-organization-body {
-  color: var(--color-secondary-foreground);
+  color: var(--cr-secondary-text-color);
   font-size: 13px;
   font-weight: 400;
-  line-height: 20px;
 }
 
 .tab-organization-container {
@@ -29,12 +28,12 @@
 .tab-organization-link {
   color: var(--color-link-foreground-on-bubble-footer);
   cursor: pointer;
-  display: inline-block;
   font-size: 13px;
   font-weight: 400;
   outline-color: var(--color-button-foreground);
-  outline-offset: 1px;
+  outline-offset: 2px;
   text-decoration: underline;
+  width: fit-content;
 }
 
 .tab-organization-text-container {
@@ -99,22 +98,22 @@
   }
 }
 
-@keyframes slideOut {
+@keyframes marginOut {
   0% {
-    transform: translateY(0px);
+    margin-top: 0px;
   }
 
   100% {
-    transform: translateY(-16px);
+    margin-top: -16px;
   }
 }
 
-@keyframes slideIn {
+@keyframes paddingIn {
   0% {
-    transform: translateY(16px);
+    padding-top: 16px;
   }
 
   100% {
-    transform: translateY(0px);
+    padding-top: 0px;
   }
 }

@@ -59,6 +59,8 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"collapseRecentlyClosed", IDS_TAB_SEARCH_COLLAPSE_RECENTLY_CLOSED},
       {"expandRecentlyClosed", IDS_TAB_SEARCH_EXPAND_RECENTLY_CLOSED},
       {"mediaRecording", IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT},
+      {"audioRecording", IDS_TAB_AX_LABEL_AUDIO_RECORDING_FORMAT},
+      {"videoRecording", IDS_TAB_AX_LABEL_VIDEO_RECORDING_FORMAT},
       {"mediaTabs", IDS_TAB_SEARCH_MEDIA_TABS},
       {"noResultsFound", IDS_TAB_SEARCH_NO_RESULTS_FOUND},
       {"openTabs", IDS_TAB_SEARCH_OPEN_TABS},
@@ -87,10 +89,7 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"failureTitleGeneric", IDS_TAB_ORGANIZATION_FAILURE_TITLE_GENERIC},
       {"failureTitleGrouping", IDS_TAB_ORGANIZATION_FAILURE_TITLE_GROUPING},
       {"inProgressTitle", IDS_TAB_ORGANIZATION_IN_PROGRESS_TITLE},
-      {"inputAriaLabel", IDS_TAB_ORGANIZATION_INPUT_ARIA_LABEL},
       {"learnMore", IDS_TAB_ORGANIZATION_LEARN_MORE},
-      {"learnMoreAriaLabel", IDS_TAB_ORGANIZATION_LEARN_MORE_ARIA_LABEL},
-      {"learnMoreDisclaimer", IDS_TAB_ORGANIZATION_DISCLAIMER},
       {"notStartedBody", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY},
       {"notStartedBodyFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE},
       {"notStartedBodySignedOut",
@@ -102,39 +101,22 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"notStartedBodyUnsyncedHistory",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_UNSYNCED_HISTORY},
       {"notStartedButton", IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON},
-      {"notStartedButtonAriaLabel",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_ARIA_LABEL},
       {"notStartedButtonFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_FRE},
-      {"notStartedButtonFREAriaLabel",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_FRE_ARIA_LABEL},
       {"notStartedButtonSyncPaused",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SYNC_PAUSED},
-      {"notStartedButtonSyncPausedAriaLabel",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SYNC_PAUSED_ARIA_LABEL},
       {"notStartedButtonUnsynced",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED},
-      {"notStartedButtonUnsyncedAriaLabel",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_ARIA_LABEL},
       {"notStartedButtonUnsyncedHistory",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY},
-      {"notStartedButtonUnsyncedHistoryAriaLabel",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY_ARIA_LABEL},
       {"notStartedTitle", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE},
       {"notStartedTitleFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE_FRE},
-      {"rejectSuggestion", IDS_TAB_ORGANIZATION_REJECT_SUGGESTION},
-      {"rejectFinalSuggestion", IDS_TAB_ORGANIZATION_REJECT_FINAL_SUGGESTION},
       {"successTitle", IDS_TAB_ORGANIZATION_SUCCESS_TITLE},
-      {"tabOrganizationCloseTabAriaLabel",
-       IDS_TAB_ORGANIZATION_CLOSE_TAB_ARIA_LABEL},
-      {"tabOrganizationCloseTabTooltip",
-       IDS_TAB_ORGANIZATION_CLOSE_TAB_TOOLTIP},
       {"tabOrganizationTabName", IDS_TAB_ORGANIZATION_TAB_NAME},
       {"tipAction", IDS_TAB_ORGANIZATION_TIP_ACTION},
-      {"tipAriaDescription", IDS_TAB_ORGANIZATION_TIP_ARIA_DESCRIPTION},
       {"tipBody", IDS_TAB_ORGANIZATION_TIP_BODY},
       {"tipTitle", IDS_TAB_ORGANIZATION_TIP_TITLE},
-      {"thumbsDown", IDS_TAB_ORGANIZATION_THUMBS_DOWN},
-      {"thumbsUp", IDS_TAB_ORGANIZATION_THUMBS_UP},
+      {"thumbsDown", IDS_THUMBS_DOWN},
+      {"thumbsUp", IDS_THUMBS_UP},
   };
   webui::SetupChromeRefresh2023(source);
   source->AddLocalizedStrings(kStrings);
@@ -155,8 +137,8 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
   source->AddDouble(
       "searchThreshold",
       std::clamp<double>(features::kTabSearchSearchThreshold.Get(),
-                          features::kTabSearchSearchThresholdMin,
-                          features::kTabSearchSearchThresholdMax));
+                         features::kTabSearchSearchThresholdMin,
+                         features::kTabSearchSearchThresholdMax));
   source->AddDouble("searchTitleWeight", features::kTabSearchTitleWeight.Get());
   source->AddDouble("searchHostnameWeight",
                     features::kTabSearchHostnameWeight.Get());
@@ -180,9 +162,6 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
     }
   }
   source->AddBoolean("tabOrganizationEnabled", tab_organization_enabled);
-  source->AddBoolean(
-      "tabOrganizationRefreshButtonEnabled",
-      base::FeatureList::IsEnabled(features::kTabOrganizationRefreshButton));
 
   source->AddInteger("tabIndex", TabIndex());
   source->AddBoolean("showTabOrganizationFRE", ShowTabOrganizationFRE());

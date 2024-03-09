@@ -137,11 +137,6 @@ export class PrintPreviewDestinationDialogCrosElement extends
             'isPrintPreviewSetupAssistanceEnabled_, showThrobber_)',
       },
 
-      isShowingDestinationList: {
-        type: Boolean,
-        computed: 'computeIsShowingDestinationList(destinations_.*)',
-      },
-
       showManagePrintersButton: {
         type: Boolean,
         computed: 'computeShowManagePrintersButton(' +
@@ -167,6 +162,8 @@ export class PrintPreviewDestinationDialogCrosElement extends
         type: Boolean,
         computed: 'computeShowThrobber_(' +
             'minLoadingTimeElapsed_, loadingAnyDestinations_)',
+        observer: PrintPreviewDestinationDialogCrosElement.prototype
+                      .showThrobberChanged_,
       },
 
       minLoadingTimeElapsed_: Boolean,
@@ -185,7 +182,6 @@ export class PrintPreviewDestinationDialogCrosElement extends
   private isPrintPreviewSetupAssistanceEnabled_: boolean;
   private metricsContext_: MetricsContext;
   private isShowingPrinterSetupAssistance: boolean;
-  private isShowingDestinationList: boolean;
   private showManagePrintersButton: boolean;
 
   private tracker_: EventTracker = new EventTracker();
@@ -273,13 +269,6 @@ export class PrintPreviewDestinationDialogCrosElement extends
 
     this.loadingDestinations_ =
         this.destinationStore.isPrintDestinationSearchInProgress;
-
-    // Workaround to force the iron-list in print-preview-destination-list to
-    // render all destinations and resize to fill dialog body.
-    if (this.isShowingDestinationList) {
-      window.dispatchEvent(new CustomEvent('resize'));
-      this.$.searchBox.focus();
-    }
   }
 
   private getDestinationList_(): Destination[] {
@@ -436,24 +425,11 @@ export class PrintPreviewDestinationDialogCrosElement extends
       return false;
     }
 
-    return !this.showThrobber_ && !this.printerDestinationExists();
-  }
-
-  /**
-   * Returns true if the search-box and destination-list should be shown. They
-   * should be shown when at least one non-PDF printer destination is available
-   * for the user to select.
-   */
-  private computeIsShowingDestinationList(): boolean {
-    if (!this.isPrintPreviewSetupAssistanceEnabled_) {
-      return true;
+    if (this.showThrobber_) {
+      return false;
     }
 
-    return this.printerDestinationExists();
-  }
-
-  private printerDestinationExists(): boolean {
-    return this.destinations_.some(
+    return !this.destinations_.some(
         (destination: Destination): boolean =>
             destination.id !== GooglePromotedDestinationId.SAVE_AS_PDF);
   }
@@ -462,12 +438,31 @@ export class PrintPreviewDestinationDialogCrosElement extends
     return this.showManagePrinters && !this.isShowingPrinterSetupAssistance;
   }
 
-  private computeShowThrobber_(): boolean {
+  // Returns true if the search-box and destination-list should be shown.
+  private getShowDestinations_(): boolean {
     if (!this.isPrintPreviewSetupAssistanceEnabled_) {
+      return true;
+    }
+
+    if (this.showThrobber_) {
       return false;
     }
 
+    return !this.isShowingPrinterSetupAssistance;
+  }
+
+  private computeShowThrobber_(): boolean {
     return !this.minLoadingTimeElapsed_ || this.loadingAnyDestinations_;
+  }
+
+  private showThrobberChanged_(): void {
+    if (!this.showThrobber_ && !this.isShowingPrinterSetupAssistance) {
+      // Workaround to force the iron-list in print-preview-destination-list to
+      // render all destinations and resize to fill dialog body.
+      window.dispatchEvent(new CustomEvent('resize'));
+      // Ensure search-box gets focus once throbber is hidden.
+      this.$.searchBox.focus();
+    }
   }
 
   // Clear throbber timer if it has not completed yet. Used to ensure throbber
@@ -486,15 +481,6 @@ export class PrintPreviewDestinationDialogCrosElement extends
         this.shadowRoot!.querySelector('print-preview-destination-list');
     assert(destinationList);
     destinationList.updatePrinterStatusIcon(destinationKey);
-  }
-
-  private showDestinationListThrobber(): boolean {
-    // When flag is enabled, DestinationDialogCros shows its own throbber.
-    if (this.isPrintPreviewSetupAssistanceEnabled_) {
-      return false;
-    }
-
-    return this.loadingAnyDestinations_;
   }
 }
 

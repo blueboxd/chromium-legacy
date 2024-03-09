@@ -172,7 +172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.HttpsFirstMode.InterstitialReason"
-    enum="HttpsFirstModeInterstitialReason" expires_after="2024-03-31">
+    enum="HttpsFirstModeInterstitialReason" expires_after="2024-06-02">
   <owner>meacer@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -182,7 +182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.HttpsFirstMode.NavigationEvent"
-    enum="HttpsFirstModeNavigationEvent" expires_after="2024-01-14">
+    enum="HttpsFirstModeNavigationEvent" expires_after="2024-07-14">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -743,7 +743,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Security.TimeOnPage2" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-07-14">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -830,6 +830,18 @@ chromium-metrics-reviews@google.com.
     Logs whether or not a password form was submitted from a site-isolated
     process that's dedicated to a single site. Recorded when a password form is
     submitted.
+  </summary>
+</histogram>
+
+<histogram
+    name="SiteIsolation.NewProcessUsedForNavigationWhenSameSiteProcessExists"
+    units="Boolean" expires_after="2024-04-20">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Records whether a new process is used for navigation when there are other
+    same site process(es). Recorded for the outer-most main frame navigation
+    when navigation is committed (cross-origin redirects are not recorded).
   </summary>
 </histogram>
 

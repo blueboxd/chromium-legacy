@@ -94,7 +94,7 @@ void AutoAcceptDialogCallback(
 }  // namespace
 
 webapps::AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
-  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser, app_url));
+  NavigateToURLAndWait(browser, app_url);
 
   webapps::AppId app_id;
   base::RunLoop run_loop;
@@ -227,9 +227,10 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile,
 Browser* LaunchWebAppToURL(Profile* profile,
                            const webapps::AppId& app_id,
                            const GURL& url) {
-  apps::AppLaunchParams params(
-      app_id, apps::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromCommandLine);
+  apps::AppLaunchParams params(app_id,
+                               apps::LaunchContainer::kLaunchContainerWindow,
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               apps::LaunchSource::kFromCommandLine);
   params.override_url = url;
   content::WebContents* const web_contents =
       apps::AppServiceProxyFactory::GetForProfile(profile)
@@ -362,7 +363,7 @@ bool IsBrowserOpen(const Browser* test_browser) {
   return false;
 }
 
-absl::optional<webapps::AppId> ForceInstallWebApp(Profile* profile, GURL url) {
+std::optional<webapps::AppId> ForceInstallWebApp(Profile* profile, GURL url) {
   web_app::ExternalInstallOptions install_options(
       url, web_app::mojom::UserDisplayMode::kStandalone,
       web_app::ExternalInstallSource::kExternalPolicy);
@@ -371,7 +372,7 @@ absl::optional<webapps::AppId> ForceInstallWebApp(Profile* profile, GURL url) {
   EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, result.code);
   const auto& registrar =
       WebAppProvider::GetForTest(profile)->registrar_unsafe();
-  absl::optional<webapps::AppId> policy_app_id =
+  std::optional<webapps::AppId> policy_app_id =
       registrar.LookupExternalAppId(url);
   EXPECT_TRUE(policy_app_id.has_value());
   EXPECT_TRUE(

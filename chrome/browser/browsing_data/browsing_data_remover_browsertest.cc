@@ -828,8 +828,10 @@ class BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest
     : public BrowsingDataRemoverBrowserTest {
  public:
   BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest() {
-    features_.InitAndEnableFeature(
-        password_manager::features::kEnablePasswordsAccountStorage);
+    features_.InitWithFeatures(
+        /*enabled_features=*/{password_manager::features::
+                                  kEnablePasswordsAccountStorage},
+        /*disabled_features=*/{switches::kUnoDesktop});
   }
 
   void ClearSiteDataAndWait(

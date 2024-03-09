@@ -302,11 +302,6 @@ const base::FeatureParam<content::DIPSTriggeringAction> kDIPSTriggeringAction{
 const base::FeatureParam<base::TimeDelta> kDIPSClientBounceDetectionTimeout{
     &kDIPS, "client_bounce_detection_timeout", base::Seconds(10)};
 
-// Whether DIPS deletes Privacy Sandbox data.
-BASE_FEATURE(kDIPSPreservePSData,
-             "DIPSPreservePSData",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables disconnecting the `ExtensionMessagePort` when the page using the port
 // enters BFCache.
 BASE_FEATURE(kDisconnectExtensionMessagePortWhenPageEntersBFCache,
@@ -371,6 +366,15 @@ BASE_FEATURE(kFedCmAuthz, "FedCmAuthz", base::FEATURE_DISABLED_BY_DEFAULT);
 // ChromeStatus entry: https://chromestatus.com/feature/5384360374566912
 BASE_FEATURE(kFedCmAutoSelectedFlag,
              "FedCmAutoSelectedFlag",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables usage of the FedCM ButtonMode feature.
+// Note that actual exposure of the API to web content is controlled by
+// the flag in RuntimeEnabledFeatures on the blink side. See also the use
+// of kSetOnlyIfOverridden in content/child/runtime_features.cc. We enable
+// it here by default to support use in origin trials.
+BASE_FEATURE(kFedCmButtonMode,
+             "FedCmButtonMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM DomainHint feature. ChromeStatus entry:
@@ -1262,7 +1266,7 @@ BASE_FEATURE(kSmartZoom, "SmartZoom", base::FEATURE_DISABLED_BY_DEFAULT);
 // technologies are present
 BASE_FEATURE(kAutoDisableAccessibilityV2,
              "AutoDisableAccessibilityV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the mojo based gin java bridge implementation.
 BASE_FEATURE(kGinJavaBridgeMojo,

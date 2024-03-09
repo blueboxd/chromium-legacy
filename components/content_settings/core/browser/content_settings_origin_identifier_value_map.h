@@ -115,8 +115,7 @@ class OriginIdentifierValueMap {
   // |last_modified| date for each value. The |constraints| will be used to
   // constrain the setting to a valid time-range and lifetime model if
   // specified.
-  // Returns true if something changed.
-  bool SetValue(const ContentSettingsPattern& primary_pattern,
+  void SetValue(const ContentSettingsPattern& primary_pattern,
                 const ContentSettingsPattern& secondary_pattern,
                 ContentSettingsType content_type,
                 base::Value value,
@@ -124,8 +123,7 @@ class OriginIdentifierValueMap {
 
   // Deletes the map entry for the given |primary_pattern|,
   // |secondary_pattern|, |content_type| tuple.
-  // Returns true if something changed.
-  bool DeleteValue(const ContentSettingsPattern& primary_pattern,
+  void DeleteValue(const ContentSettingsPattern& primary_pattern,
                    const ContentSettingsPattern& secondary_pattern,
                    ContentSettingsType content_type)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);

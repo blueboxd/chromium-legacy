@@ -20,7 +20,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -39,13 +38,21 @@
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 #include "chrome/browser/ash/arc/fileapi/arc_file_system_bridge.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate_map.h"
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/intent_helper/intent_filter.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
@@ -136,10 +143,24 @@ GURL FileInDownloads(Profile* profile, base::FilePath file) {
       .ToGURL();
 }
 
+std::vector<arc::mojom::AppInfoPtr> GetArcSettingsAppInfo() {
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  arc::mojom::AppInfoPtr app(arc::mojom::AppInfo::New());
+  app->name = "settings";
+  app->package_name = "com.android.settings";
+  app->activity = "com.android.settings.Settings";
+  app->sticky = false;
+  apps.push_back(std::move(app));
+  return apps;
+}
+
 }  // namespace
 
 class ArcAppsPublisherTest : public testing::Test {
  public:
+  ArcAppsPublisherTest()
+      : local_state_(std::make_unique<ScopedTestingLocalState>(
+            TestingBrowserProcess::GetGlobal())) {}
   void SetUp() override {
     testing::Test::SetUp();
 
@@ -164,6 +185,11 @@ class ArcAppsPublisherTest : public testing::Test {
     arc_file_system_bridge_ = std::make_unique<arc::ArcFileSystemBridge>(
         profile(), arc_bridge_service);
 
+    auto web_app_policy_manager =
+        std::make_unique<web_app::WebAppPolicyManager>(profile());
+    web_app_policy_manager->SetSystemWebAppDelegateMap(&system_apps_);
+    auto* provider = web_app::FakeWebAppProvider::Get(profile());
+    provider->SetWebAppPolicyManager(std::move(web_app_policy_manager));
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
 
     app_service_test_.SetUp(profile_.get());
@@ -241,8 +267,12 @@ class ArcAppsPublisherTest : public testing::Test {
     return result;
   }
 
+ protected:
+  std::unique_ptr<ScopedTestingLocalState> local_state_;
+
  private:
   content::BrowserTaskEnvironment task_environment_;
+  ash::SystemWebAppDelegateMap system_apps_;
   ArcAppTest arc_test_;
   std::unique_ptr<TestingProfile> profile_;
   apps::AppServiceTest app_service_test_;
@@ -271,8 +301,8 @@ TEST_F(ArcAppsPublisherTest, SetSupportedLinksFromArcSystem) {
       CreateSupportedLinks(package_name), {},
       arc::mojom::SupportedLinkChangeSource::kArcSystem);
 
-  ASSERT_EQ(absl::nullopt, preferred_apps().FindPreferredAppForUrl(
-                               GURL("https://www.example.com/foo")));
+  ASSERT_EQ(std::nullopt, preferred_apps().FindPreferredAppForUrl(
+                              GURL("https://www.example.com/foo")));
 }
 
 // Verifies that a call to set the supported links preference from App Service
@@ -373,6 +403,42 @@ TEST_F(ArcAppsPublisherTest, SetSupportedLinksAllowsPlayStoreDefault) {
                                       GURL("https://play.google.com/foo")));
 }
 
+// Verifies that disabling OS settings by SystemFeaturesDisableList policy will
+// disable ARC settings as well. Clearing the policy should re-enable ARC
+// settings.
+TEST_F(ArcAppsPublisherTest, DisableOSSettingArcSettings) {
+  arc_test()->app_instance()->SendRefreshAppList(GetArcSettingsAppInfo());
+
+  // Change SystemFeaturesDisableList policy to disable OS Setting.
+  {
+    ScopedListPrefUpdate update(
+        local_state_->Get(), policy::policy_prefs::kSystemFeaturesDisableList);
+    update->Append(static_cast<int>(policy::SystemFeature::kOsSettings));
+  }
+
+  // Verify that ARC settings readiness is set to disabled by policy.
+  bool found = app_service_proxy()->AppRegistryCache().ForOneApp(
+      arc::kSettingsAppId, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(update.Readiness(), apps::Readiness::kDisabledByPolicy);
+      });
+  ASSERT_TRUE(found);
+
+  // Clear SystemFeaturesDisableList policy.
+  {
+    ScopedListPrefUpdate update(
+        local_state_->Get(), policy::policy_prefs::kSystemFeaturesDisableList);
+    update->clear();
+  }
+
+  // Verify that ARC settings readiness is set to ready.
+  found = false;
+  found = app_service_proxy()->AppRegistryCache().ForOneApp(
+      arc::kSettingsAppId, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(update.Readiness(), apps::Readiness::kReady);
+      });
+  ASSERT_TRUE(found);
+}
+
 class ArcAppsPublisherManagedProfileTest : public ArcAppsPublisherTest {
  public:
   std::unique_ptr<TestingProfile> MakeProfile() override {
@@ -405,91 +471,6 @@ TEST_F(ArcAppsPublisherManagedProfileTest, SetSupportedLinksByDefault) {
                         GURL("https://www.example.com/foo")));
 }
 
-TEST_F(ArcAppsPublisherManagedProfileTest,
-       SetSupportedLinksIgnoresWorkspaceInstall) {
-  constexpr char kTestAuthority[] = "drive.google.com";
-  std::string package_name = "com.google.android.apps.docs";
-  std::string activity_name = base::StrCat({package_name, ".MainActivity"});
-  std::string app_id = ArcAppListPrefs::GetAppId(package_name, activity_name);
-
-  arc::mojom::AppInfoPtr app =
-      arc::mojom::AppInfo::New("Google Drive", package_name, activity_name);
-  std::vector<arc::mojom::AppInfoPtr> app_list;
-  app_list.push_back(std::move(app));
-
-  arc_test()->app_instance()->SendRefreshAppList(std::move(app_list));
-
-  // Update intent filters and supported links for the app, as if it was just
-  // installed.
-  intent_helper()->OnIntentFiltersUpdatedForPackage(
-      package_name, CreateFilterList(package_name, {kTestAuthority}));
-  VerifyIntentFilters(app_id, {kTestAuthority});
-  intent_helper()->OnSupportedLinksChanged(
-      CreateSupportedLinks(package_name), {},
-      arc::mojom::SupportedLinkChangeSource::kArcSystem);
-
-  ASSERT_EQ(std::nullopt, preferred_apps().FindPreferredAppForUrl(
-                              GURL("https://drive.google.com/foo")));
-}
-
-TEST_F(ArcAppsPublisherManagedProfileTest,
-       SetSupportedLinksAllowsWorkspaceUserChange) {
-  constexpr char kTestAuthority[] = "docs.google.com";
-  std::string package_name = "com.google.android.apps.docs.editor.docs";
-  std::string activity_name = base::StrCat({package_name, ".MainActivity"});
-  std::string app_id = ArcAppListPrefs::GetAppId(package_name, activity_name);
-
-  arc::mojom::AppInfoPtr app =
-      arc::mojom::AppInfo::New("Google Docs", package_name, activity_name);
-  std::vector<arc::mojom::AppInfoPtr> app_list;
-  app_list.push_back(std::move(app));
-
-  arc_test()->app_instance()->SendRefreshAppList(std::move(app_list));
-  intent_helper()->OnIntentFiltersUpdatedForPackage(
-      package_name, CreateFilterList(package_name, {kTestAuthority}));
-
-  intent_helper()->OnSupportedLinksChanged(
-      CreateSupportedLinks(package_name), {},
-      arc::mojom::SupportedLinkChangeSource::kUserPreference);
-
-  ASSERT_EQ(app_id, preferred_apps().FindPreferredAppForUrl(
-                        GURL("https://docs.google.com/document/")));
-}
-
-TEST_F(ArcAppsPublisherManagedProfileTest,
-       SetSupportedLinksAllowsWorkspaceUpdate) {
-  constexpr char kDriveAuthority[] = "drive.google.com";
-  constexpr char kDocsAuthority[] = "docs.google.com";
-  std::string package_name = "com.google.android.apps.docs";
-  std::string activity_name = base::StrCat({package_name, ".MainActivity"});
-  std::string app_id = ArcAppListPrefs::GetAppId(package_name, activity_name);
-
-  arc::mojom::AppInfoPtr app =
-      arc::mojom::AppInfo::New("Google Drive", package_name, activity_name);
-  std::vector<arc::mojom::AppInfoPtr> app_list;
-  app_list.push_back(std::move(app));
-  arc_test()->app_instance()->SendRefreshAppList(std::move(app_list));
-  intent_helper()->OnIntentFiltersUpdatedForPackage(
-      package_name, CreateFilterList(package_name, {kDriveAuthority}));
-
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->SetSupportedLinksPreference(app_id);
-  ASSERT_EQ(app_id, preferred_apps().FindPreferredAppForUrl(
-                        GURL("https://drive.google.com/foo")));
-
-  // Simulate the app being updated to add a new intent filter.
-  intent_helper()->OnIntentFiltersUpdatedForPackage(
-      package_name,
-      CreateFilterList(package_name, {kDriveAuthority, kDocsAuthority}));
-  intent_helper()->OnSupportedLinksChanged(
-      CreateSupportedLinks(package_name), {},
-      arc::mojom::SupportedLinkChangeSource::kArcSystem);
-
-  // Verify that the new intent filter is also marked as preferred.
-  ASSERT_EQ(app_id, preferred_apps().FindPreferredAppForUrl(
-                        GURL("https://docs.google.com/document")));
-}
-
 // Verifies that ARC permissions are published to App Service correctly.
 TEST_F(ArcAppsPublisherTest, PublishPermission) {
   constexpr char kPackageName[] = "com.test.package";
@@ -515,7 +496,7 @@ TEST_F(ArcAppsPublisherTest, PublishPermission) {
   permissions.emplace(arc::mojom::AppPermission::CAMERA,
                       arc::mojom::PermissionState::New(
                           /*granted=*/true, /*managed=*/false,
-                          /*details=*/absl::nullopt, /*one_time=*/true));
+                          /*details=*/std::nullopt, /*one_time=*/true));
   permissions.emplace(
       arc::mojom::AppPermission::LOCATION,
       arc::mojom::PermissionState::New(/*granted=*/true, /*managed=*/true,
@@ -541,7 +522,7 @@ TEST_F(ArcAppsPublisherTest, PublishPermission) {
   EXPECT_EQ(result[0]->permission_type, apps::PermissionType::kCamera);
   EXPECT_EQ(absl::get<apps::TriState>(result[0]->value), apps::TriState::kAsk);
   EXPECT_FALSE(result[0]->is_managed);
-  EXPECT_EQ(result[0]->details, absl::nullopt);
+  EXPECT_EQ(result[0]->details, std::nullopt);
 
   EXPECT_EQ(result[1]->permission_type, apps::PermissionType::kLocation);
   EXPECT_TRUE(result[1]->IsPermissionEnabled());
@@ -561,7 +542,7 @@ TEST_F(ArcAppsPublisherTest,
                                                  fake_apps[0]->activity);
   arc_test()->app_instance()->SendRefreshAppList(fake_apps);
 
-  absl::optional<apps::State> result;
+  std::optional<apps::State> result;
   app_service_proxy()->LaunchAppWithIntent(
       app_id, 0, std::move(intent), apps::LaunchSource::kFromFileManager,
       /*window_info=*/nullptr,
@@ -594,7 +575,7 @@ TEST_F(ArcAppsPublisherTest,
                                                  fake_apps[0]->activity);
   arc_test()->app_instance()->SendRefreshAppList(fake_apps);
 
-  absl::optional<apps::State> result;
+  std::optional<apps::State> result;
   app_service_proxy()->LaunchAppWithIntent(
       app_id, 0, std::move(intent), apps::LaunchSource::kFromFileManager,
       /*window_info=*/nullptr,
@@ -632,7 +613,7 @@ TEST_F(
                                                  fake_apps[0]->activity);
   arc_test()->app_instance()->SendRefreshAppList(fake_apps);
 
-  absl::optional<apps::State> result;
+  std::optional<apps::State> result;
   app_service_proxy()->LaunchAppWithIntent(
       app_id, 0, std::move(intent), apps::LaunchSource::kFromFileManager,
       /*window_info=*/nullptr,
@@ -671,7 +652,7 @@ TEST_F(ArcAppsPublisherTest,
                                                  fake_apps[0]->activity);
   arc_test()->app_instance()->SendRefreshAppList(fake_apps);
 
-  absl::optional<apps::State> result;
+  std::optional<apps::State> result;
   app_service_proxy()->LaunchAppWithIntent(
       app_id, 0, std::move(intent), apps::LaunchSource::kFromFileManager,
       /*window_info=*/nullptr,
@@ -741,11 +722,6 @@ TEST_F(ArcAppsPublisherTest, SetAppLocale_SendsLocaleToArc) {
   std::vector<arc::mojom::AppInfoPtr> test_app_info_list;
   test_app_info_list.push_back(arc_test()->fake_apps()[4]->Clone());
   arc_test()->app_instance()->SendRefreshAppList(test_app_info_list);
-  std::vector<apps::AppPtr> test_apps;
-  apps::AppPtr app = std::make_unique<apps::App>(apps::AppType::kArc, app_id);
-  test_apps.push_back(std::move(app));
-  app_service_proxy()->OnApps(std::move(test_apps), apps::AppType::kArc,
-                              /*should_notify_initialized=*/true);
   // Setup package.
   // Initially pref will be set with "en" as selectedLocale.
   std::vector<arc::mojom::ArcPackageInfoPtr> test_packages;

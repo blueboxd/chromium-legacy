@@ -43,9 +43,9 @@ export function addUiEntryReducer(currentState: State, payload: {
   const key = entry.toURL();
 
   let isVolumeEntryExistedInMyFiles = false;
-  if (uiEntryRootTypesInMyFiles.has(entry.rootType)) {
+  if (entry.rootType && uiEntryRootTypesInMyFiles.has(entry.rootType)) {
     const {myFilesEntry} = getMyFiles(currentState);
-    const children = myFilesEntry.getUIChildren();
+    const children = myFilesEntry.getUiChildren();
     // Check if the the ui entry already has a corresponding volume entry.
     isVolumeEntryExistedInMyFiles = !!children.find(
         childEntry =>
@@ -104,9 +104,9 @@ export function removeUiEntryReducer(currentState: State, payload: {
 
   // We also need to remove it from the children of MyFiles if it's existed
   // there.
-  if (entry && uiEntryRootTypesInMyFiles.has(entry.rootType)) {
+  if (entry?.rootType && uiEntryRootTypesInMyFiles.has(entry.rootType)) {
     const {myFilesEntry} = getMyFiles(currentState);
-    const children = myFilesEntry.getUIChildren();
+    const children = myFilesEntry.getUiChildren();
     const isUiEntryExistedInMyFiles =
         !!children.find(childEntry => isSameEntry(childEntry, entry));
     if (isUiEntryExistedInMyFiles) {

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/trace_event/etw_interceptor_win.h"
 #include "base/trace_event/trace_event_etw_export_win.h"
@@ -18,10 +17,6 @@
 
 namespace tracing {
 namespace {
-
-BASE_FEATURE(kEnableEtwExports,
-             "EnableEtwExports",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Used to protect the upper 16 bits reserved by winmeta.xml as they
 // should not be used but older logging code and tools incorrectly used
@@ -121,9 +116,6 @@ void ETWExportController::OnUpdate(TlmProvider::EventControlCode event) {
 
 // static
 void EnableETWExport() {
-  if (!base::FeatureList::IsEnabled(kEnableEtwExports)) {
-    return;
-  }
   static base::NoDestructor<ETWExportController> instance{};
 }
 

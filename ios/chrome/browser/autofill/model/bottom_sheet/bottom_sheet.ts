@@ -27,12 +27,8 @@ let observedElements_: Element[] = [];
  * @private
  */
 function isObservable_(element: HTMLElement): boolean {
-  // Ignore passkey fields, which contain the 'webauthn' autofill tag.
-  const autocomplete_attribute = element.getAttribute('autocomplete');
-  const isPasskeyField = autocomplete_attribute?.includes('webauthn');
-  return ((element instanceof HTMLInputElement) ||
-          (element instanceof HTMLFormElement)) &&
-      !isPasskeyField;
+  return (element instanceof HTMLInputElement) ||
+      (element instanceof HTMLFormElement);
 }
 
 /*
@@ -123,11 +119,8 @@ function detachListeners_(renderer_ids: number[]): void {
 /**
  * Finds the element associated with each provided renderer ID and
  * attaches a listener to each of these elements for the focus event.
- * "allow_autofocus" specifies whether the bottom sheet can be triggered by an
- * already focused field.
  */
-function attachListeners(
-    renderer_ids: number[], allow_autofocus: boolean): void {
+function attachListeners(renderer_ids: number[]): void {
   // Build list of elements
   let blurredElement: HTMLElement|null = null;
   let elementsToObserve: Element[] = [];
@@ -145,12 +138,10 @@ function attachListeners(
           // without attaching listeners.
           return;
         }
-        if (allow_autofocus) {
-          // Remove the focus on an element if it already has focus and we want
-          // to show the related bottom sheet immediately.
-          element.blur();
-          blurredElement = element;
-        }
+        // Remove the focus on an element if it already has focus and we want to
+        // listen for the focus event on it.
+        element.blur();
+        blurredElement = element;
       }
     }
   }

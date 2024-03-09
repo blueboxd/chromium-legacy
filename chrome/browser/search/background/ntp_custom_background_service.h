@@ -73,8 +73,7 @@ class NtpCustomBackgroundService : public KeyedService,
   virtual void SelectLocalBackgroundImage(const base::FilePath& path);
 
   // Set bool pref for local background and set id.
-  virtual void SetBackgroundToLocalResourceWithId(const base::Token& id,
-                                                  bool is_inspiration_image);
+  virtual void SetBackgroundToLocalResourceWithId(const base::Token& id);
 
   // Virtual for testing.
   virtual void RefreshBackgroundIfNeeded();

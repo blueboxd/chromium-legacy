@@ -129,10 +129,6 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     [_title setContentHuggingPriority:UILayoutPriorityDefaultLow
                               forAxis:UILayoutConstraintAxisHorizontal];
     [_title
-        setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
-                                        forAxis:
-                                            UILayoutConstraintAxisHorizontal];
-    [_title
         setContentCompressionResistancePriority:UILayoutPriorityRequired
                                         forAxis:UILayoutConstraintAxisVertical];
     [titleStackView addArrangedSubview:_title];

@@ -6,27 +6,17 @@ import SwiftUI
 
 /// A SwiftUI view for the overflow menu displaying a subsection of the actions list.
 @available(iOS 15, *)
-struct OverflowMenuActionSection<FooterBackground: View>: View {
+struct OverflowMenuActionSection: View {
 
-  // Default height if no other header or footer. This spaces the sections
-  // out properly.
-  static var headerFooterHeight: CGFloat { 20 }
+  enum Dimensions {
+    // Default height if no other header or footer. This spaces the sections
+    // out properly.
+    static let headerFooterHeight: CGFloat = 20
+  }
 
   @ObservedObject var actionGroup: OverflowMenuActionGroup
 
   weak var metricsHandler: PopupMenuMetricsHandler?
-
-  // A custom background for the footer if provided.
-  let footerBackground: FooterBackground
-
-  init(
-    actionGroup: OverflowMenuActionGroup, metricsHandler: PopupMenuMetricsHandler? = nil,
-    @ViewBuilder footerBackground: () -> FooterBackground = { EmptyView() }
-  ) {
-    self.actionGroup = actionGroup
-    self.metricsHandler = metricsHandler
-    self.footerBackground = footerBackground()
-  }
 
   var body: some View {
     Section(
@@ -39,16 +29,13 @@ struct OverflowMenuActionSection<FooterBackground: View>: View {
       },
       header: {
         Spacer()
-          .frame(height: Self.headerFooterHeight)
+          .frame(height: Dimensions.headerFooterHeight)
           .listRowInsets(EdgeInsets())
           .accessibilityHidden(true)
       },
       footer: {
         if let actionFooter = actionGroup.footer {
           OverflowMenuFooterRow(footer: actionFooter)
-            .background {
-              footerBackground
-            }
         } else {
           Spacer()
             // Use `leastNonzeroMagnitude` to remove the footer. Otherwise,
@@ -56,9 +43,6 @@ struct OverflowMenuActionSection<FooterBackground: View>: View {
             .frame(height: CGFloat.leastNonzeroMagnitude)
             .listRowInsets(EdgeInsets())
             .accessibilityHidden(true)
-            .background {
-              footerBackground
-            }
         }
       })
   }

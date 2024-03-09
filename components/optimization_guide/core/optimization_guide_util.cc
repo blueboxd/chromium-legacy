@@ -85,8 +85,6 @@ std::string_view GetStringNameForModelExecutionFeature(
       return "TabOrganization";
     case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE:
       return "Compose";
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST:
-      return "Test";
     case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED:
       return "Unknown";
       // Must be in sync with the ModelExecutionFeature variant in
@@ -179,6 +177,14 @@ void PopulateApiKeyRequestHeader(network::ResourceRequest* resource_request,
   resource_request->headers.SetHeader(kApiKeyHeader, api_key);
 }
 
+int64_t GetHashedModelQualityClientId(proto::ModelExecutionFeature feature,
+                                      base::Time day,
+                                      int64_t client_id) {
+  std::string date = TimeToYYYYMMDDString(day);
+  return base::FastHash(
+      base::NumberToString(client_id + static_cast<int>(feature)) + date);
+}
+
 int64_t GetOrCreateModelQualityClientId(proto::ModelExecutionFeature feature,
                                         PrefService* pref_service) {
   if (!pref_service) {
@@ -194,9 +200,7 @@ int64_t GetOrCreateModelQualityClientId(proto::ModelExecutionFeature feature,
 
   // Hash the client id with the date so that it changes everyday for every
   // feature.
-  std::string date = TimeToYYYYMMDDString(base::Time::Now());
-  return base::FastHash(
-      base::NumberToString(client_id + static_cast<int>(feature)) + date);
+  return GetHashedModelQualityClientId(feature, base::Time::Now(), client_id);
 }
 
 }  // namespace optimization_guide

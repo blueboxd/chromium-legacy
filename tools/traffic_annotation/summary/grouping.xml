@@ -225,7 +225,6 @@ after discussions on the right group.
       <annotation id="quick_answers_loader"/>
       <annotation id="chrome_search_suggest_service"/>
       <annotation id="cryptauth_get_my_devices"/>
-      <annotation id="chrome_commerce_waa_fetcher"/>
       <annotation id="shopping_list_ui_image_fetcher"/>
       <annotation id="chrome_commerce_price_email_pref_fetcher"/>
       <annotation id="chrome_commerce_price_email_pref_sender"/>
@@ -291,7 +290,7 @@ after discussions on the right group.
       <annotation id="iwa_update_discovery_web_bundle"/>
       <annotation id="almanac_launcher_app"/>
       <annotation id="ip_protection_service_get_proxy_config"/>
-      <annotation id="customize_chrome_page_handler_image"/>
+      <annotation id="customize_chrome_page_handler"/>
       <annotation id="almanac_icon_cache"/>
       <annotation id="blink_fetch_later_manager"/>
       <annotation id="carrier_lock_manager_fetch_configuration"/>
@@ -301,19 +300,6 @@ after discussions on the right group.
       <annotation id="remoting_report_provisioning_error"/>
       <annotation id="webauthn_rp_id_check"/>
       <annotation id="tasks_integration"/>
-      <annotation id="search_engine_adapter"/>
-      <annotation id="model_quality_logging"/>
-      <annotation id="wallpaper_create_themes_model_execution"/>
-      <annotation id="tab_organizer_model_execution"/>
-      <annotation id="help_me_write_model_execution"/>
-      <annotation id="launcher_manatee"/>
-      <annotation id="chromeos_picker_gif_fetcher"/>
-      <annotation id="prewarm_http_disk_cache"/>
-      <annotation id="admin_specified_ppd_fetch"/>
-      <annotation id="shopping_list_ui_image_fetcher"/>
-      <annotation id="wallpaper_search_handler_descriptors_fetcher"/>
-      <annotation id="wallpaper_search_handler_inspirations_fetcher"/>
-      <annotation id="wallpaper_search_handler_inspiration_image_downloader"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -597,7 +583,6 @@ after discussions on the right group.
   </group>
   <group name="PlusAddresses" hidden="true">
     <sender name="PlusAddresses">
-      <annotation id="plus_address_creation"/>
       <annotation id="get_all_plus_addresses"/>
       <annotation id="plus_address_reservation"/>
       <annotation id="plus_address_confirmation"/>

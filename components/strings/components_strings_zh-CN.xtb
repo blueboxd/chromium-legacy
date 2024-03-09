@@ -117,7 +117,6 @@
 <translation id="1206967143813997005">初始签名不正确</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="121201262018556460">您尝试访问的是 <ph name="DOMAIN" />，但是服务器出示的证书包含弱密钥。攻击者可能已经破解了私钥，因此这可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。</translation>
-<translation id="1212527389003717329">已开始下载。若要查看，请按住 |<ph name="ACCELERATOR" />|。</translation>
 <translation id="1219129156119358924">系统安全</translation>
 <translation id="1222060260947439312">右侧纸匣</translation>
 <translation id="1224330468394120478">A3x6</translation>
@@ -258,7 +257,6 @@
 <translation id="1455413310270022028">橡皮擦</translation>
 <translation id="1458140305240870199">内衣</translation>
 <translation id="1459693405370120464">天气</translation>
-<translation id="1461041542809785877">性能</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1462951478840426066">使用您计算机上的字体，以便您能够创作高保真内容</translation>
 <translation id="1467432559032391204">向左</translation>
@@ -289,7 +287,6 @@
 <translation id="1521655867290435174">Google 表格</translation>
 <translation id="1524669537550112617">带家具的房屋租赁</translation>
 <translation id="1527263332363067270">正在等待建立连接…</translation>
-<translation id="1528311629279578926">此连接已被禁止，因为它是由某个公共网页为连接至您专用网络上的设备或服务器而发起的。请重新加载此页面以允许连接。</translation>
 <translation id="1529789484829130889">纸匣 8</translation>
 <translation id="1530707389502320859">您刚才尝试访问的网站貌似为虚假网站。攻击者有时会对网址做些令人难以发现的细微更改来仿冒网站。</translation>
 <translation id="1532118530259321453">此网页显示</translation>
@@ -829,6 +826,7 @@
             <ph name="LIST_ITEM" />Cookie 和网站数据
             <ph name="LIST_ITEM" />在表单中填写的信息
           <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">插入</translation>
 <translation id="2625385379895617796">您的时钟快了</translation>
 <translation id="262745152991669301">可以询问能否连接到 USB 设备</translation>
 <translation id="2629325967560697240">如果您想获得 Chrome 最高级别的安全保护，请<ph name="BEGIN_ENHANCED_PROTECTION_LINK" />开启增强型保护<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -1162,7 +1160,6 @@
 <translation id="3325027355611702542">野营挂车与休闲车</translation>
 <translation id="3329013043687509092">饱和度</translation>
 <translation id="3333762389743153920">无法用作虚拟卡</translation>
-<translation id="3336044043987989409">建议您按“重新加载”按钮以允许连接到您的专用网络上的设备或服务器。</translation>
 <translation id="3338095232262050444">安全</translation>
 <translation id="333839153442689579">高强度间歇训练</translation>
 <translation id="3339440062908617027">跑步与走路</translation>
@@ -1225,7 +1222,7 @@
 <translation id="3441653493275994384">屏幕</translation>
 <translation id="3443504041532578451">光盘（磨光）</translation>
 <translation id="344449859752187052">已阻止第三方 Cookie</translation>
-<translation id="3447644283769633681">阻止所有第三方 Cookie</translation>
+<translation id="3447644283769633681">拦截所有第三方 Cookie</translation>
 <translation id="3447661539832366887">此设备的所有者已关闭恐龙游戏。</translation>
 <translation id="3447884698081792621">显示证书（由<ph name="ISSUER" />签发）</translation>
 <translation id="3450323514459570273">可以请求控制您的 MIDI 设备以及为其重新编程</translation>
@@ -1586,6 +1583,7 @@
 <translation id="4177501066905053472">广告主题</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> - <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">取消跟踪价格</translation>
+<translation id="4191334393248735295">长度</translation>
 <translation id="4195459680867822611">“查看 Chrome 提示”按钮，激活它即可了解各项 Chrome 功能</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4196861286325780578">恢复移动(&amp;R)</translation>
@@ -2601,7 +2599,6 @@
 <translation id="6232271601416750929">洁净美容</translation>
 <translation id="6234122620015464377">完成每份文档后裁切</translation>
 <translation id="6236290670123303279">管理设置</translation>
-<translation id="623825323736974198">管理将始终保持活跃状态且不会释放出内存的网站</translation>
 <translation id="6240447795304464094">Google Pay 徽标</translation>
 <translation id="6241121617266208201">隐藏建议</translation>
 <translation id="624499991300733384">打印合成器服务</translation>
@@ -3762,7 +3759,7 @@
 <translation id="8457125768502047971">无限期</translation>
 <translation id="8458202188076138974">Letter Extra</translation>
 <translation id="8460854335417802511">开启</translation>
-<translation id="8461694314515752532">使用您自己的同步口令加密已同步的数据</translation>
+<translation id="8461694314515752532">使用您自己的同步密码加密已同步的数据</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 张信用卡}other{# 张信用卡}}</translation>
 <translation id="8467494337615822642">前往“设置”中的 Chrome 安全检查页面</translation>
 <translation id="8468358362970107653">C3 信封</translation>

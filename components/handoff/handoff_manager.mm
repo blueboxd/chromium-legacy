@@ -87,7 +87,7 @@
     [self.userActivity invalidate];
 
     self.userActivity = [[NSUserActivity alloc]
-        initWithActivityType:*NSUserActivityTypeBrowsingWebStr];
+        initWithActivityType:NSUserActivityTypeBrowsingWeb];
     self.userActivity.webpageURL = net::NSURLWithGURL(_activeURL);
     [self.userActivity becomeCurrent];
   }

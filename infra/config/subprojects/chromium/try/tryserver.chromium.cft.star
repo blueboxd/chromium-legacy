@@ -29,7 +29,6 @@ try_.builder(
     mirrors = [
         "ci/linux-arm64-rel-cft",
     ],
-    os = os.LINUX_DEFAULT,
     gn_args = gn_args.config(
         configs = [
             "release_try_builder",
@@ -39,6 +38,7 @@ try_.builder(
             "arm64",
         ],
     ),
+    os = os.LINUX_DEFAULT,
 )
 
 try_.builder(
@@ -46,17 +46,16 @@ try_.builder(
     mirrors = [
         "ci/linux-rel-cft",
     ],
-    os = os.LINUX_DEFAULT,
     gn_args = gn_args.config(
         configs = [
             "release_try_builder",
             "reclient",
             "no_symbols",
-            "use_dummy_lastchange",
             "devtools_do_typecheck",
             "chrome_for_testing",
         ],
     ),
+    os = os.LINUX_DEFAULT,
 )
 
 try_.builder(
@@ -64,8 +63,6 @@ try_.builder(
     mirrors = [
         "ci/mac-rel-cft",
     ],
-    cores = None,
-    os = os.MAC_DEFAULT,
     gn_args = gn_args.config(
         configs = [
             "release_try_builder",
@@ -74,6 +71,8 @@ try_.builder(
             "chrome_for_testing",
         ],
     ),
+    cores = None,
+    os = os.MAC_DEFAULT,
 )
 
 try_.builder(
@@ -81,8 +80,6 @@ try_.builder(
     mirrors = [
         "ci/win-rel-cft",
     ],
-    os = os.WINDOWS_DEFAULT,
-    execution_timeout = 6 * time.hour,
     gn_args = gn_args.config(
         configs = [
             "release_try_builder",
@@ -94,4 +91,6 @@ try_.builder(
             "chrome_for_testing",
         ],
     ),
+    os = os.WINDOWS_DEFAULT,
+    execution_timeout = 6 * time.hour,
 )

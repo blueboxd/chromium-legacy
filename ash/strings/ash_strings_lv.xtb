@@ -389,7 +389,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="2624588537172718173">Ierīces audio un mikrofons</translation>
 <translation id="263399434338050016">“Select all” (Atlasīt visu)</translation>
 <translation id="2644422758626431000">Piespraust logu kreisajā malā</translation>
-<translation id="2645435784669275700">ChromeOS</translation>
+<translation id="2645435784669275700">Chrome OS</translation>
 <translation id="2653019840645008922">Loga uzņemšana</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2658778018866295321">Noklikšķiniet un velciet</translation>
@@ -438,7 +438,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="2860184359326882502">Precīzākā atbilstība</translation>
 <translation id="2865888419503095837">Tīkla informācija</translation>
 <translation id="2872353916818027657">Samainīt galveno monitoru</translation>
-<translation id="2872961005593481000">Izslēgt</translation>
+<translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2876338922445400217">Tuvināt ekrāna saturu</translation>
 <translation id="2878884018241093801">Nav nesenu vienumu</translation>
 <translation id="2885950158625301909">Uzzināt vairāk</translation>
@@ -447,6 +447,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="2914580577416829331">Ekrānuzņēmumi</translation>
 <translation id="2924416280450782352">Nevar parādīt vienumus. Mēģiniet atkārtoti atvērt šo paneli.</translation>
 <translation id="2931572158271115754">Šajā uzdevumu sarakstā nav neviena uzdevuma.</translation>
+<translation id="2935225303485967257">Pārvaldīt profilus</translation>
 <translation id="2941112035454246133">Zema</translation>
 <translation id="2942350706960889382">Dokota lupa</translation>
 <translation id="2942516765047364088">Plaukta pozīcija</translation>
@@ -624,7 +625,6 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="3593646411856133110">Velciet augšup un turiet, lai skatītu atvērtās lietotnes.</translation>
 <translation id="3595596368722241419">Akumulators pilns</translation>
 <translation id="3596012367874587041">Lietotnes iestatījumi</translation>
-<translation id="3598452309062311481">Meklēšana+h</translation>
 <translation id="3600061223661453002">Izslēgta</translation>
 <translation id="3604801046548457007">Darbvirsma <ph name="DESK_TITILE" /> ir izveidota</translation>
 <translation id="3606978283550408104">Savienojums ar Braila displeju ir izveidots.</translation>
@@ -776,7 +776,6 @@ Dažas funkcijas ir ierobežotas, lai palielinātu akumulatora darbības ilgumu.
 <translation id="4190780880566297084">Nerādīt iespēju iestatīt tālruņa jaunāko fotoattēlu, multivides satura un lietotņu skatīšanu</translation>
 <translation id="4192112279662688596">vai</translation>
 <translation id="4193857202545160520">Rādīt klikšķus un taustiņus</translation>
-<translation id="4193969623755915875">Lai lietotnē Izpēte atvērtu sadaļu Palīdzība, izmantojiet šādus īsinājumtaustiņus: <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4195579532193195633">Pašreizējā versija: <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />), <ph name="CHANNEL_NAME" />, <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">Atsākt darbu no vietas, kur to beidzu</translation>
 <translation id="4195877955194704651">Poga Automātiskie klikšķi</translation>
@@ -959,7 +958,6 @@ Dažas funkcijas ir ierobežotas, lai palielinātu akumulatora darbības ilgumu.
 <translation id="4889868803215848840">Neobligāti — sniedziet atsauksmes, lai uzlabotu ieteikumus:</translation>
 <translation id="4890187583552566966">Jūsu administrators ir atspējojis Google asistentu.</translation>
 <translation id="4890408602550914571">Tālrunim ir jāatrodas tuvumā, un tajā ir jābūt ieslēgtam Bluetooth savienojumam.</translation>
-<translation id="4892981359753171125">Sejas vadība</translation>
 <translation id="4895488851634969361">Akumulators ir pilnībā uzlādēts.</translation>
 <translation id="490375751687810070">Vertikāli</translation>
 <translation id="490788395437447240">Akumulators: <ph name="BATTERY_PERCENTAGE" />%</translation>

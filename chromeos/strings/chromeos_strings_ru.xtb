@@ -213,7 +213,7 @@
 <translation id="2391082728065870591">Отправить отзыв с отчетом</translation>
 <translation id="2407209115954268704">Статус блокировки SIM-карты</translation>
 <translation id="241419523391571119">Чтобы начать тестирование, откройте крышку устройства</translation>
-<translation id="2414886740292270097">Тёмная</translation>
+<translation id="2414886740292270097">Темная</translation>
 <translation id="2418150275289244458">Перейти к настройкам</translation>
 <translation id="2421798028054665193">Изображение: <ph name="CURRENT_PAGE" /> из <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Точность чисел с плавающей запятой</translation>
@@ -1067,7 +1067,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Сканировать}=1{Сканировать {NUMBER_OF_PAGES} страницу}one{Сканировать {NUMBER_OF_PAGES} страницу}few{Сканировать {NUMBER_OF_PAGES} страницы}many{Сканировать {NUMBER_OF_PAGES} страниц}other{Сканировать {NUMBER_OF_PAGES} страницы}}</translation>
 <translation id="8997710128084572139">Устройство заряжено на <ph name="BATTERY_PERCENTAGE" /> %.</translation>
-<translation id="8998289560386111590">Недоступно на вашем устройстве.</translation>
+<translation id="8998289560386111590">Недоступно на вашем устройстве</translation>
 <translation id="9003704114456258138">Частота</translation>
 <translation id="901834265349196618">электронная почта</translation>
 <translation id="9024331582947483881">полноэкранный режим</translation>

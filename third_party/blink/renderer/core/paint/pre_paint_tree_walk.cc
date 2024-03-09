@@ -6,6 +6,7 @@
 
 #include "base/types/optional_util.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -149,6 +150,10 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view,
     view->AssertSubtreeClearedPaintInvalidationFlags();
 #endif
   }
+
+  // Ensure the cached previous layout block in CaretDisplayItemClient is
+  // invalidated and cleared even if the layout block is display locked.
+  frame_view.GetFrame().Selection().EnsureInvalidationOfPreviousLayoutBlock();
 
   frame_view.GetLayoutShiftTracker().NotifyPrePaintFinished();
 }
@@ -377,7 +382,13 @@ FragmentData* PrePaintTreeWalk::GetOrCreateFragmentData(
   bool needs_paint_properties = fragment_data->PaintProperties();
 
   wtf_size_t fragment_data_idx = 0;
-  if (!pre_paint_info.is_first_for_node) {
+  if (pre_paint_info.is_first_for_node) {
+    if (const auto* layout_box = DynamicTo<LayoutBox>(&object)) {
+      if (layout_box->PhysicalFragmentCount() != fragment_list.size()) {
+        object.GetMutableForPainting().FragmentCountChanged();
+      }
+    }
+  } else {
     if (pre_paint_info.is_inside_fragment_child) {
       if (!object.HasInlineFragments() && !IsLinkHighlighted(object)) {
         // We don't need any additional fragments for culled inlines - unless

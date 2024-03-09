@@ -143,19 +143,14 @@ void AutofillBottomSheetTabHelper::AttachPasswordListeners(
     return;
   }
 
-  // Whether to only trigger the bottom sheet on trusted events.
-  bool allow_autofocus = base::FeatureList::IsEnabled(
-      password_manager::features::kIOSPasswordBottomSheetAutofocus);
-
   AttachListeners(renderer_ids, registered_password_renderer_ids_[frame_id],
-                  frame_id, allow_autofocus);
+                  frame_id);
 }
 
 void AutofillBottomSheetTabHelper::AttachListeners(
     const std::vector<autofill::FieldRendererId>& renderer_ids,
     std::set<autofill::FieldRendererId>& registered_renderer_ids,
-    const std::string& frame_id,
-    bool allow_autofocus) {
+    const std::string& frame_id) {
   if (!web_state_) {
     return;
   }
@@ -180,7 +175,7 @@ void AutofillBottomSheetTabHelper::AttachListeners(
   if (!new_renderer_ids.empty()) {
     // Enable the bottom sheet on the new renderer IDs.
     AutofillBottomSheetJavaScriptFeature::GetInstance()->AttachListeners(
-        new_renderer_ids, frame, allow_autofocus);
+        new_renderer_ids, frame);
 
     // Add new renderer IDs to the list of registered renderer IDs.
     std::copy(
@@ -339,7 +334,7 @@ void AutofillBottomSheetTabHelper::OnFieldTypesDetermined(
   }
   std::string frame_id = frame->GetFrameId();
   AttachListeners(renderer_ids, registered_payments_renderer_ids_[frame_id],
-                  frame_id, /*allow_autofocus=*/false);
+                  frame_id);
 }
 
 plus_addresses::PlusAddressCallback

@@ -1998,25 +1998,42 @@ bool Textfield::SetCompositionFromExistingText(
 
 #if BUILDFLAG(IS_CHROMEOS)
 gfx::Range Textfield::GetAutocorrectRange() const {
-  // TODO(b/316461955): Implement autocorrect UI for native fields.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::Range();
+  return model_->autocorrect_range();
 }
 
 gfx::Rect Textfield::GetAutocorrectCharacterBounds() const {
-  // TODO(b/316461955): Implement autocorrect UI for native fields.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::Rect();
+  gfx::Range autocorrect_range = model_->autocorrect_range();
+  if (autocorrect_range.is_empty())
+    return gfx::Rect();
+
+  gfx::RenderText* render_text = GetRenderText();
+  const gfx::SelectionModel caret(autocorrect_range, gfx::CURSOR_BACKWARD);
+  gfx::Rect rect;
+  rect = render_text->GetCursorBounds(caret, false);
+
+  ConvertRectToScreen(this, &rect);
+  return rect;
 }
 
 bool Textfield::SetAutocorrectRange(const gfx::Range& range) {
   if (!range.is_empty()) {
     base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Count",
                                   TextInputClient::SubClass::kTextField);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    auto* input_method_manager = ash::input_method::InputMethodManager::Get();
+    if (input_method_manager &&
+        ash::extension_ime_util::IsExperimentalMultilingual(
+            input_method_manager->GetActiveIMEState()
+                ->GetCurrentInputMethod()
+                .id())) {
+      base::UmaHistogramEnumeration(
+          "InputMethod.MultilingualExperiment.Autocorrect.Count",
+          TextInputClient::SubClass::kTextField);
+    }
+#endif
   }
-  // TODO(b/316461955): Implement autocorrect UI for native fields.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return model_->SetAutocorrectRange(range);
 }
 
 bool Textfield::AddGrammarFragments(
@@ -3142,7 +3159,7 @@ void Textfield::StopSelectionDragging() {
   selection_drag_type_ = absl::nullopt;
 }
 
-BEGIN_METADATA(Textfield, View)
+BEGIN_METADATA(Textfield)
 ADD_PROPERTY_METADATA(bool, ReadOnly)
 ADD_PROPERTY_METADATA(std::u16string, Text)
 ADD_PROPERTY_METADATA(ui::TextInputType, TextInputType)

@@ -43,8 +43,8 @@
 #import "ios/chrome/browser/find_in_page/model/util.h"
 #import "ios/chrome/browser/follow/model/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/model/followed_web_site.h"
-#import "ios/chrome/browser/infobars/infobar_ios.h"
-#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/model/infobar_ios.h"
+#import "ios/chrome/browser/infobars/model/infobar_manager_impl.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/metrics/model/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_state.h"
@@ -200,7 +200,7 @@
 #import "ios/chrome/browser/ui/sharing/sharing_positioner.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_mediator.h"
 #import "ios/chrome/browser/ui/spotlight_debugger/spotlight_debugger_coordinator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/coordinator/tab_strip_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/text_fragments/text_fragments_coordinator.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_coordinator.h"
@@ -1498,6 +1498,10 @@ enum class ToolbarKind {
 }
 
 - (void)sharePage {
+  // Defocus Find-In-Page before opening the share sheet. This will result in
+  // closing the Find-In-Page for some OS versions.
+  [self defocusFindInPage];
+
   if (!self.sharingCoordinator) {
     [self stopAndStartSharingCoordinator];
   } else {
@@ -2764,7 +2768,10 @@ enum class ToolbarKind {
     (syncer::TrustedVaultUserActionTriggerForUMA)trigger {
   [HandlerForProtocol(self.dispatcher, ApplicationCommands)
       showTrustedVaultReauthForFetchKeysFromViewController:self.viewController
-                                                   trigger:trigger];
+                                                   trigger:trigger
+                                               accessPoint:
+                                                   signin_metrics::AccessPoint::
+                                                       ACCESS_POINT_SETTINGS];
 }
 
 - (void)showTrustedVaultReauthForDegradedRecoverabilityWithTrigger:
@@ -2772,8 +2779,11 @@ enum class ToolbarKind {
   [HandlerForProtocol(self.dispatcher, ApplicationCommands)
       showTrustedVaultReauthForDegradedRecoverabilityFromViewController:
           self.viewController
-                                                                trigger:
-                                                                    trigger];
+                                                                trigger:trigger
+                                                            accessPoint:
+                                                                signin_metrics::
+                                                                    AccessPoint::
+                                                                        ACCESS_POINT_SETTINGS];
 }
 
 #pragma mark - SigninPresenter

@@ -61,23 +61,6 @@ PageSpecificContentSettingsDelegate::FromWebContents(
 void PageSpecificContentSettingsDelegate::OnIsCapturingVideoChanged(
     content::WebContents* web_contents,
     bool is_capturing_video) {
-  OnCapturingStateChanged(web_contents, ContentSettingsType::MEDIASTREAM_CAMERA,
-                          is_capturing_video);
-}
-
-void PageSpecificContentSettingsDelegate::OnIsCapturingAudioChanged(
-    content::WebContents* web_contents,
-    bool is_capturing_audio) {
-  OnCapturingStateChanged(web_contents, ContentSettingsType::MEDIASTREAM_MIC,
-                          is_capturing_audio);
-}
-
-void PageSpecificContentSettingsDelegate::OnCapturingStateChanged(
-    content::WebContents* web_contents,
-    ContentSettingsType type,
-    bool is_capturing) {
-  DCHECK(web_contents);
-
   PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
       web_contents->GetPrimaryMainFrame());
 
@@ -87,13 +70,24 @@ void PageSpecificContentSettingsDelegate::OnCapturingStateChanged(
     return;
   }
 
-  pscs->OnCapturingStateChanged(type, is_capturing);
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA,
+                                is_capturing_video);
+}
 
-  content::WebContents* pip_web_contents =
-      PictureInPictureWindowManager::GetInstance()->GetChildWebContents();
-  if (pip_web_contents && pip_web_contents != web_contents) {
-    OnCapturingStateChanged(pip_web_contents, type, is_capturing);
+void PageSpecificContentSettingsDelegate::OnIsCapturingAudioChanged(
+    content::WebContents* web_contents,
+    bool is_capturing_audio) {
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents->GetPrimaryMainFrame());
+
+  if (pscs == nullptr) {
+    // There are cases, e.g. MPArch, where there is no active instance of
+    // PageSpecificContentSettings for a frame.
+    return;
   }
+
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_MIC,
+                                is_capturing_audio);
 }
 
 void PageSpecificContentSettingsDelegate::UpdateLocationBar() {

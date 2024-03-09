@@ -68,6 +68,10 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
     virtual infobars::ContentInfoBarManager* GetInfoBarManager() = 0;
     virtual void RenderProcessGone(bool crashed) = 0;
     virtual void ShowCertificateViewer(const std::string& cert_chain) = 0;
+
+    virtual int GetDockStateForLogging() = 0;
+    virtual int GetOpenedByForLogging() = 0;
+    virtual int GetClosedByForLogging() = 0;
   };
 
   static DevToolsUIBindings* ForWebContents(content::WebContents* web_contents);
@@ -162,8 +166,6 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
       bool network_discovery_enabled,
       const std::string& network_discovery_config) override;
   void SetDevicesUpdatesEnabled(bool enabled) override;
-  void PerformActionOnRemotePage(const std::string& page_id,
-                                 const std::string& action) override;
   void OpenRemotePage(const std::string& browser_id,
                       const std::string& url) override;
   void OpenNodeFrontend() override;
@@ -261,6 +263,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                        const std::vector<std::string>& file_paths);
   void ShowDevToolsInfoBar(const std::u16string& message,
                            DevToolsInfoBarDelegate::Callback callback);
+  bool MaybeStartLogging();
   base::TimeDelta GetTimeSinceLastAction();
 
   // Extensions support.
@@ -308,6 +311,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   base::TimeTicks last_action_time_;
 
   std::unique_ptr<AidaClient> aida_client_;
+  base::UnguessableToken session_id_for_logging_;
   base::WeakPtrFactory<DevToolsUIBindings> weak_factory_{this};
 };
 

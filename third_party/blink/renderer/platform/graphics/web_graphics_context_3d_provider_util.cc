@@ -92,11 +92,11 @@ CreateOffscreenGraphicsContext3DProvider(
 void CreateWebGPUGraphicsContext3DProviderAsync(
     const KURL& url,
     scoped_refptr<base::SingleThreadTaskRunner> current_thread_task_runner,
-    WTF::CrossThreadOnceFunction<
-        void(std::unique_ptr<WebGraphicsContext3DProvider>)> callback) {
+    base::OnceCallback<void(std::unique_ptr<WebGraphicsContext3DProvider>)>
+        callback) {
   if (IsMainThread()) {
     Platform::Current()->CreateWebGPUGraphicsContext3DProviderAsync(
-        url, ConvertToBaseOnceCallback(std::move(callback)));
+        url, std::move(callback));
   } else {
     // Posts a task to the main thread to create context provider
     // because the current RendererBlinkPlatformImpl and viz::Gpu
@@ -111,7 +111,8 @@ void CreateWebGPUGraphicsContext3DProviderAsync(
             AccessMainThreadForWebGraphicsContext3DProvider()),
         FROM_HERE,
         CrossThreadBindOnce(&CreateWebGPUGraphicsContextOnMainThreadAsync, url,
-                            current_thread_task_runner, std::move(callback)));
+                            current_thread_task_runner,
+                            CrossThreadBindOnce(std::move(callback))));
   }
 }
 

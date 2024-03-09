@@ -87,7 +87,6 @@
 <translation id="11635448457105324">Ylläpidä osoitteita ‑painike, aktivoi lisätäksesi ja muuttaaksesi osoitteita Chromen asetuksista</translation>
 <translation id="1165039591588034296">Virhe</translation>
 <translation id="1165174597379888365">Sivulla on käyty</translation>
-<translation id="1165813024716836071">{COUNT,plural, =0{Ei yhtään}=1{1 sivustolta (pysyt kirjautuneena Google-tilillesi)}other{# sivustolta (pysyt kirjautuneena Google-tilillesi)}}</translation>
 <translation id="1165852471352757509">TV-dokumentit ja tiedesarjat</translation>
 <translation id="1174644974616730562">Kirjekuori kiinalainen #1</translation>
 <translation id="1174723505405632867">Haluatko, että <ph name="EMBEDDED_URL" /> saa käyttää evästeitä ja sivustodataa (<ph name="TOP_LEVEL_URL" />)?
@@ -258,7 +257,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="1455413310270022028">Pyyhekumi</translation>
 <translation id="1458140305240870199">Alusasut</translation>
 <translation id="1459693405370120464">Sää</translation>
-<translation id="1461041542809785877">Suorituskyky</translation>
 <translation id="1462245070427461050">JIS B9 (45 mm x 64 mm)</translation>
 <translation id="1462951478840426066">käyttää tietokoneesi fontteja, jotta voit luoda tasokasta sisältöä</translation>
 <translation id="1467432559032391204">Vasemmalla</translation>
@@ -829,6 +827,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
           <ph name="LIST_ITEM" />Evästeet ja sivustodata
           <ph name="LIST_ITEM" />Lomakkeisiin syötetyt tiedot
         <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">Lisää</translation>
 <translation id="2625385379895617796">Kellosi edistää</translation>
 <translation id="262745152991669301">Saa pyytää lupaa yhdistää USB-laitteisiin</translation>
 <translation id="2629325967560697240">Jos haluat käyttää Chromen tehokkainta suojausta, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />ota parannettu suojaus käyttöön<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -1504,7 +1503,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="3992684624889376114">Tietoja sivusta</translation>
 <translation id="3995639283717357522">Ota käytäntöjä käyttöön</translation>
 <translation id="4000598935132966791">Lue lisää hallinnoitujen selainten sivustorajoituksista</translation>
-<translation id="4006465311664329701">Maksutavat, tarjoukset ja osoitteet Google Payta käyttäen</translation>
+<translation id="4006465311664329701">Maksutavat, tarjoukset ja osoitteet Google Playta käyttäen</translation>
 <translation id="4010758435855888356">Sallitaanko tallennustilan pääsyoikeudet?</translation>
 <translation id="401170183602135785">Kirjekuori C6</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokumentti, jossa on {COUNT} sivu}other{PDF-dokumentti, jossa on {COUNT} sivua}}</translation>
@@ -1591,6 +1590,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4177501066905053472">Mainosten aiheet</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">Lopeta hinnan seuraaminen</translation>
+<translation id="4191334393248735295">Pituus</translation>
 <translation id="4195459680867822611">Katso Chromen vinkkejä ‑painike, aktivoi katsoaksesi lisätietoa Chromen ominaisuuksista</translation>
 <translation id="4195643157523330669">Avaa uudelle välilehdelle</translation>
 <translation id="4196861286325780578">&amp;Toista siirto</translation>
@@ -1922,7 +1922,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4827283332383516812">Poista kortti</translation>
 <translation id="4831993743164297314">Valoladontatulostimen paperi</translation>
 <translation id="483241715238664915">Laita varoitukset päälle</translation>
-<translation id="4834250788637067901">Maksutavat, tarjoukset ja osoitteet Google Payta käyttäen</translation>
+<translation id="4834250788637067901">Maksutavat, tarjoukset ja osoitteet Google Playta käyttäen</translation>
 <translation id="4838327282952368871">Unenomainen</translation>
 <translation id="4839087176073128681">Maksa seuraavalla kerralla nopeammin ja suojaa korttisi Googlen alan johtavalla suojauksella.</translation>
 <translation id="4840250757394056958">Tarkista Chrome-historiasi</translation>
@@ -2607,7 +2607,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="6232271601416750929">Luonnonkosmetiikka</translation>
 <translation id="6234122620015464377">Leikkaa jokaisen dokumentin jälkeen</translation>
 <translation id="6236290670123303279">Määritä asetuksia</translation>
-<translation id="623825323736974198">Valitse sivustot, jotka pysyvät aina aktiivisina ja joilta ei vapauteta muistia</translation>
 <translation id="6240447795304464094">Google Pay ‑logo</translation>
 <translation id="6241121617266208201">Piilota ehdotukset</translation>
 <translation id="624499991300733384">Tulosteiden koontipalvelu</translation>

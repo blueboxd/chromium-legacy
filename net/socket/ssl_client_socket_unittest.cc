@@ -589,12 +589,12 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
 // anything.
 class MockCTVerifier : public CTVerifier {
  public:
-  MOCK_METHOD5(Verify,
-               void(X509Certificate*,
-                    base::StringPiece,
-                    base::StringPiece,
-                    SignedCertificateTimestampAndStatusList*,
-                    const NetLogWithSource&));
+  MOCK_CONST_METHOD5(Verify,
+                     void(X509Certificate*,
+                          base::StringPiece,
+                          base::StringPiece,
+                          SignedCertificateTimestampAndStatusList*,
+                          const NetLogWithSource&));
 };
 
 // A mock CTPolicyEnforcer that returns a custom verification result.
@@ -6059,9 +6059,9 @@ TEST_P(SSLClientSocketAlpsTest, Alps) {
 
   base::test::ScopedFeatureList feature_list;
   if (client_use_new_alps_) {
-    feature_list.InitAndEnableFeature(features::kUseAlpsNewCodepoint);
+    feature_list.InitAndEnableFeature(features::kUseNewAlpsCodepointHttp2);
   } else {
-    feature_list.InitAndDisableFeature(features::kUseAlpsNewCodepoint);
+    feature_list.InitAndDisableFeature(features::kUseNewAlpsCodepointHttp2);
   }
 
   if (client_alps_enabled_) {

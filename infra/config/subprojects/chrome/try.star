@@ -93,6 +93,10 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "chromeos-betty-pi-arc-chrome-accessibility-fyi",
+)
+
+chrome_internal_verifier(
     builder = "chromeos-eve-chrome",
 )
 
@@ -212,6 +216,26 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     branch_selector = branches.selector.MAC_BRANCHES,
     builder = "mac-pgo",
+)
+
+chrome_internal_verifier(
+    builder = "optimization_guide-linux",
+)
+
+chrome_internal_verifier(
+    builder = "optimization_guide-mac-arm64",
+)
+
+chrome_internal_verifier(
+    builder = "optimization_guide-mac-x64",
+)
+
+chrome_internal_verifier(
+    builder = "optimization_guide-win32",
+)
+
+chrome_internal_verifier(
+    builder = "optimization_guide-win64",
 )
 
 chrome_internal_verifier(

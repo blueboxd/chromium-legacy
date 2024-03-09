@@ -347,7 +347,9 @@ export class NavigationListModel extends EventTarget {
 
     this.androidAppList_ = [];
     for (let i = 0; i < this.androidAppListModel_.length(); i++) {
-      this.androidAppList_.push(this.androidAppListModel_.item(i));
+      this.androidAppList_.push(
+          /** @type {chrome.fileManagerPrivate.AndroidApp} */ (
+              this.androidAppListModel_.item(i)));
     }
 
     // Reorder volumes, shortcuts, and optional items for initial display.
@@ -365,15 +367,15 @@ export class NavigationListModel extends EventTarget {
         const newList = [];
 
         // Use the old instances if they just move.
-        for (let i = 0; i < event.permutation.length; i++) {
-          if (event.permutation[i] >= 0) {
+        for (let i = 0; i < event.detail.permutation.length; i++) {
+          if (event.detail.permutation[i] >= 0) {
             // @ts-ignore: error TS2532: Object is possibly 'undefined'.
-            newList[event.permutation[i]] = this.volumeList_[i];
+            newList[event.detail.permutation[i]] = this.volumeList_[i];
           }
         }
 
         // Create missing instances.
-        for (let i = 0; i < event.newLength; i++) {
+        for (let i = 0; i < event.detail.newLength; i++) {
           if (!newList[i]) {
             newList[i] = volumeInfoToModelItem(
                 // @ts-ignore: error TS2339: Property 'volumeManager_' does not
@@ -383,7 +385,7 @@ export class NavigationListModel extends EventTarget {
         }
         this.volumeList_ = newList;
 
-        permutation = event.permutation.slice();
+        permutation = event.detail.permutation.slice();
 
         // shortcutList part has not been changed, so the permutation should be
         // just identity mapping with a shift.
@@ -475,14 +477,15 @@ export class NavigationListModel extends EventTarget {
       this.refreshNavigationItems();
 
       // Dispatch permuted event.
-      const permutedEvent = new Event('permuted');
-      // @ts-ignore: error TS2532: Object is possibly 'undefined'.
-      permutedEvent.newLength = this.volumeList_.length +
-          // @ts-ignore: error TS2532: Object is possibly 'undefined'.
-          this.shortcutList_.length + this.androidAppList_.length;
-      // @ts-ignore: error TS2339: Property 'permutation' does not exist on type
-      // 'Event'.
-      permutedEvent.permutation = permutation;
+      const permutedEvent = new CustomEvent('permuted', {
+        detail: {
+          // @ts-ignore: error TS2532: Object is possibly 'undefined'
+          newLength: this.volumeList_.length + this.shortcutList_.length +
+              // @ts-ignore: error TS2532: Object is possibly 'undefined'
+              this.androidAppList_.length,
+          permutation,
+        },
+      });
       // @ts-ignore: error TS2339: Property 'dispatchEvent' does not exist on
       // type 'permutedHandler'.
       this.dispatchEvent(permutedEvent);
@@ -812,9 +815,9 @@ export class NavigationListModel extends EventTarget {
       }
       // For each entry in the list, remove any for volumes that no longer
       // exist.
-      // @ts-ignore: error TS2339: Property 'getUIChildren' does not exist on
+      // @ts-ignore: error TS2339: Property 'getUiChildren' does not exist on
       // type 'FilesAppEntry | EntryList | VolumeEntry'.
-      for (const volume of myFilesEntry.getUIChildren()) {
+      for (const volume of myFilesEntry.getUiChildren()) {
         if (!volume.volumeInfo ||
             volume.volumeInfo.volumeType != VolumeType.GUEST_OS) {
           continue;
@@ -936,9 +939,9 @@ export class NavigationListModel extends EventTarget {
           // @ts-ignore: error TS7006: Parameter 'p' implicitly has an 'any'
           // type.
           new Set(removableGroup.map(p => p.volumeInfo));
-      // @ts-ignore: error TS2339: Property 'getUIChildren' does not exist on
+      // @ts-ignore: error TS2339: Property 'getUiChildren' does not exist on
       // type 'FilesAppEntry | EntryList'.
-      for (const partition of removableEntry.getUIChildren()) {
+      for (const partition of removableEntry.getUiChildren()) {
         if (!existingVolumeInfos.has(partition.volumeInfo)) {
           // @ts-ignore: error TS2339: Property 'removeChildEntry' does not
           // exist on type 'FilesAppEntry | EntryList'.

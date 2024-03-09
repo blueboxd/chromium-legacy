@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/crosapi/document_scan_ash.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/ash/components/dbus/lorgnette/lorgnette_service.pb.h"
 #include "components/user_manager/user_manager.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace crosapi {
 
@@ -70,7 +70,7 @@ struct ScanResult {
     return weak_ptr_factory.GetWeakPtr();
   }
 
-  absl::optional<std::string> data;
+  std::optional<std::string> data;
 
  private:
   base::WeakPtrFactory<ScanResult> weak_ptr_factory{this};
@@ -101,7 +101,7 @@ void OnScanCompleted(DocumentScanAsh::ScanFirstPageCallback callback,
 
 void GetScannerListAdapter(
     DocumentScanAsh::GetScannerListCallback callback,
-    const absl::optional<lorgnette::ListScannersResponse>& response_in) {
+    const std::optional<lorgnette::ListScannersResponse>& response_in) {
   if (!response_in) {
     auto response_out = mojom::GetScannerListResponse::New();
     response_out->result = mojom::ScannerOperationResult::kInternalError;
@@ -115,7 +115,7 @@ void GetScannerListAdapter(
 void OpenScannerAdapter(
     const std::string& scanner_id,
     DocumentScanAsh::OpenScannerCallback callback,
-    const absl::optional<lorgnette::OpenScannerResponse>& response_in) {
+    const std::optional<lorgnette::OpenScannerResponse>& response_in) {
   if (!response_in) {
     auto response_out = mojom::OpenScannerResponse::New();
     response_out->scanner_id = scanner_id;
@@ -130,7 +130,7 @@ void OpenScannerAdapter(
 void CloseScannerAdapter(
     const std::string& scanner_handle,
     DocumentScanAsh::CloseScannerCallback callback,
-    const absl::optional<lorgnette::CloseScannerResponse>& response_in) {
+    const std::optional<lorgnette::CloseScannerResponse>& response_in) {
   if (!response_in) {
     auto response_out = mojom::CloseScannerResponse::New();
     response_out->scanner_handle = scanner_handle;
@@ -145,7 +145,7 @@ void CloseScannerAdapter(
 void StartPreparedScanAdapter(
     const std::string& scanner_handle,
     DocumentScanAsh::StartPreparedScanCallback callback,
-    const absl::optional<lorgnette::StartPreparedScanResponse>& response_in) {
+    const std::optional<lorgnette::StartPreparedScanResponse>& response_in) {
   if (!response_in) {
     auto response = mojom::StartPreparedScanResponse::New();
     response->result = mojom::ScannerOperationResult::kInternalError;
@@ -160,7 +160,7 @@ void StartPreparedScanAdapter(
 void ReadScanDataAdapter(
     const std::string& job_handle,
     DocumentScanAsh::ReadScanDataCallback callback,
-    const absl::optional<lorgnette::ReadScanDataResponse>& response_in) {
+    const std::optional<lorgnette::ReadScanDataResponse>& response_in) {
   if (!response_in) {
     auto response = mojom::ReadScanDataResponse::New();
     response->result = mojom::ScannerOperationResult::kInternalError;
@@ -170,6 +170,55 @@ void ReadScanDataAdapter(
   }
   std::move(callback).Run(
       mojom::ReadScanDataResponse::From(response_in.value()));
+}
+
+void SetOptionsAdapter(
+    const std::string& scanner_handle,
+    std::vector<std::string> option_names,
+    DocumentScanAsh::SetOptionsCallback callback,
+    const std::optional<lorgnette::SetOptionsResponse>& response_in) {
+  if (!response_in) {
+    auto response = mojom::SetOptionsResponse::New();
+    response->scanner_handle = scanner_handle;
+    for (const std::string& option_name : option_names) {
+      auto result = mojom::SetOptionResult::New();
+      result->name = option_name;
+      result->result = mojom::ScannerOperationResult::kInternalError;
+      response->results.emplace_back(std::move(result));
+    }
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+  std::move(callback).Run(mojom::SetOptionsResponse::From(response_in.value()));
+}
+
+void GetOptionGroupsAdapter(
+    const std::string& scanner_handle,
+    DocumentScanAsh::GetOptionGroupsCallback callback,
+    const std::optional<lorgnette::GetCurrentConfigResponse>& response_in) {
+  if (!response_in) {
+    auto response = mojom::GetOptionGroupsResponse::New();
+    response->result = mojom::ScannerOperationResult::kInternalError;
+    response->scanner_handle = scanner_handle;
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+  std::move(callback).Run(
+      mojom::GetOptionGroupsResponse::From(response_in.value()));
+}
+
+void CancelScanAdapter(
+    const std::string& job_handle,
+    DocumentScanAsh::CancelScanCallback callback,
+    const std::optional<lorgnette::CancelScanResponse>& response_in) {
+  if (!response_in) {
+    auto response = mojom::CancelScanResponse::New();
+    response->job_handle = job_handle;
+    response->result = mojom::ScannerOperationResult::kInternalError;
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+  std::move(callback).Run(mojom::CancelScanResponse::From(response_in.value()));
 }
 
 }  // namespace
@@ -301,6 +350,74 @@ void DocumentScanAsh::ReadScanData(const std::string& job_handle,
   ash::LorgnetteScannerManagerFactory::GetForBrowserContext(GetProfile())
       ->ReadScanData(request, base::BindOnce(&ReadScanDataAdapter, job_handle,
                                              std::move(callback)));
+}
+
+void DocumentScanAsh::SetOptions(const std::string& scanner_handle,
+                                 std::vector<mojom::OptionSettingPtr> options,
+                                 SetOptionsCallback callback) {
+  if (!ash::features::IsAdvancedDocumentScanAPIEnabled()) {
+    auto response = mojom::SetOptionsResponse::New();
+    response->scanner_handle = scanner_handle;
+    for (const mojom::OptionSettingPtr& option : options) {
+      auto result = mojom::SetOptionResult::New();
+      result->name = option->name;
+      result->result = mojom::ScannerOperationResult::kUnsupported;
+      response->results.emplace_back(std::move(result));
+    }
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+
+  lorgnette::SetOptionsRequest request;
+  request.mutable_scanner()->set_token(scanner_handle);
+  // Keep track of the option names so we can bind to our adapter below.
+  std::vector<std::string> option_names;
+  for (const mojom::OptionSettingPtr& option_request : options) {
+    option_names.emplace_back(option_request->name);
+
+    *request.add_options() = option_request.To<lorgnette::ScannerOption>();
+  }
+
+  ash::LorgnetteScannerManagerFactory::GetForBrowserContext(GetProfile())
+      ->SetOptions(request, base::BindOnce(&SetOptionsAdapter, scanner_handle,
+                                           option_names, std::move(callback)));
+}
+
+void DocumentScanAsh::GetOptionGroups(const std::string& scanner_handle,
+                                      GetOptionGroupsCallback callback) {
+  if (!ash::features::IsAdvancedDocumentScanAPIEnabled()) {
+    auto response = mojom::GetOptionGroupsResponse::New();
+    response->result = mojom::ScannerOperationResult::kUnsupported;
+    response->scanner_handle = scanner_handle;
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+
+  lorgnette::GetCurrentConfigRequest request;
+  request.mutable_scanner()->set_token(scanner_handle);
+
+  ash::LorgnetteScannerManagerFactory::GetForBrowserContext(GetProfile())
+      ->GetCurrentConfig(request,
+                         base::BindOnce(&GetOptionGroupsAdapter, scanner_handle,
+                                        std::move(callback)));
+}
+
+void DocumentScanAsh::CancelScan(const std::string& job_handle,
+                                 CancelScanCallback callback) {
+  if (!ash::features::IsAdvancedDocumentScanAPIEnabled()) {
+    auto response = mojom::CancelScanResponse::New();
+    response->job_handle = job_handle;
+    response->result = mojom::ScannerOperationResult::kUnsupported;
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+
+  lorgnette::CancelScanRequest request;
+  request.mutable_job_handle()->set_token(job_handle);
+
+  ash::LorgnetteScannerManagerFactory::GetForBrowserContext(GetProfile())
+      ->CancelScan(request, base::BindOnce(&CancelScanAdapter, job_handle,
+                                           std::move(callback)));
 }
 
 }  // namespace crosapi

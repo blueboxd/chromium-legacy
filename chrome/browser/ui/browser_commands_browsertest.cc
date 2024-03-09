@@ -335,8 +335,6 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, StartsOrganizationRequest) {
-  base::HistogramTester histogram_tester;
-
   chrome::ExecuteCommand(browser(), IDC_ORGANIZE_TABS);
 
   TabOrganizationService* service =
@@ -344,13 +342,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, StartsOrganizationRequest) {
   const TabOrganizationSession* session =
       service->GetSessionForBrowser(browser());
 
-  EXPECT_EQ(TabOrganizationRequest::State::NOT_STARTED,
+  EXPECT_NE(TabOrganizationRequest::State::NOT_STARTED,
             session->request()->state());
-
-  histogram_tester.ExpectUniqueSample("Tab.Organization.AllEntrypoints.Clicked",
-                                      true, 1);
-  histogram_tester.ExpectUniqueSample("Tab.Organization.ThreeDotMenu.Clicked",
-                                      true, 1);
 }
 
 }  // namespace chrome

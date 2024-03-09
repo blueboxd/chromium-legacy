@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/types/optional_util.h"
-#include "build/blink_buildflags.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/features.h"
@@ -21,10 +20,6 @@
 #include "net/cookies/site_for_cookies.h"
 #include "net/cookies/static_cookie_policy.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(USE_BLINK)
-#include "components/privacy_sandbox/privacy_sandbox_features.h"
-#endif
 
 namespace content_settings {
 
@@ -38,16 +33,7 @@ void CookieSettingsBase::
 
 CookieSettingsBase::CookieSettingsBase()
     : is_storage_partitioned_(base::FeatureList::IsEnabled(
-          net::features::kThirdPartyStoragePartitioning)),
-      is_privacy_sandbox_v4_enabled_(
-#if !BUILDFLAG(USE_BLINK)
-          false
-#else
-          base::FeatureList::IsEnabled(
-              privacy_sandbox::kPrivacySandboxSettings4)
-#endif
-      ) {
-}
+          net::features::kThirdPartyStoragePartitioning)) {}
 
 CookieSettingsBase::CookieSettingWithMetadata::CookieSettingWithMetadata(
     ContentSetting cookie_setting,
@@ -115,8 +101,7 @@ bool CookieSettingsBase::ShouldDeleteCookieOnExit(
   // don't want to match against (*, exception) pattern.
   // No overrides are given since existing ones only pertain to 3P checks.
   ContentSetting setting =
-      GetCookieSettingInternal(origin,
-                               is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
+      GetCookieSettingInternal(origin, GURL(),
                                /*is_third_party_request=*/false,
                                net::CookieSettingOverrides(), nullptr)
           .cookie_setting();
@@ -133,11 +118,6 @@ bool CookieSettingsBase::ShouldDeleteCookieOnExit(
   // Check if there is a more precise rule that "domain matches" this cookie.
   bool matches_session_only_rule = false;
   for (const auto& entry : cookie_settings) {
-    // Skip WebUI third-party cookie exceptions.
-    if (entry.source == "webui_allowlist" &&
-        !entry.secondary_pattern.MatchesAllHosts()) {
-      continue;
-    }
     // While we don't know on which top-frame-origin a cookie was set, we still
     // use exceptions that only specify a secondary pattern to handle cookies
     // that match this pattern.
@@ -205,8 +185,7 @@ bool CookieSettingsBase::IsCookieSessionOnly(const GURL& origin) const {
   // don't want to match against (*, exception) pattern.
   // No overrides are given since existing ones only pertain to 3P checks.
   ContentSetting setting =
-      GetCookieSettingInternal(origin,
-                               is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
+      GetCookieSettingInternal(origin, GURL(),
                                /*is_third_party_request=*/false,
                                net::CookieSettingOverrides(), nullptr)
           .cookie_setting();
@@ -341,6 +320,19 @@ CookieSettingsBase::GetCookieSettingInternal(
         net::cookie_util::StorageAccessResult::ACCESS_ALLOWED);
   }
 
+  if (block_third && ShouldConsider3pcdMetadataGrantsSettings(overrides) &&
+      IsAllowed(GetContentSetting(*url, first_party_url,
+                                  ContentSettingsType::TPCD_METADATA_GRANTS))) {
+    block_third = false;
+    third_party_cookie_allow_mechanism =
+        ThirdPartyCookieAllowMechanism::kAllowBy3PCDMetadata;
+    FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
+                                   ACCESS_ALLOWED_3PCD_METADATA_GRANT);
+    if (info) {
+      info->source = SETTING_SOURCE_TPCD_GRANT;
+    }
+  }
+
   if (block_third && ShouldConsider3pcdSupportSettings(overrides) &&
       GetContentSetting(*url, first_party_url,
                         ContentSettingsType::TPCD_SUPPORT) ==
@@ -350,19 +342,6 @@ CookieSettingsBase::GetCookieSettingInternal(
         ThirdPartyCookieAllowMechanism::kAllowBy3PCD;
     FireStorageAccessHistogram(
         net::cookie_util::StorageAccessResult::ACCESS_ALLOWED_3PCD);
-    if (info) {
-      info->source = SETTING_SOURCE_TPCD_GRANT;
-    }
-  }
-
-  if (block_third && ShouldConsider3pcdMetadataGrantsSettings(overrides) &&
-      IsAllowed(GetContentSetting(*url, first_party_url,
-                                  ContentSettingsType::TPCD_METADATA_GRANTS))) {
-    block_third = false;
-    third_party_cookie_allow_mechanism =
-        ThirdPartyCookieAllowMechanism::kAllowBy3PCDMetadata;
-    FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
-                                   ACCESS_ALLOWED_3PCD_METADATA_GRANT);
     if (info) {
       info->source = SETTING_SOURCE_TPCD_GRANT;
     }

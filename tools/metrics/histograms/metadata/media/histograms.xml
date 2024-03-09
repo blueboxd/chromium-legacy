@@ -2004,45 +2004,40 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.CrosGlobalMediaControls.PinAction" enum="BooleanPinned"
-    expires_after="2024-04-30">
+    expires_after="2022-04-24">
   <owner>jazzhsue@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
-    Record each time user pins/unpins CrOS global media controls. Warning: this
-    histogram was expired from 2022-04-24 to 2024-01-04; data may be missing.
+    Record each time user pins/unpins CrOS global media controls.
   </summary>
 </histogram>
 
 <histogram name="Media.CrosGlobalMediaControls.QuickSettingUserAction"
-    enum="MediaSessionAction" expires_after="2024-04-30">
+    enum="MediaSessionAction" expires_after="2022-04-24">
   <owner>jazzhsue@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
-    The action user clicked on the media controls in quick settings. Warning:
-    this histogram was expired from 2022-04-24 to 2024-01-04; data may be
-    missing.
+    The action user clicked on the media controls in quick settings.
   </summary>
 </histogram>
 
 <histogram name="Media.CrosGlobalMediaControls.RepeatUsageInQuickSetting"
-    enum="BooleanIsRepeat" expires_after="2024-04-30">
+    enum="BooleanIsRepeat" expires_after="2022-05-01">
   <owner>jazzhsue@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     Record each time media controls' sub-menu in quick settings is opened. True
-    if it is a repeat usage. Warning: this histogram was expired from 2022-05-01
-    to 2024-01-04; data may be missing.
+    if it is a repeat usage.
   </summary>
 </histogram>
 
 <histogram name="Media.CrosGlobalMediaControls.RepeatUsageOnShelf"
-    enum="BooleanIsRepeat" expires_after="2024-04-30">
+    enum="BooleanIsRepeat" expires_after="2022-04-24">
   <owner>jazzhsue@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     Record each time global media controls on the shelf is opened. True if it is
-    a repeat usage. Warning: this histogram was expired from 2022-04-24 to
-    2024-01-04; data may be missing.
+    a repeat usage.
   </summary>
 </histogram>
 
@@ -2921,6 +2916,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.EME.MediaLicenseDatabaseSQLiteError.QueryPageCount"
+    enum="SqliteLoggedResultCode" expires_after="2024-04-11">
+  <owner>vpasupathy@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    This UMA records SQLite specific errors that occur when querying for
+    page_count from the Media License Database. This UMA is recorded on every
+    error for this operation.
+  </summary>
+</histogram>
+
+<histogram name="Media.EME.MediaLicenseDatabaseSQLiteError.QueryPageSize"
+    enum="SqliteLoggedResultCode" expires_after="2024-04-11">
+  <owner>vpasupathy@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    This UMA records SQLite specific errors that occur when querying for page
+    size from the Media License Database. This UMA is recorded on every error
+    for this operation.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.MediaLicenseDatabaseSQLiteError.ReadFile"
     enum="SqliteLoggedResultCode" expires_after="2024-04-11">
   <owner>vpasupathy@chromium.org</owner>
@@ -2940,6 +2957,17 @@ chromium-metrics-reviews@google.com.
     This UMA records SQLite specific errors that occur when writing a file to
     the Media License Database. This UMA is recorded on every error for this
     operation.
+  </summary>
+</histogram>
+
+<histogram name="Media.EME.MediaLicenseStorageHost.CurrentDatabaseUsageKB"
+    units="KB" expires_after="2024-04-11">
+  <owner>vpasupathy@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    This UMA records the current MediaLicenseDatabase size in KB. This UMA is
+    recorded only once, on the first read, to retrieve usage levels of the
+    MediaLicenseDatabase.
   </summary>
 </histogram>
 
@@ -4235,7 +4263,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Notification.Count" units="count"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>yrw@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
@@ -4256,7 +4284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Notification.Source" enum="MediaNotificationSource"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>yrw@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
@@ -4267,7 +4295,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Notification.UserAction" enum="MediaSessionAction"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>yrw@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
@@ -5135,7 +5163,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.V4l2VideoDecoder.Error" enum="V4l2VideoDecoderFunctions"
-    expires_after="2023-12-07">
+    expires_after="2024-05-19">
   <owner>stevecho@chromium.org</owner>
   <owner>chromeos-gfx-video@google.com</owner>
   <summary>
@@ -5146,7 +5174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.V4l2VideoDecoder.MediaIoctlError"
-    enum="MediaIoctlRequests" expires_after="2023-12-07">
+    enum="MediaIoctlRequests" expires_after="2024-05-19">
   <owner>stevecho@chromium.org</owner>
   <owner>chromeos-gfx-video@google.com</owner>
   <summary>
@@ -5833,7 +5861,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCaptureManager.DesktopCaptureImplementationAndType"
-    enum="DesktopCaptureImplementationAndType" expires_after="2024-03-31">
+    enum="DesktopCaptureImplementationAndType" expires_after="2024-06-02">
   <owner>handellm@chromium.org</owner>
   <owner>ccameron@chromium.org</owner>
   <summary>
@@ -5968,7 +5996,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoEncoder.{Usage}.Frames" units="frames"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>hiroh@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
@@ -5990,7 +6018,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoEncoder.{Usage}.HW" enum="Boolean"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>hiroh@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
@@ -6001,7 +6029,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoEncoder.{Usage}.Profile" enum="VideoCodecProfile"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>hiroh@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
@@ -6012,7 +6040,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoEncoder.{Usage}.Status" enum="EncoderStatus"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>hiroh@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
@@ -6514,7 +6542,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MediaRouter.CastStreaming.Audio.PlaybackOnReceiver"
-    enum="Boolean" expires_after="2024-04-01">
+    enum="Boolean" expires_after="2024-06-02">
   <owner>takumif@chromium.org</owner>
   <owner>muyaoxu@google.com</owner>
   <owner>openscreen-eng@google.com</owner>

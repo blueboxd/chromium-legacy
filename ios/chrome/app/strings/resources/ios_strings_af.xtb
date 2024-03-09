@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">Jy kan die verstekwerfaansig in Instellings en dan Inhoudinstellings na rekenaar toe verander</translation>
 <translation id="1054745118061919935">Deur voort te gaan, stem jy in tot die <ph name="BEGIN_LINK" />diensbepalings<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Bestuur sinkronisering</translation>
-<translation id="1066101356081285416">Chrome sal naspoornommers op werwe bespeur wat jy besoek en vir jou pakkie-opdaterings op die Nuwe Oortjie-bladsy wys. Die pakkienaspoornommer en webwerfnaam sal na Google gestuur word om hierdie kenmerk beskikbaar te maak en om Google Shopping-kenmerke vir almal te verbeter. Jy kan dit enige tyd in <ph name="BEGIN_LINK" />Pakkienasporinginstellings<ph name="END_LINK" /> opdateer.</translation>
 <translation id="1069154182096085577">Wagwoord bestaan reeds</translation>
 <translation id="1076421457278169141">Kode is geskandeer</translation>
 <translation id="1076785341346483463">Sinkroniseer met bestuurde rekening</translation>
@@ -143,7 +142,6 @@
 <translation id="165877110639533037">Geen oop oortjies nie</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Versoek mobiele werf</translation>
-<translation id="168715261339224929">Skakel sinkronisering aan om jou boekmerke op al jou toestelle te kry.</translation>
 <translation id="1687475363370981210">Merk alles as gelees</translation>
 <translation id="1689333818294560261">Bynaam</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> gekies</translation>
@@ -1049,7 +1047,6 @@ Werwe kan nie webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe t
 <translation id="6476253015009698798">Prysnasporing is nie vir hierdie bladsy beskikbaar nie.</translation>
 <translation id="6476800141292307438">Vertaal tans die bladsy in <ph name="LANGUAGE" />. Opsies is naby die onderkant van die skerm beskikbaar.</translation>
 <translation id="648164694371393720">Stawingfout</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items uitgevee</translation>
 <translation id="6484712497741564393">Aangemeld as <ph name="EMAIL" />.
 
 Jou data is met jou wagfrase geënkripteer. Voer dit in om Chrome-data in jou Google-rekening te gebruik en te stoor.</translation>
@@ -1136,6 +1133,7 @@ Terwyl jy in Incognito is, kan werwe nie webkoekies gebruik om jou blaai-aktiwit
 <translation id="6869389390665537774">Jy kan die bladsye sien wat jy besoek het of hulle van jou geskiedenis af uitvee</translation>
 <translation id="687135068089457384">Wys instellings</translation>
 <translation id="6873263987691478642">Deelaansig</translation>
+<translation id="687586529977635009">Chrome sal naspoornommers op werwe bespeur wat jy besoek en vir jou pakkie-opdaterings op die Nuwe Oortjie-bladsy wys. Jou data sal met Google gedeel word om hierdie kenmerk te verskaf en om Inkopies vir almal te verbeter. Jy kan dit verander in <ph name="BEGIN_LINK" />Pakkienasporinginstellings<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Standaardbeskerming teen webwerwe, aflaaie en uitbreidings wat bekend is daarvoor dat hulle gevaarlik is.</translation>
 <translation id="6888009575607455378">Is jy seker jy wil jou veranderinge weggooi?</translation>
 <translation id="6896758677409633944">Kopieer</translation>
@@ -1228,7 +1226,7 @@ Terwyl jy in Incognito is, kan werwe nie webkoekies gebruik om jou blaai-aktiwit
 <translation id="7466693328838535498">Voer Chrome in die Search-legstuk-boks in</translation>
 <translation id="746684838091935575">3. Kies Chrome</translation>
 <translation id="7472734401283673885">Maatskappynaam</translation>
-<translation id="7473891865547856676">Nee, Dankie</translation>
+<translation id="7473891865547856676">Nee, dankie</translation>
 <translation id="7488874549363591659">Afgelewer</translation>
 <translation id="7491131399623468277">Gaan na Instellings …</translation>
 <translation id="7492574581995589075">Jou organisasie het die vermoë afgeskakel om Chrome-data in jou Google-rekening te gebruik en te stoor. Nuwe boekmerke, wagwoorde en meer sal slegs op hierdie toestel gestoor word.</translation>
@@ -1388,7 +1386,7 @@ Werwe kan webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe te si
 <translation id="8271720166617117963">Aanvaar en meld aan</translation>
 <translation id="8273982424131314219">Jy sal inligting in <ph name="URL" /> invul</translation>
 <translation id="8281781826761538115">Verstek – <ph name="DEFAULT_LOCALE" /></translation>
-<translation id="8281886186245836920">Slaan Oor</translation>
+<translation id="8281886186245836920">Slaan oor</translation>
 <translation id="8283172974887967105">Stel …</translation>
 <translation id="8286036467436129157">Meld aan</translation>
 <translation id="8299417921174340354">Om wagwoorde te gebruik, moet jy eers 'n wagkode op jou toestel stel.</translation>
@@ -1416,7 +1414,6 @@ Werwe kan webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe te si
 <translation id="8428634594422941299">Het dit</translation>
 <translation id="8446884382197647889">Kom meer te wete</translation>
 <translation id="8449347986464073209">Vee uit en meld af</translation>
-<translation id="8458397775385147834">1 item is uitgevee</translation>
 <translation id="8459333855531264009">Nie veilig nie</translation>
 <translation id="8487667956631253959">Aan</translation>
 <translation id="8487700953926739672">Vanlyn beskikbaar</translation>
@@ -1482,7 +1479,6 @@ Jou data is op <ph name="TIME" /> met jou wagfrase geënkripteer. Voer dit in om
 <translation id="8766790350274092814">Wagwoorde vir <ph name="WEBSITE" /> en <ph name="SECOND_WEBSITE" /> sal uitgevee word. Jou rekeninge sal nie uitgevee word nie.</translation>
 <translation id="8775144690796719618">Ongeldige URL</translation>
 <translation id="8780076847684176174">{count,plural, =1{Gaan die oortjie na …}other{Gaan alle oortjies na …}}</translation>
-<translation id="8782570580170191813">Spoor altyd pakkette na</translation>
 <translation id="8787968206789828143">Soek op web</translation>
 <translation id="8792626944327216835">mikrofoon</translation>
 <translation id="8803639129939845298">Veilig</translation>

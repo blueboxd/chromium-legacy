@@ -63,8 +63,6 @@ NSString* const kMandatoryReauthOptOutHistogramName =
 NSString* const kMandatoryReauthOptInHistogramName =
     @"Autofill.PaymentMethods.MandatoryReauth.OptChangeEvent.SettingsPage."
     @"OptIn";
-NSString* const kMandatoryReauthEditCardHistogramName =
-    @"Autofill.PaymentMethods.MandatoryReauth.AuthEvent.SettingsPage.EditCard";
 NSString* const kMandatoryReauthDeleteCardHistogramName =
     @"Autofill.PaymentMethods.MandatoryReauth.AuthEvent.SettingsPage."
     @"DeleteCard";
@@ -184,27 +182,6 @@ id<GREYMatcher> BottomToolbar() {
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(0)]
       performAction:grey_tap()];
 
-  GREYAssertNil(
-      [MetricsAppInterface
-           expectCount:1
-             forBucket:static_cast<int>(
-                           MandatoryReauthAuthenticationFlowEvent::kFlowStarted)
-          forHistogram:kMandatoryReauthEditCardHistogramName],
-      @"Mandatory reauth edit card flow started event count incorrect");
-  GREYAssertNil(
-      [MetricsAppInterface
-           expectCount:1
-             forBucket:static_cast<int>(MandatoryReauthAuthenticationFlowEvent::
-                                            kFlowSucceeded)
-          forHistogram:kMandatoryReauthEditCardHistogramName],
-      @"Mandatory reauth edit card flow result event count incorrect");
-  GREYAssertNil(
-      [MetricsAppInterface
-           expectCount:0
-             forBucket:static_cast<int>(
-                           MandatoryReauthAuthenticationFlowEvent::kFlowFailed)
-          forHistogram:kMandatoryReauthEditCardHistogramName],
-      @"Mandatory reauth edit card flow result event count incorrect");
   [self exitSettingsMenu];
 }
 
@@ -261,27 +238,6 @@ id<GREYMatcher> BottomToolbar() {
                                    kAutofillCreditCardSwitchViewId, YES, YES)]
       assertWithMatcher:grey_notNil()];
 
-  GREYAssertNil(
-      [MetricsAppInterface
-           expectCount:1
-             forBucket:static_cast<int>(
-                           MandatoryReauthAuthenticationFlowEvent::kFlowStarted)
-          forHistogram:kMandatoryReauthEditCardHistogramName],
-      @"Mandatory reauth edit card flow started event count incorrect");
-  GREYAssertNil(
-      [MetricsAppInterface
-           expectCount:1
-             forBucket:static_cast<int>(
-                           MandatoryReauthAuthenticationFlowEvent::kFlowFailed)
-          forHistogram:kMandatoryReauthEditCardHistogramName],
-      @"Mandatory reauth edit card flow result event count incorrect");
-  GREYAssertNil(
-      [MetricsAppInterface
-           expectCount:0
-             forBucket:static_cast<int>(MandatoryReauthAuthenticationFlowEvent::
-                                            kFlowSucceeded)
-          forHistogram:kMandatoryReauthEditCardHistogramName],
-      @"Mandatory reauth edit card flow result event count incorrect");
   [self exitSettingsMenu];
 }
 

@@ -5,7 +5,6 @@
 #import "ios/chrome/app/spotlight/bookmarks_spotlight_manager.h"
 
 #import <memory>
-#import <stack>
 
 #import <CoreSpotlight/CoreSpotlight.h>
 
@@ -13,7 +12,6 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
-#import "base/timer/elapsed_timer.h"
 #import "base/version.h"
 #import "components/bookmarks/browser/base_bookmark_model_observer.h"
 #import "components/bookmarks/browser/bookmark_model.h"
@@ -21,7 +19,6 @@
 #import "ios/chrome/app/spotlight/spotlight_interface.h"
 #import "ios/chrome/app/spotlight/spotlight_logger.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 
@@ -29,10 +26,6 @@ namespace {
 // Limit the size of the initial indexing. This will not limit the size of the
 // index as new bookmarks can be added afterwards.
 const int kMaxInitialIndexSize = 1000;
-
-// At initial indexing, the # of bookmarks to index per batch before releasing
-// the main queue.
-const int kBatchSize = 100;
 
 // Minimum delay between two global indexing of bookmarks.
 const base::TimeDelta kDelayBetweenTwoIndexing = base::Days(7);
@@ -42,26 +35,114 @@ const base::TimeDelta kDelayBetweenTwoIndexing = base::Days(7);
 class SpotlightBookmarkModelBridge;
 
 // Called from the BrowserBookmarkModelBridge from C++ -> ObjC.
-@interface BookmarksSpotlightManager () <BookmarkModelBridgeObserver>
+@interface BookmarksSpotlightManager ()
 
-//  This flag is used when rebuilding the spotlight index.
-@property(nonatomic, assign) BOOL modelUpdatesShouldCauseFullReindex;
-//  This flag is used when rebuilding the spotlight index.
-@property(nonatomic, assign) BOOL modelUpdatesShouldBeIgnored;
+// Detaches the `SpotlightBookmarkModelBridge` from the bookmark model. The
+// manager must not be used after calling this method.
+- (void)detachBookmarkModel;
 
-// The operation for processing the next batch of bookmarks from the indexing
-// queue, if any.
-@property(nonatomic, weak) NSOperation* nextBatchOperation;
+// Removes the node from the Spotlight index.
+- (void)removeNodeFromIndex:(const bookmarks::BookmarkNode*)node;
+
+// Refreshes all nodes in the subtree of node.
+// If `initial` is YES, limit the number of nodes to kMaxInitialIndexSize.
+- (void)refreshNodeInIndex:(const bookmarks::BookmarkNode*)node;
+
+// Returns true is the current index is too old or from an incompatible version.
+- (BOOL)shouldReindex;
+
+// Clears all bookmark items in spotlight.
+- (void)clearAllBookmarkSpotlightItems:(BlockWithError)completionHandler;
 
 @end
 
+// Handles notification that bookmarks has been removed changed so we can update
+// the Spotlight index.
+class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
+ public:
+  explicit SpotlightBookmarkModelBridge(BookmarksSpotlightManager* owner)
+      : owner_(owner) {}
+
+  ~SpotlightBookmarkModelBridge() override {}
+
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
+                           const bookmarks::BookmarkNode* parent,
+                           size_t old_index,
+                           const bookmarks::BookmarkNode* node,
+                           const std::set<GURL>& removed_urls) override {}
+
+  void OnWillRemoveBookmarks(bookmarks::BookmarkModel* model,
+                             const bookmarks::BookmarkNode* parent,
+                             size_t old_index,
+                             const bookmarks::BookmarkNode* node) override {
+    [owner_ removeNodeFromIndex:node];
+  }
+
+  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override {
+    [owner_ detachBookmarkModel];
+  }
+
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override {
+    [owner_ reindexBookmarksIfNeeded];
+  }
+
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
+                         const bookmarks::BookmarkNode* parent,
+                         size_t index,
+                         bool added_by_user) override {
+    [owner_ refreshNodeInIndex:parent->children()[index].get()];
+  }
+
+  void OnWillChangeBookmarkNode(bookmarks::BookmarkModel* model,
+                                const bookmarks::BookmarkNode* node) override {
+    [owner_ removeNodeFromIndex:node];
+  }
+
+  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
+                           const bookmarks::BookmarkNode* node) override {
+    [owner_ refreshNodeInIndex:node];
+  }
+
+  void BookmarkNodeFaviconChanged(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override {
+    [owner_ refreshNodeInIndex:node];
+  }
+
+  void BookmarkAllUserNodesRemoved(
+      bookmarks::BookmarkModel* model,
+      const std::set<GURL>& removed_urls) override {
+    [owner_ clearAllBookmarkSpotlightItems:nil];
+  }
+
+  void BookmarkNodeChildrenReordered(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override {}
+
+  void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
+                         const bookmarks::BookmarkNode* old_parent,
+                         size_t old_index,
+                         const bookmarks::BookmarkNode* new_parent,
+                         size_t new_index) override {
+    [owner_ refreshNodeInIndex:new_parent->children()[new_index].get()];
+  }
+
+ private:
+  __weak BookmarksSpotlightManager* owner_;
+};
+
 @implementation BookmarksSpotlightManager {
   // Bridge to register for local or syncable bookmark model changes.
-  std::unique_ptr<BookmarkModelBridge> _localOrSyncableBookmarkModelBridge;
+  std::unique_ptr<SpotlightBookmarkModelBridge>
+      _localOrSyncableBookmarkModelBridge;
   // Bridge to register for account bookmark model changes.
-  std::unique_ptr<BookmarkModelBridge> _accountBookmarkModelBridge;
+  std::unique_ptr<SpotlightBookmarkModelBridge> _accountBookmarkModelBridge;
 
-  // Keep a reference to detach before deallocing.
+  // Keep a reference to detach before deallocing. Life cycle of
+  // `_localOrSyncalbeBookmarkModel` and `_accountBookmarkModel` is longer than
+  // life cycle of a SpotlightManager as `BookmarkModelBeingDeleted` will cause
+  // deletion of SpotlightManager.
   bookmarks::BookmarkModel* _localOrSyncableBookmarkModel;  // weak
   // `_accountBookmarkModel` can be `nullptr`.
   bookmarks::BookmarkModel* _accountBookmarkModel;  // weak
@@ -71,15 +152,6 @@ class SpotlightBookmarkModelBridge;
 
   // Tracks whether initial indexing has been done.
   BOOL _initialIndexDone;
-
-  // Timer that counts how long it takes to index all bookmarks.
-  std::unique_ptr<base::ElapsedTimer> _initialIndexTimer;
-
-  // The nodes stored in this queue will be indexed.
-  std::stack<const bookmarks::BookmarkNode*> _indexingStack;
-
-  // Number of times the indexing was interrupted by model updates.
-  NSInteger _reindexInterruptionCount;
 }
 
 + (BookmarksSpotlightManager*)bookmarksSpotlightManagerWithBrowserState:
@@ -112,27 +184,21 @@ class SpotlightBookmarkModelBridge;
                      searchableItemFactory:searchableItemFactory];
   if (self) {
     _pendingLargeIconTasksCount = 0;
+    _localOrSyncableBookmarkModelBridge =
+        std::make_unique<SpotlightBookmarkModelBridge>(self);
     _localOrSyncableBookmarkModel = localOrSyncableBookmarkModel;
-    _accountBookmarkModel = accountBookmarkModel;
-    [self attachBookmarkModel];
+    _localOrSyncableBookmarkModel->AddObserver(
+        _localOrSyncableBookmarkModelBridge.get());
+    if (accountBookmarkModel) {
+      _accountBookmarkModelBridge =
+          std::make_unique<SpotlightBookmarkModelBridge>(self);
+      _accountBookmarkModel = accountBookmarkModel;
+      _accountBookmarkModel->AddObserver(_accountBookmarkModelBridge.get());
+    }
   }
   return self;
 }
 
-- (void)attachBookmarkModel {
-  if (_localOrSyncableBookmarkModel) {
-    _localOrSyncableBookmarkModelBridge = std::make_unique<BookmarkModelBridge>(
-        self, _localOrSyncableBookmarkModel);
-  }
-  if (_accountBookmarkModel) {
-    _accountBookmarkModelBridge =
-        std::make_unique<BookmarkModelBridge>(self, _accountBookmarkModel);
-  }
-}
-
-// Detaches the `SpotlightBookmarkModelBridge` from the bookmark model. The
-// manager must not be used after calling this method unless attachBookmarkModel
-// is called.
 - (void)detachBookmarkModel {
   if (_localOrSyncableBookmarkModelBridge.get()) {
     _localOrSyncableBookmarkModel->RemoveObserver(
@@ -145,13 +211,13 @@ class SpotlightBookmarkModelBridge;
   }
 }
 
-// Clears all bookmark items in spotlight.
-- (void)clearAllBookmarkSpotlightItems {
+- (void)clearAllBookmarkSpotlightItems:(BlockWithError)completionHandler {
   [self.searchableItemFactory cancelItemsGeneration];
-  [self.spotlightInterface deleteSearchableItemsWithDomainIdentifiers:@[
-    spotlight::StringFromSpotlightDomain(spotlight::DOMAIN_BOOKMARKS)
-  ]
-                                                    completionHandler:nil];
+  [self.spotlightInterface
+      deleteSearchableItemsWithDomainIdentifiers:@[
+        spotlight::StringFromSpotlightDomain(spotlight::DOMAIN_BOOKMARKS)
+      ]
+                               completionHandler:completionHandler];
 }
 
 - (NSMutableArray*)parentFolderNamesForNode:
@@ -170,7 +236,6 @@ class SpotlightBookmarkModelBridge;
   return parentNames;
 }
 
-// Removes the node from the Spotlight index.
 - (void)removeNodeFromIndex:(const bookmarks::BookmarkNode*)node {
   if (node->is_url()) {
     [self removeURLNodeFromIndex:node];
@@ -203,7 +268,6 @@ class SpotlightBookmarkModelBridge;
   [self refreshItemWithURL:URL title:title];
 }
 
-// Returns true is the current index is too old or from an incompatible version.
 - (BOOL)shouldReindex {
   NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
 
@@ -271,8 +335,8 @@ class SpotlightBookmarkModelBridge;
     if ([nodeTitle isEqualToString:title] == NO) {
       continue;
     }
-    // there still a bookmark node that matches the  given URL and title, so we
-    // should refresh/reindex it in spotlight.
+    /// there still a bookmark node that matches the  given URL and title, so we
+    /// should refresh/reindex it in spotlight.
     shouldIndexItem = true;
 
     [itemKeywords addObjectsFromArray:[self parentFolderNamesForNode:node]];
@@ -293,53 +357,21 @@ class SpotlightBookmarkModelBridge;
   }
 }
 
-// Refreshes all nodes in the subtree of node.
 - (void)refreshNodeInIndex:(const bookmarks::BookmarkNode*)node {
-  _indexingStack.push(node);
-  if (!self.nextBatchOperation) {
-    [self indexNextBatchInQueue];
-  }
-}
-
-- (void)indexNextBatchInQueue {
-  self.nextBatchOperation = nil;
-
   if (self.isShuttingDown) {
-    [self stopIndexing];
     return;
   }
-
-  for (int i = 0; i < kBatchSize; i++) {
-    if (_indexingStack.empty() || _nodesIndexed > kMaxInitialIndexSize) {
-      self.modelUpdatesShouldCauseFullReindex = NO;
-      [self logInitialIndexComplete];
-      [self stopIndexing];
-      return;
-    }
-
-    const bookmarks::BookmarkNode* node = _indexingStack.top();
-    _indexingStack.pop();
-
-    if (node->is_url()) {
-      _nodesIndexed++;
-      [self refreshItemWithURL:node->url()
-                         title:base::SysUTF16ToNSString(node->GetTitle())];
-    } else {
-      for (auto it = node->children().rbegin(); it != node->children().rend();
-           ++it) {
-        _indexingStack.push(it->get());
-      }
-    }
+  if (_nodesIndexed > kMaxInitialIndexSize) {
+    return;
   }
-
-  // Dispatch the next batch asynchronously to avoid blocking the main thread.
-  __weak BookmarksSpotlightManager* weakSelf = self;
-  NSOperation* nextBatchOperation = [NSBlockOperation blockOperationWithBlock:^{
-    [weakSelf indexNextBatchInQueue];
-  }];
-
-  [[NSOperationQueue mainQueue] addOperation:nextBatchOperation];
-  self.nextBatchOperation = nextBatchOperation;
+  if (node->is_url()) {
+    _nodesIndexed++;
+    [self refreshItemWithURL:node->url()
+                       title:base::SysUTF16ToNSString(node->GetTitle())];
+    return;
+  }
+  for (const auto& child : node->children())
+    [self refreshNodeInIndex:child.get()];
 }
 
 - (void)shutdown {
@@ -348,10 +380,6 @@ class SpotlightBookmarkModelBridge;
 }
 
 - (void)clearAndReindexModel {
-  [self stopIndexing];
-
-  self.modelUpdatesShouldBeIgnored = YES;
-  self.modelUpdatesShouldCauseFullReindex = NO;
   __weak BookmarksSpotlightManager* weakSelf = self;
   [self.spotlightInterface
       deleteSearchableItemsWithDomainIdentifiers:@[
@@ -370,41 +398,40 @@ class SpotlightBookmarkModelBridge;
   if (self.isShuttingDown) {
     return;
   }
-  self.modelUpdatesShouldBeIgnored = NO;
-  self.modelUpdatesShouldCauseFullReindex = YES;
-
-  // Indexing queue should be empty. There should be no ongoing indexing
-  // operations.
-  DCHECK(_indexingStack.empty());
-  DCHECK(!self.nextBatchOperation);
-  DCHECK(self.modelUpdatesShouldCauseFullReindex);
 
   // If this method is called before bookmark model loaded, or after it
   // unloaded, reindexing won't be possible. The latter should happen at
   // shutdown, so the reindex can't happen until next app start. In the former
   // case, unset _initialIndexDone flag. This makes sure indexing will happen
   // once the model loads.
-  if (_localOrSyncableBookmarkModel &&
-      !_localOrSyncableBookmarkModel->loaded()) {
+  if (!_localOrSyncableBookmarkModel->loaded()) {
     _initialIndexDone = NO;
   }
   if (_accountBookmarkModel && !_accountBookmarkModel->loaded()) {
     _initialIndexDone = NO;
   }
 
+  const base::Time startOfReindexing = base::Time::Now();
   _nodesIndexed = 0;
   _pendingLargeIconTasksCount = 0;
-  if (_localOrSyncableBookmarkModel) {
-    _indexingStack.push(_localOrSyncableBookmarkModel->root_node());
-  }
+  [self refreshNodeInIndex:_localOrSyncableBookmarkModel->root_node()];
   if (_accountBookmarkModel) {
-    _indexingStack.push(_accountBookmarkModel->root_node());
+    [self refreshNodeInIndex:_accountBookmarkModel->root_node()];
   }
-  _initialIndexTimer = std::make_unique<base::ElapsedTimer>();
-  [self indexNextBatchInQueue];
+  const base::Time endOfReindexing = base::Time::Now();
 
+  UMA_HISTOGRAM_TIMES("IOS.Spotlight.BookmarksIndexingDuration",
+                      endOfReindexing - startOfReindexing);
   UMA_HISTOGRAM_COUNTS_1000("IOS.Spotlight.BookmarksInitialIndexSize",
                             _pendingLargeIconTasksCount);
+
+  [[NSUserDefaults standardUserDefaults]
+      setObject:endOfReindexing.ToNSDate()
+         forKey:@(spotlight::kSpotlightLastIndexingDateKey)];
+
+  [[NSUserDefaults standardUserDefaults]
+      setObject:@(spotlight::kCurrentSpotlightIndexVersion)
+         forKey:@(spotlight::kSpotlightLastIndexingVersionKey)];
 }
 
 - (bookmarks::BookmarkModel*)bookmarkModelForNode:
@@ -427,174 +454,6 @@ class SpotlightBookmarkModelBridge;
                                 accountNodes.begin(), accountNodes.end());
   }
   return localOrSyncableNodes;
-}
-
-// Clears the reindex queue.
-- (void)stopIndexing {
-  _initialIndexTimer.reset();
-  _indexingStack = std::stack<const bookmarks::BookmarkNode*>();
-  _nodesIndexed = 0;
-  [self.nextBatchOperation cancel];
-  self.nextBatchOperation = nil;
-}
-
-// Records the time spent on initial indexing and registers the last date
-// that initial indexing was completed.
-- (void)logInitialIndexComplete {
-  if (!_initialIndexTimer) {
-    return;
-  }
-  UMA_HISTOGRAM_TIMES("IOS.Spotlight.BookmarksIndexingDuration",
-                      _initialIndexTimer->Elapsed());
-  _initialIndexTimer.reset();
-  [[NSUserDefaults standardUserDefaults]
-      setObject:base::Time::Now().ToNSDate()
-         forKey:@(spotlight::kSpotlightLastIndexingDateKey)];
-
-  [[NSUserDefaults standardUserDefaults]
-      setObject:@(spotlight::kCurrentSpotlightIndexVersion)
-         forKey:@(spotlight::kSpotlightLastIndexingVersionKey)];
-}
-
-- (void)logIndexingInterruption {
-  _reindexInterruptionCount++;
-  UMA_HISTOGRAM_COUNTS_1000("IOS.Spotlight.BookmarksReindexRestarted",
-                            _reindexInterruptionCount);
-}
-
-#pragma mark - BookmarkModelBridgeObserver
-
-- (void)bookmarkModelLoaded:(bookmarks::BookmarkModel*)model {
-  [self reindexBookmarksIfNeeded];
-}
-
-- (void)bookmarkModelBeingDeleted:(bookmarks::BookmarkModel*)model {
-  if (_accountBookmarkModel == model) {
-    _accountBookmarkModel = nullptr;
-  }
-
-  if (_localOrSyncableBookmarkModel == model) {
-    _localOrSyncableBookmarkModel = nullptr;
-  }
-}
-
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
-        didChangeNode:(const bookmarks::BookmarkNode*)bookmarkNode {
-  if (self.modelUpdatesShouldBeIgnored) {
-    return;
-  }
-
-  if (self.modelUpdatesShouldCauseFullReindex) {
-    [self logIndexingInterruption];
-    [self clearAndReindexModel];
-    return;
-  }
-
-  [self refreshNodeInIndex:bookmarkNode];
-}
-
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
-    didChangeChildrenForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
-}
-
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
-           didAddNode:(const bookmarks::BookmarkNode*)node
-             toFolder:(const bookmarks::BookmarkNode*)folder {
-  if (self.modelUpdatesShouldBeIgnored) {
-    return;
-  }
-
-  if (self.modelUpdatesShouldCauseFullReindex) {
-    [self logIndexingInterruption];
-    [self clearAndReindexModel];
-    return;
-  }
-
-  [self refreshNodeInIndex:node];
-}
-
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
-          didMoveNode:(const bookmarks::BookmarkNode*)bookmarkNode
-           fromParent:(const bookmarks::BookmarkNode*)oldParent
-             toParent:(const bookmarks::BookmarkNode*)newParent {
-  if (self.modelUpdatesShouldBeIgnored) {
-    return;
-  }
-
-  if (self.modelUpdatesShouldCauseFullReindex) {
-    [self logIndexingInterruption];
-    [self clearAndReindexModel];
-    return;
-  }
-
-  [self refreshNodeInIndex:bookmarkNode];
-}
-
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
-        didDeleteNode:(const bookmarks::BookmarkNode*)node
-           fromFolder:(const bookmarks::BookmarkNode*)folder {
-}
-
-- (void)bookmarkModelRemovedAllNodes:(bookmarks::BookmarkModel*)model {
-  if (self.modelUpdatesShouldBeIgnored) {
-    return;
-  }
-
-  if (self.modelUpdatesShouldCauseFullReindex) {
-    [self logIndexingInterruption];
-    [self clearAndReindexModel];
-    return;
-  }
-
-  [self clearAllBookmarkSpotlightItems];
-}
-
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
-       willDeleteNode:(const bookmarks::BookmarkNode*)node
-           fromFolder:(const bookmarks::BookmarkNode*)folder {
-  if (self.modelUpdatesShouldBeIgnored) {
-    return;
-  }
-
-  if (self.modelUpdatesShouldCauseFullReindex) {
-    [self logIndexingInterruption];
-    [self clearAndReindexModel];
-    return;
-  }
-
-  [self removeNodeFromIndex:node];
-}
-
-// The node favicon changed.
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
-    didChangeFaviconForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
-  if (self.modelUpdatesShouldBeIgnored) {
-    return;
-  }
-
-  if (self.modelUpdatesShouldCauseFullReindex) {
-    [self logIndexingInterruption];
-    [self clearAndReindexModel];
-    return;
-  }
-
-  [self refreshNodeInIndex:bookmarkNode];
-}
-
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
-    willChangeBookmarkNode:(const bookmarks::BookmarkNode*)bookmarkNode {
-  if (self.modelUpdatesShouldBeIgnored) {
-    return;
-  }
-
-  if (self.modelUpdatesShouldCauseFullReindex) {
-    [self logIndexingInterruption];
-    [self clearAndReindexModel];
-    return;
-  }
-
-  // Delete the node; it will be re-added from didChangeNode:.
-  [self removeNodeFromIndex:bookmarkNode];
 }
 
 @end

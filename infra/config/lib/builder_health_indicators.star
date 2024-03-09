@@ -19,7 +19,9 @@ _HEALTH_SPEC = nodes.create_bucket_scoped_node_type("health_spec")
 _default_specs = {
     "Unhealthy": struct(
         score = 5,
-        # If any of these thresholds are exceeded, the builder will be deemed unhealthy.
+        period_days = 7,
+        # If any of these thresholds are exceeded, the builder will be deemed
+        # unhealthy.
         # Setting a value of None will ignore that threshold
         infra_fail_rate = struct(
             average = 0.05,
@@ -34,11 +36,22 @@ _default_specs = {
             p50_mins = 20,
         ),
     ),
+    "Low Value": struct(
+        score = 1,
+        period_days = 90,
+        # If any of these thresholds are met, the builder will be deemed
+        # low-value and will be considered for deletion.
+        # Setting a value of None will ignore that threshold
+        fail_rate = struct(
+            average = 0.99,
+        ),
+    ),
 }
 
 _blank_thresholds = {
     "Unhealthy": struct(
         score = 5,
+        period_days = 7,
         infra_fail_rate = struct(
             average = None,
         ),
@@ -52,18 +65,32 @@ _blank_thresholds = {
             p50_mins = None,
         ),
     ),
+    "Low Value": struct(
+        score = 1,
+        period_days = 90,
+        fail_rate = struct(
+            average = None,
+        ),
+    ),
 }
 
 DEFAULT = {
     "Unhealthy": struct(
         score = 5,
+        period_days = 7,
+        _default = "_default",
+    ),
+    "Low Value": struct(
+        score = 1,
+        period_days = 90,
         _default = "_default",
     ),
 }
 
-# Users define the specs as {problem_name -> problem_spec} for aesthetic reasons,
+# Users define the specs as {problem_name -> problem_spec} for aesthetic reasons
 # So all user-exposed functions expect a dictionary.
-# We then convert that into a list of [problem_specs] so the object encapsulates its own name, for ease of processing
+# We then convert that into a list of [problem_specs] so the object encapsulates
+# its own name, for ease of processing
 def thresholds(modifications):
     return _merge_mods(_blank_thresholds, modifications)
 
@@ -135,8 +162,10 @@ def _generate_health_specs(ctx):
 
     ctx.output["health-specs/health-specs.json"] = json.indent(json.encode(result), indent = "  ")
 
-# This dict should NOT be added to. It contains a list of builders that are exempted from needing a contact_team_email field.
-# It's intended as a stopgap for older builders. All new builders should have a contact_team_email field for the good of our code and CI system.
+# This dict should NOT be added to. It contains a list of builders that are
+# exempted from needing a contact_team_email field.
+# It's intended as a stopgap for older builders. All new builders should have a
+# contact_team_email field for the good of our code and CI system.
 # Builders should be removed from here once their contact is assigned.
 _exempted_from_contact_builders = {
     "ci": [
@@ -377,7 +406,6 @@ _exempted_from_contact_builders = {
         "linux-chromeos-dbg",
         "linux-chromeos-rel",
         "linux-code-coverage",
-        "linux-exp-asan-lsan-fyi-rel",
         "linux-exp-msan-fyi-rel",
         "linux-exp-tsan-fyi-rel",
         "linux-extended-tracing-rel",
@@ -520,8 +548,6 @@ _exempted_from_contact_builders = {
         "android-arm64-all-targets-dbg",
         "android-arm64-rel",
         "android-arm64-rel-compilator",
-        "android-arm64-siso-rel",
-        "android-arm64-siso-rel-compilator",
         "android-asan-compile-dbg",
         "android-bfcache-rel",
         "android-binary-size",
@@ -707,7 +733,6 @@ _exempted_from_contact_builders = {
         "linux-code-coverage",
         "linux-dawn-rel",
         "linux-dcheck-off-rel",
-        "linux-exp-asan-lsan-fyi-rel",
         "linux-exp-msan-fyi-rel",
         "linux-exp-tsan-fyi-rel",
         "linux-extended-tracing-rel",
@@ -736,8 +761,6 @@ _exempted_from_contact_builders = {
         "linux-rel-compilator",
         "linux-rust-x64-dbg",
         "linux-rust-x64-rel",
-        "linux-siso-rel",
-        "linux-siso-rel-compilator",
         "linux-swangle-chromium-try-x64",
         "linux-swangle-chromium-try-x64-exp",
         "linux-swangle-try-tot-swiftshader-x64",
@@ -863,8 +886,6 @@ _exempted_from_contact_builders = {
         "win-rel-compilator",
         "win-rust-x64-dbg",
         "win-rust-x64-rel",
-        "win-siso-rel",
-        "win-siso-rel-compilator",
         "win-swangle-chromium-try-x86",
         "win-swangle-try-tot-swiftshader-x64",
         "win-swangle-try-tot-swiftshader-x86",

@@ -1479,6 +1479,34 @@ source_set("unit_tests_v2") {
   # the deps section below.
   sources = []
 
+  sources += rebase_path(blink_core_tests_accessibility, "", "accessibility")
+  sources += rebase_path(blink_core_tests_animation, "", "animation")
+  sources += rebase_path(blink_core_tests_annotation, "", "annotation")
+  sources += rebase_path(blink_core_tests_clipboard, "", "clipboard")
+  sources +=
+      rebase_path(blink_core_tests_content_capture, "", "content_capture")
+  sources += rebase_path(blink_core_tests_events, "", "events")
+  sources += rebase_path(blink_core_tests_fullscreen, "", "fullscreen")
+  sources += rebase_path(blink_core_tests_imagebitmap, "", "imagebitmap")
+  sources += rebase_path(blink_core_tests_intersection_observer,
+                         "",
+                         "intersection_observer")
+  sources += rebase_path(blink_core_tests_mathml, "", "mathml")
+  sources += rebase_path(blink_core_tests_messaging, "", "messaging")
+  sources += rebase_path(blink_core_tests_mobile_metrics, "", "mobile_metrics")
+  sources +=
+      rebase_path(blink_core_tests_permissions_policy, "", "permissions_policy")
+  sources +=
+      rebase_path(blink_core_tests_resize_observer, "", "resize_observer")
+  sources += rebase_path(blink_core_tests_script, "", "script")
+  sources +=
+      rebase_path(blink_core_tests_speculation_rules, "", "speculation_rules")
+  sources += rebase_path(blink_core_tests_typed_arrays, "", "typed_arrays")
+  sources += rebase_path(blink_core_tests_url, "", "url")
+  sources += rebase_path(blink_core_tests_url_pattern, "", "url_pattern")
+  sources += rebase_path(blink_core_tests_xml, "", "xml")
+  sources += rebase_path(blink_core_tests_xmlhttprequest, "", "xmlhttprequest")
+
   configs += [
     ":blink_core_pch",
     "//third_party/blink/renderer:config",
@@ -1584,6 +1612,9 @@ source_set("perf_tests") {
 source_set("unit_test_support") {
   testonly = true
   sources = [
+    "css/css_test_helpers.cc",
+    "css/css_test_helpers.h",
+    "css/mock_css_paint_image_generator.h",
     "frame/frame_test_helpers.cc",
     "frame/frame_test_helpers.h",
     "html/media/html_media_test_helper.cc",

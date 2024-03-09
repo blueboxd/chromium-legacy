@@ -683,7 +683,8 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
       case SearchResultIcon.kAssistant:
         return 'os-settings:assistant';
       case SearchResultIcon.kAudio:
-        return 'os-settings:audio';
+        return isRevampEnabled ? 'os-settings:device-audio' :
+                                 'os-settings:audio';
       case SearchResultIcon.kAuthKey:
         return 'os-settings:auth-key';
       case SearchResultIcon.kAutoclick:
@@ -703,12 +704,12 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
         return 'os-settings:about-update-complete';
       case SearchResultIcon.kChrome:
         return 'os-settings:chrome';
-      case SearchResultIcon.kChromeVox:
-        return 'os-settings:chromevox';
       case SearchResultIcon.kClock:
         return 'os-settings:clock';
       case SearchResultIcon.kContrast:
         return 'os-settings:contrast';
+      case SearchResultIcon.kCursorClick:
+        return 'os-settings:cursor-click';
       case SearchResultIcon.kDetailedBuild:
         return 'os-settings:about-additional-details';
       case SearchResultIcon.kDeveloperTags:
@@ -718,7 +719,8 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
       case SearchResultIcon.kDictation:
         return 'os-settings:dictation';
       case SearchResultIcon.kDisplay:
-        return 'os-settings:display';
+        return isRevampEnabled ? 'os-settings:device-display' :
+                                 'os-settings:display';
       case SearchResultIcon.kDockedMagnifier:
         return 'os-settings:docked-magnifier';
       case SearchResultIcon.kEthernet:
@@ -739,7 +741,10 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
         return isRevampEnabled ? 'os-settings:google-drive-revamp' :
                                  'os-settings:google-drive';
       case SearchResultIcon.kGooglePlay:
-        return 'os-settings:google-play';
+        return isRevampEnabled ? 'os-settings:google-play-revamp' :
+                                 'os-settings:google-play';
+      case SearchResultIcon.kHearing:
+        return 'os-settings:a11y-hearing';
       case SearchResultIcon.kHelp:
         return 'os-settings:about-help';
       case SearchResultIcon.kHotspot:
@@ -747,7 +752,8 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
       case SearchResultIcon.kInstantTethering:
         return 'os-settings:magic-tethering';
       case SearchResultIcon.kKeyboard:
-        return 'os-settings:keyboard';
+        return isRevampEnabled ? 'os-settings:device-keyboard' :
+                                 'os-settings:keyboard';
       case SearchResultIcon.kLanguage:
         return isRevampEnabled ? 'os-settings:language-revamp' :
                                  'os-settings:language';
@@ -758,7 +764,8 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
       case SearchResultIcon.kMicrophone:
         return 'os-settings:microphone';
       case SearchResultIcon.kMouse:
-        return 'os-settings:mouse';
+        return isRevampEnabled ? 'os-settings:device-mouse' :
+                                 'os-settings:mouse';
       case SearchResultIcon.kNearbyShare:
         // <if expr="_google_chrome">
         if (loadTimeData.getBoolean('isNameEnabled')) {
@@ -766,6 +773,8 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
         }
         // </if>
         return 'os-settings:nearby-share';
+      case SearchResultIcon.kNotifications:
+        return 'os-settings:apps-notifications';
       case SearchResultIcon.kOnScreenKeyboard:
         return 'os-settings:on-screen-keyboard';
       case SearchResultIcon.kPaintbrush:
@@ -774,13 +783,18 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
       case SearchResultIcon.kPenguin:
         return 'os-settings:crostini-mascot';
       case SearchResultIcon.kPhone:
-        return 'os-settings:multidevice-better-together-suite';
+        return isRevampEnabled ?
+            'os-settings:connected-devices-android-phone' :
+            'os-settings:multidevice-better-together-suite';
       case SearchResultIcon.kPluginVm:
         return 'os-settings:plugin-vm';
+      case SearchResultIcon.kPointingStick:
+        return 'os-settings:device-pointing-stick';
       case SearchResultIcon.kPower:
         return 'os-settings:power';
       case SearchResultIcon.kPrinter:
-        return 'os-settings:print';
+        return isRevampEnabled ? 'os-settings:device-print' :
+                                 'os-settings:print';
       case SearchResultIcon.kPrivacyControls:
         return 'os-settings:privacy-controls';
       case SearchResultIcon.kReleaseNotes:
@@ -790,6 +804,8 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
       case SearchResultIcon.kRestore:
         return isRevampEnabled ? 'os-settings:restore-revamp' :
                                  'os-settings:startup';
+      case SearchResultIcon.kScanner:
+        return 'os-settings:device-scan';
       case SearchResultIcon.kSearch:
         return isRevampEnabled ? 'os-settings:explore' : 'cr:search';
       case SearchResultIcon.kSelectToSpeak:
@@ -800,15 +816,22 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
         return isRevampEnabled ? 'os-settings:storage' :
                                  'os-settings:hard-drive';
       case SearchResultIcon.kStylus:
-        return 'os-settings:stylus';
+        return isRevampEnabled ? 'os-settings:device-stylus' :
+                                 'os-settings:stylus';
       case SearchResultIcon.kSync:
         return isRevampEnabled ? 'os-settings:sync-revamp' : 'os-settings:sync';
       case SearchResultIcon.kSystemPreferences:
         return 'os-settings:system-preferences';
+      case SearchResultIcon.kTextToSpeech:
+        return 'os-settings:text-to-speech';
+      case SearchResultIcon.kTouchpad:
+        return 'os-settings:device-touchpad';
       case SearchResultIcon.kWallpaper:
         return 'os-settings:wallpaper';
       case SearchResultIcon.kWifi:
         return 'os-settings:network-wifi';
+      case SearchResultIcon.kZoomIn:
+        return 'os-settings:zoom-in';
       default:
         return 'os-settings:settings-general';
     }

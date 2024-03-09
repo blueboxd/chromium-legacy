@@ -8,7 +8,6 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/weak_ptr.h"
 
 namespace httpclient {
 
@@ -46,7 +45,6 @@ class HttpClientBridge {
                 std::vector<std::string>&& response_header_values);
 
   std::unique_ptr<HttpClient> http_client_;
-  base::WeakPtrFactory<HttpClientBridge> weak_ptr_factory_{this};
 };
 
 }  // namespace httpclient

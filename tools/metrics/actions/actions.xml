@@ -3550,6 +3550,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="AppHome_LaunchApp">
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User launches a web app by clicking on the app icon from the new
+    chrome://apps page. This results in the web app's start_url opening up in a
+    dedicated window or in a browser tab, depending on the user's preference.
+  </description>
+</action>
+
 <action name="AppHome_LaunchAtStartupChecked">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@chromium.org</owner>
@@ -3579,16 +3589,6 @@ should be able to be added at any place in this file.
     of this dialog will expire as well. If the user ends up launching the app
     itself, the web app's start_url opening up in a dedicated window or in a
     browser tab, depending on the user's preference.
-  </description>
-</action>
-
-<action name="AppHome_LaunchWebApp">
-  <owner>dmurph@chromium.org</owner>
-  <owner>desktop-pwas-team@chromium.org</owner>
-  <description>
-    User launches a web app by clicking on the app icon from the new
-    chrome://apps page. This results in the web app's start_url opening up in a
-    dedicated window or in a browser tab, depending on the user's preference.
   </description>
 </action>
 
@@ -4340,12 +4340,21 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Autofill_UndoFilling">
-  <owner>battre@chromium.org</owner>
+<action name="Autofill_UndoAddressAutofill">
   <owner>jihadghanna@google.com</owner>
+  <owner>battre@chromium.org</owner>
   <description>
     This user action is logged when a user uses Undo to revert a previous
-    autofill operation.
+    autofill operation on a form filled with Address data.
+  </description>
+</action>
+
+<action name="Autofill_UndoPaymentsAutofill">
+  <owner>jihadghanna@google.com</owner>
+  <owner>battre@chromium.org</owner>
+  <description>
+    This user action is logged when a user uses Undo to revert a previous
+    autofill operation on a form filled with Payments data.
   </description>
 </action>
 
@@ -4354,32 +4363,6 @@ should be able to be added at any place in this file.
   <owner>jsaul@google.com</owner>
   <description>
     Recorded when user visits chrome://settings/autofill page.
-  </description>
-</action>
-
-<action name="AutofillCreditCardDeleted">
-  <owner>koulvipul@google.com</owner>
-  <owner>jsaul@google.com</owner>
-  <description>
-    Recorded when user deletes a card via chrome://settings/payments page.
-  </description>
-</action>
-
-<action name="AutofillCreditCardDeletedAndHadCvc">
-  <owner>koulvipul@google.com</owner>
-  <owner>jsaul@google.com</owner>
-  <description>
-    Recorded when user deletes card via chrome://settings/payments page and CVC
-    was not empty.
-  </description>
-</action>
-
-<action name="AutofillCreditCardDeletedAndHadNickname">
-  <owner>koulvipul@google.com</owner>
-  <owner>jsaul@google.com</owner>
-  <description>
-    Recorded when user deletes card via chrome://settings/payments page and
-    nickname was not empty.
   </description>
 </action>
 
@@ -4412,51 +4395,6 @@ should be able to be added at any place in this file.
   <owner>jsaul@google.com</owner>
   <description>
     Recorded when user edits card via chrome://settings/payments page.
-  </description>
-</action>
-
-<action name="AutofillCreditCardsEditedAndCvcWasAdded">
-  <owner>koulvipul@google.com</owner>
-  <owner>jsaul@google.com</owner>
-  <description>
-    Recorded when user edits card via chrome://settings/payments page and CVC
-    was added.
-  </description>
-</action>
-
-<action name="AutofillCreditCardsEditedAndCvcWasLeftBlank">
-  <owner>koulvipul@google.com</owner>
-  <owner>jsaul@google.com</owner>
-  <description>
-    Recorded when user edits card via chrome://settings/payments page and CVC
-    was left blank.
-  </description>
-</action>
-
-<action name="AutofillCreditCardsEditedAndCvcWasRemoved">
-  <owner>koulvipul@google.com</owner>
-  <owner>jsaul@google.com</owner>
-  <description>
-    Recorded when user edits card via chrome://settings/payments page and CVC
-    was removed.
-  </description>
-</action>
-
-<action name="AutofillCreditCardsEditedAndCvcWasUnchanged">
-  <owner>koulvipul@google.com</owner>
-  <owner>jsaul@google.com</owner>
-  <description>
-    Recorded when user edits card via chrome://settings/payments page and CVC
-    was unchanged.
-  </description>
-</action>
-
-<action name="AutofillCreditCardsEditedAndCvcWasUpdated">
-  <owner>koulvipul@google.com</owner>
-  <owner>jsaul@google.com</owner>
-  <description>
-    Recorded when user edits card via chrome://settings/payments page and CVC
-    was updated.
   </description>
 </action>
 
@@ -9412,16 +9350,6 @@ should be able to be added at any place in this file.
   <description>
     User exited browser/API fullscreen mode by clicking on the pop up close
     button on the top of the screen.
-  </description>
-</action>
-
-<action name="ExperimentalAI_IPHPromo_SettingsPageOpened">
-  <owner>rajendrant@chromium.org</owner>
-  <owner>chrome-intelligence-core@chromium.org</owner>
-  <description>
-    The AI Settings page was opened from the displayed IPH promo for
-    Experimental AI. Recorded whenever the IPH promo is clicked to view
-    settings.
   </description>
 </action>
 
@@ -24665,6 +24593,9 @@ should be able to be added at any place in this file.
     Note: this is even emitted on a &quot;navigation&quot; to non-web pages,
     such as loading the NTP.
 
+    Prior to M-121, this was also emitted for navigations in non-tab WebContents
+    (e.g. DevTools, extension popups).
+
     Each set of NavEntryCommitted emitted in quick succession usually are
     triggered by a single user action. In this sense, all but the first in the
     set are &quot;not user triggered&quot;.
@@ -24696,7 +24627,10 @@ should be able to be added at any place in this file.
     changes. This can happen via Javascript by, for example, scrolling through a
     news article carousel on the user's search engine page. As such,
     NavEntryCommitted.SRP does not necessarily align with the number of searches
-    done, though it's certainly related.
+    done, though it's certainly related. This should never be emitted for
+    navigations in non-tab WebContents, such as DevTools or extension popups
+    (which could not navigate to the SRP), but we do include the Side Panel
+    Search WebContents.
 
     Desktop-only.
   </description>
@@ -40456,6 +40390,8 @@ should be able to be added at any place in this file.
       label="For iOSDefaultBrowserVideoPromoTrigger feature"/>
   <suffix name="iOSHistoryOnOverflowMenuFeature"
       label="For iOSHistoryOnOverflowMenuFeature feature"/>
+  <suffix name="iOSInlinePromoEnhancedSafeBrowsing"
+      label="For iOSInlinePromoEnhancedSafeBrowsing feature"/>
   <suffix name="iOSNewTabToolbarItemFeature"
       label="For iOSNewTabToolbarItemFeature feature"/>
   <suffix name="iOSOmniboxPositionFeature"
@@ -41187,18 +41123,6 @@ should be able to be added at any place in this file.
   <suffix name="HomeButton" label="Home button"/>
   <suffix name="MediaButton" label="Media button"/>
   <suffix name="NewTabButton" label="New tab button for thumbnail tab strip"/>
-  <suffix name="PinnedShowBookmarkSidePanelButton"
-      label="Pinned show bookmark side panel button"/>
-  <suffix name="PinnedShowHistorySidePanelButton"
-      label="Pinned show history side panel button"/>
-  <suffix name="PinnedShowReadAnythingSidePanelButton"
-      label="Pinned show read anything side panel button"/>
-  <suffix name="PinnedShowReadingListSidePanelButton"
-      label="Pinned show reading list side panel button"/>
-  <suffix name="PinnedShowSearchCompanionSidePanelButton"
-      label="Pinned show search companion side panel button"/>
-  <suffix name="ShowPerformanceSidePanelButton"
-      label="Show performance side panel button"/>
   <suffix name="SidePanelButton" label="Side Panel button"/>
   <affected-action name="ResponsiveToolbar.OverflowMenuItemActivated"/>
 </action-suffix>

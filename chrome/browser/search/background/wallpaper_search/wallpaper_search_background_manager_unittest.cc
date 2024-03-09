@@ -28,11 +28,7 @@
 namespace {
 
 const char kWallpaperSearchHistoryId[] = "id";
-const char kWallpaperSearchHistoryMood[] = "mood";
-const char kWallpaperSearchHistoryStyle[] = "style";
-const char kWallpaperSearchHistorySubject[] = "subject";
 
-using testing::DoAll;
 using testing::Return;
 using testing::SaveArg;
 
@@ -42,15 +38,8 @@ class MockNtpCustomBackgroundService : public NtpCustomBackgroundService {
       : NtpCustomBackgroundService(profile) {}
   MOCK_METHOD(absl::optional<CustomBackground>, GetCustomBackground, ());
   MOCK_METHOD0(IsCustomBackgroundDisabledByPolicy, bool());
-  MOCK_METHOD2(SetBackgroundToLocalResourceWithId,
-               void(const base::Token&, bool));
+  MOCK_METHOD1(SetBackgroundToLocalResourceWithId, void(const base::Token&));
   MOCK_METHOD1(UpdateCustomLocalBackgroundColorAsync, void(const gfx::Image&));
-};
-
-class MockWallpaperSearchBackgroundManagerObserver
-    : public WallpaperSearchBackgroundManagerObserver {
- public:
-  MOCK_METHOD0(OnHistoryUpdated, void());
 };
 
 std::unique_ptr<TestingProfile> MakeTestingProfile() {
@@ -123,38 +112,28 @@ class WallpaperSearchBackgroundManagerTest : public testing::Test {
 TEST_F(WallpaperSearchBackgroundManagerTest, GetHistory) {
   // Fill history pref.
   base::Value::List history = base::Value::List();
-  std::vector<HistoryEntry> history_entries;
+  std::vector<base::Token> tokens;
   for (int i = 0; i < 3; i++) {
     base::Token temp_token = base::Token::CreateRandom();
-    HistoryEntry entry = HistoryEntry(temp_token);
-    entry.subject = "foo" + base::NumberToString(i);
-    entry.mood = "bar" + base::NumberToString(i);
-    entry.style = "foobar" + base::NumberToString(i);
-    history_entries.push_back(entry);
-    history.Append(
-        base::Value::Dict()
-            .Set(kWallpaperSearchHistoryId, temp_token.ToString())
-            .Set(kWallpaperSearchHistorySubject, entry.subject.value())
-            .Set(kWallpaperSearchHistoryMood, entry.mood.value())
-            .Set(kWallpaperSearchHistoryStyle, entry.style.value()));
+    tokens.push_back(temp_token);
+    history.Append(base::Value::Dict().Set(kWallpaperSearchHistoryId,
+                                           temp_token.ToString()));
   }
   pref_service().SetList(prefs::kNtpWallpaperSearchHistory, std::move(history));
 
   auto result = wallpaper_search_background_manager().GetHistory();
-  EXPECT_EQ(result, history_entries);
+  EXPECT_EQ(result, tokens);
 }
 
 TEST_F(WallpaperSearchBackgroundManagerTest, SetHistoryImage) {
   gfx::Image image_arg;
   base::Token token_arg;
-  bool is_inspiration_image_arg;
   ON_CALL(mock_ntp_custom_background_service(),
           IsCustomBackgroundDisabledByPolicy)
       .WillByDefault(testing::Return(false));
   EXPECT_CALL(mock_ntp_custom_background_service(),
               SetBackgroundToLocalResourceWithId)
-      .WillOnce(
-          DoAll(SaveArg<0>(&token_arg), SaveArg<1>(&is_inspiration_image_arg)));
+      .WillOnce(SaveArg<0>(&token_arg));
   EXPECT_CALL(mock_ntp_custom_background_service(),
               UpdateCustomLocalBackgroundColorAsync)
       .WillOnce(SaveArg<0>(&image_arg));
@@ -173,9 +152,6 @@ TEST_F(WallpaperSearchBackgroundManagerTest, SetHistoryImage) {
   EXPECT_EQ(token_arg, token);
   EXPECT_EQ(image, image_arg);
 
-  // Check that |is_inspiration_image| is false for history images.
-  EXPECT_FALSE(is_inspiration_image_arg);
-
   // Check that processing time was saved to metrics.
   histogram_tester().ExpectBucketCount(
       "NewTabPage.WallpaperSearch.SetRecentThemeProcessingLatency", 321, 1);
@@ -184,14 +160,12 @@ TEST_F(WallpaperSearchBackgroundManagerTest, SetHistoryImage) {
 TEST_F(WallpaperSearchBackgroundManagerTest, SetLocalBackgroundImage) {
   gfx::Image image_arg;
   base::Token token_arg;
-  bool is_inspiration_image_arg;
   ON_CALL(mock_ntp_custom_background_service(),
           IsCustomBackgroundDisabledByPolicy)
       .WillByDefault(testing::Return(false));
   EXPECT_CALL(mock_ntp_custom_background_service(),
               SetBackgroundToLocalResourceWithId)
-      .WillOnce(
-          DoAll(SaveArg<0>(&token_arg), SaveArg<1>(&is_inspiration_image_arg)));
+      .WillOnce(SaveArg<0>(&token_arg));
   EXPECT_CALL(mock_ntp_custom_background_service(),
               UpdateCustomLocalBackgroundColorAsync)
       .WillOnce(SaveArg<0>(&image_arg));
@@ -203,7 +177,7 @@ TEST_F(WallpaperSearchBackgroundManagerTest, SetLocalBackgroundImage) {
   base::Token token = base::Token::CreateRandom();
   base::ElapsedTimer timer = base::ElapsedTimer();
   wallpaper_search_background_manager().SelectLocalBackgroundImage(
-      token, bitmap, /*is_inspiration_image=*/false, std::move(timer));
+      token, bitmap, std::move(timer));
   task_environment().AdvanceClock(base::Milliseconds(345));
   task_environment().RunUntilIdle();
 
@@ -214,53 +188,10 @@ TEST_F(WallpaperSearchBackgroundManagerTest, SetLocalBackgroundImage) {
   EXPECT_EQ(token_arg.high(), token.high());
   EXPECT_EQ(token_arg.low(), token.low());
   EXPECT_EQ(SK_ColorRED, image_arg.ToSkBitmap()->getColor(0, 0));
-  EXPECT_FALSE(is_inspiration_image_arg);
 
   // Check that processing time was saved to metrics.
   histogram_tester().ExpectBucketCount(
       "NewTabPage.WallpaperSearch.SetResultThemeProcessingLatency", 345, 1);
-}
-
-TEST_F(WallpaperSearchBackgroundManagerTest,
-       SetLocalBackgroundImage_Inspiration) {
-  gfx::Image image_arg;
-  base::Token token_arg;
-  bool is_inspiration_image_arg;
-  ON_CALL(mock_ntp_custom_background_service(),
-          IsCustomBackgroundDisabledByPolicy)
-      .WillByDefault(testing::Return(false));
-  EXPECT_CALL(mock_ntp_custom_background_service(),
-              SetBackgroundToLocalResourceWithId)
-      .WillOnce(
-          DoAll(SaveArg<0>(&token_arg), SaveArg<1>(&is_inspiration_image_arg)));
-  EXPECT_CALL(mock_ntp_custom_background_service(),
-              UpdateCustomLocalBackgroundColorAsync)
-      .WillOnce(SaveArg<0>(&image_arg));
-
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(32, 32);
-  bitmap.eraseColor(SK_ColorRED);
-
-  base::Token token = base::Token::CreateRandom();
-  base::ElapsedTimer timer = base::ElapsedTimer();
-  wallpaper_search_background_manager().SelectLocalBackgroundImage(
-      token, bitmap, /*is_inspiration_image=*/true, std::move(timer));
-  task_environment().AdvanceClock(base::Milliseconds(345));
-  task_environment().RunUntilIdle();
-
-  // Check that image file was created.
-  EXPECT_TRUE(base::PathExists(GetFilePathForBackground(token)));
-
-  // Check that the args were passed to |NtpCustomBackgroundService|.
-  EXPECT_EQ(token_arg.high(), token.high());
-  EXPECT_EQ(token_arg.low(), token.low());
-  EXPECT_EQ(SK_ColorRED, image_arg.ToSkBitmap()->getColor(0, 0));
-  EXPECT_TRUE(is_inspiration_image_arg);
-
-  // Check that processing time was saved to metrics.
-  histogram_tester().ExpectBucketCount(
-      "NewTabPage.WallpaperSearch.SetInspirationThemeProcessingLatency", 345,
-      1);
 }
 
 // If the currently set wallpaper search image is set again, do not pass it
@@ -289,7 +220,7 @@ TEST_F(WallpaperSearchBackgroundManagerTest,
   ON_CALL(mock_ntp_custom_background_service(), GetCustomBackground())
       .WillByDefault(Return(absl::make_optional(custom_background)));
   wallpaper_search_background_manager().SelectLocalBackgroundImage(
-      token, bitmap, true, base::ElapsedTimer());
+      token, bitmap, base::ElapsedTimer());
 
   task_environment().RunUntilIdle();
 
@@ -304,31 +235,17 @@ TEST_F(WallpaperSearchBackgroundManagerTest, SaveCurrentBackgroundToHistory) {
   ON_CALL(mock_ntp_custom_background_service(), GetCustomBackground())
       .WillByDefault(Return(absl::make_optional(custom_background)));
 
-  HistoryEntry entry = HistoryEntry(token);
-  entry.subject = "foo";
-  entry.mood = "bar";
-  entry.style = "foobar";
-  wallpaper_search_background_manager().SaveCurrentBackgroundToHistory(entry);
+  wallpaper_search_background_manager().SaveCurrentBackgroundToHistory();
   task_environment().RunUntilIdle();
 
   const base::Value::List& history =
       pref_service().GetList(prefs::kNtpWallpaperSearchHistory);
   ASSERT_EQ(history.size(), 1u);
   ASSERT_TRUE(history.front().is_dict());
-  const base::Value::Dict& history_dict = history.front().GetDict();
-  const base::Value* id = history_dict.Find(kWallpaperSearchHistoryId);
-  const base::Value* subject =
-      history_dict.Find(kWallpaperSearchHistorySubject);
-  const base::Value* mood = history_dict.Find(kWallpaperSearchHistoryMood);
-  const base::Value* style = history_dict.Find(kWallpaperSearchHistoryStyle);
+  const base::Value* id =
+      history.front().GetDict().Find(kWallpaperSearchHistoryId);
   ASSERT_TRUE(id->is_string());
-  ASSERT_TRUE(subject->is_string());
-  ASSERT_TRUE(mood->is_string());
-  ASSERT_TRUE(style->is_string());
   EXPECT_EQ(token.ToString(), id->GetString());
-  EXPECT_EQ(entry.subject, subject->GetString());
-  EXPECT_EQ(entry.mood, mood->GetString());
-  EXPECT_EQ(entry.style, style->GetString());
 }
 
 // Test that the last history entry is deleted when a new entry is added,
@@ -354,10 +271,7 @@ TEST_F(WallpaperSearchBackgroundManagerTest,
   ON_CALL(mock_ntp_custom_background_service(), GetCustomBackground())
       .WillByDefault(Return(absl::make_optional(custom_background)));
 
-  HistoryEntry entry = HistoryEntry(theme_token);
-  entry.subject = "foo";
-  entry.mood = "bar";
-  wallpaper_search_background_manager().SaveCurrentBackgroundToHistory(entry);
+  wallpaper_search_background_manager().SaveCurrentBackgroundToHistory();
   task_environment().RunUntilIdle();
 
   // Check that the history is still 6 long and the first entry is the new one.
@@ -365,19 +279,10 @@ TEST_F(WallpaperSearchBackgroundManagerTest,
       pref_service().GetList(prefs::kNtpWallpaperSearchHistory);
   ASSERT_EQ(new_history.size(), 6u);
   ASSERT_TRUE(new_history.front().is_dict());
-  const base::Value::Dict& history_dict = new_history.front().GetDict();
-  const base::Value* id = history_dict.Find(kWallpaperSearchHistoryId);
-  const base::Value* subject =
-      history_dict.Find(kWallpaperSearchHistorySubject);
-  const base::Value* mood = history_dict.Find(kWallpaperSearchHistoryMood);
-  const base::Value* style = history_dict.Find(kWallpaperSearchHistoryStyle);
+  const base::Value* id =
+      new_history.front().GetDict().Find(kWallpaperSearchHistoryId);
   ASSERT_TRUE(id->is_string());
-  ASSERT_TRUE(subject->is_string());
-  ASSERT_TRUE(mood->is_string());
-  EXPECT_EQ(style, nullptr);
   EXPECT_EQ(theme_token.ToString(), id->GetString());
-  EXPECT_EQ(entry.subject, subject->GetString());
-  EXPECT_EQ(entry.mood, mood->GetString());
 
   // Check that the file for deleted history entry has been deleted and the
   // rest are still there.
@@ -397,10 +302,8 @@ TEST_F(WallpaperSearchBackgroundManagerTest,
   for (int i = 0; i < 6; ++i) {
     base::Token temp_token = base::Token::CreateRandom();
     tokens.push_back(temp_token);
-    history.Append(base::Value::Dict()
-                       .Set(kWallpaperSearchHistoryId, temp_token.ToString())
-                       .Set(kWallpaperSearchHistorySubject,
-                            "foo" + base::NumberToString(i)));
+    history.Append(base::Value::Dict().Set(kWallpaperSearchHistoryId,
+                                           temp_token.ToString()));
     base::WriteFile(GetFilePathForBackground(temp_token), "hi");
   }
   pref_service().SetList(prefs::kNtpWallpaperSearchHistory, std::move(history));
@@ -412,10 +315,7 @@ TEST_F(WallpaperSearchBackgroundManagerTest,
   ON_CALL(mock_ntp_custom_background_service(), GetCustomBackground())
       .WillByDefault(Return(absl::make_optional(custom_background)));
 
-  HistoryEntry theme_entry = HistoryEntry(theme_token);
-  theme_entry.subject = "foo2";
-  wallpaper_search_background_manager().SaveCurrentBackgroundToHistory(
-      theme_entry);
+  wallpaper_search_background_manager().SaveCurrentBackgroundToHistory();
   task_environment().RunUntilIdle();
 
   // Check that the history is still 6 long and in the correct order.
@@ -425,40 +325,20 @@ TEST_F(WallpaperSearchBackgroundManagerTest,
       pref_service().GetList(prefs::kNtpWallpaperSearchHistory);
   ASSERT_EQ(new_history.size(), 6u);
   ASSERT_TRUE(new_history.front().is_dict());
-  const base::Value::Dict& first_history_dict = new_history.front().GetDict();
   const base::Value* first_id =
-      first_history_dict.Find(kWallpaperSearchHistoryId);
-  const base::Value* first_subject =
-      first_history_dict.Find(kWallpaperSearchHistorySubject);
-  const base::Value* first_mood =
-      first_history_dict.Find(kWallpaperSearchHistoryMood);
-  const base::Value* first_style =
-      first_history_dict.Find(kWallpaperSearchHistoryStyle);
+      new_history.front().GetDict().Find(kWallpaperSearchHistoryId);
   ASSERT_TRUE(first_id->is_string());
-  ASSERT_TRUE(first_subject->is_string());
-  EXPECT_EQ(first_mood, nullptr);
-  EXPECT_EQ(first_style, nullptr);
   EXPECT_EQ(theme_token.ToString(), first_id->GetString());
-  EXPECT_EQ(theme_entry.subject, first_subject->GetString());
   bool before_entry_pos = true;
   for (int i = 1; i < 6; ++i) {
     // If we haven't hit where |theme_token| used to be in the history,
     // the entry we are looking at will be one index back in |tokens| vs
     // |new_history|.
     ASSERT_TRUE(new_history[i].is_dict());
-    const base::Value::Dict& history_dict = new_history[i].GetDict();
-    const base::Value* id = history_dict.Find(kWallpaperSearchHistoryId);
-    const base::Value* subject =
-        history_dict.Find(kWallpaperSearchHistorySubject);
-    const base::Value* mood = history_dict.Find(kWallpaperSearchHistoryMood);
-    const base::Value* style = history_dict.Find(kWallpaperSearchHistoryStyle);
+    const base::Value* id =
+        new_history[i].GetDict().Find(kWallpaperSearchHistoryId);
     ASSERT_TRUE(id->is_string());
-    ASSERT_TRUE(subject->is_string());
-    EXPECT_EQ(mood, nullptr);
-    EXPECT_EQ(style, nullptr);
     EXPECT_EQ(id->GetString(), tokens[before_entry_pos ? i - 1 : i].ToString());
-    EXPECT_EQ("foo" + base::NumberToString(before_entry_pos ? i - 1 : i),
-              subject->GetString());
 
     if (tokens[i].ToString() == theme_token.ToString()) {
       before_entry_pos = false;
@@ -494,8 +374,7 @@ TEST_F(WallpaperSearchBackgroundManagerTest,
   ON_CALL(mock_ntp_custom_background_service(), GetCustomBackground())
       .WillByDefault(Return(absl::make_optional(custom_background)));
 
-  wallpaper_search_background_manager().SaveCurrentBackgroundToHistory(
-      HistoryEntry(theme_token));
+  wallpaper_search_background_manager().SaveCurrentBackgroundToHistory();
   task_environment().RunUntilIdle();
 
   // Check that the history is still 6 long and in the correct order.
@@ -521,27 +400,6 @@ TEST_F(WallpaperSearchBackgroundManagerTest,
   for (int i = 0; i < 6; ++i) {
     EXPECT_TRUE(base::PathExists(GetFilePathForBackground(tokens[i])));
   }
-}
-
-// Check that absl::nullopt is returned if the history entry passed in is
-// not the current theme, and history is not changed.
-TEST_F(WallpaperSearchBackgroundManagerTest,
-       SaveCurrentBackgroundToHistory_NotCurrentBackground) {
-  base::Token token = base::Token::CreateRandom();
-  CustomBackground custom_background;
-  custom_background.local_background_id = token;
-  ON_CALL(mock_ntp_custom_background_service(), GetCustomBackground())
-      .WillByDefault(Return(absl::make_optional(custom_background)));
-
-  auto response =
-      wallpaper_search_background_manager().SaveCurrentBackgroundToHistory(
-          HistoryEntry(base::Token::CreateRandom()));
-  task_environment().RunUntilIdle();
-
-  const base::Value::List& history =
-      pref_service().GetList(prefs::kNtpWallpaperSearchHistory);
-  EXPECT_EQ(history.size(), 0u);
-  EXPECT_FALSE(response.has_value());
 }
 
 // Test that a wallpaper search background is removed if it is not in history
@@ -602,24 +460,4 @@ TEST_F(WallpaperSearchBackgroundManagerTest,
 
   // The theme file created above should still be there.
   EXPECT_TRUE(base::PathExists(GetFilePathForBackground(tokens[3])));
-}
-
-TEST_F(WallpaperSearchBackgroundManagerTest, NotifyAboutHistory) {
-  std::unique_ptr<MockWallpaperSearchBackgroundManagerObserver> observer =
-      std::make_unique<MockWallpaperSearchBackgroundManagerObserver>();
-  EXPECT_CALL(*observer, OnHistoryUpdated());
-
-  // Add mock observer to observer list and update history pref.
-  wallpaper_search_background_manager().AddObserver(observer.get());
-  base::Value::List history =
-      base::Value::List().Append(base::Value::Dict().Set(
-          kWallpaperSearchHistoryId, base::Token::CreateRandom().ToString()));
-  pref_service().SetList(prefs::kNtpWallpaperSearchHistory, std::move(history));
-
-  // Remove mock observer to observer list and update history pref.
-  // This shouldn't create another call to OnHistoryUpdated().
-  wallpaper_search_background_manager().RemoveObserver(observer.get());
-  history = base::Value::List().Append(base::Value::Dict().Set(
-      kWallpaperSearchHistoryId, base::Token::CreateRandom().ToString()));
-  pref_service().SetList(prefs::kNtpWallpaperSearchHistory, std::move(history));
 }

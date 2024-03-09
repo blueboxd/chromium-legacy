@@ -200,23 +200,19 @@ constexpr char kAshAppInstallServicePackageIdFix[] = "b/304680258";
 // Bug fix to launch tabbed web app windows in new windows when requested.
 // We can remove this capability once Ash and Lacros are both past M122.
 constexpr char kAshShelfNewWindowFix[] = "crbug/1490336";
-// Support feedback dialog ai flow.
-// TODO(crbug/1501057): Remove this capability once Ash and Lacros are both past
-// M123.
-constexpr char kAshFeedbackFlowAi[] = "crbug/1501057";
 
 // Returns the vector containing policy data of the device account. In case of
 // an error, returns nullopt.
-absl::optional<std::vector<uint8_t>> GetDeviceAccountPolicy(
+std::optional<std::vector<uint8_t>> GetDeviceAccountPolicy(
     EnvironmentProvider* environment_provider) {
   if (!user_manager::UserManager::IsInitialized()) {
     LOG(ERROR) << "User not initialized.";
-    return absl::nullopt;
+    return std::nullopt;
   }
   const auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
   if (!primary_user) {
     LOG(ERROR) << "No primary user.";
-    return absl::nullopt;
+    return std::nullopt;
   }
   std::string policy_data = environment_provider->GetDeviceAccountPolicy();
   return std::vector<uint8_t>(policy_data.begin(), policy_data.end());
@@ -224,12 +220,12 @@ absl::optional<std::vector<uint8_t>> GetDeviceAccountPolicy(
 
 // Returns the map containing component policy for each namespace. The values
 // represent the JSON policy for the namespace.
-absl::optional<policy::ComponentPolicyMap> GetDeviceAccountComponentPolicy(
+std::optional<policy::ComponentPolicyMap> GetDeviceAccountComponentPolicy(
     EnvironmentProvider* environment_provider) {
   const policy::ComponentPolicyMap& map =
       environment_provider->GetDeviceAccountComponentPolicy();
   if (map.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return policy::CopyComponentPolicyMap(map);
@@ -484,7 +480,7 @@ crosapi::mojom::BrowserInitParams::DeviceType ConvertDeviceType(
 }
 
 crosapi::mojom::BrowserInitParams::LacrosSelection GetLacrosSelection(
-    absl::optional<browser_util::LacrosSelection> selection) {
+    std::optional<browser_util::LacrosSelection> selection) {
   if (!selection.has_value()) {
     return crosapi::mojom::BrowserInitParams::LacrosSelection::kUnspecified;
   }
@@ -523,7 +519,7 @@ void InjectBrowserInitParams(
     mojom::BrowserInitParams* params,
     EnvironmentProvider* environment_provider,
     bool is_keep_alive_enabled,
-    absl::optional<browser_util::LacrosSelection> lacros_selection) {
+    std::optional<browser_util::LacrosSelection> lacros_selection) {
   params->crosapi_version = crosapi::mojom::Crosapi::Version_;
   params->deprecated_ash_metrics_enabled_has_value = true;
   PrefService* local_state = g_browser_process->local_state();
@@ -624,7 +620,6 @@ void InjectBrowserInitParams(
       kAshExtensionKeeplistCmdlineSwitchCapability,
       kAshAppInstallServicePackageIdFix,
       kAshShelfNewWindowFix,
-      kAshFeedbackFlowAi,
   };
   params->ash_capabilities = {std::move(ash_capabilities)};
 
@@ -711,7 +706,7 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
   params->session_type = environment_provider->GetSessionType();
   params->default_paths = environment_provider->GetDefaultPaths();
 
-  const absl::optional<account_manager::Account> maybe_device_account =
+  const std::optional<account_manager::Account> maybe_device_account =
       environment_provider->GetDeviceAccount();
   if (maybe_device_account) {
     params->device_account =
@@ -743,7 +738,7 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
     EnvironmentProvider* environment_provider,
     InitialBrowserAction initial_browser_action,
     bool is_keep_alive_enabled,
-    absl::optional<browser_util::LacrosSelection> lacros_selection,
+    std::optional<browser_util::LacrosSelection> lacros_selection,
     bool include_post_login_params) {
   mojom::BrowserInitParamsPtr params = mojom::BrowserInitParams::New();
   InjectBrowserInitParams(params.get(), environment_provider,
@@ -769,7 +764,7 @@ base::ScopedFD CreateStartupData(
     EnvironmentProvider* environment_provider,
     InitialBrowserAction initial_browser_action,
     bool is_keep_alive_enabled,
-    absl::optional<LacrosSelection> lacros_selection,
+    std::optional<LacrosSelection> lacros_selection,
     bool include_post_login_params) {
   const auto& data = GetBrowserInitParams(
       environment_provider, std::move(initial_browser_action),
@@ -843,13 +838,13 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
             mojom::UsbDetachableAllowlist::New();
         for (const auto& entry : *usb_detachable_allow_list) {
           mojom::UsbDeviceIdPtr usb_device_id = mojom::UsbDeviceId::New();
-          absl::optional<int> vid =
+          std::optional<int> vid =
               entry.GetDict().FindInt(ash::kUsbDetachableAllowlistKeyVid);
           if (vid) {
             usb_device_id->has_vendor_id = true;
             usb_device_id->vendor_id = vid.value();
           }
-          absl::optional<int> pid =
+          std::optional<int> pid =
               entry.GetDict().FindInt(ash::kUsbDetachableAllowlistKeyPid);
           if (pid) {
             usb_device_id->has_product_id = true;

@@ -66,6 +66,9 @@ public class ReadAloudController
 
     private final Activity mActivity;
     private final ObservableSupplier<Profile> mProfileSupplier;
+    private final ObservableSupplierImpl<String> mReadabilitySupplier =
+            new ObservableSupplierImpl();
+    private final Map<String, String> mSanitizedToFullUrlMap = new HashMap<>();
     private final Map<String, Boolean> mReadabilityMap = new HashMap<>();
     private final Map<String, Boolean> mTimepointsSupportedMap = new HashMap<>();
     private final HashSet<String> mPendingRequests = new HashSet<>();
@@ -166,10 +169,17 @@ public class ReadAloudController
     private long mTranslationObserverHandle;
     private final TranslationObserver mTranslationObserver =
             new TranslationObserver() {
-
                 @Override
                 public void onIsPageTranslatedChanged(WebContents webContents) {
                     if (mCurrentlyPlayingTab != null) {
+                        maybeStopPlayback(mCurrentlyPlayingTab);
+                    }
+                }
+
+                @Override
+                public void onPageTranslated(
+                        String sourceLanguage, String translatedLanguage, int errorCode) {
+                    if (mCurrentlyPlayingTab != null && errorCode == 0) {
                         maybeStopPlayback(mCurrentlyPlayingTab);
                     }
                 }
@@ -186,11 +196,10 @@ public class ReadAloudController
                 @Override
                 public void onSuccess(String url, boolean isReadable, boolean timepointsSupported) {
                     Log.d(TAG, "onSuccess called for %s", url);
-                    // isPlaybackEnabled() should only be checked if isReadable == true.
-                    isReadable = isReadable && ReadAloudFeatures.isPlaybackEnabled();
                     mReadabilityMap.put(url, isReadable);
                     mTimepointsSupportedMap.put(url, timepointsSupported);
                     mPendingRequests.remove(url);
+                    mReadabilitySupplier.set(mSanitizedToFullUrlMap.get(url));
                 }
 
                 @Override
@@ -230,6 +239,10 @@ public class ReadAloudController
         ApplicationStatus.registerApplicationStateListener(this);
     }
 
+    public ObservableSupplier<String> getReadabilitySupplier() {
+        return mReadabilitySupplier;
+    }
+
     private void onProfileAvailable(Profile profile) {
         mReadabilityHooks =
                 sReadabilityHooksForTesting != null
@@ -250,7 +263,7 @@ public class ReadAloudController
                         protected void onTabSelected(Tab tab) {
                             Log.d(
                                     TAG,
-                                    "onTabSelected called for"
+                                    "onTabSelected called for "
                                             + tab.getUrl().getPossiblyInvalidSpec());
                             super.onTabSelected(tab);
                             maybeCheckReadability(tab.getUrl());
@@ -271,6 +284,8 @@ public class ReadAloudController
         }
 
         String urlSpec = stripUserData(url).getSpec();
+        // TODO: 2 different URLs can have the same sanitized URL
+        mSanitizedToFullUrlMap.put(url.getSpec(), urlSpec);
         if (mReadabilityMap.containsKey(urlSpec) || mPendingRequests.contains(urlSpec)) {
             return;
         }
@@ -397,8 +412,6 @@ public class ReadAloudController
                             ReadAloudPrefs.isHighlightingEnabled(getPrefService()));
                     mPlayback = playback;
                     mPlayback.addListener(ReadAloudController.this);
-
-                    updateVoiceMenu(playback.getMetadata().languageCode());
                 },
                 exception -> {
                     Log.e(TAG, exception.getMessage());
@@ -407,6 +420,7 @@ public class ReadAloudController
 
         // Notify player UI that playback is happening soon.
         mPlayerCoordinator.playTabRequested();
+        updateVoiceMenu(playbackLanguage);
         return promise;
     }
 
@@ -566,8 +580,15 @@ public class ReadAloudController
         if (language == null) {
             return;
         }
-        mCurrentLanguageVoices.set(mPlaybackHooks.getVoicesFor(language));
-        mSelectedVoiceId.set(ReadAloudPrefs.getVoices(getPrefService()).get(language));
+
+        List<PlaybackVoice> voices = mPlaybackHooks.getVoicesFor(language);
+        mCurrentLanguageVoices.set(voices);
+
+        String selectedVoiceId = ReadAloudPrefs.getVoices(getPrefService()).get(language);
+        if (selectedVoiceId == null) {
+            selectedVoiceId = voices.get(0).getVoiceId();
+        }
+        mSelectedVoiceId.set(selectedVoiceId);
     }
 
     // Player.Delegate
@@ -618,7 +639,7 @@ public class ReadAloudController
         ReadAloudPrefs.setVoice(getPrefService(), voice.getLanguage(), voice.getVoiceId());
         mSelectedVoiceId.set(voice.getVoiceId());
 
-        if (mCurrentlyPlayingTab != null) {
+        if (mCurrentlyPlayingTab != null && mPlayback != null) {
             RestoreState state = new RestoreState(mCurrentlyPlayingTab, mCurrentPlaybackData);
             resetCurrentPlayback();
             // This should re-request playback with the same playback state and paragraph

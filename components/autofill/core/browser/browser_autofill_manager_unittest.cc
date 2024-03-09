@@ -40,6 +40,7 @@
 #include "components/autofill/core/browser/crowdsourcing/mock_autofill_crowdsourcing_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/form_data_importer_test_api.h"
 #include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/browser/geo/alternative_state_name_map_test_utils.h"
@@ -894,14 +895,6 @@ class BrowserAutofillManagerTest : public testing::Test {
   void FormSubmitted(const FormData& form) {
     browser_autofill_manager_->OnFormSubmitted(
         form, false, SubmissionSource::FORM_SUBMISSION);
-  }
-
-  void AddFormFillHistoryEntry(
-      std::vector<const FormFieldData* const> filled_fields,
-      std::vector<const AutofillField* const> filled_autofill_fields,
-      bool is_refill) {
-    test_api(*browser_autofill_manager_)
-        .AddFormFillEntry(filled_fields, filled_autofill_fields, is_refill);
   }
 
   // TODO(crbug.com/1330108): Have separate functions for profile and credit
@@ -1773,10 +1766,11 @@ TEST_F(BrowserAutofillManagerTest,
     GetAutofillSuggestions(
         form, field, AutofillSuggestionTriggerSource::kManualFallbackPayments);
     external_delegate()->CheckSuggestionCount(field.global_id(), 3);
-    base::ranges::all_of(
+    EXPECT_TRUE(base::ranges::all_of(
         external_delegate()->suggestions(), [](const Suggestion& suggestion) {
-          return suggestion.popup_item_id == PopupItemId::kEntryNotSelectable;
-        });
+          return suggestion.popup_item_id ==
+                 PopupItemId::kPaymentsEntryNotSelectable;
+        }));
   }
 }
 
@@ -1800,10 +1794,10 @@ TEST_F(BrowserAutofillManagerTest,
       form, cc_name_field,
       AutofillSuggestionTriggerSource::kManualFallbackPayments);
   external_delegate()->CheckSuggestionCount(cc_name_field.global_id(), 2);
-  base::ranges::all_of(
+  EXPECT_TRUE(base::ranges::all_of(
       external_delegate()->suggestions(), [](const Suggestion& suggestion) {
         return suggestion.popup_item_id == PopupItemId::kCreditCardEntry;
-      });
+      }));
 }
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
@@ -2220,13 +2214,11 @@ TEST_F(BrowserAutofillManagerTest,
 
   // Mock returning some autocomplete `suggestions`.
   EXPECT_CALL(*single_field_form_fill_router(), OnGetSingleFieldSuggestions)
-      .WillOnce([&](AutofillSuggestionTriggerSource trigger_source,
-                    const FormFieldData& field, const AutofillClient& client,
+      .WillOnce([&](const FormFieldData& field, const AutofillClient& client,
                     SingleFieldFormFiller::OnSuggestionsReturnedCallback
                         on_suggestions_returned,
                     const SuggestionsContext& context) {
-        std::move(on_suggestions_returned)
-            .Run(field.global_id(), trigger_source, suggestions);
+        std::move(on_suggestions_returned).Run(field.global_id(), suggestions);
         return true;
       });
   GetAutofillSuggestions(
@@ -3004,6 +2996,50 @@ TEST_F(BrowserAutofillManagerTest, DoNotFillIfFormChanged) {
                                   form_structure, autofill_field);
 }
 
+TEST_F(BrowserAutofillManagerTest, SkipFillIfFieldIsMeaningfullyPreFilled) {
+  base::test::ScopedFeatureList placeholders_feature{
+      features::kAutofillOverwritePlaceholdersOnly};
+
+  FormData form = test::GetFormData(
+      {.fields = {{.role = NAME_FIRST, .value = u"Triggering field (filled)"},
+                  {.role = NAME_LAST, .value = u"Placeholder (filled)"},
+                  {.role = EMAIL_ADDRESS, .value = u"No data (filled)"},
+                  {.role = ADDRESS_HOME_LINE1,
+                   .value = u"Meaningfully pre-filled (skipped)"}}});
+  FormsSeen({form});
+
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  ASSERT_TRUE(browser_autofill_manager_->GetCachedFormAndField(
+      form, form.fields.front(), &form_structure, &autofill_field));
+  form_structure->fields()[0]->set_may_use_prefilled_placeholder(false);
+  form_structure->fields()[1]->set_may_use_prefilled_placeholder(true);
+  form_structure->fields()[3]->set_may_use_prefilled_placeholder(false);
+
+  AutofillProfile* profile =
+      personal_data().GetProfileByGUID(kElvisProfileGuid);
+  ASSERT_TRUE(profile);
+
+  FormData filled_form;
+  EXPECT_CALL(*autofill_driver_, ApplyFormAction)
+      .WillOnce((DoAll(SaveArg<2>(&filled_form),
+                       Return(std::vector<FieldGlobalId>{}))));
+  test_api(*browser_autofill_manager_)
+      .FillOrPreviewDataModelForm(mojom::ActionPersistence::kFill, form,
+                                  form.fields.front(), profile, nullptr,
+                                  form_structure, autofill_field);
+
+  const auto& filled_fields = filled_form.fields;
+  EXPECT_TRUE(filled_fields[0].is_autofilled);
+  EXPECT_EQ(filled_fields[0].value, profile->GetRawInfo(NAME_FIRST));
+  EXPECT_TRUE(filled_fields[1].is_autofilled);
+  EXPECT_EQ(filled_fields[1].value, profile->GetRawInfo(NAME_LAST));
+  EXPECT_TRUE(filled_fields[2].is_autofilled);
+  EXPECT_EQ(filled_fields[2].value, profile->GetRawInfo(EMAIL_ADDRESS));
+  EXPECT_FALSE(filled_fields[3].is_autofilled);
+  EXPECT_EQ(filled_fields[3].value, form.fields[3].value);
+}
+
 TEST_F(BrowserAutofillManagerTest, UndoSavesFormFillingData) {
   FormData form = CreateTestAddressFormData();
   FormsSeen({form});
@@ -3042,7 +3078,7 @@ TEST_F(BrowserAutofillManagerTest, UndoSavesFieldByFieldFillingData) {
   browser_autofill_manager_->FillOrPreviewField(
       mojom::ActionPersistence::kFill, mojom::TextReplacement::kReplaceAll,
       form, form.fields.front(), u"Test Value",
-      PopupItemId::kFieldByFieldFilling);
+      PopupItemId::kAddressFieldByFieldFilling);
 
   // Undo early returns if it has no filling history for the trigger field,
   // which is initially empty, therefore calling the driver is proof that data
@@ -3056,9 +3092,13 @@ TEST_F(BrowserAutofillManagerTest, UndoResetsCachedAutofillState) {
   FormData form = CreateTestAddressFormData();
   AutofillField filled_autofill_field(form.fields.front());
 
+  FormFieldData* field_ptr = &form.fields.front();
+  AutofillField* autofill_field_ptr = &filled_autofill_field;
   form.fields.front().is_autofilled = false;
-  AddFormFillHistoryEntry({&form.fields.front()}, {&filled_autofill_field},
-                          /*is_refill=*/false);
+  test_api(*browser_autofill_manager_)
+      .AddFormFillEntry(base::make_span(&field_ptr, 1u),
+                        base::make_span(&autofill_field_ptr, 1u),
+                        FillingProduct::kAddressAutofill, /*is_refill=*/false);
   form.fields.front().is_autofilled = true;
   FormsSeen({form});
 
@@ -10916,7 +10956,7 @@ TEST_F(BrowserAutofillManagerPlusAddressTest, PlusAddressSuggestionShown) {
   GetAutofillSuggestions(form, form.fields[0]);
   CheckSuggestions(
       form.fields[0].global_id(),
-      Suggestion("plus+plus@plus.plus", "", Suggestion::Icon::kPlusAddress,
+      Suggestion("plus+plus@plus.plus", "", Suggestion::Icon::kNoIcon,
                  PopupItemId::kFillExistingPlusAddress),
       Suggestion("buddy@gmail.com", "", Suggestion::Icon::kNoIcon,
                  PopupItemId::kAddressEntry),
@@ -10952,7 +10992,7 @@ TEST_F(BrowserAutofillManagerPlusAddressTest,
       form.fields[0].global_id(),
       Suggestion(
           base::UTF16ToUTF8(plus_address_service->GetCreateSuggestionLabel()),
-          "", Suggestion::Icon::kPlusAddress, PopupItemId::kCreateNewPlusAddress),
+          "", Suggestion::Icon::kNoIcon, PopupItemId::kCreateNewPlusAddress),
       Suggestion("buddy@gmail.com", "", Suggestion::Icon::kNoIcon,
                  PopupItemId::kAddressEntry),
       Suggestion("theking@gmail.com", "", Suggestion::Icon::kNoIcon,

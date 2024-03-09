@@ -63,7 +63,6 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "ci/chromeos-amd64-generic-dbg",
-            "use_dummy_lastchange",
         ],
     ),
     main_list_view = "try",
@@ -81,14 +80,13 @@ try_.builder(
     description_html = "This is a compile only builder for Ash chrome." +
                        " This builder also build Lacros with alternative toolchain.",
     mirrors = ["ci/chromeos-amd64-generic-rel"],
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "ci/chromeos-amd64-generic-rel",
             "dcheck_always_on",
-            "use_dummy_lastchange",
         ],
     ),
+    contact_team_email = "chromeos-sw-engprod@google.com",
     main_list_view = "try",
 )
 
@@ -105,15 +103,14 @@ try_.orchestrator_builder(
         "ci/chromeos-amd64-generic-rel",
         "ci/chromeos-amd64-generic-rel-gtest",
     ],
-    compilator = "chromeos-amd64-generic-rel-gtest-compilator",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "ci/chromeos-amd64-generic-rel",
             "dcheck_always_on",
-            "use_dummy_lastchange",
         ],
     ),
+    compilator = "chromeos-amd64-generic-rel-gtest-compilator",
+    contact_team_email = "chromeos-sw-engprod@google.com",
     main_list_view = "try",
     tryjob = try_.job(
         equivalent_builder = "try/chromeos-amd64-generic-rel-gtest-and-tast",
@@ -142,15 +139,14 @@ try_.orchestrator_builder(
         "ci/chromeos-amd64-generic-rel-gtest",
         "ci/chromeos-amd64-generic-rel-tast",
     ],
-    compilator = "chromeos-amd64-generic-rel-gtest-and-tast-compilator",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "ci/chromeos-amd64-generic-rel",
             "dcheck_always_on",
-            "use_dummy_lastchange",
         ],
     ),
+    compilator = "chromeos-amd64-generic-rel-gtest-and-tast-compilator",
+    contact_team_email = "chromeos-sw-engprod@google.com",
     main_list_view = "try",
     tryjob = try_.job(
         omit_from_luci_cv = True,
@@ -162,6 +158,12 @@ try_.orchestrator_builder(
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
     description_html = "This is a renamed builder of chromeos-amd64-generic-rel.",
     mirrors = ["ci/chromeos-amd64-generic-rel-renamed"],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/chromeos-amd64-generic-rel-renamed",
+            "dcheck_always_on",
+        ],
+    ),
     compilator = "chromeos-amd64-generic-rel-compilator",
     contact_team_email = "chromeos-sw-engprod@google.com",
     experiments = {
@@ -169,13 +171,6 @@ try_.orchestrator_builder(
         "chromium.add_one_test_shard": 10,
         "chromium.skip_successful_tests": 50,
     },
-    gn_args = gn_args.config(
-        configs = [
-            "ci/chromeos-amd64-generic-rel-renamed",
-            "dcheck_always_on",
-            "use_dummy_lastchange",
-        ],
-    ),
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -239,6 +234,7 @@ This builder should be removed after migrating chromeos-amd64-generic-rel from N
     try_settings = builder_config.try_settings(
         is_compile_only = True,
     ),
+    gn_args = "try/chromeos-amd64-generic-rel-renamed",
     compilator = "chromeos-amd64-generic-siso-rel-compilator",
     experiments = {
         # go/nplus1shardsproposal
@@ -268,17 +264,16 @@ try_.builder(
     name = "chromeos-arm-generic-rel",
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
     mirrors = ["ci/chromeos-arm-generic-rel"],
-    builderless = not settings.is_main,
-    experiments = {
-        "chromium.skip_successful_tests": 50,
-    },
     gn_args = gn_args.config(
         configs = [
             "ci/chromeos-arm-generic-rel",
             "dcheck_always_on",
-            "use_dummy_lastchange",
         ],
     ),
+    builderless = not settings.is_main,
+    experiments = {
+        "chromium.skip_successful_tests": 50,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -298,18 +293,17 @@ Lacros builder that runs Tast tests and gtests on ChromeOS devices via Skylab"""
     mirrors = [
         "ci/lacros-amd64-generic-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/lacros-amd64-generic-rel",
+            "dcheck_always_on",
+        ],
+    ),
     compilator = "lacros-amd64-generic-rel-compilator",
     contact_team_email = "chrome-desktop-engprod@google.com",
     experiments = {
         "chromium.skip_successful_tests": 50,
     },
-    gn_args = gn_args.config(
-        configs = [
-            "ci/lacros-amd64-generic-rel",
-            "dcheck_always_on",
-            "use_dummy_lastchange",
-        ],
-    ),
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -329,14 +323,13 @@ try_.builder(
     mirrors = [
         "ci/lacros-amd64-generic-rel-non-skylab",
     ],
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "ci/lacros-amd64-generic-rel-non-skylab",
             "dcheck_always_on",
-            "use_dummy_lastchange",
         ],
     ),
+    contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
 )
 
@@ -355,17 +348,16 @@ try_.builder(
     mirrors = [
         "ci/lacros-arm-generic-rel",
     ],
-    builderless = not settings.is_main,
-    experiments = {
-        "chromium.skip_successful_tests": 50,
-    },
     gn_args = gn_args.config(
         configs = [
             "ci/lacros-arm-generic-rel",
             "dcheck_always_on",
-            "use_dummy_lastchange",
         ],
     ),
+    builderless = not settings.is_main,
+    experiments = {
+        "chromium.skip_successful_tests": 50,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -376,8 +368,8 @@ try_.builder(
     mirrors = [
         "ci/lacros-arm-generic-rel-skylab",
     ],
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = "ci/lacros-arm-generic-rel-skylab",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
 )
 
@@ -402,8 +394,8 @@ try_.builder(
     mirrors = [
         "ci/lacros-arm64-generic-rel-skylab",
     ],
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = "ci/lacros-arm64-generic-rel-skylab",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
 )
 
@@ -417,17 +409,16 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
-    builderless = not settings.is_main,
-    experiments = {
-        "chromium.skip_successful_tests": 50,
-    },
     gn_args = gn_args.config(
         configs = [
             "ci/linux-chromeos-dbg",
             "no_symbols",
-            "use_dummy_lastchange",
         ],
     ),
+    builderless = not settings.is_main,
+    experiments = {
+        "chromium.skip_successful_tests": 50,
+    },
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
@@ -445,6 +436,7 @@ This builder should be removed after migrating linux-chromeos-compile-dbg from N
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    gn_args = "try/linux-chromeos-compile-dbg",
     contact_team_email = "chrome-build-team@google.com",
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
@@ -477,6 +469,7 @@ try_.builder(
     mirrors = [
         "ci/chromeos-jacuzzi-rel-skylab-fyi",
     ],
+    gn_args = "ci/chromeos-jacuzzi-rel-skylab-fyi",
     contact_team_email = "chromeos-velocity@google.com",
     main_list_view = "try",
 )
@@ -489,8 +482,8 @@ try_.builder(
     mirrors = [
         "ci/chromeos-octopus-rel-skylab-fyi",
     ],
-    contact_team_email = "chromeos-velocity@google.com",
     gn_args = "ci/chromeos-octopus-rel-skylab-fyi",
+    contact_team_email = "chromeos-velocity@google.com",
     main_list_view = "try",
 )
 
@@ -510,13 +503,6 @@ try_.orchestrator_builder(
     mirrors = [
         "ci/linux-chromeos-rel",
     ],
-    compilator = "linux-chromeos-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        # go/nplus1shardsproposal
-        "chromium.add_one_test_shard": 10,
-        "chromium.skip_successful_tests": 50,
-    },
     gn_args = gn_args.config(
         configs = [
             "ci/linux-chromeos-rel",
@@ -528,6 +514,13 @@ try_.orchestrator_builder(
             "enable_backup_ref_ptr_feature_flag",
         ],
     ),
+    compilator = "linux-chromeos-rel-compilator",
+    coverage_test_types = ["unit", "overall"],
+    experiments = {
+        # go/nplus1shardsproposal
+        "chromium.add_one_test_shard": 10,
+        "chromium.skip_successful_tests": 50,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -561,13 +554,6 @@ try_.orchestrator_builder(
         "ci/linux-lacros-builder-rel",
         "ci/linux-lacros-tester-rel",
     ],
-    compilator = "linux-lacros-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        # go/nplus1shardsproposal
-        "chromium.add_one_test_shard": 10,
-        "chromium.skip_successful_tests": 50,
-    },
     gn_args = gn_args.config(
         configs = [
             "ci/linux-lacros-builder-rel",
@@ -575,9 +561,15 @@ try_.orchestrator_builder(
             "clang",
             "use_clang_coverage",
             "partial_code_coverage_instrumentation",
-            "use_dummy_lastchange",
         ],
     ),
+    compilator = "linux-lacros-rel-compilator",
+    coverage_test_types = ["unit", "overall"],
+    experiments = {
+        # go/nplus1shardsproposal
+        "chromium.add_one_test_shard": 10,
+        "chromium.skip_successful_tests": 50,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -605,7 +597,6 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "ci/linux-chromeos-dbg",
-            "use_dummy_lastchange",
         ],
     ),
 )

@@ -1671,11 +1671,6 @@ const CGFloat kFeedContainerMinimumHeight = 1000;
   return minimumHeight;
 }
 
-// Returns the current height of the content suggestions content.
-- (CGFloat)contentSuggestionsContentHeight {
-  return [self.contentSuggestionsViewController contentSuggestionsHeight];
-}
-
 // Height of the feed header, returns 0 if it is not visible.
 - (CGFloat)feedHeaderHeight {
   return self.feedHeaderViewController
@@ -1856,15 +1851,10 @@ const CGFloat kFeedContainerMinimumHeight = 1000;
 // Sets the y content offset of the NTP collection view.
 - (void)setContentOffset:(CGFloat)offset {
   UICollectionView* collectionView = self.collectionView;
-  if (!self.feedVisible) {
-    // When the feed is not visible, enforce a max scroll position so that it
-    // doesn't end up scrolled down when no content is there. When the feed is
-    // visible, its content might load after the content offset is restored.
-    CGFloat maxOffset = collectionView.contentSize.height +
-                        collectionView.contentInset.bottom -
-                        collectionView.bounds.size.height;
-    offset = MIN(maxOffset, offset);
-  }
+  CGFloat maxOffset = collectionView.contentSize.height +
+                      collectionView.contentInset.bottom -
+                      collectionView.bounds.size.height;
+  offset = MIN(maxOffset, offset);
   collectionView.contentOffset = CGPointMake(0, offset);
   self.scrolledIntoFeed = offset > [self offsetWhenScrolledIntoFeed];
   [self handleStickyElementsForScrollPosition:offset force:YES];

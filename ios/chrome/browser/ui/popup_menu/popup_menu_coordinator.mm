@@ -119,9 +119,6 @@ using base::UserMetricsAction;
 // Whether the user selected a Destination on the overflow menu (the horizontal
 // list).
 @property(nonatomic, assign) BOOL overflowMenuUserSelectedDestination;
-// Whether the user scrolled to the end of the actions section during their
-// interaction.
-@property(nonatomic, assign) BOOL overflowMenuUserScrolledToEndOfActions;
 
 @property(nonatomic, strong) PopupMenuHelpCoordinator* popupMenuHelpCoordinator;
 
@@ -522,14 +519,6 @@ using base::UserMetricsAction;
 
     RecordOverflowMenuVisitedEvent(_event);
 
-    if (IsOverflowMenuCustomizationEnabled() &&
-        self.overflowMenuUserScrolledToEndOfActions) {
-      base::UmaHistogramBoolean(
-          "IOS.OverflowMenu.UserScrolledToEndAndStartedCustomization",
-          _event.Has(
-              OverflowMenuVisitedEventFields::kUserStartedCustomization));
-    }
-
     _event = OverflowMenuVisitedEvent();
 
     self.toolsMenuWasScrolledVertically = NO;
@@ -537,7 +526,6 @@ using base::UserMetricsAction;
     self.toolsMenuUserTookAction = NO;
     self.overflowMenuUserSelectedAction = NO;
     self.overflowMenuUserSelectedDestination = NO;
-    self.overflowMenuUserScrolledToEndOfActions = NO;
   }
 
   if (self.overflowMenuMediator) {
@@ -699,10 +687,6 @@ using base::UserMetricsAction;
 - (void)popupMenuUserSelectedDestination {
   self.overflowMenuUserSelectedDestination = YES;
   _event.Put(OverflowMenuVisitedEventFields::kUserSelectedDestination);
-}
-
-- (void)popupMenuUserScrolledToEndOfActions {
-  self.overflowMenuUserScrolledToEndOfActions = YES;
 }
 
 #pragma mark - Notification callback

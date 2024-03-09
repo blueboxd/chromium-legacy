@@ -216,6 +216,7 @@ class DevicePairingHandlerImplTest : public testing::Test {
                        base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
+    EXPECT_TRUE(delegate->IsMojoPipeConnected());
     return delegate;
   }
 
@@ -236,7 +237,7 @@ class DevicePairingHandlerImplTest : public testing::Test {
   }
 
   void InvokePendingConnectCallback(
-      absl::optional<ConnectErrorCode> error_code) {
+      std::optional<ConnectErrorCode> error_code) {
     std::move(connect_callback_).Run(error_code);
     device_pairing_handler_->FlushForTesting();
   }
@@ -274,7 +275,7 @@ class DevicePairingHandlerImplTest : public testing::Test {
                        ((sizeof(kTestDeviceIdSuffix) - 1) / sizeof(char)));
   }
 
-  const absl::optional<mojom::PairingResult>& pairing_result() const {
+  const std::optional<mojom::PairingResult>& pairing_result() const {
     return pairing_result_;
   }
   size_t num_cancel_pairing_calls() const { return num_cancel_pairing_calls_; }
@@ -307,7 +308,7 @@ class DevicePairingHandlerImplTest : public testing::Test {
 
   base::HistogramTester histogram_tester;
 
-  absl::optional<mojom::PairingResult> pairing_result_;
+  std::optional<mojom::PairingResult> pairing_result_;
 
   // Properties set by device::BluetoothDevice methods.
   device::BluetoothDevice::ConnectCallback connect_callback_;
@@ -382,7 +383,7 @@ TEST_F(DevicePairingHandlerImplTest, MultipleDevicesPairAuthNone) {
 
   EXPECT_TRUE(HasPendingConnectCallback());
   FastForwardOperation(kTestDuration);
-  InvokePendingConnectCallback(/*error_code=*/absl::nullopt);
+  InvokePendingConnectCallback(/*error_code=*/std::nullopt);
   EXPECT_EQ(pairing_result(), mojom::PairingResult::kSuccess);
   CheckPairingHistograms(device::BluetoothTransportType::kClassic,
                          /*type_count=*/2, /*failure_count=*/1,
@@ -404,8 +405,7 @@ TEST_F(DevicePairingHandlerImplTest, DisableBluetoothBeforePairing) {
   // Disable Bluetooth before attempting to pair.
   SetBluetoothSystemState(mojom::BluetoothSystemState::kDisabled);
 
-  std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
+  PairDevice(device_id);
 
   // Pairing should immediately fail.
   EXPECT_FALSE(HasPendingConnectCallback());
@@ -449,8 +449,7 @@ TEST_F(DevicePairingHandlerImplTest, DestroyHandlerBeforeConnectFinishes) {
   std::string device_id;
   AddDevice(&device_id, AuthType::kNone);
 
-  std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
+  PairDevice(device_id);
   EXPECT_TRUE(HasPendingConnectCallback());
   DestroyHandler();
 
@@ -475,7 +474,7 @@ TEST_F(DevicePairingHandlerImplTest, DestroyHandlerAfterConnectFinishes) {
 
   EXPECT_TRUE(HasPendingConnectCallback());
   FastForwardOperation(kTestDuration);
-  InvokePendingConnectCallback(/*error_code=*/absl::nullopt);
+  InvokePendingConnectCallback(/*error_code=*/std::nullopt);
   EXPECT_EQ(pairing_result(), mojom::PairingResult::kSuccess);
 
   DestroyHandler();
@@ -495,7 +494,6 @@ TEST_F(DevicePairingHandlerImplTest, DisconnectDelegateBeforeConnectFinishes) {
   AddDevice(&device_id, AuthType::kDisplayPinCode);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate1 = PairDevice(device_id);
-  EXPECT_TRUE(delegate1->IsMojoPipeConnected());
   EXPECT_TRUE(HasPendingConnectCallback());
   EXPECT_EQ(delegate1->displayed_pin_code(), kDefaultPinCode);
   EXPECT_TRUE(delegate1->key_entered_handler()->IsMojoPipeConnected());
@@ -526,7 +524,6 @@ TEST_F(DevicePairingHandlerImplTest, DisconnectDelegateBeforeConnectFinishes) {
 
   // Attempt to pair with the device again.
   std::unique_ptr<FakeDevicePairingDelegate> delegate2 = PairDevice(device_id);
-  EXPECT_TRUE(delegate2->IsMojoPipeConnected());
   EXPECT_TRUE(HasPendingConnectCallback());
   InvokePendingConnectCallback(ConnectErrorCode::ERROR_AUTH_FAILED);
 
@@ -555,7 +552,6 @@ TEST_F(DevicePairingHandlerImplTest,
   AddDevice(&device_id, AuthType::kNone);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   EXPECT_TRUE(HasPendingConnectCallback());
   ClearDevices();
 
@@ -582,7 +578,6 @@ TEST_F(DevicePairingHandlerImplTest,
   AddDevice(&device_id, AuthType::kNone);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   EXPECT_TRUE(HasPendingConnectCallback());
   InvokePendingConnectCallback(ConnectErrorCode::ERROR_FAILED);
   FastForwardOperation(GetPairingFailureDelay());
@@ -602,47 +597,8 @@ TEST_F(DevicePairingHandlerImplTest,
                                 /*transport_name=*/"Classic");
 }
 
-TEST_F(DevicePairingHandlerImplTest, PairingFailsWhenThereIsAPendingPairing) {
-  std::string device_id1;
-  AddDevice(&device_id1, AuthType::kNone);
-
-  std::string device_id2;
-  AddDevice(&device_id2, AuthType::kNone);
-
-  std::unique_ptr<FakeDevicePairingDelegate> delegate1 = PairDevice(device_id1);
-  EXPECT_TRUE(HasPendingConnectCallback());
-  EXPECT_TRUE(delegate1->IsMojoPipeConnected());
-
-  std::unique_ptr<FakeDevicePairingDelegate> delegate2 = PairDevice(device_id1);
-  EXPECT_FALSE(delegate2->IsMojoPipeConnected());
-
-  // Pending callback should still exist, this would be the first device pairing
-  // pending callback.
-  EXPECT_TRUE(HasPendingConnectCallback());
-
-  // We expect the second pairing request to fail.
-  EXPECT_EQ(pairing_result(), mojom::PairingResult::kNonAuthFailure);
-
-  // Check that first pairing was successful.
-  FastForwardOperation(kTestDuration);
-
-  // We expect no failure histogram recorded since we returned early in
-  // PairDevice.
-  CheckPairingHistograms(device::BluetoothTransportType::kClassic,
-                         /*type_count=*/0, /*failure_count=*/0,
-                         /*success_count=*/0);
-
-  InvokePendingConnectCallback(/*error_code=*/std::nullopt);
-  EXPECT_EQ(pairing_result(), mojom::PairingResult::kSuccess);
-
-  CheckPairingHistograms(device::BluetoothTransportType::kClassic,
-                         /*type_count=*/1, /*failure_count=*/0,
-                         /*success_count=*/1);
-}
-
 TEST_F(DevicePairingHandlerImplTest, PairDeviceNotFound) {
-  std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice("device_id");
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
+  PairDevice("device_id");
 
   EXPECT_FALSE(HasPendingConnectCallback());
   EXPECT_EQ(pairing_result(), mojom::PairingResult::kNonAuthFailure);
@@ -673,7 +629,6 @@ TEST_F(DevicePairingHandlerImplTest, PairFailsDeviceConnected) {
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
   EXPECT_TRUE(HasPendingConnectCallback());
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
 
   // Update device to be connected.
   ChangeDeviceIsConnected(device_id, /*is_connected=*/true);
@@ -697,7 +652,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthRequestPinCode) {
   AddDevice(&device_id, AuthType::kRequestPinCode);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   EXPECT_TRUE(delegate->HasPendingRequestPinCodeCallback());
 
   delegate->InvokePendingRequestPinCodeCallback(kDefaultPinCode);
@@ -722,7 +676,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthRequestPinCodeRemoveDevice) {
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
   EXPECT_TRUE(delegate->HasPendingRequestPinCodeCallback());
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   FastForwardOperation(kTestDuration);
   // Simulate device no longer being available.
   ClearDevices();
@@ -748,7 +701,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthRequestPasskey) {
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
   EXPECT_TRUE(delegate->HasPendingRequestPasskeyCallback());
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   delegate->InvokePendingRequestPasskeyCallback(kDefaultPinCode);
   EXPECT_EQ(received_passkey(), kDefaultPinCodeNum);
 
@@ -771,7 +723,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthRequestPasskeyRemoveDevice) {
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
   EXPECT_TRUE(delegate->HasPendingRequestPasskeyCallback());
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
 
   FastForwardOperation(kTestDuration);
   // Simulate device no longer being available.
@@ -798,7 +749,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthRequestPasskeyInvalidKey) {
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
   EXPECT_TRUE(delegate->HasPendingRequestPasskeyCallback());
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
 
   FastForwardOperation(kTestDuration);
   delegate->InvokePendingRequestPasskeyCallback("hello_world");
@@ -836,7 +786,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthDisplayPinCode) {
   AddDevice(&device_id, AuthType::kDisplayPinCode);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   EXPECT_EQ(delegate->displayed_pin_code(), kDefaultPinCode);
   EXPECT_TRUE(delegate->key_entered_handler()->IsMojoPipeConnected());
 
@@ -870,7 +819,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthDisplayPinCodeDisconnectHandler) {
   AddDevice(&device_id, AuthType::kDisplayPinCode);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   EXPECT_EQ(delegate->displayed_pin_code(), kDefaultPinCode);
   EXPECT_TRUE(delegate->key_entered_handler()->IsMojoPipeConnected());
 
@@ -898,7 +846,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthDisplayPasskey) {
   AddDevice(&device_id, AuthType::kDisplayPasskey);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   EXPECT_EQ(delegate->displayed_passkey(), kDefaultPinCode);
   EXPECT_TRUE(delegate->key_entered_handler()->IsMojoPipeConnected());
 
@@ -926,7 +873,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthDisplayPasskeyPadZeroes) {
   AddDevice(&device_id1, AuthType::kDisplayPasskey, /*passkey=*/33333);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate1 = PairDevice(device_id1);
-  EXPECT_TRUE(delegate1->IsMojoPipeConnected());
 
   // Passkey displayed should be a 6-digit number, padded with zeroes if needed.
   EXPECT_EQ(delegate1->displayed_passkey(), "033333");
@@ -949,7 +895,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthDisplayPasskeyPadZeroes) {
   AddDevice(&device_id2, AuthType::kDisplayPasskey, /*passkey=*/0);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate2 = PairDevice(device_id2);
-  EXPECT_TRUE(delegate2->IsMojoPipeConnected());
   FastForwardOperation(GetPairingFailureDelay());
 
   // Passkey displayed should be a 6-digit number, padded with zeroes if needed.
@@ -971,7 +916,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthConfirmPasskey) {
   AddDevice(&device_id1, AuthType::kConfirmPasskey);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate1 = PairDevice(device_id1);
-  EXPECT_TRUE(delegate1->IsMojoPipeConnected());
   EXPECT_EQ(delegate1->passkey_to_confirm(), kDefaultPinCode);
   EXPECT_TRUE(delegate1->HasPendingConfirmPasskeyCallback());
   EXPECT_EQ(num_confirm_pairing_calls(), 0u);
@@ -997,7 +941,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthConfirmPasskey) {
   AddDevice(&device_id2, AuthType::kConfirmPasskey, /*passkey=*/0);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate2 = PairDevice(device_id2);
-  EXPECT_TRUE(delegate2->IsMojoPipeConnected());
 
   // Passkey to confirm should be a 6-digit number, padded with zeroes if
   // needed.
@@ -1029,7 +972,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthConfirmPasskeyRemoveDevice) {
   AddDevice(&device_id, AuthType::kConfirmPasskey);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   EXPECT_EQ(delegate->passkey_to_confirm(), kDefaultPinCode);
   EXPECT_TRUE(delegate->HasPendingConfirmPasskeyCallback());
 
@@ -1058,7 +1000,6 @@ TEST_F(DevicePairingHandlerImplTest, PairAuthAuthorizePairing) {
   AddDevice(&device_id, AuthType::kAuthorizePairing);
 
   std::unique_ptr<FakeDevicePairingDelegate> delegate = PairDevice(device_id);
-  EXPECT_TRUE(delegate->IsMojoPipeConnected());
   EXPECT_TRUE(delegate->HasPendingAuthorizePairingCallback());
 
   // Confirm the pairing.

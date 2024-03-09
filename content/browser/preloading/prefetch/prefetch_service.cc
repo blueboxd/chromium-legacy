@@ -1012,7 +1012,8 @@ void PrefetchService::StartSinglePrefetch(
 
   if (prefetch_to_evict) {
     DCHECK(PrefetchNewLimitsEnabled());
-    prefetch_to_evict->SetPrefetchStatus(PrefetchStatus::kPrefetchEvicted);
+    prefetch_to_evict->SetPrefetchStatus(
+        PrefetchStatus::kPrefetchEvictedForNewerPrefetch);
     ResetPrefetch(prefetch_to_evict);
   }
 
@@ -1410,28 +1411,6 @@ std::vector<PrefetchContainer*> PrefetchService::FindPrefetchContainerToServe(
       case PrefetchContainer::ServableState::kServable:
       case PrefetchContainer::ServableState::kShouldBlockUntilHeadReceived:
         break;
-    }
-
-    if (prefetch_container->IsDecoy()) {
-      DVLOG(1)
-          << "PrefetchService::FindPrefetchContainerToServe: skipped because "
-             "prefetch is a decoy: "
-          << *prefetch_container;
-      return true;
-    }
-
-    // Note: This codepath is only be reached in practice if we create a
-    // second NavigationRequest to this prefetch's URL. The first
-    // NavigationRequest would call GetPrefetch, which might set this
-    // PrefetchContainer's status to kPrefetchNotUsedCookiesChanged.
-    CHECK(prefetch_container->HasPrefetchStatus());
-    if (prefetch_container->GetPrefetchStatus() ==
-        PrefetchStatus::kPrefetchNotUsedCookiesChanged) {
-      DVLOG(1)
-          << "PrefetchService::FindPrefetchContainerToServe: skipped because "
-             "cookies for url have changed since prefetch completed: "
-          << *prefetch_container;
-      return true;
     }
 
     DVLOG(1) << "PrefetchService::FindPrefetchContainerToServe: matched: "

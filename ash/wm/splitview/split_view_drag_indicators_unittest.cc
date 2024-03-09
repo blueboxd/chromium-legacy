@@ -88,7 +88,7 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
 
   bool IsPreviewAreaShowing() {
     return SplitViewDragIndicators::GetSnapPosition(window_dragging_state()) !=
-           SplitViewController::SnapPosition::kNone;
+           SnapPosition::kNone;
   }
 
   float GetEdgeInset(int screen_width) const {
@@ -509,17 +509,15 @@ TEST_F(ClamshellMultiDisplaySplitViewDragIndicatorsTest,
 
   // Start dragging from overview in the landscape display.
   auto* item = GetOverviewItemForWindow(window1.get());
-  auto* event_generator = GetEventGenerator();
-  event_generator->MoveMouseTo(
-      gfx::ToRoundedPoint(item->target_bounds().CenterPoint()));
-  event_generator->PressLeftButton();
+  gfx::PointF start_location(item->target_bounds().CenterPoint());
+  overview_session_->InitiateDrag(item, start_location,
+                                  /*is_touch_dragging=*/false,
+                                  /*event_source_item=*/item);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             window_dragging_state());
-
-  event_generator->MoveMouseTo(gfx::Point(400, 300));
+  overview_session_->Drag(item, gfx::PointF(400, 300));
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
             window_dragging_state());
-
   // The split view indicator should show up with left indicator on the left
   // and its height span over height of the display work area.
   EXPECT_TRUE(indicators->GetIndicatorTypeVisibilityForTesting(
@@ -531,15 +529,15 @@ TEST_F(ClamshellMultiDisplaySplitViewDragIndicatorsTest,
             landscape_display.work_area().height() -
                 2 * kHighlightScreenEdgePaddingDp);
 
-  // Stop dragging and verify we are still in overview.
-  event_generator->ReleaseLeftButton();
-  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
+  // Reset the gesture so we stay in overview mode.
+  overview_session_->ResetDraggedWindowGesture();
 
   // Drag a window to the portrait display.
-  event_generator->MoveMouseTo(
-      gfx::ToRoundedPoint(item->target_bounds().CenterPoint()));
-  event_generator->PressLeftButton();
-  event_generator->MoveMouseTo(gfx::Point(1100, 400));
+  overview_session_->InitiateDrag(item, /*event_source_item=*/start_location,
+                                  /*is_touch_dragging=*/false,
+                                  /*event_source_item=*/item);
+  Shell::Get()->cursor_manager()->SetDisplay(portrait_display);
+  overview_session_->Drag(item, gfx::PointF(1100, 400));
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             window_dragging_state());
   indicators = overview_session_->GetGridWithRootWindow(root_windows[1])
@@ -549,9 +547,10 @@ TEST_F(ClamshellMultiDisplaySplitViewDragIndicatorsTest,
   EXPECT_TRUE(indicators->GetIndicatorTypeVisibilityForTesting(
       IndicatorType::kRightText));
 
-  // The left indicator should be on the top of the display and its width span
-  // the work area width. Otherwise, the left indicator should be on the left
-  // and its height span the work area height.
+  // If |chromeos::wm::features::kVerticalSnap| is enabled, the left indicator
+  // should be on the top of the display and its width span the work area width.
+  // Otherwise, the left indicator should be on the left and its height span
+  // the work area height.
   left_indicator_bounds = indicators->GetLeftHighlightViewBounds();
   EXPECT_EQ(
       left_indicator_bounds.width(),

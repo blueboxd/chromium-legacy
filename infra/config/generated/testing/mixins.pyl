@@ -330,6 +330,9 @@
       },
     },
   },
+  'chromeos-jacuzzi-skylab-chrome-all-tast-tests': {
+    'shards': 20,
+  },
   'chromeos-octopus': {
     'swarming': {
       'dimensions': {
@@ -347,7 +350,7 @@
         'cpu': 'x86-64',
         'kvm': '1',
         'gce': '1',
-        'os': 'Ubuntu-22.04',
+        'os': 'Ubuntu-18.04',
         'pool': 'chrome.tests',
       },
       'optional_dimensions': {
@@ -362,6 +365,9 @@
         },
       ],
     },
+  },
+  'chromeos-trogdor-skylab-chrome-all-tast-tests': {
+    'shards': 20,
   },
   'chromium-tester-dev-service-account': {
     'swarming': {
@@ -1300,12 +1306,12 @@
   'xcode_15_beta': {
     'args': [
       '--xcode-build-version',
-      '15c5042i',
+      '15c65',
     ],
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_15c5042i',
+          'name': 'xcode_ios_15c65',
           'path': 'Xcode.app',
         },
       ],

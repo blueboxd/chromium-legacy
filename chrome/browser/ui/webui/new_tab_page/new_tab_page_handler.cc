@@ -13,7 +13,6 @@
 
 #include "base/base64.h"
 #include "base/containers/contains.h"
-#include "base/containers/fixed_flat_map.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
@@ -31,7 +30,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/new_tab_page/feature_promo_helper/new_tab_page_feature_promo_helper.h"
 #include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/promos/promo_service_factory.h"
@@ -88,15 +86,6 @@ namespace {
 const int64_t kMaxDownloadBytes = 1024 * 1024;
 const int64_t kMaxModuleFreImpressions = 8;
 
-constexpr char kDisableInteraction[] = "disable";
-constexpr char kDismissInteraction[] = "dismiss";
-constexpr char kIgnoreInteraction[] = "ignore";
-constexpr char kUseInteraction[] = "use";
-constexpr auto kModuleInteractionNames =
-    base::MakeFixedFlatSet<std::string_view>(
-        {kDisableInteraction, kDismissInteraction, kIgnoreInteraction,
-         kUseInteraction});
-
 // Returns a list of module IDs that are eligible for HATS.
 std::vector<std::string> GetSurveyEligibleModuleIds() {
   return base::SplitString(
@@ -145,7 +134,7 @@ new_tab_page::mojom::ThemePtr MakeTheme(
   auto custom_background =
       ntp_custom_background_service
           ? ntp_custom_background_service->GetCustomBackground()
-          : absl::nullopt;
+          : std::nullopt;
   theme->background_color = color_provider.GetColor(kColorNewTabPageBackground);
   const bool theme_has_custom_image =
       theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND);
@@ -256,13 +245,8 @@ new_tab_page::mojom::ThemePtr MakeTheme(
       image_source = new_tab_page::mojom::NtpBackgroundImageSource::
           kFirstPartyThemeWithDailyRefresh;
     } else if (custom_background->local_background_id.has_value()) {
-      if (custom_background->is_inspiration_image) {
-        image_source = new_tab_page::mojom::NtpBackgroundImageSource::
-            kWallpaperSearchInspiration;
-      } else {
-        image_source =
-            new_tab_page::mojom::NtpBackgroundImageSource::kWallpaperSearch;
-      }
+      image_source =
+          new_tab_page::mojom::NtpBackgroundImageSource::kWallpaperSearch;
     } else if (custom_background->is_uploaded_image) {
       image_source =
           new_tab_page::mojom::NtpBackgroundImageSource::kUploadedImage;
@@ -420,36 +404,6 @@ new_tab_page::mojom::PromoPtr MakePromo(const PromoData& data) {
   return promo;
 }
 
-base::Value::Dict MakeModuleInteractionTriggerIdDictionary() {
-  const auto data = base::GetFieldTrialParamValueByFeature(
-      features::kHappinessTrackingSurveysForDesktopNtpModules,
-      ntp_features::kNtpModulesInteractionBasedSurveyEligibleIdsParam);
-  if (data.empty()) {
-    return base::Value::Dict();
-  }
-
-  auto value_with_error = base::JSONReader::ReadAndReturnValueWithError(
-      data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-  if (!value_with_error.has_value()) {
-    LOG(ERROR)
-        << "Failed to parse "
-           "ntp_features::kNtpModulesInteractionBasedSurveyEligibleIdsParam ("
-        << value_with_error.error().message << ") on line "
-        << value_with_error.error().line << " at position "
-        << value_with_error.error().column;
-    return base::Value::Dict();
-  }
-
-  if (!value_with_error->is_dict()) {
-    LOG(WARNING)
-        << "ntp_features::kNtpModulesInteractionBasedSurveyEligibleIdsParam "
-           "data skipped. Not a dictionary.";
-    return base::Value::Dict();
-  }
-
-  return std::move(*value_with_error).TakeDict();
-}
-
 }  // namespace
 
 // static
@@ -486,8 +440,6 @@ NewTabPageHandler::NewTabPageHandler(
               GURL(chrome::kChromeUINewTabPageURL),
               ntp_navigation_start_time),
       promo_service_(PromoServiceFactory::GetForProfile(profile)),
-      interaction_module_id_trigger_dict_(
-          MakeModuleInteractionTriggerIdDictionary()),
       page_{std::move(pending_page)},
       receiver_{this, std::move(pending_page_handler)} {
   CHECK(ntp_background_service_);
@@ -554,8 +506,6 @@ void NewTabPageHandler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimePref(prefs::kNtpModulesFirstShownTime, base::Time());
   registry->RegisterBooleanPref(prefs::kNtpModulesFreVisible, true);
   registry->RegisterIntegerPref(prefs::kNtpCustomizeChromeButtonOpenCount, 0);
-  registry->RegisterDictionaryPref(prefs::kNtpModulesInteractedCountDict);
-  registry->RegisterDictionaryPref(prefs::kNtpModulesLoadedCountDict);
 }
 
 void NewTabPageHandler::SetMostVisitedSettings(bool custom_links_enabled,
@@ -707,9 +657,6 @@ void NewTabPageHandler::OnDismissModule(const std::string& module_id) {
   const std::string histogram_prefix(kModuleDismissedHistogram);
   base::UmaHistogramExactLinear(histogram_prefix, 1, 1);
   base::UmaHistogramExactLinear(histogram_prefix + "." + module_id, 1, 1);
-
-  IncrementDictPrefKeyCount(prefs::kNtpModulesInteractedCountDict, module_id);
-  MaybeLaunchInteractionSurvey(kDismissInteraction, module_id);
 }
 
 void NewTabPageHandler::OnRestoreModule(const std::string& module_id) {
@@ -733,9 +680,6 @@ void NewTabPageHandler::SetModuleDisabled(const std::string& module_id,
   } else {
     list.EraseValue(module_id_value);
   }
-
-  IncrementDictPrefKeyCount(prefs::kNtpModulesInteractedCountDict, module_id);
-  MaybeLaunchInteractionSurvey(kDisableInteraction, module_id);
 }
 
 void NewTabPageHandler::UpdateDisabledModules() {
@@ -756,65 +700,21 @@ void NewTabPageHandler::UpdateDisabledModules() {
 
 void NewTabPageHandler::OnModulesLoadedWithData(
     const std::vector<std::string>& module_ids) {
-  for (const auto& module_id : module_ids) {
-    IncrementDictPrefKeyCount(prefs::kNtpModulesLoadedCountDict, module_id);
-  }
-
   std::vector<std::string> survey_eligible_module_ids =
       GetSurveyEligibleModuleIds();
-  if (std::any_of(module_ids.begin(), module_ids.end(),
-                  [&survey_eligible_module_ids](std::string id) {
-                    return base::Contains(survey_eligible_module_ids, id);
-                  })) {
-    HatsService* hats_service = HatsServiceFactory::GetForProfile(
-        profile_, /*create_if_necessary=*/true);
-    CHECK(hats_service);
-    hats_service->LaunchDelayedSurveyForWebContents(
-        kHatsSurveyTriggerNtpModules, web_contents_, 0);
+  // If none of the loaded modules are eligible for HATS, return early.
+  if (!std::any_of(module_ids.begin(), module_ids.end(),
+                   [&survey_eligible_module_ids](std::string id) {
+                     return base::Contains(survey_eligible_module_ids, id);
+                   })) {
     return;
   }
 
-  const auto module_ignored_criteria_threshold =
-      base::GetFieldTrialParamByFeatureAsInt(
-          features::kHappinessTrackingSurveysForDesktopNtpModules,
-          ntp_features::kNtpModuleIgnoredCriteriaThreshold, 25);
-  for (const auto& module_id : module_ids) {
-    const base::Value::Dict& interacted_counts_dict =
-        profile_->GetPrefs()->GetDict(prefs::kNtpModulesInteractedCountDict);
-    absl::optional<int> interacted_count =
-        interacted_counts_dict.FindInt(module_id);
-    if (interacted_count.value_or(0) != 0) {
-      continue;
-    }
-
-    const base::Value::Dict& loaded_counts_dict =
-        profile_->GetPrefs()->GetDict(prefs::kNtpModulesLoadedCountDict);
-    absl::optional<int> loaded_count = loaded_counts_dict.FindInt(module_id);
-    if (loaded_count.value_or(0) >= module_ignored_criteria_threshold) {
-      const auto survey_delay_time_ms = base::GetFieldTrialParamByFeatureAsInt(
-          features::kHappinessTrackingSurveysForDesktopNtpModules,
-          ntp_features::kNtpModuleIgnoredHaTSDelayTimeParam, 0);
-      MaybeLaunchInteractionSurvey(kIgnoreInteraction, module_id,
-                                   survey_delay_time_ms);
-      break;
-    }
-  }
-}
-
-void NewTabPageHandler::OnModuleUsed(const std::string& module_id) {
-  // Record the module interaction as feature usage to influence IPH trigger
-  // behavior. See `feature_engagment::GetClientSideFeatureConfig` for details
-  // on this IPH feature's trigger criteria.
-  auto* tab = web_contents_.get();
-  feature_promo_helper_->RecordFeatureUsage(
-      feature_engagement::events::kDesktopNTPModuleUsed, tab);
-  // Close the associated IPH promo if open, as interaction with a module
-  // indicates the user is aware of how to interact with modules.
-  feature_promo_helper_->CloseFeaturePromo(
-      feature_engagement::kIPHDesktopNewTabPageModulesCustomizeFeature, tab);
-
-  IncrementDictPrefKeyCount(prefs::kNtpModulesInteractedCountDict, module_id);
-  MaybeLaunchInteractionSurvey(kUseInteraction, module_id);
+  HatsService* hats_service =
+      HatsServiceFactory::GetForProfile(profile_, /*create_if_necessary=*/true);
+  CHECK(hats_service);
+  hats_service->LaunchDelayedSurveyForWebContents(kHatsSurveyTriggerNtpModules,
+                                                  web_contents_, 0);
 }
 
 void NewTabPageHandler::GetModulesIdNames(GetModulesIdNamesCallback callback) {
@@ -1036,7 +936,7 @@ void NewTabPageHandler::OnPromoDataUpdated() {
       UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency2.Failure",
                                  duration);
     }
-    promo_load_start_time_ = absl::nullopt;
+    promo_load_start_time_ = std::nullopt;
   }
 
   const auto& data = promo_service_->promo_data();
@@ -1066,7 +966,7 @@ void NewTabPageHandler::OnOneGoogleBarRendered(double time) {
 }
 
 void NewTabPageHandler::OnPromoRendered(double time,
-                                        const absl::optional<GURL>& log_url) {
+                                        const std::optional<GURL>& log_url) {
   logger_.LogEvent(NTP_MIDDLE_SLOT_PROMO_SHOWN,
                    base::Time::FromMillisecondsSinceUnixEpoch(time) -
                        ntp_navigation_start_time_);
@@ -1130,7 +1030,7 @@ void NewTabPageHandler::OnCustomizeDialogAction(
 
 void NewTabPageHandler::OnDoodleImageClicked(
     new_tab_page::mojom::DoodleImageType type,
-    const absl::optional<::GURL>& log_url) {
+    const std::optional<::GURL>& log_url) {
   NTPLoggingEventType event;
   switch (type) {
     case new_tab_page::mojom::DoodleImageType::kAnimation:
@@ -1176,7 +1076,7 @@ void NewTabPageHandler::OnDoodleImageRendered(
 void NewTabPageHandler::OnDoodleShared(
     new_tab_page::mojom::DoodleShareChannel channel,
     const std::string& doodle_id,
-    const absl::optional<std::string>& share_id) {
+    const std::optional<std::string>& share_id) {
   int channel_id;
   switch (channel) {
     case new_tab_page::mojom::DoodleShareChannel::kFacebook:
@@ -1211,6 +1111,14 @@ void NewTabPageHandler::OnDoodleShared(
 
 void NewTabPageHandler::OnPromoLinkClicked() {
   LogEvent(NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
+}
+
+void NewTabPageHandler::OnModulesUsed() {
+  auto* tab = web_contents_.get();
+  feature_promo_helper_->RecordFeatureUsage(
+      feature_engagement::events::kDesktopNTPModuleUsed, tab);
+  feature_promo_helper_->CloseFeaturePromo(
+      feature_engagement::kIPHDesktopNewTabPageModulesCustomizeFeature, tab);
 }
 
 void NewTabPageHandler::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
@@ -1343,7 +1251,7 @@ void NewTabPageHandler::FileSelectionCanceled(void* params) {
 void NewTabPageHandler::OnLogoAvailable(
     GetDoodleCallback callback,
     search_provider_logos::LogoCallbackReason type,
-    const absl::optional<search_provider_logos::EncodedLogo>& logo) {
+    const std::optional<search_provider_logos::EncodedLogo>& logo) {
   if (!logo) {
     std::move(callback).Run(nullptr);
     return;
@@ -1457,12 +1365,12 @@ void NewTabPageHandler::OnLogFetchResult(OnDoodleImageRenderedCallback callback,
                                          bool success,
                                          std::unique_ptr<std::string> body) {
   if (!success || body->size() < 4 || body->substr(0, 4) != ")]}'") {
-    std::move(callback).Run("", absl::nullopt, "");
+    std::move(callback).Run("", std::nullopt, "");
     return;
   }
   auto value = base::JSONReader::Read(body->substr(4));
   if (!value.has_value()) {
-    std::move(callback).Run("", absl::nullopt, "");
+    std::move(callback).Run("", std::nullopt, "");
     return;
   }
 
@@ -1475,12 +1383,12 @@ void NewTabPageHandler::OnLogFetchResult(OnDoodleImageRenderedCallback callback,
       dict.FindStringByDottedPath("ddllog.interaction_log_url");
   auto interaction_log_url =
       interaction_log_url_value
-          ? absl::optional<GURL>(
+          ? std::optional<GURL>(
                 GURL(TemplateURLServiceFactory::GetForProfile(profile_)
                          ->search_terms_data()
                          .GoogleBaseURLValue())
                     .Resolve(*interaction_log_url_value))
-          : absl::nullopt;
+          : std::nullopt;
   auto* encoded_ei_value = dict.FindStringByDottedPath("ddllog.encoded_ei");
   auto encoded_ei = encoded_ei_value ? *encoded_ei_value : "";
   std::move(callback).Run(target_url_params, interaction_log_url, encoded_ei);
@@ -1499,56 +1407,8 @@ void NewTabPageHandler::NotifyCustomizeChromeSidePanelVisibilityChanged(
   page_->SetCustomizeChromeSidePanelVisibility(is_open);
 }
 
-void NewTabPageHandler::MaybeLaunchInteractionSurvey(
-    std::string_view interaction,
-    const std::string& module_id,
-    int delay_time_ms) {
-  const auto& module_trigger_id =
-      GetSurveyTriggerIdForModuleAndInteraction(interaction, module_id);
-  if (module_trigger_id.empty()) {
-    return;
-  }
-
-  HatsService* hats_service =
-      HatsServiceFactory::GetForProfile(profile_, /*create_if_necessary=*/true);
-  CHECK(hats_service);
-  hats_service->LaunchDelayedSurveyForWebContents(
-      kHatsSurveyTriggerNtpModules, web_contents_, delay_time_ms, {}, {}, false,
-      base::DoNothing(), base::DoNothing(), module_trigger_id);
-}
-
 void NewTabPageHandler::MaybeShowWebstoreToast() {
   if (profile_->GetPrefs()->GetInteger(prefs::kSeedColorChangeCount) <= 3) {
     page_->ShowWebstoreToast();
   }
-}
-
-void NewTabPageHandler::IncrementDictPrefKeyCount(const std::string& pref_name,
-                                                  const std::string& key) {
-  const base::Value::Dict& counts_dict =
-      profile_->GetPrefs()->GetDict(pref_name);
-  absl::optional<int> count = counts_dict.FindInt(key);
-  ScopedDictPrefUpdate update(profile_->GetPrefs(), pref_name);
-  update->Set(key,
-              count.has_value()
-                  ? ((count.value() < INT_MAX) ? count.value() + 1 : INT_MAX)
-                  : 1);
-}
-
-const std::string& NewTabPageHandler::GetSurveyTriggerIdForModuleAndInteraction(
-    std::string_view interaction,
-    const std::string& module_id) {
-  static const std::string kNoTriggerId;
-  DCHECK(kModuleInteractionNames.find(interaction) !=
-         kModuleInteractionNames.end());
-  const base::Value::Dict* module_id_trigger_dict =
-      interaction_module_id_trigger_dict_.FindDict(interaction);
-  if (module_id_trigger_dict) {
-    auto* trigger_id = module_id_trigger_dict->FindString(module_id);
-    if (trigger_id) {
-      return *trigger_id;
-    }
-  }
-
-  return kNoTriggerId;
 }

@@ -13,6 +13,7 @@ import {maybeShowTooltip} from '../../../common/js/dom_utils.js';
 import {entriesToURLs} from '../../../common/js/entry_utils.js';
 import {getIcon, getType, isEncrypted} from '../../../common/js/file_type.js';
 import {getEntryLabel, str} from '../../../common/js/translations.js';
+import type {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
 import type {VolumeManager} from '../../../externs/volume_manager.js';
 import type {FilesTooltip} from '../../elements/files_tooltip.js';
 import {type FileListModel, GROUP_BY_FIELD_DIRECTORY, GROUP_BY_FIELD_MODIFICATION_TIME, GroupValue} from '../file_list_model.js';
@@ -667,7 +668,7 @@ export class FileGrid extends Grid {
    * @param _type Type of metadata changed.
    * @param entries Entries whose metadata changed.
    */
-  updateListItemsMetadata(_type: string, entries: Entry[]) {
+  updateListItemsMetadata(_type: string, entries: Array<Entry|FilesAppEntry>) {
     const urls = entriesToURLs(entries);
     const boxes =
         Array.from(this.querySelectorAll<HTMLElement>('.img-container'));
@@ -788,7 +789,7 @@ export class FileGrid extends Grid {
    * @param li List item which contains the box to be decorated.
    * @param entry Entry which thumbnail is generating for.
    */
-  private decorateThumbnailBox_(li: HTMLLIElement, entry: Entry) {
+  private decorateThumbnailBox_(li: HTMLLIElement, entry: Entry|FilesAppEntry) {
     const box =
         assertInstanceof(li.querySelector('.img-container'), HTMLDivElement);
 
@@ -822,7 +823,7 @@ export class FileGrid extends Grid {
    * @param  li The grid item.
    * @param  entry File entry for the grid item.
    */
-  private updateSharedStatus_(li: ListItem, entry: Entry) {
+  private updateSharedStatus_(li: ListItem, entry: Entry|FilesAppEntry) {
     if (!entry.isDirectory) {
       return;
     }
@@ -879,8 +880,8 @@ export class FileGrid extends Grid {
    * @param mimeType Optional mime type for the image.
    */
   private static setThumbnailImage_(
-      box: HTMLDivElement, entry: Entry, dataUrl: string, width: number,
-      height: number, mimeType?: string) {
+      box: HTMLDivElement, entry: Entry|FilesAppEntry, dataUrl: string,
+      width: number, height: number, mimeType?: string) {
     const thumbnail = box.ownerDocument.createElement('div');
     thumbnail.classList.add('thumbnail');
     box.classList.toggle('no-thumbnail', false);
@@ -922,7 +923,7 @@ export class FileGrid extends Grid {
    * @param mimeType Optional mime type for the file.
    */
   private setGenericThumbnail_(
-      box: HTMLDivElement, entry: Entry, mimeType?: string) {
+      box: HTMLDivElement, entry: Entry|FilesAppEntry, mimeType?: string) {
     if (isEncrypted(entry, mimeType)) {
       box.setAttribute('generic-thumbnail', 'encrypted');
       box.setAttribute('aria-label', str('ENCRYPTED_ICON_TOOLTIP'));

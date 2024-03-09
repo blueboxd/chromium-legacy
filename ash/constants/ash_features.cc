@@ -300,12 +300,13 @@ BASE_FEATURE(kBluetoothQualityReport,
              "BluetoothQualityReport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kRobustAudioDeviceSelectLogic,
-             "RobustAudioDeviceSelectLogic",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCameraAppAutoQRDetection,
              "CameraAppAutoQRDetection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables to enable digital zoom control inside Camera app.
+BASE_FEATURE(kCameraAppDigitalZoom,
+             "CameraAppDigitalZoom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable Big GL when using Borealis.
@@ -517,11 +518,6 @@ BASE_FEATURE(kCrostiniMultiContainer,
 BASE_FEATURE(kCrostiniQtImeSupport,
              "CrostiniQtImeSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables Crostini upgrade to LXD v5.
-BASE_FEATURE(kCrostiniUseLxd5,
-             "CrostiniUseLxd5",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables Crostini Virtual Keyboard support.
 BASE_FEATURE(kCrostiniVirtualKeyboardSupport,
@@ -932,12 +928,6 @@ BASE_FEATURE(kExoOrdinalMotion,
 
 // Enables to check KeyEvent flag to see if the event is consumed by IME
 // or not (=decides using heuristics based on key code etc.).
-BASE_FEATURE(kExoConsumedByImeByFlag,
-             "ExoConsumedByImeByFlag",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables to check KeyEvent flag to see if the event is consumed by IME
-// or not (=decides using heuristics based on key code etc.).
 BASE_FEATURE(kExoSurroundingTextOffset,
              "ExoSurroundingTextOffset",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1333,7 +1323,7 @@ BASE_FEATURE(kGifRecording, "GifRecording", base::FEATURE_DISABLED_BY_DEFAULT);
 // Enables a Files banner about Google One offer.
 BASE_FEATURE(kGoogleOneOfferFilesBanner,
              "GoogleOneOfferFilesBanner",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables growth framework.
 BASE_FEATURE(kGrowthFramework,
@@ -1351,15 +1341,11 @@ BASE_FEATURE(kHandwritingGestureEditing,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables new on-device recognition for legacy handwriting input.
-// This flag should be OVERRIDDEN for devices which do not have on-device
-// handwriting (b/316981973). Please check before using this flag.
 BASE_FEATURE(kHandwritingLegacyRecognition,
              "HandwritingLegacyRecognition",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables downloading the handwriting libraries via DLC.
-// This flag should be OVERRIDDEN for devices which do not have on-device
-// handwriting (b/316981973). Please check before using this flag.
 BASE_FEATURE(kHandwritingLibraryDlc,
              "HandwritingLibraryDlc",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1495,7 +1481,7 @@ BASE_FEATURE(kHomeButtonWithText,
 
 // Control whether the hotspot tethering is enabled. When enabled, it will allow
 // the Chromebook to share its cellular internet connection to other devices.
-BASE_FEATURE(kHotspot, "Hotspot", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kHotspot, "Hotspot", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, allows the user to cycle between windows of an app using Alt + `.
 BASE_FEATURE(kSameAppWindowCycle,
@@ -1536,6 +1522,11 @@ BASE_FEATURE(kImeDownloaderUpdate,
 BASE_FEATURE(kImeFstDecoderParamsUpdate,
              "ImeFstDecoderParamsUpdate",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// If enabled use experimental US English IME language model.
+BASE_FEATURE(kImeUsEnglishExperimentalModel,
+             "ImeUsEnglishExperimentalModel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled use the updated US English IME language models.
 BASE_FEATURE(kImeUsEnglishModelUpdate,
@@ -1771,6 +1762,13 @@ BASE_FEATURE(kMicMuteNotifications,
              "MicMuteNotifications",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enable migration of the owner key from the public to the private slot. This
+// experiment represents the second stage of `kStoreOwnerKeyInPrivateSlot` and
+// is only respected if kStoreOwnerKeyInPrivateSlot is enabled.
+BASE_FEATURE(kMigrateOwnerKeyToPrivateSlot,
+             "MigrateOwnerKeyToPrivateSlot",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether to enable the requirement of a minimum chrome version on the
 // device through the policy DeviceMinimumVersion. If the requirement is
 // not met and the warning time in the policy has expired, the user is
@@ -1865,9 +1863,6 @@ BASE_FEATURE(kNewLockScreenReauthLayout,
 BASE_FEATURE(kSysUiDownloadsIntegrationV2,
              "SysUiDownloadsIntegrationV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the use of the new System Nudges. (go/cros-educationalnudge-spec)
-BASE_FEATURE(kSystemNudgeV2, "SystemNudgeV2", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Night Light feature.
 BASE_FEATURE(kNightLight, "NightLight", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -2128,7 +2123,7 @@ BASE_FEATURE(kPhoneHubMonochromeNotificationIcons,
 // onboarding to Phone Hub.
 BASE_FEATURE(kPhoneHubOnboardingNotifierRevamp,
              "PhoneHubOnboardingNotifierRevamp",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Should we show nudge or notification to the user.
 const base::FeatureParam<bool> kPhoneHubOnboardingNotifierUseNudge{
@@ -2142,7 +2137,7 @@ const base::FeatureParam<
 // What text should we show to the user.
 const base::FeatureParam<PhoneHubNotifierTextGroup> kPhoneHubNotifierTextGroup{
     &kPhoneHubOnboardingNotifierRevamp, "notifier_text_group",
-    PhoneHubNotifierTextGroup::kNotifierTextGroupA,
+    PhoneHubNotifierTextGroup::kNotifierTextGroupB,
     &phone_hub_notifier_text_groups};
 
 // The length of time passing till we display nudge to users again
@@ -2313,7 +2308,7 @@ BASE_FEATURE(kProjectorAccountSwitchNotification,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to show promise icons during app installations.
-BASE_FEATURE(kPromiseIcons, "PromiseIcons", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kPromiseIcons, "PromiseIcons", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to show promise icons during web app installations.
 BASE_FEATURE(kPromiseIconsForWebApps,
@@ -2583,24 +2578,16 @@ BASE_FEATURE(kSmartLockSignInRemoved,
 
 // Enables the consumer and enterprise support for provisioning eSIM profiles
 // using Subscription Manager Discovery Service (SM-DS). This flag is a no-op
-// unless the SmdsSupportEuiccUpload and SmdsDbusMigration flags are enabled.
-// These additional flags are required since the functionality they impelemnt is
-// required by this flag, such as:
-//  - Using the newly added RefreshSmdxProfiles API.
-//  - Tracking when an eSIM profile has already been installed for a
-//    policy-defined cellular network.
+// unless the SmdsDbusMigration flag is enabled.
 BASE_FEATURE(kSmdsSupport, "SmdsSupport", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables tracking when a policy-defined cellular network configured to use
-// SM-DS has already been applied and an eSIM profile for the network was
-// installed.
-BASE_FEATURE(kSmdsSupportEuiccUpload,
-             "SmdsSupportEuiccUpload",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 
 // Controls whether the snap group feature is enabled or not.
 BASE_FEATURE(kSnapGroup, "SnapGroup", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable storing a newly created owner key in the private slot.
+BASE_FEATURE(kStoreOwnerKeyInPrivateSlot,
+             "StoreOwnerKeyInPrivateSlot",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables battery indicator for styluses in the palette tray
 BASE_FEATURE(kStylusBatteryStatus,
@@ -3621,6 +3608,10 @@ bool IsStartAssistantAudioDecoderOnDemandEnabled() {
   return base::FeatureList::IsEnabled(kStartAssistantAudioDecoderOnDemand);
 }
 
+bool IsStoreOwnerKeyInPrivateSlotEnabled() {
+  return base::FeatureList::IsEnabled(kStoreOwnerKeyInPrivateSlot);
+}
+
 bool IsImeTrayHideVoiceButtonEnabled() {
   return base::FeatureList::IsEnabled(kImeTrayHideVoiceButton);
 }
@@ -3776,6 +3767,11 @@ bool IsMinimumChromeVersionEnabled() {
   return base::FeatureList::IsEnabled(kMinimumChromeVersion);
 }
 
+bool ShouldMigrateOwnerKeyToPrivateSlot() {
+  return base::FeatureList::IsEnabled(kStoreOwnerKeyInPrivateSlot) &&
+         base::FeatureList::IsEnabled(kMigrateOwnerKeyToPrivateSlot);
+}
+
 bool IsMultiZoneRgbKeyboardEnabled() {
   return base::FeatureList::IsEnabled(kMultiZoneRgbKeyboard);
 }
@@ -3837,13 +3833,6 @@ bool IsSuppressTextMessagesEnabled() {
 
 bool IsSysUiDownloadsIntegrationV2Enabled() {
   return base::FeatureList::IsEnabled(kSysUiDownloadsIntegrationV2);
-}
-
-bool IsSystemNudgeV2Enabled() {
-  return base::FeatureList::IsEnabled(kSystemNudgeV2) ||
-         IsScalableIphEnabled() ||
-         IsVideoConferenceEnabled();  // System Nudge V2 is launching
-                                      // together with the VC project.
 }
 
 bool IsNotificationExpansionAnimationEnabled() {
@@ -4008,8 +3997,7 @@ bool IsPhoneHubMonochromeNotificationIconsEnabled() {
 }
 
 bool IsPhoneHubOnboardingNotifierRevampEnabled() {
-  return base::FeatureList::IsEnabled(kPhoneHubOnboardingNotifierRevamp) &&
-         base::FeatureList::IsEnabled(kSystemNudgeV2);
+  return base::FeatureList::IsEnabled(kPhoneHubOnboardingNotifierRevamp);
 }
 
 bool IsPhoneHubFeatureSetupErrorHandlingEnabled() {
@@ -4239,12 +4227,7 @@ bool IsShimlessRMA3pDiagnosticsDevModeEnabled() {
 }
 
 bool IsSmdsSupportEnabled() {
-  return base::FeatureList::IsEnabled(kSmdsSupport) &&
-         base::FeatureList::IsEnabled(kSmdsSupportEuiccUpload);
-}
-
-bool IsSmdsSupportEuiccUploadEnabled() {
-  return base::FeatureList::IsEnabled(kSmdsSupportEuiccUpload);
+  return base::FeatureList::IsEnabled(kSmdsSupport);
 }
 
 bool IsSmartReaderEnabled() {

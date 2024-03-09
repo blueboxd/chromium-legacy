@@ -94,23 +94,15 @@ SafetyHubMenuNotificationService::SafetyHubMenuNotificationService(
           base::Unretained(this)));
 }
 
-void SafetyHubMenuNotificationService::UpdateResultGetterForTesting(
-    safety_hub::SafetyHubModuleType type,
-    base::RepeatingCallback<
-        std::optional<std::unique_ptr<SafetyHubService::Result>>()>
-        result_getter) {
-  module_info_map_[type]->result_getter = result_getter;
-}
-
 SafetyHubMenuNotificationService::~SafetyHubMenuNotificationService() {
   registrar_.RemoveAll();
 }
 
-absl::optional<MenuNotificationEntry>
+std::optional<MenuNotificationEntry>
 SafetyHubMenuNotificationService::GetNotificationToShow() {
-  absl::optional<ResultMap> result_map = GetResultsFromAllModules();
+  std::optional<ResultMap> result_map = GetResultsFromAllModules();
   if (!result_map.has_value()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   std::list<SafetyHubMenuNotification*> notifications_to_be_shown;
   MenuNotificationPriority cur_highest_priority = MenuNotificationPriority::LOW;
@@ -144,7 +136,7 @@ SafetyHubMenuNotificationService::GetNotificationToShow() {
   if (notifications_to_be_shown.empty()) {
     // The notifications should be persisted with updated results.
     SaveNotificationsToPrefs();
-    return absl::nullopt;
+    return std::nullopt;
   }
   SafetyHubMenuNotification* notification_to_show =
       notifications_to_be_shown.front();
@@ -162,16 +154,16 @@ SafetyHubMenuNotificationService::GetNotificationToShow() {
                                notification_to_show->GetNotificationString());
 }
 
-absl::optional<ResultMap>
+std::optional<ResultMap>
 SafetyHubMenuNotificationService::GetResultsFromAllModules() {
   ResultMap result_map;
   for (auto const& item : module_info_map_) {
     CHECK(item.second->result_getter);
-    absl::optional<std::unique_ptr<SafetyHubService::Result>> result =
+    std::optional<std::unique_ptr<SafetyHubService::Result>> result =
         item.second->result_getter.Run();
     // If one of the cached results is unavailable, no notification is shown.
     if (!result.has_value()) {
-      return absl::nullopt;
+      return std::nullopt;
     }
     result_map.try_emplace(item.first, std::move(result.value()));
   }
@@ -242,21 +234,23 @@ void SafetyHubMenuNotificationService::DismissActiveNotification() {
   }
 }
 
-void SafetyHubMenuNotificationService::DismissActiveNotificationOfModule(
-    safety_hub::SafetyHubModuleType module) {
-  SafetyHubMenuNotification* notification =
-      module_info_map_.at(module)->notification.get();
-  if (notification->IsCurrentlyActive()) {
-    notification->Dismiss();
-  }
+void SafetyHubMenuNotificationService::DismissPasswordNotification() {
+  // TODO(crbug.com/1443466): Uncomment the following lines in
+  // crrev.com/c/4982626.
+  // SafetyHubMenuNotification* notification =
+  //     module_info_map_.at(safety_hub::SafetyHubModuleType::PASSWORDS)
+  //         ->notification.get();
+  // if (notification->IsCurrentlyActive()) {
+  //   notification->Dismiss();
+  // }
 }
 
-absl::optional<safety_hub::SafetyHubModuleType>
+std::optional<safety_hub::SafetyHubModuleType>
 SafetyHubMenuNotificationService::GetModuleOfActiveNotification() const {
   for (auto const& item : module_info_map_) {
     if (item.second->notification->IsCurrentlyActive()) {
       return item.second->notification->GetModuleType();
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }

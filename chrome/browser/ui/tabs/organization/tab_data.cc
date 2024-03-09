@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/tabs/organization/tab_data.h"
 
-#include "chrome/browser/ui/tabs/organization/tab_sensitivity_cache.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -64,17 +63,8 @@ bool TabData::IsValidForOrganizing() const {
     return false;
   }
 
-  const int tab_index =
+  int tab_index =
       original_tab_strip_model_->GetIndexOfWebContents(web_contents_);
-
-  // Tab is not valid if it does not exist in the TabStripModel any more.
-  // NOTE: we will hear of this from the TabStripModel in OnTabStripModelChanged
-  // below, but IsValidForOrganizing might be called from another
-  // TabStripModelObserver first - most notably from a TabData's in another
-  // TabOrganization - so we cannot assume our web_contents_ is already nullptr.
-  if (!original_tab_strip_model_->ContainsIndex(tab_index)) {
-    return false;
-  }
 
   // All grouped tabs arent valid for grouping
   if (original_tab_strip_model_->GetTabGroupForTab(tab_index).has_value()) {

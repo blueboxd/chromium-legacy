@@ -108,7 +108,7 @@
 <translation id="2750481671343847896">Siteler, kimlik hizmetlerinden gelen oturum açma istemlerini gösterebilir.</translation>
 <translation id="2790501146643349491">Bu düğme açıkken yeni kapatılan siteler veri gönderip alma işlemini bitirebilir. Düğme kapalıyken yeni kapatılan siteler veri gönderip alma işlemini bitiremez.</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> için tüm site izinlerini sıfırlamak istediğinizden emin misiniz?</translation>
-<translation id="2850913818900871965">Mobil cihaz görünümü iste</translation>
+<translation id="2850913818900871965">Mobil cihaz görünümü isteyin</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Önceki parça</translation>
 <translation id="2891975107962658722">Bir sitenin cihazınıza veri kaydetmesini engelleyin</translation>
@@ -325,7 +325,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Sitelerin sanal gerçeklik cihazımı ve verilerimi kullanmasını engelle</translation>
 <translation id="6447842834002726250">Çerezler</translation>
-<translation id="6500423977866688905">Pencere küçükse mobil görünümü iste</translation>
+<translation id="6500423977866688905">Pencere dar olduğunda mobil cihaz görünümü isteğinde bulunma</translation>
 <translation id="6527303717912515753">Paylaş</translation>
 <translation id="652937045869844725">Üçüncü taraf çerezlerine izin vermeyi deneyin. Bu durumda daha az korunursunuz ancak site özelliklerinin çalışma olasılığı daha yüksektir</translation>
 <translation id="6530703012083415527">Bu düğme açıkken siteler, pop-up'ları ve yönlendirmeleri kullanabilir. Düğme kapalıyken siteler, pop-up'ları ve yönlendirmeleri kullanamaz.</translation>
@@ -473,7 +473,6 @@
 <translation id="8803526663383843427">Açık olduğunda</translation>
 <translation id="8805385115381080995">Sitelerin gerçek bir kişi olduğunuzu doğrulamanızı isteme olasılığı daha düşük olduğundan daha hızlı bir göz atma deneyimi yaşarsınız</translation>
 <translation id="8816026460808729765">Sitelerin sensörlere erişimini engelle</translation>
-<translation id="8823559166155093873">Çerezleri engelle</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8874790741333031443">Üçüncü taraf çerezlerine geçici olarak izin vermeyi deneyin. Bu durumda, internette gezinirken daha az korunursunuz ancak site özelliklerinin beklendiği gibi çalışma olasılığı daha yüksektir.</translation>
 <translation id="8889294078294184559">Siz sitelere göz atarken siteler de Chrome'dan kontrol ederek ziyaret ettiğiniz önceki bir siteden büyük olasılıkla gerçek bir kişi olduğunuzu doğrular</translation>

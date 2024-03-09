@@ -28,7 +28,6 @@ struct TaskList;
 
 class CalendarView;
 class ClassroomBubbleStudentView;
-class ClassroomBubbleTeacherView;
 class Shelf;
 
 // The bubble associated with the `GlanceableTrayBubble`. This bubble is the
@@ -45,9 +44,6 @@ class GlanceableTrayBubbleView : public TrayBubbleView,
   void InitializeContents();
 
   views::View* GetTasksView() { return tasks_bubble_view_; }
-  ClassroomBubbleTeacherView* GetClassroomTeacherView() {
-    return classroom_bubble_teacher_view_;
-  }
   ClassroomBubbleStudentView* GetClassroomStudentView() {
     return classroom_bubble_student_view_;
   }
@@ -61,18 +57,23 @@ class GlanceableTrayBubbleView : public TrayBubbleView,
   void OnDisplayConfigurationChanged() override;
 
  private:
-  // Creates classroom student or teacher view if needed (if the corresponding
-  // role is active) and stores the pointer in `view`.
-  // NOTE: in the rare case, when a single user has both student and teacher
-  // roles in different courses, the order of the two bubbles is not guaranteed.
-  template <typename T>
-  void AddClassroomBubbleViewIfNeeded(raw_ptr<T, ExperimentalAsh>* view,
-                                      bool is_role_active);
+  // Creates classroom student view if needed (if the corresponding
+  // role is active).
+  void AddClassroomBubbleStudentViewIfNeeded(bool is_role_active);
   void AddTaskBubbleViewIfNeeded(
       const ui::ListModel<api::TaskList>* task_lists);
 
   void OnGlanceablesContainerPreferredSizeChanged();
   void OnGlanceablesContainerHeightChanged(int height_delta);
+
+  // Sets the preferred size of `calendar_view_`. This is called during
+  // initialization and when the screen height changes.
+  void SetCalendarPreferredSize() const;
+
+  // For GlanceablesV2CalendarView: clips the `scroll_view_` height based on
+  // `screen_max_height` and `calendar_view_` height. This is called during
+  // initialization and when the `calendar_view_` height changes.
+  void ClipScrollViewHeight(int screen_max_height) const;
 
   const raw_ptr<Shelf, ExperimentalAsh> shelf_;
 
@@ -85,11 +86,6 @@ class GlanceableTrayBubbleView : public TrayBubbleView,
   // Child bubble view for the tasks glanceable. Owned by bubble_view_.
   raw_ptr<GlanceablesTasksViewBase, ExperimentalAsh> tasks_bubble_view_ =
       nullptr;
-
-  // Child bubble view for the teacher classrooms glanceable. Owned by
-  // bubble_view_.
-  raw_ptr<ClassroomBubbleTeacherView, ExperimentalAsh>
-      classroom_bubble_teacher_view_ = nullptr;
 
   // Child bubble view for the student classrooms glanceable. Owned by
   // bubble_view_.

@@ -50,8 +50,7 @@ AutofillBottomSheetJavaScriptFeature::~AutofillBottomSheetJavaScriptFeature() =
 
 void AutofillBottomSheetJavaScriptFeature::AttachListeners(
     const std::vector<autofill::FieldRendererId>& renderer_ids,
-    web::WebFrame* frame,
-    bool allow_autofocus) {
+    web::WebFrame* frame) {
   // TODO(crbug.com/1383214): Properly handle WebFrame destruction.
   if (!frame) {
     return;
@@ -63,7 +62,6 @@ void AutofillBottomSheetJavaScriptFeature::AttachListeners(
   }
   base::Value::List parameters;
   parameters.Append(std::move(renderer_id_list));
-  parameters.Append(allow_autofocus);
   CallJavaScriptFunction(frame, "bottomSheet.attachListeners", parameters);
 }
 

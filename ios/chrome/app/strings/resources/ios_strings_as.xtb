@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">আপুনি ছেটিঙলৈ গৈ সমলৰ ছেটিঙত ছাইটৰ ডিফ’ল্ট ভিউ ডেস্কটপলৈ সলনি কৰিব পাৰে</translation>
 <translation id="1054745118061919935">অব্যাহত ৰাখি, আপুনি <ph name="BEGIN_LINK" />সেৱাৰ চৰ্তাৱলী<ph name="END_LINK" />ত সন্মতি দিছে।</translation>
 <translation id="1066060668811609597">ছিংক পৰিচালনা কৰক</translation>
-<translation id="1066101356081285416">Chromeএ আপুনি চোৱা ছাইটসমূহত ট্ৰেকিং নম্বৰ চিনাক্ত কৰিব আৰু আপোনাক নতুন টেবৰ পৃষ্ঠাখনত পেকেজৰ আপডে’ট দেখুৱাব। এই সুবিধাটো প্ৰদান কৰিবলৈ আৰু সকলোৰে বাবে Googleৰ বজাৰ কৰাৰ সুবিধা উন্নত কৰিবলৈ পেকেজ ট্ৰেকিং নম্বৰ আৰু ৱেবছাইটৰ নাম Googleলৈ পঠিওৱা হ’ব। আপুনি <ph name="BEGIN_LINK" />পেকেজ ট্ৰেকিঙৰ ছেটিঙ<ph name="END_LINK" />ত যিকোনো সময়তে এইটো আপডে’ট কৰিব পাৰে।</translation>
 <translation id="1069154182096085577">পাছৱৰ্ডটো ইতিমধ্যে আছে</translation>
 <translation id="1076421457278169141">ক’ড স্কেন কৰা হ’ল</translation>
 <translation id="1076785341346483463">পৰিচালিত একাউণ্টৰ জৰিয়তে ছিংক কৰক</translation>
@@ -143,7 +142,6 @@
 <translation id="165877110639533037">কোনো খোলা টেব নাই</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />ৰ পৰা <ph name="TARGET_LANGUAGE" />লৈ</translation>
 <translation id="1683483432843341018">ম’বাইল ছাইটৰ বাবে অনুৰোধ কৰক</translation>
-<translation id="168715261339224929">আপোনাৰ বুকমাৰ্কসমূহ নিজৰ সকলো ডিভাইচতে পাবলৈ ছিংক অন কৰক।</translation>
 <translation id="1687475363370981210">সকলো পঢ়া হ‘ল বুলি চিহ্নিত কৰক</translation>
 <translation id="1689333818294560261">উপনাম</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> বাছনি কৰা হ’ল</translation>
@@ -1049,7 +1047,6 @@
 <translation id="6476253015009698798">এই পৃষ্ঠাখনৰ বাবে মূল্য ট্ৰেক কৰাৰ সুবিধাটো উপলব্ধ নহয়।</translation>
 <translation id="6476800141292307438">এই পৃষ্ঠাটো <ph name="LANGUAGE" />লৈ অনুবাদ কৰি থকা হৈছে। বিকল্পসমূহ স্ক্রীণখনৰ একেবাৰে তলৰ কাষত আছে।</translation>
 <translation id="648164694371393720">বিশ্বাসযোগ্যতা প্ৰমাণীকৰণ কৰাত আসোঁৱাহ হৈছে</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> টা সমল মচা হ’ল</translation>
 <translation id="6484712497741564393"><ph name="EMAIL" /> হিচাপে ছাইন ইন কৰিছে।
 
 আপোনাৰ ডেটা নিজৰ পাছফ্ৰে’জৰ জৰিয়তে এনক্ৰিপ্ট কৰা হৈছে। আপোনাৰ Google একাউণ্টত Chromeৰ ডেটা ব্যৱহাৰ আৰু ছেভ কৰিবলৈ এইটো দিয়ক।</translation>
@@ -1136,6 +1133,7 @@
 <translation id="6869389390665537774">আপুনি আগতে যিবিলাক পৃষ্ঠালৈ গৈছিল সেইবিলাক চাব পাৰে অথবা আপোনাৰ ইতিহাসৰ পৰা সেইবিলাক আঁতৰাব পাৰে</translation>
 <translation id="687135068089457384">ছেটিং দেখুৱাওক</translation>
 <translation id="6873263987691478642">স্প্লিট ভিউ</translation>
+<translation id="687586529977635009">Chromeএ আপুনি চোৱা ছাইটসমূহত ট্ৰেকিং নম্বৰ চিনাক্ত কৰিব আৰু আপোনাক নতুন টেবৰ পৃষ্ঠাখনত পেকেজৰ আপডে’ট দেখুৱাব। এই সুবিধাটো প্ৰদান কৰিবলৈ আৰু সকলোৰে বাবে Shopping উন্নত কৰিবলৈ Googleৰ সৈতে আপোনাৰ ডেটাখিনি শ্বেয়াৰ কৰা হ’ব। আপুনি এইটো <ph name="BEGIN_LINK" />পেকেজ ট্ৰেকিঙৰ ছেটিঙ<ph name="END_LINK" />ত সলনি কৰিব পাৰে।</translation>
 <translation id="6882836635272038266">ক্ষতিকাৰক হিচাপে জনাজাত ৱেবছাইট, ডাউনল'ড আৰু এক্সটেনশ্বনসমূহৰ পৰা উন্নত সুৰক্ষা।</translation>
 <translation id="6888009575607455378">আপুনি আপোনাৰ সালসলনিসমূহ বাতিল কৰিব বিচৰাটো নিশ্চিতনে?</translation>
 <translation id="6896758677409633944">প্ৰতিলিপি কৰক</translation>
@@ -1416,7 +1414,6 @@
 <translation id="8428634594422941299">বুজি পালোঁ</translation>
 <translation id="8446884382197647889">অধিক জানক</translation>
 <translation id="8449347986464073209">মচক আৰু ছাইন আউট কৰক</translation>
-<translation id="8458397775385147834">১টা বস্তু মচা হ’ল</translation>
 <translation id="8459333855531264009">সুৰক্ষিত নহয়</translation>
 <translation id="8487667956631253959">অন আছে</translation>
 <translation id="8487700953926739672">অফলাইনত উপলব্ধ</translation>

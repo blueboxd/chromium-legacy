@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">Výchozí zobrazení webu můžete změnit na počítač v Nastavení, v sekci Nastavení obsahu</translation>
 <translation id="1054745118061919935">Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK" />smluvními podmínkami<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Správa synchronizace</translation>
-<translation id="1066101356081285416">Chrome na navštívených webech rozpozná čísla zásilek a bude vám na stránce Nová karta zobrazovat aktuální informace o zásilkách. Sledovací číslo zásilky a název webu se odešlou do Googlu, aby bylo možné tuto funkci poskytovat a zlepšovat funkce Google k nakupování pro všechny. Toto nastavení můžete kdykoli změnit v <ph name="BEGIN_LINK" />Nastavení sledování zásilek<ph name="END_LINK" />.</translation>
 <translation id="1069154182096085577">Heslo již existuje</translation>
 <translation id="1076421457278169141">Kód byl naskenován</translation>
 <translation id="1076785341346483463">Synchronizace se spravovaným účtem</translation>
@@ -143,7 +142,6 @@ Pokud toto nastavení chcete změnit, <ph name="BEGIN_LINK" />vymažte data proh
 <translation id="165877110639533037">Žádné otevřené karty</translation>
 <translation id="1674504678466460478">Z: <ph name="SOURCE_LANGUAGE" /> do: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Vyžádat web pro mobily</translation>
-<translation id="168715261339224929">Chcete-li mít záložky ve všech zařízeních, zapněte synchronizaci.</translation>
 <translation id="1687475363370981210">Označit vše jako přečtené</translation>
 <translation id="1689333818294560261">Přezdívka</translation>
 <translation id="1700629756560807968">Počet vybraných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -1049,7 +1047,6 @@ Weby pomocí souborů cookie nemohou sledovat vaši aktivitu prohlížení mezi 
 <translation id="6476253015009698798">Sledování ceny pro tuto stránku není k dispozici.</translation>
 <translation id="6476800141292307438">Stránka se překládá do jazyka <ph name="LANGUAGE" />. Možnosti jsou k dispozici u dolního okraje obrazovky.</translation>
 <translation id="648164694371393720">Chyba ověření</translation>
-<translation id="6482629121755362506">Počet smazaných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6484712497741564393">Jste přihlášeni jako <ph name="EMAIL" />.
 
 Vaše data jsou šifrována pomocí heslové fráze. Pokud chcete používat a ukládat data prohlížeče Chrome ve svém účtu Google, zadejte ji.</translation>
@@ -1136,6 +1133,7 @@ V anonymním režimu weby nemohou používat soubory cookie ke sledování vaš
 <translation id="6869389390665537774">Můžete si zobrazit stránky, které jste navštívili, a případně je z historie smazat</translation>
 <translation id="687135068089457384">Zobrazit nastavení</translation>
 <translation id="6873263987691478642">Režim Split View</translation>
+<translation id="687586529977635009">Chrome na navštívených webech rozpozná čísla zásilek a bude vám na stránce Nová karta zobrazovat aktuální informace o zásilkách. Vaše data budou sdílena se společností Google za účelem poskytování této funkce a zlepšování Nákupů pro všechny. Můžete to změnit v <ph name="BEGIN_LINK" />Nastavení sledování zásilek<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Standardní ochrana před weby, soubory ke stažení a rozšířeními, o nichž je známo, že jsou nebezpečné.</translation>
 <translation id="6888009575607455378">Opravdu chcete změny zahodit?</translation>
 <translation id="6896758677409633944">Kopírovat</translation>
@@ -1416,7 +1414,6 @@ Weby pomocí souborů cookie mohou sledovat vaši aktivitu prohlížení na růz
 <translation id="8428634594422941299">Rozumím</translation>
 <translation id="8446884382197647889">Další informace</translation>
 <translation id="8449347986464073209">Vymazat a odhlásit se</translation>
-<translation id="8458397775385147834">Smazána 1 položka</translation>
 <translation id="8459333855531264009">Nezabezpečeno</translation>
 <translation id="8487667956631253959">Zapnuto</translation>
 <translation id="8487700953926739672">Dostupné offline</translation>
@@ -1482,7 +1479,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze. Pokud 
 <translation id="8766790350274092814">Hesla pro domény <ph name="WEBSITE" /> a <ph name="SECOND_WEBSITE" /> budou smazána. Vaše účty smazány nebudou.</translation>
 <translation id="8775144690796719618">Neplatná adresa URL</translation>
 <translation id="8780076847684176174">{count,plural, =1{Zkontrolovat kartu…}few{Zkontrolovat všechny karty…}many{Zkontrolovat všechny karty…}other{Zkontrolovat všechny karty…}}</translation>
-<translation id="8782570580170191813">Vždy sledovat zásilky</translation>
 <translation id="8787968206789828143">Vyhledat na webu</translation>
 <translation id="8792626944327216835">mikrofon</translation>
 <translation id="8803639129939845298">Zabezpečeno</translation>

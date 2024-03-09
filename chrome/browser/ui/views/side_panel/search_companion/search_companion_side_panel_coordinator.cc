@@ -168,7 +168,7 @@ void SearchCompanionSidePanelCoordinator::SetAccessibleNameForToolbarButton(
 }
 
 void SearchCompanionSidePanelCoordinator::NotifyCompanionOfSidePanelOpenTrigger(
-    absl::optional<SidePanelOpenTrigger> side_panel_open_trigger) {
+    std::optional<SidePanelOpenTrigger> side_panel_open_trigger) {
   auto* companion_tab_helper = companion::CompanionTabHelper::FromWebContents(
       browser_->tab_strip_model()->GetActiveWebContents());
   companion_tab_helper->SetMostRecentSidePanelOpenTrigger(
@@ -246,7 +246,7 @@ void SearchCompanionSidePanelCoordinator::
         CompanionSidePanelAvailabilityChanged::kUnavailableToAvailable);
     is_currently_observing_tab_changes_ = true;
 
-    if (features::IsSidePanelPinningEnabled()) {
+    if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
       GetActionItem()->SetVisible(true);
     } else {
       container->AddPinnedEntryButtonFor(SidePanelEntry::Id::kSearchCompanion,
@@ -264,7 +264,7 @@ void SearchCompanionSidePanelCoordinator::
         CompanionSidePanelAvailabilityChanged::kAvailableToUnavailable);
     is_currently_observing_tab_changes_ = false;
 
-    if (features::IsSidePanelPinningEnabled()) {
+    if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
       GetActionItem()->SetVisible(false);
     } else {
       container->RemovePinnedEntryButtonFor(
@@ -302,7 +302,7 @@ actions::ActionItem* SearchCompanionSidePanelCoordinator::GetActionItem() {
 void SearchCompanionSidePanelCoordinator::MaybeUpdateCompanionEnabledState() {
   bool enabled = companion::IsCompanionAvailableForCurrentActiveTab(browser_);
 
-  if (features::IsSidePanelPinningEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
     actions::ActionItem* action_item = GetActionItem();
     action_item->SetEnabled(enabled);
     action_item->SetImage(ui::ImageModel::FromVectorIcon(

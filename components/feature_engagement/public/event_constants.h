@@ -39,11 +39,6 @@ extern const char kMediaBackgrounded[];
 // The user opened the Global Media Controls dialog.
 extern const char kGlobalMediaControlsOpened[];
 
-// A side panel has been pinned.
-extern const char kSidePanelPinned[];
-// A side panel has been opened from the app menu.
-extern const char kSidePanelFromMenuShown[];
-
 // The side search panel was automatically triggered.
 extern const char kSideSearchAutoTriggered[];
 // The side search panel was opened by the user.
@@ -217,6 +212,10 @@ extern const char kIOSPullToRefreshUsed[];
 // The user has met a condition that makes the Enhanced Safe Browsing
 // inline and blue-dot promos eligible to be displayed.
 extern const char kEnhancedSafeBrowsingPromoCriterionMet[];
+
+// The user has tapped on the 'X' button to remove the Enhanced Safe Browsing
+// inline promo from the settings menu.
+extern const char kEnhancedSafeBrowsingInlinePromoClosed[];
 
 #endif  // BUILDFLAG(IS_IOS)
 

@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.content.R;
 import org.chromium.content.browser.selection.SelectActionMenuHelper.SelectActionMenuDelegate;
+import org.chromium.content_public.browser.AdditionalSelectionMenuItemProvider;
 import org.chromium.content_public.browser.SelectionMenuGroup;
 import org.chromium.content_public.browser.selection.SelectionActionMenuDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -32,6 +33,7 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
     private ActionMode mActionMode;
     private Rect mSelectionRect;
+    private final @Nullable AdditionalSelectionMenuItemProvider mAdditionalItemProvider;
     private final @Nullable SelectionActionMenuDelegate mSelectionActionMenuDelegate;
     private final Map<MenuItem, View.OnClickListener> mCustomMenuItemClickListeners;
 
@@ -39,10 +41,12 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
             Context context,
             View parent,
             PastePopupMenuDelegate delegate,
+            @Nullable AdditionalSelectionMenuItemProvider additionalItemProvider,
             @Nullable SelectionActionMenuDelegate selectionActionMenuDelegate) {
         mParent = parent;
         mDelegate = delegate;
         mContext = context;
+        mAdditionalItemProvider = additionalItemProvider;
         mSelectionActionMenuDelegate = selectionActionMenuDelegate;
         mCustomMenuItemClickListeners = new HashMap<>();
     }
@@ -132,7 +136,8 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
                     };
             SortedSet<SelectionMenuGroup> nonSelectionMenuItems =
                     SelectActionMenuHelper.getNonSelectionMenuItems(
-                            mContext, actionMenuDelegate, mSelectionActionMenuDelegate);
+                            mContext, actionMenuDelegate, mAdditionalItemProvider,
+                            mSelectionActionMenuDelegate);
             SelectionPopupControllerImpl.initializeActionMenu(
                     mContext, nonSelectionMenuItems, menu, mCustomMenuItemClickListeners, null);
         }
@@ -167,6 +172,9 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
+            if (mAdditionalItemProvider != null) {
+                mAdditionalItemProvider.onMenuDestroyed();
+            }
             mActionMode = null;
         }
 

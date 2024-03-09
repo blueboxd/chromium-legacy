@@ -7,9 +7,7 @@
 
 #include "base/functional/bind.h"
 #include "base/test/bind.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/tabs/organization/logging_util.h"
-#include "chrome/browser/ui/tabs/organization/metrics.h"
 #include "chrome/browser/ui/tabs/organization/tab_data.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_request.h"
@@ -73,7 +71,7 @@ class TabOrganizationTest : public testing::Test {
   }
 
   content::WebContents* AddTab(TabStripModel* tab_strip_model = nullptr,
-                               absl::optional<GURL> url = absl::nullopt) {
+                               std::optional<GURL> url = std::nullopt) {
     std::unique_ptr<content::WebContents> contents_unique_ptr =
         CreateWebContents();
     content::WebContentsTester::For(contents_unique_ptr.get())
@@ -100,7 +98,7 @@ class TabOrganizationTest : public testing::Test {
     std::unique_ptr<TabOrganization> organization =
         std::make_unique<TabOrganization>(
             std::vector<std::unique_ptr<TabData>>{},
-            std::vector<std::u16string>{name});
+            std::vector<std::u16string>{name}, 0u, std::nullopt);
 
     organization->AddTabData(std::make_unique<TabData>(
         tab_strip_model(), AddTab(tab_strip_model())));
@@ -109,36 +107,6 @@ class TabOrganizationTest : public testing::Test {
         tab_strip_model(), AddTab(tab_strip_model())));
 
     return organization;
-  }
-
-  std::unique_ptr<TabOrganizationSession> CreateSessionWithValidOrganization(
-      TabOrganizationEntryPoint entrypoint = TabOrganizationEntryPoint::NONE) {
-    std::unique_ptr<TabOrganizationRequest> request =
-        std::make_unique<TabOrganizationRequest>();
-    TabOrganizationRequest* request_ptr = request.get();
-
-    std::vector<TabOrganizationResponse::Organization> response_organizations;
-
-    std::vector<TabData::TabID> ids_to_group;
-    for (int i = 0; i < kMinimumValidTabs; i++) {
-      TabData* tab_to_group_data = request->AddTabData(
-          std::make_unique<TabData>(tab_strip_model(), AddTab()));
-      ids_to_group.emplace_back(tab_to_group_data->tab_id());
-    }
-    TabOrganizationResponse::Organization organization(u"label",
-                                                       std::move(ids_to_group));
-    response_organizations.emplace_back(std::move(organization));
-
-    std::unique_ptr<TabOrganizationResponse> response =
-        std::make_unique<TabOrganizationResponse>(response_organizations);
-
-    std::unique_ptr<TabOrganizationSession> session =
-        std::make_unique<TabOrganizationSession>(std::move(request),
-                                                 entrypoint);
-
-    session->StartRequest();
-    request_ptr->CompleteRequestForTesting(std::move(response));
-    return session;
   }
 
  private:
@@ -395,14 +363,14 @@ TEST_F(TabOrganizationTest, TabDataPinnedTabsNotValid) {
 // TabOrganization tests.
 
 TEST_F(TabOrganizationTest, TabOrganizationIDs) {
-  TabOrganization organization_1({}, {u"default_name"});
-  TabOrganization organization_2({}, {u"default_name"});
+  TabOrganization organization_1({}, {u"default_name"}, 0u, std::nullopt);
+  TabOrganization organization_2({}, {u"default_name"}, 0u, std::nullopt);
 
   EXPECT_NE(organization_1.organization_id(), organization_2.organization_id());
 }
 
 TEST_F(TabOrganizationTest, TabOrganizationAddingTabData) {
-  TabOrganization organization({}, {u"default_name"});
+  TabOrganization organization({}, {u"default_name"}, 0u, std::nullopt);
   EXPECT_EQ(static_cast<int>(organization.tab_datas().size()), 0);
   content::WebContents* web_contents = AddTab();
   std::unique_ptr<TabData> tab_data =
@@ -413,7 +381,7 @@ TEST_F(TabOrganizationTest, TabOrganizationAddingTabData) {
 }
 
 TEST_F(TabOrganizationTest, TabOrganizationRemovingTabData) {
-  TabOrganization organization({}, {u"default_name"});
+  TabOrganization organization({}, {u"default_name"}, 0u, std::nullopt);
   content::WebContents* web_contents = AddTab();
   std::unique_ptr<TabData> tab_data =
       std::make_unique<TabData>(tab_strip_model(), web_contents);
@@ -428,7 +396,7 @@ TEST_F(TabOrganizationTest, TabOrganizationRemovingTabData) {
 TEST_F(TabOrganizationTest, TabOrganizationChangingCurrentName) {
   std::u16string name_0 = u"name_0";
   std::u16string name_1 = u"name_1";
-  TabOrganization organization({}, {name_0, name_1});
+  TabOrganization organization({}, {name_0, name_1}, 0u, std::nullopt);
   EXPECT_TRUE(absl::holds_alternative<size_t>(organization.current_name()));
   EXPECT_EQ(static_cast<int>(absl::get<size_t>(organization.current_name())),
             0);
@@ -450,22 +418,22 @@ TEST_F(TabOrganizationTest, TabOrganizationChangingCurrentName) {
 }
 
 TEST_F(TabOrganizationTest, TabOrganizationReject) {
-  TabOrganization reject_organization({}, {u"default_name"});
+  TabOrganization reject_organization({}, {u"default_name"}, 0u, std::nullopt);
 
   reject_organization.Reject();
   EXPECT_EQ(reject_organization.choice(),
-            TabOrganization::UserChoice::kRejected);
+            TabOrganization::UserChoice::REJECTED);
 }
 
 TEST_F(TabOrganizationTest, TabOrganizationCHECKOnChangingUserChoiceTwice) {
-  TabOrganization organization({}, {u"default_name"}, /*current_name*/ 0u,
-                               TabOrganization::UserChoice::kAccepted);
+  TabOrganization organization({}, {u"default_name"}, 0u,
+                               TabOrganization::UserChoice::ACCEPTED);
 
   EXPECT_DEATH(organization.Reject(), "");
 }
 
 TEST_F(TabOrganizationTest, TabOrganizationIsValidForOrganizing) {
-  TabOrganization organization({}, {u"default_name"});
+  TabOrganization organization({}, {u"default_name"}, 0u, std::nullopt);
 
   content::WebContents* tab_1 = AddTab();
   std::unique_ptr<TabData> tab_data_1 =
@@ -502,7 +470,7 @@ TEST_F(TabOrganizationTest, TabOrganizationNoUniqueTabDatas) {
       std::make_unique<TabData>(tab_strip_model(), tab_1));
 
   TabOrganization organization(std::move(duplicated_tab_datas),
-                               {u"default_name"});
+                               {u"default_name"}, 0u, std::nullopt);
   EXPECT_EQ(organization.tab_datas().size(), 1u);
 }
 
@@ -531,7 +499,7 @@ TEST_F(TabOrganizationTest,
   content::WebContents* grouped_tab = AddTab();
   tab_strip_model()->AddToNewGroup(
       {tab_strip_model()->GetIndexOfWebContents(grouped_tab)});
-  absl::optional<tab_groups::TabGroupId> non_organized_group_id =
+  std::optional<tab_groups::TabGroupId> non_organized_group_id =
       tab_strip_model()->GetTabGroupForTab(
           tab_strip_model()->GetIndexOfWebContents(grouped_tab));
 
@@ -1031,19 +999,19 @@ TEST_F(TabOrganizationTest, TabOrganizationSessionCreation) {
   const tab_groups::TabGroupId group_id =
       tab_strip_model()->group_model()->ListTabGroups().at(0);
 
-  absl::optional<tab_groups::TabGroupId> group_for_tab_1 =
+  std::optional<tab_groups::TabGroupId> group_for_tab_1 =
       tab_strip_model()->GetTabGroupForTab(
           tab_strip_model()->GetIndexOfWebContents(tab_to_group_1));
   EXPECT_TRUE(group_for_tab_1.has_value());
   EXPECT_EQ(group_for_tab_1.value(), group_id);
 
-  absl::optional<tab_groups::TabGroupId> group_for_tab_2 =
+  std::optional<tab_groups::TabGroupId> group_for_tab_2 =
       tab_strip_model()->GetTabGroupForTab(
           tab_strip_model()->GetIndexOfWebContents(tab_to_group_2));
   EXPECT_TRUE(group_for_tab_2.has_value());
   EXPECT_EQ(group_for_tab_2.value(), group_id);
 
-  absl::optional<tab_groups::TabGroupId> group_for_tab_to_not_group =
+  std::optional<tab_groups::TabGroupId> group_for_tab_to_not_group =
       tab_strip_model()->GetTabGroupForTab(
           tab_strip_model()->GetIndexOfWebContents(tab_to_not_group));
   EXPECT_FALSE(group_for_tab_to_not_group.has_value());
@@ -1330,147 +1298,4 @@ TEST_F(TabOrganizationTest, LoggingUtilAddOrganizationsToModelQualityAccepted) {
         quality_org_label = quality_org.label();
     EXPECT_FALSE(quality_org_label.edited());
   }
-}
-
-TEST_F(TabOrganizationTest, HistogramLogNoOrganization) {
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<TabOrganizationRequest> request =
-      std::make_unique<TabOrganizationRequest>();
-  TabOrganizationRequest* request_ptr = request.get();
-
-  std::unique_ptr<TabOrganizationResponse> response =
-      std::make_unique<TabOrganizationResponse>(
-          std::vector<TabOrganizationResponse::Organization>());
-
-  std::unique_ptr<TabOrganizationSession> session =
-      std::make_unique<TabOrganizationSession>(std::move(request));
-
-  session->StartRequest();
-  request_ptr->CompleteRequestForTesting(std::move(response));
-
-  session.reset();
-
-  histogram_tester.ExpectUniqueSample("Tab.Organization.Response.Succeeded",
-                                      true, 1);
-  histogram_tester.ExpectUniqueSample("Tab.Organization.Response.TabCount", 0,
-                                      1);
-}
-
-TEST_F(TabOrganizationTest, HistogramLogNoChoiceOrganization) {
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<TabOrganizationSession> session =
-      CreateSessionWithValidOrganization();
-
-  ASSERT_NE(session->GetNextTabOrganization(), nullptr);
-  session.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.Organization.TabRemovedCount", 0, 0);
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.Organization.LabelEdited", false, 0);
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.AllEntrypoints.UserChoice",
-      TabOrganization::UserChoice::kNoChoice, 1);
-}
-
-TEST_F(TabOrganizationTest, HistogramLogRejectOrganization) {
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<TabOrganizationSession> session =
-      CreateSessionWithValidOrganization();
-
-  ASSERT_NE(session->GetNextTabOrganization(), nullptr);
-  session->GetNextTabOrganization()->Reject();
-
-  session.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.Organization.TabRemovedCount", 0, 0);
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.Organization.LabelEdited", false, 0);
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.AllEntrypoints.UserChoice",
-      TabOrganization::UserChoice::kRejected, 1);
-}
-
-TEST_F(TabOrganizationTest, HistogramLogAcceptOrganizationNoEntrypoint) {
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<TabOrganizationSession> session =
-      CreateSessionWithValidOrganization();
-
-  ASSERT_NE(session->GetNextTabOrganization(), nullptr);
-  session->GetNextTabOrganization()->Accept();
-
-  session.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.Organization.TabRemovedCount", 0, 1);
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.Organization.LabelEdited", false, 1);
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.AllEntrypoints.UserChoice",
-      TabOrganization::UserChoice::kAccepted, 1);
-}
-
-TEST_F(TabOrganizationTest,
-       HistogramLogAcceptOrganizationTabContextMenuEntryPoint) {
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<TabOrganizationSession> session =
-      CreateSessionWithValidOrganization(
-          TabOrganizationEntryPoint::TAB_CONTEXT_MENU);
-
-  ASSERT_NE(session->GetNextTabOrganization(), nullptr);
-  session->GetNextTabOrganization()->Accept();
-
-  session.reset();
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.TabContextMenu.UserChoice",
-      TabOrganization::UserChoice::kAccepted, 1);
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.AllEntrypoints.UserChoice",
-      TabOrganization::UserChoice::kAccepted, 1);
-}
-
-TEST_F(TabOrganizationTest,
-       HistogramLogRejectOrganizationThreeDotMenuEntryPoint) {
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<TabOrganizationSession> session =
-      CreateSessionWithValidOrganization(
-          TabOrganizationEntryPoint::THREE_DOT_MENU);
-
-  ASSERT_NE(session->GetNextTabOrganization(), nullptr);
-  session->GetNextTabOrganization()->Reject();
-
-  session.reset();
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.ThreeDotMenu.UserChoice",
-      TabOrganization::UserChoice::kRejected, 1);
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.AllEntrypoints.UserChoice",
-      TabOrganization::UserChoice::kRejected, 1);
-}
-
-TEST_F(TabOrganizationTest,
-       HistogramLogNoChoiceOrganizationProactiveEntryPoint) {
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<TabOrganizationSession> session =
-      CreateSessionWithValidOrganization(TabOrganizationEntryPoint::PROACTIVE);
-  ASSERT_NE(session->GetNextTabOrganization(), nullptr);
-
-  session.reset();
-
-  histogram_tester.ExpectUniqueSample("Tab.Organization.Proactive.UserChoice",
-                                      TabOrganization::UserChoice::kNoChoice,
-                                      1);
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.Organization.AllEntrypoints.UserChoice",
-      TabOrganization::UserChoice::kNoChoice, 1);
 }

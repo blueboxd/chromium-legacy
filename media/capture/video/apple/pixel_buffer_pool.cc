@@ -160,7 +160,7 @@ void PixelBufferPool::Flush() {
   static const CVPixelBufferPoolFlushPtr CVPixelBufferPoolFlushFuncPtr =
       reinterpret_cast<CVPixelBufferPoolFlushPtr>(dlsym(((void *) -2), "CVPixelBufferPoolFlush"));
   if(CVPixelBufferPoolFlushFuncPtr) {
-    CVPixelBufferPoolFlush(buffer_pool_.get(),
+    CVPixelBufferPoolFlushPtr(buffer_pool_.get(),
                            kCVPixelBufferPoolFlushExcessBuffers);
   }
 }

@@ -200,6 +200,13 @@ export class ModulesV2Element extends AppElementBase {
         this.maxColumnCount_ * SUPPORTED_MODULE_WIDTHS[0].value +
         (this.maxColumnCount_ - 1) * CONTAINER_GAP_WIDTH;
     this.loadModules_();
+
+    const onModuleUse = (e: Event) => {
+      e.stopPropagation();
+      NewTabPageProxy.getInstance().handler.onModulesUsed();
+    };
+    this.addEventListener('usage', onModuleUse, {once: true});
+    this.addEventListener('menu-button-click', onModuleUse, {once: true});
   }
 
   private moduleDisabled_(
@@ -424,8 +431,9 @@ export class ModulesV2Element extends AppElementBase {
     // Notify the user.
     this.$.undoToast.show();
 
-    NewTabPageProxy.getInstance().handler.onDismissModule(
-        wrapper.module.descriptor.id);
+    recordOccurrence('NewTabPage.Modules.Dismissed');
+    recordOccurrence(
+        `NewTabPage.Modules.Dismissed.${wrapper.module.descriptor.id}`);
   }
 
   private onUndoButtonClick_() {

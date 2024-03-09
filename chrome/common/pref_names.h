@@ -1528,9 +1528,11 @@ inline constexpr char kImportDialogSavedPasswords[] =
 inline constexpr char kImportDialogSearchEngine[] =
     "import_dialog_search_engine";
 
+#if BUILDFLAG(IS_CHROMEOS)
 // Boolean controlling whether native client is force allowed by policy.
 inline constexpr char kNativeClientForceAllowed[] =
     "native_client_force_allowed";
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Profile avatar and name
 inline constexpr char kProfileAvatarIndex[] = "profile.avatar_index";
@@ -2225,8 +2227,6 @@ inline constexpr char kNtpCustomBackgroundLocalToDevice[] =
     "ntp.custom_background_local_to_device";
 inline constexpr char kNtpCustomBackgroundLocalToDeviceId[] =
     "ntp.custom_background_local_to_device_id";
-inline constexpr char kNtpCustomBackgroundInspiration[] =
-    "ntp.custom_background_inspiration";
 // Number of times the user has opened the side panel with the customize chrome
 // button.
 inline constexpr char kNtpCustomizeChromeButtonOpenCount[] =
@@ -2239,12 +2239,6 @@ inline constexpr char kNtpModulesOrder[] = "NewTabPage.ModulesOrder";
 inline constexpr char kNtpModulesVisible[] = "NewTabPage.ModulesVisible";
 // Number of times user has seen an NTP module.
 inline constexpr char kNtpModulesShownCount[] = "NewTabPage.ModulesShownCount";
-// Dictionary of number of times a module has loaded.
-inline constexpr char kNtpModulesLoadedCountDict[] =
-    "NewTabPage.ModulesLoadedCountDict";
-// Dictionary of number of times the user has interacted with a module.
-inline constexpr char kNtpModulesInteractedCountDict[] =
-    "NewTabPage.ModulesInteractedCountDict";
 // Time modules were first shown to user.
 inline constexpr char kNtpModulesFirstShownTime[] =
     "NewTabPage.ModulesFirstShownTime";
@@ -3984,6 +3978,11 @@ inline constexpr char kReadAloudSpeed[] = "readaloud.speed";
 // playback and scrolls the page to match the playback position.
 inline constexpr char kReadAloudHighlightingEnabled[] =
     "readaloud.highlighting_enabled";
+
+// Boolean that specifies whether the ListenToThisPageEnabled policy is true or
+// not.
+inline constexpr char kListenToThisPageEnabled[] =
+    "readaloud.listen_to_this_page_enabled";
 #endif  // BUILDFLAG(IS_ANDROID)
 }  // namespace prefs
 

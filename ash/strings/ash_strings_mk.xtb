@@ -389,7 +389,7 @@
 <translation id="2624588537172718173">Аудио од уредот и микрофонот</translation>
 <translation id="263399434338050016">„Избери сѐ“</translation>
 <translation id="2644422758626431000">Закачете прозорец на левата страна</translation>
-<translation id="2645435784669275700">ChromeOS</translation>
+<translation id="2645435784669275700">Chrome OS</translation>
 <translation id="2653019840645008922">Снимање прозорец</translation>
 <translation id="2653659639078652383">Испрати</translation>
 <translation id="2658778018866295321">Кликни и повлечи</translation>
@@ -447,6 +447,7 @@
 <translation id="2914580577416829331">Слики од екранот</translation>
 <translation id="2924416280450782352">Не може да се прикажат ставките. Обидете се да ја отворите таблава повторно.</translation>
 <translation id="2931572158271115754">Нема ништо на списоков со задачи.</translation>
+<translation id="2935225303485967257">Управувајте со профилите</translation>
 <translation id="2941112035454246133">Низок</translation>
 <translation id="2942350706960889382">Закотвена лупа</translation>
 <translation id="2942516765047364088">Позиција на полица</translation>
@@ -624,7 +625,6 @@
 <translation id="3593646411856133110">Повлечете нагоре и задржете за да ги видите отворените апликации</translation>
 <translation id="3595596368722241419">Батеријата е полна</translation>
 <translation id="3596012367874587041">Поставки за апликацијата</translation>
-<translation id="3598452309062311481">Search+H</translation>
 <translation id="3600061223661453002">Исклучи</translation>
 <translation id="3604801046548457007">Работниот простор <ph name="DESK_TITILE" /> е создаден</translation>
 <translation id="3606978283550408104">Поврзан екран за брајово писмо.</translation>
@@ -777,7 +777,6 @@
 <translation id="4190780880566297084">Отфрлете го поставувањето прегледување на неодамнешните фотографии, аудиовизуелни содржини и апликации на телефонот</translation>
 <translation id="4192112279662688596">или</translation>
 <translation id="4193857202545160520">Прикажи кликнувања и копчиња</translation>
-<translation id="4193969623755915875">Отворете „Помош“ во апликацијата Explore со „<ph name="NEW_SHORTCUT" />“.</translation>
 <translation id="4195579532193195633">Тековна верзија: <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">Продолжете каде што сте застанале</translation>
 <translation id="4195877955194704651">Копче за автоматско кликнување</translation>
@@ -960,7 +959,6 @@
 <translation id="4889868803215848840">Дајте незадолжителни повратни информации за да ги подобриме предлозите:</translation>
 <translation id="4890187583552566966">„Помошникот на Google“ е оневозможен од вашиот администратор.</translation>
 <translation id="4890408602550914571">Проверете дали телефонот е во близина и со вклучен Bluetooth.</translation>
-<translation id="4892981359753171125">Контрола на лик</translation>
 <translation id="4895488851634969361">Батеријата е полна.</translation>
 <translation id="490375751687810070">Вертикално</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % батерија</translation>
@@ -1667,7 +1665,7 @@
 <translation id="7780094051999721182">кратенки</translation>
 <translation id="7780159184141939021">Ротација на екранот</translation>
 <translation id="7792590255364786396">Видливо</translation>
-<translation id="7796735576426975947">Скриено е ново известување</translation>
+<translation id="7796735576426975947">Сокриено е ново известување</translation>
 <translation id="7798302898096527229">Притиснете „Пребарување“ или Shift за да откажете.</translation>
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7807067443225230855">„Пребарување“ и „Помошник“</translation>

@@ -744,11 +744,6 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDestinationDialogCrosTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PrintPreviewDestinationDialogCrosTest,
-                       PrinterSetupAssistanceHasDestinationsSearching) {
-  RunTestCase("PrinterSetupAssistanceHasDestinationsSearching");
-}
-
-IN_PROC_BROWSER_TEST_F(PrintPreviewDestinationDialogCrosTest,
                        PrinterSetupAssistanceHasNoDestinations) {
   RunTestCase("PrinterSetupAssistanceHasNoDestinations");
 }
@@ -771,11 +766,6 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDestinationDialogCrosTest,
 IN_PROC_BROWSER_TEST_F(PrintPreviewDestinationDialogCrosTest,
                        CorrectlyDisplaysAndHidesLoadingUI) {
   RunTestCase("CorrectlyDisplaysAndHidesLoadingUI");
-}
-
-IN_PROC_BROWSER_TEST_F(PrintPreviewDestinationDialogCrosTest,
-                       NewDestinationsShowsAndResizesList) {
-  RunTestCase("NewDestinationsShowsAndResizesList");
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 

@@ -91,9 +91,18 @@ CGFloat const kSpacingAfterTitle = 4;
   _tableViewIsMinimized = YES;
 
   self.view.accessibilityViewIsModal = YES;
-  self.aboveTitleView = [self setUpTitleView];
-  self.customSpacing = kSpacingAfterTitle;
-  self.customSpacingBeforeImageIfNoNavigationBar = kSpacingBeforeTitle;
+
+  // Image needs to be above title view, which is the case only when the latter
+  // is a `titleView`. In more common case without the image, title should be an
+  // `aboveTitleView`.
+  if (self.image) {
+    self.titleView = [self setUpTitleView];
+    self.customSpacing = 0;
+  } else {
+    self.aboveTitleView = [self setUpTitleView];
+    self.customSpacing = kSpacingAfterTitle;
+    self.customSpacingBeforeImageIfNoNavigationBar = kSpacingBeforeTitle;
+  }
 
   // Set the properties read by the super when constructing the
   // views in `-[ConfirmationAlertViewController viewDidLoad]`.
@@ -178,6 +187,10 @@ CGFloat const kSpacingAfterTitle = 4;
   _subtitle = subtitle;
 }
 
+- (void)setAvatarImage:(UIImage*)avatarImage {
+  self.image = avatarImage;
+}
+
 - (void)dismiss {
   __weak __typeof(self) weakSelf = self;
   [self dismissViewControllerAnimated:NO
@@ -190,10 +203,6 @@ CGFloat const kSpacingAfterTitle = 4;
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  base::UmaHistogramBoolean(
-      "IOS.PasswordBottomSheet.UsernameTapped.MinimizedState",
-      _tableViewIsMinimized);
-
   if (_suggestions.count <= 1) {
     return;
   }
@@ -217,6 +226,22 @@ CGFloat const kSpacingAfterTitle = 4;
   }
 
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
+}
+
+- (NSIndexPath*)tableView:(UITableView*)tableView
+    willSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  BOOL singleSuggestion = (_suggestions.count <= 1);
+  if (singleSuggestion ||
+      (!_tableViewIsMinimized && (indexPath.row == [self selectedRow]))) {
+    // Record how many useless taps users do.
+    // If we have a single suggestion, tapping on it does nothing.
+    // If we have multiple suggestions currently visible, tapping on the already
+    // selected one also does nothing.
+    base::UmaHistogramBoolean(
+        "IOS.PasswordBottomSheet.UsernameTapped.MinimizedState",
+        singleSuggestion);
+  }
+  return indexPath;
 }
 
 // Long press open context menu.
@@ -286,7 +311,6 @@ CGFloat const kSpacingAfterTitle = 4;
 - (void)confirmationAlertPrimaryAction {
   // Use password button
   __weak __typeof(self) weakSelf = self;
-  [self.delegate willSelectSuggestion];
   [self dismissViewControllerAnimated:NO
                            completion:^{
                              // Send a notification to fill the
@@ -530,6 +554,10 @@ CGFloat const kSpacingAfterTitle = 4;
         initWithImage:DefaultSymbolTemplateWithPointSize(
                           kChevronDownSymbol, kSymbolAccessoryPointSize)];
     cell.accessoryView.tintColor = [UIColor colorNamed:kTextQuaternaryColor];
+    cell.accessibilityLabel = [NSString
+        stringWithFormat:@"%@. %@", cell.accessibilityLabel,
+                         l10n_util::GetNSString(
+                             IDS_IOS_PASSWORD_BOTTOM_SHEET_MORE_PASSWORDS)];
   }
   [self loadFaviconAtIndexPath:indexPath forCell:cell];
   return cell;

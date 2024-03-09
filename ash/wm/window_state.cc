@@ -222,7 +222,7 @@ float GetCurrentSnapRatio(aura::Window* window) {
       screen_util::GetMaximizedWindowBoundsInParent(window);
   const int divider_delta =
       ShouldConsiderDivider(window) ? kSplitviewDividerShortSideLength / 2 : 0;
-  if (SplitViewController::IsLayoutHorizontal(window)) {
+  if (IsLayoutHorizontal(window)) {
     return static_cast<float>(window->GetTargetBounds().width() +
                               divider_delta) /
            static_cast<float>(maximized_bounds.width());
@@ -652,18 +652,6 @@ bool WindowState::HorizontallyShrinkWindow(const gfx::Rect& work_area) {
   return true;
 }
 
-void WindowState::UpdateSnappedBounds() {
-  auto* split_view_controller = SplitViewController::Get(window_);
-  DCHECK(split_view_controller->IsWindowInSplitView(window_));
-  const gfx::Rect snapped_bounds =
-      split_view_controller->GetSnappedWindowBoundsInParent(
-          GetStateType() == WindowStateType::kPrimarySnapped
-              ? SplitViewController::SnapPosition::kPrimary
-              : SplitViewController::SnapPosition::kSecondary,
-          window_);
-  SetBoundsDirect(snapped_bounds);
-}
-
 std::unique_ptr<WindowState::State> WindowState::SetStateObject(
     std::unique_ptr<WindowState::State> new_state) {
   current_state_->DetachState(this);
@@ -914,12 +902,13 @@ void WindowState::AdjustSnappedBoundsForDisplayWorkspaceChange(
   // If |snap_ratio_| exists adjust the size of the window. Otherwise only
   // maximize it vertically for horizontal screen and maximize horizontally for
   // vertical screen.
-  if (snap_ratio_)
+  if (snap_ratio_) {
     bounds->set_size(snapped_bounds.size());
-  else if (SplitViewController::IsLayoutHorizontal(display))
+  } else if (IsLayoutHorizontal(display)) {
     bounds->set_height(snapped_bounds.height());
-  else
+  } else {
     bounds->set_width(snapped_bounds.width());
+  }
 }
 
 void WindowState::UpdateWindowPropertiesFromStateType() {

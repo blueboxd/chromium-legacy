@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-#include <array>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -66,7 +63,6 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_mixer.h"
@@ -168,7 +164,7 @@ class MockNtpCustomBackgroundService : public NtpCustomBackgroundService {
       : NtpCustomBackgroundService(profile) {}
   MOCK_METHOD(void, RefreshBackgroundIfNeeded, ());
   MOCK_METHOD(void, VerifyCustomBackgroundImageURL, ());
-  MOCK_METHOD(absl::optional<CustomBackground>, GetCustomBackground, ());
+  MOCK_METHOD(std::optional<CustomBackground>, GetCustomBackground, ());
   MOCK_METHOD(void, AddObserver, (NtpCustomBackgroundServiceObserver*));
 };
 
@@ -188,7 +184,7 @@ class MockThemeService : public ThemeService {
 class MockPromoService : public PromoService {
  public:
   MockPromoService() : PromoService(nullptr, nullptr) {}
-  MOCK_METHOD(const absl::optional<PromoData>&,
+  MOCK_METHOD(const std::optional<PromoData>&,
               promo_data,
               (),
               (const, override));
@@ -256,15 +252,6 @@ std::unique_ptr<TestingProfile> MakeTestingProfile(
       profile.get(),
       base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));
   return profile;
-}
-
-int GetDictPrefKeyCount(Profile* profile,
-                        const std::string& pref_name,
-                        const std::string& key) {
-  const base::Value::Dict& counts_dict =
-      profile->GetPrefs()->GetDict(pref_name);
-  std::optional<int> count = counts_dict.FindInt(key);
-  return count.has_value() ? count.value() : 0;
 }
 
 }  // namespace
@@ -361,7 +348,7 @@ class NewTabPageHandlerTest : public testing::Test {
 
     std::move(on_cached_encoded_logo_available)
         .Run(search_provider_logos::LogoCallbackReason::DETERMINED,
-             absl::make_optional(logo));
+             std::make_optional(logo));
 
     return doodle;
   }
@@ -444,7 +431,7 @@ TEST_P(NewTabPageHandlerThemeTest, SetTheme) {
         theme = std::move(arg);
       }));
   ON_CALL(mock_ntp_custom_background_service_, GetCustomBackground())
-      .WillByDefault(testing::Return(absl::optional<CustomBackground>()));
+      .WillByDefault(testing::Return(std::optional<CustomBackground>()));
   mock_color_provider_source_.SetColor(kColorNewTabPageBackground,
                                        SkColorSetRGB(0, 0, 1));
   mock_color_provider_source_.SetColor(kColorNewTabPageText,
@@ -531,7 +518,7 @@ TEST_P(NewTabPageHandlerThemeTest, SetCustomBackground) {
   custom_background.daily_refresh_enabled = false;
   custom_background.is_uploaded_image = false;
   ON_CALL(mock_ntp_custom_background_service_, GetCustomBackground())
-      .WillByDefault(testing::Return(absl::make_optional(custom_background)));
+      .WillByDefault(testing::Return(std::make_optional(custom_background)));
   ON_CALL(mock_theme_provider_, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
       .WillByDefault(testing::Return(true));
   mock_color_provider_source_.SetColor(kColorNewTabPageBackground,
@@ -588,7 +575,7 @@ TEST_P(NewTabPageHandlerThemeTest, SetDailyRefresh) {
   custom_background.is_uploaded_image = false;
   custom_background.collection_id = "baz collection";
   ON_CALL(mock_ntp_custom_background_service_, GetCustomBackground())
-      .WillByDefault(testing::Return(absl::make_optional(custom_background)));
+      .WillByDefault(testing::Return(std::make_optional(custom_background)));
   ON_CALL(mock_theme_provider_, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
       .WillByDefault(testing::Return(true));
 
@@ -622,7 +609,7 @@ TEST_P(NewTabPageHandlerThemeTest, SetUploadedImage) {
   custom_background.is_uploaded_image = true;
   custom_background.daily_refresh_enabled = false;
   ON_CALL(mock_ntp_custom_background_service_, GetCustomBackground())
-      .WillByDefault(testing::Return(absl::make_optional(custom_background)));
+      .WillByDefault(testing::Return(std::make_optional(custom_background)));
   ON_CALL(mock_theme_service_, UsingDefaultTheme())
       .WillByDefault(testing::Return(false));
 
@@ -646,33 +633,6 @@ TEST_P(NewTabPageHandlerThemeTest, SetWallpaperSearchImage) {
   CustomBackground custom_background;
   custom_background.is_uploaded_image = true;
   custom_background.local_background_id = base::Token::CreateRandom();
-  custom_background.is_inspiration_image = false;
-  custom_background.daily_refresh_enabled = false;
-  ON_CALL(mock_ntp_custom_background_service_, GetCustomBackground())
-      .WillByDefault(testing::Return(absl::make_optional(custom_background)));
-  ON_CALL(mock_theme_service_, UsingDefaultTheme())
-      .WillByDefault(testing::Return(false));
-
-  ntp_custom_background_service_observer_->OnCustomBackgroundImageUpdated();
-  mock_page_.FlushForTesting();
-
-  ASSERT_TRUE(theme);
-  ASSERT_TRUE(theme->background_image);
-  EXPECT_EQ(new_tab_page::mojom::NtpBackgroundImageSource::kWallpaperSearch,
-            theme->background_image->image_source);
-}
-
-TEST_P(NewTabPageHandlerThemeTest, SetWallpaperSearchInspirationImage) {
-  new_tab_page::mojom::ThemePtr theme;
-  EXPECT_CALL(mock_page_, SetTheme)
-      .Times(1)
-      .WillOnce(testing::Invoke([&theme](new_tab_page::mojom::ThemePtr arg) {
-        theme = std::move(arg);
-      }));
-  CustomBackground custom_background;
-  custom_background.is_uploaded_image = true;
-  custom_background.local_background_id = base::Token::CreateRandom();
-  custom_background.is_inspiration_image = true;
   custom_background.daily_refresh_enabled = false;
   ON_CALL(mock_ntp_custom_background_service_, GetCustomBackground())
       .WillByDefault(testing::Return(std::make_optional(custom_background)));
@@ -684,8 +644,7 @@ TEST_P(NewTabPageHandlerThemeTest, SetWallpaperSearchInspirationImage) {
 
   ASSERT_TRUE(theme);
   ASSERT_TRUE(theme->background_image);
-  EXPECT_EQ(new_tab_page::mojom::NtpBackgroundImageSource::
-                kWallpaperSearchInspiration,
+  EXPECT_EQ(new_tab_page::mojom::NtpBackgroundImageSource::kWallpaperSearch,
             theme->background_image->image_source);
 }
 
@@ -703,7 +662,7 @@ TEST_P(NewTabPageHandlerThemeTest, SetThirdPartyTheme) {
   custom_background.is_uploaded_image = false;
 
   ON_CALL(mock_ntp_custom_background_service_, GetCustomBackground())
-      .WillByDefault(testing::Return(absl::make_optional(custom_background)));
+      .WillByDefault(testing::Return(std::make_optional(custom_background)));
   ON_CALL(mock_theme_provider_, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
       .WillByDefault(testing::Return(true));
   ON_CALL(mock_theme_service_, UsingDefaultTheme())
@@ -893,7 +852,7 @@ TEST_F(NewTabPageHandlerTest, UpdatePromoData) {
   })";
   promo_data.promo_log_url = GURL("https://foo.com");
   promo_data.promo_id = "foo";
-  auto promo_data_optional = absl::make_optional(promo_data);
+  auto promo_data_optional = std::make_optional(promo_data);
   ON_CALL(*mock_promo_service_, promo_data())
       .WillByDefault(testing::ReturnRef(promo_data_optional));
   EXPECT_CALL(*mock_promo_service_, Refresh).Times(1);
@@ -936,9 +895,9 @@ TEST_F(NewTabPageHandlerTest, OnDoodleImageClicked) {
 
 TEST_F(NewTabPageHandlerTest, OnDoodleImageRendered) {
   base::MockCallback<NewTabPageHandler::OnDoodleImageRenderedCallback> callback;
-  absl::optional<std::string> image_click_params;
-  absl::optional<GURL> interaction_log_url;
-  absl::optional<std::string> shared_id;
+  std::optional<std::string> image_click_params;
+  std::optional<GURL> interaction_log_url;
+  std::optional<std::string> shared_id;
   EXPECT_CALL(callback, Run(_, _, _))
       .Times(1)
       .WillOnce(DoAll(SaveArg<0>(&image_click_params),
@@ -1031,12 +990,6 @@ TEST_F(NewTabPageHandlerTest, SurveyLaunchedEligibleModulesCriteria) {
       .Times(1);
   const std::vector<std::string> module_ids = {"recipe_tasks", "cart"};
   handler_->OnModulesLoadedWithData(module_ids);
-
-  for (const auto& module_id : module_ids) {
-    EXPECT_EQ(
-        1, GetDictPrefKeyCount(profile_.get(),
-                               prefs::kNtpModulesLoadedCountDict, module_id));
-  }
 }
 
 TEST_F(NewTabPageHandlerTest, SurveyLaunchSkippedEligibleModulesCriteria) {
@@ -1054,12 +1007,6 @@ TEST_F(NewTabPageHandlerTest, SurveyLaunchSkippedEligibleModulesCriteria) {
       .Times(0);
   const std::vector<std::string> module_ids = {"recipe_tasks"};
   handler_->OnModulesLoadedWithData(module_ids);
-
-  for (const auto& module_id : module_ids) {
-    EXPECT_EQ(
-        1, GetDictPrefKeyCount(profile_.get(),
-                               prefs::kNtpModulesLoadedCountDict, module_id));
-  }
 }
 
 TEST_F(NewTabPageHandlerTest, UpdateNtpModulesFreVisibility) {
@@ -1288,7 +1235,7 @@ TEST_F(NewTabPageHandlerTest,
   mock_page_.FlushForTesting();
 }
 
-TEST_F(NewTabPageHandlerTest, OnModuleUsedRecordFeatureUsageAndClosePromo) {
+TEST_F(NewTabPageHandlerTest, OnModulesUsedRecordFeatureUsageAndClosePromo) {
   EXPECT_CALL(
       *mock_feature_promo_helper_,
       RecordFeatureUsage(feature_engagement::events::kDesktopNTPModuleUsed,
@@ -1296,7 +1243,7 @@ TEST_F(NewTabPageHandlerTest, OnModuleUsedRecordFeatureUsageAndClosePromo) {
       .Times(1);
   EXPECT_CALL(*mock_feature_promo_helper_, CloseFeaturePromo).Times(1);
 
-  handler_->OnModuleUsed("module_id");
+  handler_->OnModulesUsed();
 }
 
 TEST_F(NewTabPageHandlerTest, ShowWebstoreToast) {
@@ -1311,128 +1258,4 @@ TEST_F(NewTabPageHandlerTest, DoNotShowWebstoreToastOnCountExceeded) {
 
   EXPECT_CALL(mock_page_, ShowWebstoreToast).Times(0);
   mock_page_.FlushForTesting();
-}
-
-class NewTabPageHandlerHaTSTest : public NewTabPageHandlerTest {
- public:
-  static constexpr char kSampleModuleId[] = "sample_module_id";
-  static constexpr char kSampleTriggerId[] = "sample_trigger_id";
-  static constexpr int kSampleDelayTimeMs = 15000;
-  static constexpr int kSampleIgnoreCriteriaThreshold = 20;
-
-  NewTabPageHandlerHaTSTest() {
-    auto interaction_module_trigger_ids_dict = base::Value::Dict();
-    const auto kInteractionNames =
-        std::array<std::string, 4>{"disable", "dismiss", "ignore", "use"};
-    for (const auto& interaction_name : kInteractionNames) {
-      interaction_module_trigger_ids_dict.Set(
-          interaction_name,
-          base::Value::Dict().Set(kSampleModuleId, kSampleTriggerId));
-    }
-
-    base::test::ScopedFeatureList features;
-    feature_list_.InitWithFeaturesAndParameters(
-        {
-            {features::kHappinessTrackingSurveysForDesktopNtpModules,
-             {{ntp_features::kNtpModulesInteractionBasedSurveyEligibleIdsParam,
-               base::WriteJson(interaction_module_trigger_ids_dict).value()},
-              {ntp_features::kNtpModuleIgnoredHaTSDelayTimeParam,
-               base::NumberToString(kSampleDelayTimeMs)},
-              {ntp_features::kNtpModuleIgnoredCriteriaThreshold,
-               base::NumberToString(kSampleIgnoreCriteriaThreshold)}}},
-        },
-        {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(NewTabPageHandlerHaTSTest, ModuleInteractionTriggersHaTS) {
-  const auto& kSampleModuleId = NewTabPageHandlerHaTSTest::kSampleModuleId;
-  const size_t kInteractionNamesCount = 3;
-  const auto kInteractionNames =
-      std::array<std::string, kInteractionNamesCount>{"disable", "dismiss",
-                                                      "use"};
-  for (const auto& interaction : kInteractionNames) {
-    int timeout_ms;
-    std::optional<std::string_view> supplied_trigger_id;
-    EXPECT_CALL(*mock_hats_service(),
-                LaunchDelayedSurveyForWebContents(kHatsSurveyTriggerNtpModules,
-                                                  web_contents_.get(), _, _, _,
-                                                  _, _, _, _))
-        .Times(1)
-        .WillOnce(DoAll(SaveArg<2>(&timeout_ms),
-                        SaveArg<8>(&supplied_trigger_id),
-                        testing::Return(true)));
-
-    if (interaction == "disable") {
-      handler_->SetModuleDisabled(kSampleModuleId, true);
-    } else if (interaction == "dismiss") {
-      handler_->OnDismissModule(kSampleModuleId);
-    } else if (interaction == "use") {
-      handler_->OnModuleUsed(kSampleModuleId);
-    }
-
-    const int kExpectedTimeoutMs = 0;
-    EXPECT_EQ(kExpectedTimeoutMs, timeout_ms);
-    EXPECT_EQ(NewTabPageHandlerHaTSTest::kSampleTriggerId,
-              supplied_trigger_id.value());
-  }
-
-  EXPECT_EQ(
-      static_cast<int>(kInteractionNamesCount),
-      GetDictPrefKeyCount(profile_.get(), prefs::kNtpModulesInteractedCountDict,
-                          kSampleModuleId));
-}
-
-TEST_F(NewTabPageHandlerHaTSTest, IgnoredModuleTriggersHaTS) {
-  profile_->GetPrefs()->SetDict(
-      prefs::kNtpModulesLoadedCountDict,
-      base::Value::Dict().Set(
-          NewTabPageHandlerHaTSTest::kSampleModuleId,
-          NewTabPageHandlerHaTSTest::kSampleIgnoreCriteriaThreshold));
-  profile_->GetPrefs()->SetDict(
-      prefs::kNtpModulesInteractedCountDict,
-      base::Value::Dict().Set(NewTabPageHandlerHaTSTest::kSampleModuleId, 0));
-
-  int timeout_ms;
-  std::optional<std::string_view> supplied_trigger_id;
-  EXPECT_CALL(*mock_hats_service(),
-              LaunchDelayedSurveyForWebContents(kHatsSurveyTriggerNtpModules,
-                                                web_contents_.get(), _, _, _, _,
-                                                _, _, _))
-      .Times(1)
-      .WillOnce(DoAll(SaveArg<2>(&timeout_ms), SaveArg<8>(&supplied_trigger_id),
-                      testing::Return(true)));
-  const std::vector<std::string> module_ids = {
-      NewTabPageHandlerHaTSTest::kSampleModuleId};
-  handler_->OnModulesLoadedWithData(module_ids);
-  EXPECT_EQ(NewTabPageHandlerHaTSTest::kSampleDelayTimeMs, timeout_ms);
-  EXPECT_EQ(NewTabPageHandlerHaTSTest::kSampleTriggerId,
-            supplied_trigger_id.value());
-}
-
-TEST_F(NewTabPageHandlerHaTSTest, InteractedModuleDoesNotTriggerIgnoredHaTS) {
-  profile_->GetPrefs()->SetDict(
-      prefs::kNtpModulesLoadedCountDict,
-      base::Value::Dict().Set(
-          NewTabPageHandlerHaTSTest::kSampleModuleId,
-          NewTabPageHandlerHaTSTest::kSampleIgnoreCriteriaThreshold - 1));
-  profile_->GetPrefs()->SetDict(
-      prefs::kNtpModulesInteractedCountDict,
-      base::Value::Dict().Set(NewTabPageHandlerHaTSTest::kSampleModuleId, 1));
-
-  EXPECT_CALL(*mock_hats_service(),
-              LaunchDelayedSurveyForWebContents(kHatsSurveyTriggerNtpModules,
-                                                web_contents_.get(), _, _, _, _,
-                                                _, _, _))
-      .Times(0);
-  const std::vector<std::string> module_ids = {
-      NewTabPageHandlerHaTSTest::kSampleModuleId};
-  handler_->OnModulesLoadedWithData(module_ids);
-  EXPECT_EQ(
-      kSampleIgnoreCriteriaThreshold,
-      GetDictPrefKeyCount(profile_.get(), prefs::kNtpModulesLoadedCountDict,
-                          NewTabPageHandlerHaTSTest::kSampleModuleId));
 }

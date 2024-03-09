@@ -221,7 +221,7 @@ BASE_FEATURE(kSpotlightDonateNewIntents,
 
 BASE_FEATURE(kConsistencyNewAccountInterface,
              "ConsistencyNewAccountInterface",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsConsistencyNewAccountInterfaceEnabled() {
   return base::FeatureList::IsEnabled(kConsistencyNewAccountInterface);
@@ -321,10 +321,6 @@ BASE_FEATURE(kDynamicThemeColor,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kDynamicBackgroundColor,
              "DynamicBackgroundColor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kTabGridAlwaysBounce,
-             "TabGridAlwaysBounce",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabGridCompositionalLayout,

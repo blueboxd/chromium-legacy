@@ -4024,10 +4024,6 @@ void NavigationRequest::OnResponseStarted(
     net::NetworkAnonymizationKey network_anonymization_key,
     absl::optional<SubresourceLoaderParams> subresource_loader_params,
     EarlyHints early_hints) {
-  if (is_download) {
-    download_policy().RecordHistogram();
-  }
-
   ScopedCrashKeys crash_keys(*this);
 
   // The |loader_|'s job is finished. It must not call the NavigationRequest
@@ -5718,12 +5714,11 @@ void NavigationRequest::CommitNavigation() {
     }
   }
 
-  if (ad_auction_headers_eligible_) {
-    ProcessAdAuctionResponseHeaders(origin,
-                                    GetRenderFrameHost()->GetPage(),
-                                    response() ? response()->headers : nullptr);
-  } else if (has_ad_auction_headers_attribute_) {
-    RemoveAdAuctionResponseHeaders(response() ? response()->headers : nullptr);
+  if (ad_auction_headers_eligible_ && response_head_->headers) {
+    ProcessAdAuctionResponseHeaders(origin, GetRenderFrameHost()->GetPage(),
+                                    *response_head_->headers);
+  } else if (has_ad_auction_headers_attribute_ && response_head_->headers) {
+    RemoveAdAuctionResponseHeaders(*response_head_->headers);
   }
 
   if (!NavigationTypeUtils::IsSameDocument(common_params_->navigation_type)) {

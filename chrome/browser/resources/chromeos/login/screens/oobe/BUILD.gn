@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/test/base/ash/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
+import("//tools/polymer/html_to_wrapper.gni")
+import("../../login.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
@@ -25,6 +26,7 @@ js_type_check("closure_compile") {
     ":hid_detection",
     ":oobe_network",
     ":packaged_license",
+    ":quick_start",
     ":update",
     ":welcome",
     ":welcome_dialog",
@@ -140,6 +142,20 @@ js_library("hid_detection") {
   extra_deps = [ ":web_components" ]
 }
 
+js_library("quick_start") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/quick_start.js" ]
+  deps = [
+    "../../components:oobe_types",
+    "../../components:qr_code_canvas",
+    "../../components/behaviors:login_screen_behavior",
+    "../../components/behaviors:multi_step_behavior",
+    "../../components/behaviors:oobe_i18n_behavior",
+    "../../components/dialogs:oobe_loading_dialog",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":web_components" ]
+}
+
 js_library("oobe_network") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/oobe_network.js" ]
   deps = [
@@ -220,19 +236,19 @@ js_library("welcome_dialog") {
   externs_list = [ "$externs_path/tts.js" ]
 }
 
-html_to_js("web_components") {
-  js_files = [
-    "auto_enrollment_check.js",
-    "consumer_update.js",
-    "demo_setup.js",
-    "demo_preferences.js",
-    "enable_debugging.js",
-    "enterprise_enrollment.js",
-    "hid_detection.js",
-    "oobe_network.js",
-    "packaged_license.js",
-    "update.js",
-    "welcome.js",
-    "welcome_dialog.js",
+group("web_components") {
+  public_deps = [
+    ":copy_js",
+    ":generate_web_component_html_wrapper_files",
   ]
+}
+
+html_to_wrapper("generate_web_component_html_wrapper_files") {
+  in_files = rebase_path(oobe_screens_html_files, "./screens/oobe", ".")
+  use_js = true
+}
+
+copy("copy_js") {
+  sources = rebase_path(oobe_screens_js_files, "./screens/oobe", ".")
+  outputs = [ "$target_gen_dir/{{source_file_part}}" ]
 }

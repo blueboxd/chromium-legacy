@@ -89,6 +89,10 @@ void RenderingTestChromeClient::InjectScrollbarGestureScroll(
   local_frame.GetEventHandler().HandleGestureEvent(*gesture_event);
 }
 
+RenderingTest::RenderingTest(
+    base::test::TaskEnvironment::TimeSource time_source)
+    : PageTestBase(time_source) {}
+
 RenderingTestChromeClient& RenderingTest::GetChromeClient() const {
   DEFINE_STATIC_LOCAL(Persistent<RenderingTestChromeClient>, client,
                       (MakeGarbageCollected<RenderingTestChromeClient>()));
@@ -134,7 +138,7 @@ void RenderingTest::SetUp() {
   UpdateAllLifecyclePhasesForTest();
 
   // Allow ASSERT_DEATH and EXPECT_DEATH for multiple threads.
-  testing::FLAGS_gtest_death_test_style = "threadsafe";
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
 }
 
 void RenderingTest::TearDown() {

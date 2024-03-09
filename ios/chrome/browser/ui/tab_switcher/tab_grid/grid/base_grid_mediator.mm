@@ -56,6 +56,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_mediator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_mutator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_groups_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_action_wrangler.h"
@@ -226,13 +227,6 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 }
 
 - (void)setCurrentMode:(TabGridMode)mode {
-  if (_currentMode != mode && (_currentMode == TabGridModeSelection ||
-                               _currentMode == TabGridModeSearch)) {
-    // Clear selections.
-    _selectedEditingItemIDs.clear();
-    _selectedSharableEditingItemIDs.clear();
-    [self configureToolbarsButtons];
-  }
   _currentMode = mode;
   [self.toolbarsMutator setToolbarsMode:_currentMode];
   [self.gridConsumer setPageMode:_currentMode];
@@ -479,6 +473,14 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 }
 
 - (void)selectItemWithID:(web::WebStateID)itemID {
+  // TODO(crbug.com/1501837): Adapt the condition to open a tab group UI only
+  // when `itemID` match a group.
+  if (base::FeatureList::IsEnabled(kTabGroupsInGrid)) {
+    // TODO(crbug.com/1501837): Set the group ID when it will be available.
+    [self.dispatcher showTabGroupWithID];
+    return;
+  }
+
   int index = GetWebStateIndex(self.webStateList, WebStateSearchCriteria{
                                                       .identifier = itemID,
                                                   });
@@ -1066,7 +1068,7 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   if (self.currentMode == TabGridModeSelection) {
     if (self.webStateList->empty()) {
       // Exit selection mode if there are no more tabs.
-      self.currentMode = TabGridModeNormal;
+      [self exitSelectionMode];
     } else {
       [self configureSelectionToolbarsButtons];
     }
@@ -1116,14 +1118,18 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   return URL.is_valid() && URL.SchemeIsHTTPOrHTTPS();
 }
 
+// Exits selection mode and clear all related object.
+- (void)exitSelectionMode {
+  _selectedEditingItemIDs.clear();
+  _selectedSharableEditingItemIDs.clear();
+  self.currentMode = TabGridModeNormal;
+  [self configureToolbarsButtons];
+}
+
 #pragma mark - TabGridPageMutator
 
 - (void)currentlySelectedGrid:(BOOL)selected {
   NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
-}
-
-- (void)switchToMode:(TabGridMode)mode {
-  self.currentMode = mode;
 }
 
 #pragma mark - TabGridToolbarsButtonsDelegate
@@ -1136,7 +1142,7 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   // Tapping Done when in selection mode, should only return back to the normal
   // mode.
   if (self.currentMode == TabGridModeSelection) {
-    self.currentMode = TabGridModeNormal;
+    [self exitSelectionMode];
     // Records action when user exit the selection mode.
     base::RecordAction(base::UserMetricsAction("MobileTabGridSelectionDone"));
   } else {
@@ -1182,7 +1188,7 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 
 - (void)cancelSearchButtonTapped:(id)sender {
   base::RecordAction(base::UserMetricsAction("MobileTabGridCancelSearchTabs"));
-  self.currentMode = TabGridModeNormal;
+  [self exitSelectionMode];
 }
 
 - (void)closeSelectedTabs:(id)sender {

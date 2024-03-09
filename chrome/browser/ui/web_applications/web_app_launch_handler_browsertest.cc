@@ -94,7 +94,7 @@ class WebAppLaunchHandlerBrowserTest : public WebAppControllerBrowserTest {
         app_id);
   }
 
-  absl::optional<LaunchHandler> GetLaunchHandler(const webapps::AppId& app_id) {
+  std::optional<LaunchHandler> GetLaunchHandler(const webapps::AppId& app_id) {
     return GetWebApp(app_id)->launch_handler();
   }
 
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeEmpty) {
   base::HistogramTester histogram_tester;
   webapps::AppId app_id =
       InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
-  EXPECT_EQ(GetLaunchHandler(app_id), absl::nullopt);
+  EXPECT_EQ(GetLaunchHandler(app_id), std::nullopt);
 
   ExpectNavigateNewBehavior(app_id);
 
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
   // start_url again.
   {
     GURL alt_url = embedded_test_server()->GetURL("/web_apps/basic.html");
-    EXPECT_TRUE(ui_test_utils::NavigateToURL(app_browser, alt_url));
+    NavigateToURLAndWait(app_browser, alt_url);
     EXPECT_EQ(app_web_contents->GetLastCommittedURL(), alt_url);
 
     Browser* app_browser_2 = LaunchWebAppBrowserAndWait(app_id);
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
 
     chrome::NewTab(browser());
     EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
-    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), start_url));
+    NavigateToURLAndWait(browser(), start_url);
     ReparentWebAppForActiveTab(browser());
     EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
 
@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                        MAYBE_SelectActiveBrowser) {
   webapps::AppId app_id =
       InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
-  EXPECT_EQ(GetLaunchHandler(app_id), absl::nullopt);
+  EXPECT_EQ(GetLaunchHandler(app_id), std::nullopt);
 
   Browser* browser_1 = LaunchWebAppBrowser(app_id);
   Browser* browser_2 = LaunchWebAppBrowser(app_id);
@@ -642,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerOriginTrialBrowserTest, OriginTrial) {
     UpdateAwaiter update_awaiter(provider.install_manager());
 
     serve_token = false;
-    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kTestWebAppUrl)));
+    NavigateToURLAndWait(browser(), GURL(kTestWebAppUrl));
 
     update_awaiter.AwaitUpdate();
   }
@@ -650,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerOriginTrialBrowserTest, OriginTrial) {
   // The app should update to no longer have launch_handler defined without the
   // origin trial.
   EXPECT_EQ(provider.registrar_unsafe().GetAppById(app_id)->launch_handler(),
-            absl::nullopt);
+            std::nullopt);
 }
 
 }  // namespace web_app

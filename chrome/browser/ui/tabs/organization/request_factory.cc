@@ -30,9 +30,9 @@
 namespace {
 
 bool CanUseOptimizationGuide(Profile* profile) {
-  return base::FeatureList::IsEnabled(
-             optimization_guide::features::kOptimizationGuideModelExecution) &&
-         OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
+  return OptimizationGuideKeyedServiceFactory::GetForProfile(profile) &&
+         base::FeatureList::IsEnabled(
+             optimization_guide::features::kOptimizationGuideModelExecution);
 }
 
 void OnLogResults(Profile* profile,
@@ -52,10 +52,6 @@ void OnLogResults(Profile* profile,
   if (!session->request() || !session->request()->response() ||
       session->request()->response()->organizations.size() == 0 ||
       session->tab_organizations().size() == 0) {
-    if (model_quality_log_entry) {
-      optimization_guide_keyed_service->UploadModelQualityLogs(
-          std::move(model_quality_log_entry));
-    }
     return;
   }
 
@@ -75,32 +71,15 @@ void OnTabOrganizationModelExecutionResult(
     TabOrganizationRequest::BackendFailureCallback on_failure,
     optimization_guide::OptimizationGuideModelExecutionResult result,
     std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry) {
-  OptimizationGuideKeyedService* optimization_guide_keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-
-  if (!optimization_guide_keyed_service) {
-    std::move(on_failure).Run();
-    return;
-  }
-
   if (!result.has_value()) {
-    // TODO(b/322206302): remove this when this is fixed in the ModelQualityLogEntry API
-    if (log_entry) {
-      optimization_guide_keyed_service->UploadModelQualityLogs(
-          std::move(log_entry));
-    }
+    LOG(ERROR) << "TabOrganizationResponse model execution failed ";
     std::move(on_failure).Run();
     return;
   }
 
   auto response = optimization_guide::ParsedAnyMetadata<
       optimization_guide::proto::TabOrganizationResponse>(result.value());
-
   if (!response) {
-    if (log_entry) {
-      optimization_guide_keyed_service->UploadModelQualityLogs(
-          std::move(log_entry));
-    }
     std::move(on_failure).Run();
     return;
   }
@@ -115,16 +94,20 @@ void OnTabOrganizationModelExecutionResult(
                                std::move(response_tab_ids));
   }
 
-  const std::string server_execution_id = log_entry->log_ai_data_request()
-                                              ->mutable_model_execution_info()
-                                              ->server_execution_id();
+  if (organizations.size() > 0) {
+    const std::string server_execution_id = log_entry->log_ai_data_request()
+                                                ->mutable_model_execution_info()
+                                                ->server_execution_id();
 
-  std::unique_ptr<TabOrganizationResponse> local_response =
-      std::make_unique<TabOrganizationResponse>(
-          std::move(organizations), base::UTF8ToUTF16(server_execution_id),
-          base::BindOnce(OnLogResults, profile, std::move(log_entry)));
+    std::unique_ptr<TabOrganizationResponse> local_response =
+        std::make_unique<TabOrganizationResponse>(
+            std::move(organizations), base::UTF8ToUTF16(server_execution_id),
+            base::BindOnce(OnLogResults, profile, std::move(log_entry)));
 
-  std::move(on_completion).Run(std::move(local_response));
+    std::move(on_completion).Run(std::move(local_response));
+  } else {
+    std::move(on_failure).Run();
+  }
 }
 
 void PerformTabOrganizationExecution(
@@ -147,10 +130,6 @@ void PerformTabOrganizationExecution(
     tab->set_tab_id(tab_data->tab_id());
     tab->set_title(base::UTF16ToUTF8(tab_data->web_contents()->GetTitle()));
     tab->set_url(tab_data->original_url().spec());
-  }
-
-  if (request->base_tab_id().has_value()) {
-    tab_organization_request.set_active_tab_id(request->base_tab_id().value());
   }
 
   OptimizationGuideKeyedService* optimization_guide_keyed_service =

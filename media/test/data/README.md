@@ -374,6 +374,11 @@ ffmpeg -i bear-av1.mp4 -i bear-opus.mp4 -c copy -strict -2 \
 **Note**: "-strict -2" was required because the current ffmpeg version
 has support for OPUS in MP4 as experimental.
 
+#### av1-svc-L1T2.ivf
+AV1 data that has temporal layers.
+This is the same as av1-1-b8-22-svc-L1T2.ivf in [libaom test vectors].
+The video license is [libaom LICENSE].
+
 #### av1-svc-L2T2.ivf
 AV1 data that has spatial and temporal layers.
 This is the same as av1-1-b8-22-svc-L2T2.ivf in [libaom test vectors].
@@ -906,7 +911,7 @@ Additional containers created by Dolby:
 
 * ac4-ajoc.ac4                 -- encoded with bitstream version 2, presentation version 1 and prosentation level 3
 * ac4-channel-based-coding.ac4 -- encoded with bitstream version 2, presentation version 1 and prosentation level 1
-* ac4-ims.ac4                  -- encoded with bitstream version 2, presentation version 2 
+* ac4-ims.ac4                  -- encoded with bitstream version 2, presentation version 2
 
 ## VDA Test Files:
 
@@ -1505,6 +1510,24 @@ ffmpeg -i bear-1280x720.mp4 -vcodec libx265 -x265-params colorprim=bt2020:transf
 HEVC video stream with 8-bit main profile, generated with
 ```
 ffmpeg -i bear-1280x720.mp4 -vf "scale=3840:2160,setpts=4*PTS" -c:v libx265 -crf 28 -c:a copy bear-3840x2160-hevc.mp4
+```
+
+### MP4 file with Dolby Vision
+
+#### glass-blowing2-dolby-vision-profile-5-frag.mp4
+Original sample from `https://media.developer.dolby.com/DolbyVision_Atmos/mp4/iOS_P5_GlassBlowing2_1920x1080%4059.94fps_15200kbps.mp4`. Dolby Vision profile 5 video stream generated using FFmpeg/mp4mux/mp4fragment with the following commands:
+```
+ffmpeg -ss 0:00:11 -i iOS_P5_GlassBlowing2_1920x1080@59.94fps_15200kbps.mp4 -t 1 -vcodec copy -an glass-blowing2-dolby-vision-profile-5.hevc
+mp4mux --track h265:glass-blowing2-dolby-vision-profile-5.hevc#dv_profile=5,dv_bc=0,format="dvh1",frame_rate=60,video glass-blowing2-dolby-vision-profile-5.mp4
+mp4fragment glass-blowing2-dolby-vision-profile-5.mp4 glass-blowing2-dolby-vision-profile-5-frag.mp4
+```
+
+#### glass-blowing2-dolby-vision-profile-8-1-frag.mp4
+Original sample from `https://media.developer.dolby.com/DolbyVision_Atmos/mp4/P81_GlassBlowing2_1920x1080%4059.94fps_15200kbps_fmp4.mp4`. Dolby Vision profile 8.1 video stream generated using FFmpeg/mp4mux/mp4fragment with the following commands:
+```
+ffmpeg -ss 0:00:11 -i P81_GlassBlowing2_1920x1080@59.94fps_15200kbps_fmp4.mp4 -t 1 -vcodec copy -an glass-blowing2-dolby-vision-profile-8-1.hevc
+mp4mux --track h265:glass-blowing2-dolby-vision-profile-8-1.hevc#dv_profile=8,dv_bc=1,format="hvc1",frame_rate=60,video glass-blowing2-dolby-vision-profile-8-1.mp4
+mp4fragment glass-blowing2-dolby-vision-profile-8-1.mp4 glass-blowing2-dolby-vision-profile-8-1-frag.mp4
 ```
 
 ### Multi-track MP4 file

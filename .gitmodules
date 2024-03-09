@@ -882,6 +882,7 @@
 [submodule "components/resources/default_100_percent/google_chrome"]
 	path = components/resources/default_100_percent/google_chrome
 	url = https://chrome-internal.googlesource.com/chrome/components/default_100_percent/google_chrome.git
+	gclient-condition = checkout_src_internal
 	ignore = all
 [submodule "components/resources/default_200_percent/google_chrome"]
 	path = components/resources/default_200_percent/google_chrome

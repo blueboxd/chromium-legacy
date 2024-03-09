@@ -9,6 +9,7 @@
 #include <wrl.h>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 
@@ -20,7 +21,7 @@ using Microsoft::WRL::ComPtr;
 // graph. It owns the tensor's dimensions, strides and DML_BUFFER_TENSOR_DESC.
 // The TensorDesc is prepared for building a DML graph's description
 // (DML_GRAPH_DESC).
-class TensorDesc final {
+class COMPONENT_EXPORT(WEBNN_SERVICE) TensorDesc final {
  public:
   enum class Alignment {
     // Align the elements to leading/left edge.
@@ -65,6 +66,12 @@ class TensorDesc final {
   // Add leading or trailing ones to dimensions and zeros to strides to ensure
   // the tensor rank >= minimum_rank.
   void EnsureMinimumRank(size_t minimum_rank, Alignment alignment);
+
+  // Promotes the tensor shape to a compatible higher rank given a list of
+  // target axes. e.g. given an existing shape of [2, 3], new rank of 4, and
+  // target axes of [0, 3], the new shape would be [2, 1, 1, 3].
+  void MakeBroadcastCompatible(size_t minimum_rank,
+                               base::span<const uint32_t> axes);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebNNTensorDescTest, CreateAndCopyTensorDescA);

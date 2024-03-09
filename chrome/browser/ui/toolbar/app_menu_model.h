@@ -253,18 +253,14 @@ class AppMenuModel : public ui::SimpleMenuModel,
   // logged when the module matches the one for which there is an active menu
   // notification.
   void LogSafetyHubInteractionMetrics(
-      absl::optional<safety_hub::SafetyHubModuleType> expected_module =
-          absl::nullopt);
+      std::optional<safety_hub::SafetyHubModuleType> expected_module =
+          std::nullopt);
 
  private:
   // Adds actionable global error menu items to the menu.
   // Examples: Extension permissions and sign in errors.
   // Returns a boolean indicating whether any menu items were added.
   bool AddGlobalErrorMenuItems();
-
-  // Adds the Safety Hub menu notifications to the menu. Returns a boolean
-  // indicating whether any menu items were added.
-  [[nodiscard]] bool AddSafetyHubMenuItem();
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Disables/Enables the settings item based on kSystemFeaturesDisableList

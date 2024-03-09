@@ -304,7 +304,7 @@
 <translation id="6171020522141473435">オンにすると、サイトは Bluetooth デバイスの使用を要求できます。オフにすると、サイトは Bluetooth デバイスを使用できません。</translation>
 <translation id="6177111841848151710">現在の検索エンジンに対してはブロック</translation>
 <translation id="6177128806592000436">このサイトへの接続は保護されていません</translation>
-<translation id="6181444274883918285">例外のサイトを追加</translation>
+<translation id="6181444274883918285">サイトの例外を追加</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6194967801833346599">{DAYS,plural, =1{明日、Chrome で Cookie を再びブロックします}other{# 日後に、Chrome で Cookie を再びブロックします}}</translation>
 <translation id="6195163219142236913">サードパーティ Cookie が制限されています</translation>
@@ -473,7 +473,6 @@
 <translation id="8803526663383843427">有効にした場合</translation>
 <translation id="8805385115381080995">サイトであなたが実在のユーザーであることを確認する頻度が減るため、ブラウジングが高速化されます</translation>
 <translation id="8816026460808729765">サイトによるセンサーへのアクセスをブロックする</translation>
-<translation id="8823559166155093873">Cookie をブロック</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8874790741333031443">サードパーティ Cookie を一時的に許可してみてください。ブラウジング保護の強度は低下しますが、サイトの機能が想定どおりに動作する可能性が高くなります。</translation>
 <translation id="8889294078294184559">それ以降にアクセスしたサイトは、あなたが実在のユーザーであることを、前にアクセスしたサイトから Chrome を介して確認できます。</translation>
@@ -489,7 +488,7 @@
 <translation id="9002538116239926534">オンにすると、サイトはデバイスにデータを保存できます。オフにすると、サイトはデバイスにデータを保存できません。</translation>
 <translation id="9011903857143958461"><ph name="SITE_NAME" /> を許可しました</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
-<translation id="9039697262778250930">これらのサイトからログアウトされる可能性があります</translation>
+<translation id="9039697262778250930">これらのサイトからログアウトする可能性があります</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9090268041676521955">このサイトは、アクティビティを確認できるグループに属しています。グループは <ph name="FPS_OWNER" /> によって定義されます</translation>
 <translation id="9106233582039520022">Cookie を削除しますか？</translation>

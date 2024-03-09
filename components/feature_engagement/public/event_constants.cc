@@ -24,9 +24,6 @@ const char kCustomizeChromeOpened[] = "customize_chrome_opened";
 const char kMediaBackgrounded[] = "media_backgrounded";
 const char kGlobalMediaControlsOpened[] = "global_media_controls_opened";
 
-const char kSidePanelPinned[] = "side_panel_pinned";
-const char kSidePanelFromMenuShown[] = "side_panel_from_menu_shown";
-
 const char kSideSearchAutoTriggered[] = "side_search_auto_triggered";
 const char kSideSearchOpened[] = "side_search_opened";
 const char kSideSearchPageActionLabelShown[] =
@@ -116,6 +113,8 @@ const char kIOSMultiGestureRefreshUsed[] = "multi_gesture_refresh_used";
 const char kIOSPullToRefreshUsed[] = "pull_to_refresh_feature_used";
 const char kEnhancedSafeBrowsingPromoCriterionMet[] =
     "enhanced_safe_browsing_promo_criterion_met";
+const char kEnhancedSafeBrowsingInlinePromoClosed[] =
+    "enhanced_safe_browsing_inline_promo_closed";
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_ANDROID)

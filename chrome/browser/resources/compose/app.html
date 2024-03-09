@@ -124,7 +124,7 @@
 
   @media (prefers-color-scheme: dark) {
     #body {
-      --results-background_: rgb(56, 58, 62);
+      --results-background_: rgb(60, 64, 67);
     }
   }
 
@@ -187,6 +187,11 @@
   :host-context([chrome-refresh-2023]) #resultContainer {
     color: var(--color-compose-dialog-result-foreground);
     line-height: 16px;
+  }
+
+  #resultText {
+    white-space: pre-wrap;
+    word-wrap: break-word;
   }
 
   #resultOptions {
@@ -366,7 +371,7 @@
       </div>
 
       <div id="resultContainer" hidden="[[!hasSuccessfulResponse_(response_)]]">
-        [[response_.result]]
+        <div id="resultText">[[getTrimmedResult_(response_.result)]]</div>
 
         <div id="resultOptions">
           <select class="md-select" id="lengthMenu" value="[[selectedLength_]]"
@@ -392,7 +397,7 @@
               on-click="onUndoClick_">
             </cr-icon-button>
             <cr-icon-button id="refreshButton" iron-icon="compose:refresh"
-              title="$i18n{resubmit}" on-click="onRefresh_">
+              title="$i18n{resubmit}" on-click="onSubmit_">
             </cr-icon-button>
           </div>
         </div>

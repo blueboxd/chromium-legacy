@@ -6,15 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_PINNED_TOOLBAR_ACTIONS_CONTAINER_H_
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/toolbar/pinned_toolbar_actions_model.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/actions/action_id.h"
 #include "ui/actions/actions.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -25,14 +24,11 @@ class Browser;
 class BrowserView;
 
 // Container for pinned actions shown in the toolbar.
-// TODO(crbug.com/1514477): Re-enable animation after the race condition issue
-// is addressed.
 class PinnedToolbarActionsContainer
-    : public views::View,
+    : public ToolbarIconContainerView,
       public PinnedToolbarActionsModel::Observer,
-      public views::DragController,
-      public ToolbarController::PinnedActionsDelegate {
-  METADATA_HEADER(PinnedToolbarActionsContainer, views::View)
+      public views::DragController {
+  METADATA_HEADER(PinnedToolbarActionsContainer, ToolbarIconContainerView)
 
  public:
   class PinnedActionToolbarButton : public ToolbarButton,
@@ -76,7 +72,7 @@ class PinnedToolbarActionsContainer
     raw_ptr<actions::ActionItem> action_item_ = nullptr;
     base::CallbackListSubscription action_changed_subscription_;
     // Used to ensure the button remains highlighted while active.
-    absl::optional<Button::ScopedAnchorHighlight> anchor_higlight_;
+    std::optional<Button::ScopedAnchorHighlight> anchor_higlight_;
     bool pinned_ = false;
     bool invoking_action_ = false;
     raw_ptr<PinnedToolbarActionsContainer> container_;
@@ -91,9 +87,8 @@ class PinnedToolbarActionsContainer
   void UpdateActionState(actions::ActionId id, bool is_active);
   void UpdateDividerFlexSpecification();
 
-  void UpdateAllIcons();
-
-  // views::View:
+  // ToolbarIconContainerView:
+  void UpdateAllIcons() override;
   void OnThemeChanged() override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
@@ -122,10 +117,6 @@ class PinnedToolbarActionsContainer
                            const gfx::Point& press_pt,
                            const gfx::Point& p) override;
 
-  // ToolbarController::PinnedActionsDelegate:
-  actions::ActionItem* GetActionItemFor(const actions::ActionId& id) override;
-  bool IsOverflowed(const actions::ActionId& id) override;
-
   bool IsActionPinned(const actions::ActionId& id);
 
  private:
@@ -135,6 +126,7 @@ class PinnedToolbarActionsContainer
   // A struct representing the position and action being dragged.
   struct DropInfo;
 
+  actions::ActionItem* GetActionItemFor(const actions::ActionId& id);
   PinnedActionToolbarButton* AddPopOutButtonFor(const actions::ActionId& id);
   void RemovePoppedOutButtonFor(const actions::ActionId& id);
   void AddPinnedActionButtonFor(const actions::ActionId& id);

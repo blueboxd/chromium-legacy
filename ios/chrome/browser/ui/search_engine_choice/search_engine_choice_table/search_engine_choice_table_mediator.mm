@@ -136,15 +136,8 @@ SnippetSearchEngineItem* CreateSnippetSearchEngineItemFromTemplateURL(
     _faviconLoader->FaviconForPageUrl(
         item.URL, kDesiredMediumFaviconSizePt, kMinFaviconSizePt,
         /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
-          if (attributes.faviconImage) {
-            item.faviconImage = attributes.faviconImage;
-          } else {
-            item.faviconImage = [UIImage imageNamed:@"default_world_favicon"];
-          }
+          item.faviconImage = attributes.faviconImage;
           [weakSelf.consumer faviconAttributesUpdatedForItem:item];
-          if (item.checked) {
-            [weakSelf.faviconUpdateConsumer updateFaviconImageForItem:item];
-          }
         });
   }
 

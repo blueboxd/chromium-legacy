@@ -52,6 +52,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace gfx {
@@ -98,6 +99,13 @@ enum class ValuePatternsMetric {
   kMaxValue = kIban,
 };
 
+// Denotes the reason for triggering a refill attempt.
+enum class RefillTriggerReason {
+  kFormChanged,
+  kSelectOptionsChanged,
+  kExpirationDateFormatted,
+};
+
 // Manages saving and restoring the user's personal information entered into web
 // forms. One per frame; owned by the AutofillDriver.
 class BrowserAutofillManager : public AutofillManager {
@@ -123,7 +131,8 @@ class BrowserAutofillManager : public AutofillManager {
                                                 const FormFieldData& field);
   virtual void OnUserAcceptedCardsFromAccountOption();
   virtual void RefetchCardsAndUpdatePopup(const FormData& form,
-                                          const FormFieldData& field_data);
+                                          const FormFieldData& field_data,
+                                          const gfx::RectF& element_bounds);
 
   virtual void FillCreditCardForm(
       const FormData& form,
@@ -404,7 +413,7 @@ class BrowserAutofillManager : public AutofillManager {
     // The profile or credit card that was used for the initial fill.
     // The std::string associated with the credit card is the CVC, which may be
     // empty.
-    absl::variant<AutofillProfile, std::pair<CreditCard, std::u16string>>
+    absl::variant<std::pair<CreditCard, std::u16string>, AutofillProfile>
         profile_or_credit_card_with_cvc;
     // Possible identifiers of the field that was focused when the form was
     // initially filled. A refill shall be triggered from the same field.
@@ -421,6 +430,9 @@ class BrowserAutofillManager : public AutofillManager {
     // If populated, this map determines which values will be filled into a
     // field (it does not matter whether the field already contains a value).
     std::map<FieldGlobalId, std::u16string> forced_fill_values;
+    // The form filled in the first attempt for filling. Used to check whether
+    // a refill should be attempted upon parsing an updated FormData.
+    std::optional<FormData> filled_form;
   };
 
   // Given a `form` (and corresponding `form_structure`) to fill, return a list
@@ -585,18 +597,21 @@ class BrowserAutofillManager : public AutofillManager {
       mojom::ActionPersistence action_persistence,
       std::string* failure_to_fill);
 
-  void SetFillingContext(const FormStructure& form,
+  void SetFillingContext(FormGlobalId form_id,
                          std::unique_ptr<FillingContext> context);
 
   FillingContext* GetFillingContext(FormGlobalId form_id);
 
   // Whether there should be an attempts to refill the form. Returns true if all
   // the following are satisfied:
-  //  There have been no refill on that page yet.
-  //  A non empty form name was recorded in a previous fill
-  //  That form name matched the currently parsed form name
-  //  It's been less than kLimitBeforeRefillMs since the original fill.
-  bool ShouldTriggerRefill(const FormStructure& form_structure);
+  // - There have been no refills on this page yet.
+  // - A non-empty form name was recorded in a previous fill
+  // - That form name matched the currently parsed form name
+  // - It's been less than kLimitBeforeRefill since the original fill.
+  // - `refill_trigger_reason != kFormChanged`, or `form_structure` and the
+  //   previously filled form have different structures.
+  bool ShouldTriggerRefill(const FormStructure& form_structure,
+                           RefillTriggerReason refill_trigger_reason);
 
   // Schedules a call of TriggerRefill. Virtual for testing.
   virtual void ScheduleRefill(const FormData& form,

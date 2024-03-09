@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">Podes cambiar a vista predeterminada do sitio pola aplicable a ordenadores; tan só tes que acceder a Configuración e, logo, seleccionar Configuración de contido</translation>
 <translation id="1054745118061919935">Ao continuar, aceptas as <ph name="BEGIN_LINK" />Condicións de servizo<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Xestionar sincronización</translation>
-<translation id="1066101356081285416">Chrome detectará os números de seguimento nos sitios que visites e mostrarache a información actualizada dos paquetes na páxina Nova pestana. O número de seguimento do paquete e o nome do sitio web enviaranse a Google co fin de fornecer este servizo e mellorar as funcións relacionadas coas compras de Google para todo o mundo. Podes modificar esta opción cando queiras na <ph name="BEGIN_LINK" />configuración de seguimento de paquetes<ph name="END_LINK" />.</translation>
 <translation id="1069154182096085577">O contrasinal xa existe</translation>
 <translation id="1076421457278169141">Escaneouse o código</translation>
 <translation id="1076785341346483463">Sincronizar cunha conta xestionada</translation>
@@ -143,7 +142,6 @@ Para cambiar esta opción de configuración, <ph name="BEGIN_LINK" />borra os da
 <translation id="165877110639533037">Non hai pestanas abertas</translation>
 <translation id="1674504678466460478">De <ph name="SOURCE_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Solicitar sitio para móbiles</translation>
-<translation id="168715261339224929">Activa a sincronización para acceder aos marcadores desde todos os teus dispositivos.</translation>
 <translation id="1687475363370981210">Marcar todo como lido</translation>
 <translation id="1689333818294560261">Alcume</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionados</translation>
@@ -839,7 +837,6 @@ En caso aplicable, consulta as instrucións do teu motor de busca para eliminar 
 <translation id="5457226814769348910">Abrir versión sen conexión</translation>
 <translation id="5475069061743940393">Seguimento de paquetes</translation>
 <translation id="5478327362747197944">Fai clic nunha data dunha páxina web para crear directamente eventos no calendario.</translation>
-<translation id="5482922178977937393">Queres recibir notificacións de noticias, deportes e máis temas en función dos teus intereses?</translation>
 <translation id="5489208564673669003">Se queres xestionar as cookies para todos os sitios, vai a <ph name="BEGIN_LINK" />Configuración das cookies<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Bloquear todas as cookies (non recomendado)</translation>
 <translation id="5497202150450073388">Tentouse realizar a entrega. Tentarase de novo</translation>
@@ -1049,7 +1046,6 @@ Non poden utilizalas para ver a túa actividade de navegación en distintos siti
 <translation id="6476253015009698798">O seguimento de prezos non está dispoñible para esta páxina.</translation>
 <translation id="6476800141292307438">Traducindo a páxina ao <ph name="LANGUAGE" />. Hai opcións dispoñibles na parte inferior da pantalla.</translation>
 <translation id="648164694371393720">Produciuse un erro de autenticación</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="6484712497741564393">Tes a sesión iniciada como <ph name="EMAIL" />.
 
 Os teus datos están encriptados coa túa frase de acceso. Introdúcea para usar e gardar os datos de Chrome na túa Conta de Google.</translation>
@@ -1136,6 +1132,7 @@ Co modo de incógnito activado, non poden utilizalas para ver a túa actividade 
 <translation id="6869389390665537774">Podes ver as páxinas que visitaches ou borralas do teu historial</translation>
 <translation id="687135068089457384">Mostrar configuración</translation>
 <translation id="6873263987691478642">Vista dividida</translation>
+<translation id="687586529977635009">Chrome detectará os números de seguimento nos sitios que visites e mostrarache a información actualizada na páxina Nova pestana. Os teus datos compartiranse con Google para poder fornecer esta función e mellorar a experiencia de compra para todo o mundo. Podes cambiar esta opción na <ph name="BEGIN_LINK" />configuración de seguimento de paquetes<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Protección estándar contra os sitios web, as descargas e as extensións que se consideren perigosos.</translation>
 <translation id="6888009575607455378">Seguro que queres descartar os cambios que fixeches?</translation>
 <translation id="6896758677409633944">Copiar</translation>
@@ -1416,7 +1413,6 @@ Tamén poden utilizalas para ver a túa actividade de navegación en varios siti
 <translation id="8428634594422941299">De acordo</translation>
 <translation id="8446884382197647889">Máis información</translation>
 <translation id="8449347986464073209">Eliminar e pechar sesión</translation>
-<translation id="8458397775385147834">Eliminouse un elemento</translation>
 <translation id="8459333855531264009">Non seguro</translation>
 <translation id="8487667956631253959">Activada</translation>
 <translation id="8487700953926739672">Dispoñible sen conexión</translation>
@@ -1482,7 +1478,6 @@ Os teus datos encriptáronse coa túa frase de acceso o <ph name="TIME" />. Intr
 <translation id="8766790350274092814">Eliminaranse os contrasinais de <ph name="WEBSITE" /> e <ph name="SECOND_WEBSITE" />. Non se eliminarán as túas contas.</translation>
 <translation id="8775144690796719618">URL non válido</translation>
 <translation id="8780076847684176174">{count,plural, =1{Revisar a pestana...}other{Revisar as pestanas...}}</translation>
-<translation id="8782570580170191813">Facer sempre un seguimento dos paquetes</translation>
 <translation id="8787968206789828143">Busca na Web</translation>
 <translation id="8792626944327216835">micrófono</translation>
 <translation id="8803639129939845298">Seguro</translation>

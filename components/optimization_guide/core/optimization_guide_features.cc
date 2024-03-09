@@ -43,17 +43,14 @@ constexpr auto enabled_by_default_desktop_only =
 
 constexpr auto enabled_by_default_mobile_only =
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-    true;
-#else
-    false;
-#endif
-
-constexpr auto enabled_by_default_ios_only =
-#if BUILDFLAG(IS_IOS)
     base::FEATURE_ENABLED_BY_DEFAULT;
 #else
     base::FEATURE_DISABLED_BY_DEFAULT;
 #endif
+
+using RequestContextSet = base::EnumSet<proto::RequestContext,
+                                        proto::RequestContext_MIN,
+                                        proto::RequestContext_MAX>;
 
 // Returns whether |locale| is a supported locale for |feature|.
 //
@@ -125,6 +122,25 @@ bool IsSupportedCountryForFeature(const std::string& country_code,
         return base::EqualsCaseInsensitiveASCII(supported_country_code,
                                                 country_code);
       });
+}
+
+RequestContextSet GetAllowedContexts() {
+  RequestContextSet allowed_contexts;
+
+  if (!base::FeatureList::IsEnabled(kOptimizationGuidePersonalizedFetching)) {
+    return allowed_contexts;
+  }
+
+  std::string param = base::GetFieldTrialParamValueByFeature(
+      kOptimizationGuidePersonalizedFetching, "allowed_contexts");
+  for (const auto& context_str : base::SplitString(
+           param, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    proto::RequestContext context;
+    if (proto::RequestContext_Parse(context_str, &context)) {
+      allowed_contexts.Put(context);
+    }
+  }
+  return allowed_contexts;
 }
 
 }  // namespace
@@ -202,7 +218,7 @@ BASE_FEATURE(kPageEntitiesModelResetOnShutdown,
 // Enables push notification of hints.
 BASE_FEATURE(kPushNotifications,
              "OptimizationGuidePushNotifications",
-             enabled_by_default_ios_only);
+             enabled_by_default_mobile_only);
 
 // This feature flag does not turn off any behavior, it is only used for
 // experiment parameters.
@@ -306,7 +322,7 @@ BASE_FEATURE(kOptimizationGuidePredictionModelKillswitch,
 // Whether to enable model execution.
 BASE_FEATURE(kOptimizationGuideModelExecution,
              "OptimizationGuideModelExecution",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Whether to use the on device model service in optimization guide.
 BASE_FEATURE(kOptimizationGuideOnDeviceModel,
@@ -437,11 +453,6 @@ bool IsModelQualityLoggingEnabled() {
 bool IsModelQualityLoggingEnabledForFeature(
     proto::ModelExecutionFeature feature_name) {
   if (!IsModelQualityLoggingEnabled()) {
-    return false;
-  }
-
-  if (feature_name ==
-      proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST) {
     return false;
   }
 
@@ -591,30 +602,14 @@ bool ShouldPersistHintsToDisk() {
                                            "persist_hints_to_disk", true);
 }
 
+bool IsAllowedContextForPersonalizedMetadata(
+    proto::RequestContext request_context) {
+  const RequestContextSet allowed_contexts = GetAllowedContexts();
+  return allowed_contexts.Has(request_context);
+}
+
 bool ShouldEnablePersonalizedMetadata(proto::RequestContext request_context) {
-  if (!base::FeatureList::IsEnabled(kOptimizationGuidePersonalizedFetching)) {
-    return false;
-  }
-  using RequestContextSet =
-      base::EnumSet<proto::RequestContext, proto::RequestContext_MIN,
-                    proto::RequestContext_MAX>;
-
-  static const RequestContextSet allowed_contexts = []() -> RequestContextSet {
-    DCHECK(
-        base::FeatureList::IsEnabled(kOptimizationGuidePersonalizedFetching));
-    std::string param = base::GetFieldTrialParamValueByFeature(
-        kOptimizationGuidePersonalizedFetching, "allowed_contexts");
-    RequestContextSet allowed_contexts;
-    for (const auto& context_str : base::SplitString(
-             param, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-      proto::RequestContext context;
-      if (proto::RequestContext_Parse(context_str, &context)) {
-        allowed_contexts.Put(context);
-      }
-    }
-    return allowed_contexts;
-  }();
-
+  static const RequestContextSet allowed_contexts = GetAllowedContexts();
   return allowed_contexts.Has(request_context);
 }
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_ASH_CLOUD_UPLOAD_ONE_DRIVE_UPLOAD_HANDLER_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -35,7 +35,7 @@ class OneDriveUploadHandler
       public base::RefCounted<OneDriveUploadHandler> {
  public:
   using UploadCallback = base::OnceCallback<
-      void(OfficeTaskResult, absl::optional<storage::FileSystemURL>, int64_t)>;
+      void(OfficeTaskResult, std::optional<storage::FileSystemURL>, int64_t)>;
 
   // Starts the upload workflow for the file specified at construct time.
   static void Upload(Profile* profile,
@@ -55,6 +55,9 @@ class OneDriveUploadHandler
 
   // Starts the upload workflow. Initiated by the `UploadToCloud` static method.
   void Run(UploadCallback callback);
+
+  // Checks if there already exists an upload task for this file.
+  bool FileAlreadyBeingUploaded();
 
   void GetODFSMetadataAndStartIOTask();
 
@@ -78,6 +81,9 @@ class OneDriveUploadHandler
   // upload callback.
   void OnFailedUpload(OfficeFilesUploadResult result_metric,
                       std::string error_message = GetGenericErrorMessage());
+
+  // Ends upload in an abandoned state and runs the upload callback.
+  void OnAbandonedUpload();
 
   // IOTaskController::Observer:
   void OnIOTaskStatus(

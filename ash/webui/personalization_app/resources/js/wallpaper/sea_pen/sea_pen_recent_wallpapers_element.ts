@@ -10,6 +10,7 @@
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import '../../../css/common.css.js';
 import '../../../css/wallpaper.css.js';
+import '../../../css/sea_pen.css.js';
 
 import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert} from 'chrome://resources/js/assert.js';
@@ -87,7 +88,7 @@ export class SeaPenRecentWallpapersElement extends WithPersonalizationStore {
         'recentImageData_', state => state.wallpaper.seaPen.recentImageData);
     this.watch<SeaPenRecentWallpapersElement['recentImageDataLoading_']>(
         'recentImageDataLoading_',
-        state => state.wallpaper.loading.seaPen.recentImageData);
+        state => state.wallpaper.seaPen.loading.recentImageData);
     this.watch<SeaPenRecentWallpapersElement['currentSelected_']>(
         'currentSelected_', state => state.wallpaper.currentSelected);
     this.watch<SeaPenRecentWallpapersElement['pendingSelected_']>(

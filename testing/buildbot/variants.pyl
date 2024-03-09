@@ -17,16 +17,15 @@
     'identifier': 'BRYA_RELEASE_BETA',
     'skylab': {
       'cros_board': 'brya',
-      'cros_img': 'brya-release/R121-15699.40.0',
+      'cros_img': 'brya-release/R120-15662.16.0',
       'dut_pool': 'chrome',
     },
   },
   'CROS_BRYA_RELEASE_DEV': {
     'identifier': 'BRYA_RELEASE_DEV',
-    'enabled': False,
     'skylab': {
       'cros_board': 'brya',
-      'cros_img': 'brya-release/R122-15748.0.0',
+      'cros_img': 'brya-release/R121-15678.0.0',
       'dut_pool': 'chrome',
     },
   },
@@ -42,7 +41,7 @@
     'identifier': 'BRYA_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'brya',
-      'cros_img': 'brya-release/R120-15662.76.0',
+      'cros_img': 'brya-release/R119-15633.44.0',
       'dut_pool': 'chrome',
     },
   },
@@ -50,15 +49,14 @@
     'identifier': 'DEDEDE_RELEASE_BETA',
     'skylab': {
       'cros_board': 'dedede',
-      'cros_img': 'dedede-release/R121-15699.40.0',
+      'cros_img': 'dedede-release/R120-15662.16.0',
     },
   },
   'CROS_DEDEDE_RELEASE_DEV': {
     'identifier': 'DEDEDE_RELEASE_DEV',
-    'enabled': False,
     'skylab': {
       'cros_board': 'dedede',
-      'cros_img': 'dedede-release/R122-15748.0.0',
+      'cros_img': 'dedede-release/R121-15678.0.0',
     },
   },
   'CROS_DEDEDE_RELEASE_LKGM': {
@@ -72,34 +70,22 @@
     'identifier': 'DEDEDE_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'dedede',
-      'cros_img': 'dedede-release/R120-15662.76.0',
-    },
-  },
-  'CROS_EVE_PUBLIC_LKGM': {
-    'identifier': 'EVE_PUBLIC_LKGM',
-    'skylab': {
-      'cros_board': 'eve',
-      'cros_img': 'eve-public/R121-15684.0.0',
-      'bucket': 'chromiumos-image-archive',
-      'dut_pool': 'chromium',
-      'public_builder': 'cros_test_platform_public',
-      'public_builder_bucket': 'testplatform-public',
+      'cros_img': 'dedede-release/R119-15633.44.0',
     },
   },
   'CROS_FIZZ_RELEASE_BETA': {
     'identifier': 'FIZZ_RELEASE_BETA',
     'skylab': {
       'cros_board': 'fizz',
-      'cros_img': 'fizz-release/R121-15699.40.0',
+      'cros_img': 'fizz-release/R120-15662.16.0',
       'dut_pool': 'chrome',
     },
   },
   'CROS_FIZZ_RELEASE_DEV': {
     'identifier': 'FIZZ_RELEASE_DEV',
-    'enabled': False,
     'skylab': {
       'cros_board': 'fizz',
-      'cros_img': 'fizz-release/R122-15748.0.0',
+      'cros_img': 'fizz-release/R121-15678.0.0',
       'dut_pool': 'chrome',
     },
   },
@@ -115,7 +101,7 @@
     'identifier': 'FIZZ_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'fizz',
-      'cros_img': 'fizz-release/R120-15662.76.0',
+      'cros_img': 'fizz-release/R119-15633.44.0',
       'dut_pool': 'chrome',
     },
   },
@@ -123,16 +109,15 @@
     'identifier': 'GUYBRUSH_RELEASE_BETA',
     'skylab': {
       'cros_board': 'guybrush',
-      'cros_img': 'guybrush-release/R121-15699.40.0',
+      'cros_img': 'guybrush-release/R120-15662.16.0',
       'dut_pool': 'chrome',
     },
   },
   'CROS_GUYBRUSH_RELEASE_DEV': {
     'identifier': 'GUYBRUSH_RELEASE_DEV',
-    'enabled': False,
     'skylab': {
       'cros_board': 'guybrush',
-      'cros_img': 'guybrush-release/R122-15748.0.0',
+      'cros_img': 'guybrush-release/R121-15678.0.0',
       'dut_pool': 'chrome',
     },
   },
@@ -148,37 +133,8 @@
     'identifier': 'GUYBRUSH_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'guybrush',
-      'cros_img': 'guybrush-release/R120-15662.76.0',
+      'cros_img': 'guybrush-release/R119-15633.44.0',
       'dut_pool': 'chrome',
-    },
-  },
-  'CROS_HANA_RELEASE_BETA': {
-    'identifier': 'HANA_RELEASE_BETA',
-    'skylab': {
-      'cros_board': 'hana',
-      'cros_img': 'hana-release/R121-15699.40.0',
-    },
-  },
-  'CROS_HANA_RELEASE_DEV': {
-    'identifier': 'HANA_RELEASE_DEV',
-    'enabled': False,
-    'skylab': {
-      'cros_board': 'hana',
-      'cros_img': 'hana-release/R122-15739.0.0',
-    },
-  },
-  'CROS_HANA_RELEASE_LKGM': {
-    'identifier': 'HANA_RELEASE_LKGM',
-    'skylab': {
-      'cros_board': 'hana',
-      'use_lkgm': True,
-    },
-  },
-  'CROS_HANA_RELEASE_STABLE': {
-    'identifier': 'HANA_RELEASE_STABLE',
-    'skylab': {
-      'cros_board': 'hana',
-      'cros_img': 'hana-release/R120-15662.80.0',
     },
   },
   'CROS_JACUZZI_CQ_PUBLIC_LKGM': {
@@ -191,21 +147,6 @@
       'public_builder_bucket': 'testplatform-public',
     },
   },
-  'CROS_JACUZZI_PUBLIC_LKGM': {
-    'identifier': 'JACUZZI_PUBLIC_LKGM',
-    'skylab': {
-      'cros_board': 'jacuzzi',
-      'cros_img': 'jacuzzi-public/R121-15673.0.0',
-      'bucket': 'chromiumos-image-archive',
-    },
-  },
-  'CROS_JACUZZI_RELEASE_BETA': {
-    'identifier': 'JACUZZI_RELEASE_BETA',
-    'skylab': {
-      'cros_board': 'jacuzzi',
-      'cros_img': 'jacuzzi-release/R121-15699.40.0',
-    },
-  },
   'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM': {
     'identifier': 'JACUZZI_RELEASE_CHROME_FROM_TLS_LKGM',
     'skylab': {
@@ -213,26 +154,11 @@
       'use_lkgm': True,
     },
   },
-  'CROS_JACUZZI_RELEASE_DEV': {
-    'identifier': 'JACUZZI_RELEASE_DEV',
-    'enabled': False,
-    'skylab': {
-      'cros_board': 'jacuzzi',
-      'cros_img': 'jacuzzi-release/R122-15748.0.0',
-    },
-  },
   'CROS_JACUZZI_RELEASE_LKGM': {
     'identifier': 'JACUZZI_RELEASE_LKGM',
     'skylab': {
       'cros_board': 'jacuzzi',
       'use_lkgm': True,
-    },
-  },
-  'CROS_JACUZZI_RELEASE_STABLE': {
-    'identifier': 'JACUZZI_RELEASE_STABLE',
-    'skylab': {
-      'cros_board': 'jacuzzi',
-      'cros_img': 'jacuzzi-release/R120-15662.76.0',
     },
   },
   'CROS_OCTOPUS_PUBLIC_LKGM': {
@@ -243,13 +169,6 @@
       'bucket': 'chromiumos-image-archive',
     },
   },
-  'CROS_OCTOPUS_RELEASE_BETA': {
-    'identifier': 'OCTOPUS_RELEASE_BETA',
-    'skylab': {
-      'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R121-15699.40.0',
-    },
-  },
   'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS_ASH_LKGM': {
     'identifier': 'OCTOPUS_RELEASE_CHROME_FROM_TLS_LKGM',
     'skylab': {
@@ -258,42 +177,19 @@
       'use_lkgm': True,
     },
   },
-  'CROS_OCTOPUS_RELEASE_DEV': {
-    'identifier': 'OCTOPUS_RELEASE_DEV',
-    'enabled': False,
-    'skylab': {
-      'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R122-15748.0.0',
-    },
-  },
-  'CROS_OCTOPUS_RELEASE_LKGM': {
-    'identifier': 'OCTOPUS_RELEASE_LKGM',
-    'skylab': {
-      'cros_board': 'octopus',
-      'use_lkgm': True,
-    },
-  },
-  'CROS_OCTOPUS_RELEASE_STABLE': {
-    'identifier': 'OCTOPUS_RELEASE_STABLE',
-    'skylab': {
-      'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R120-15662.76.0',
-    },
-  },
   'CROS_PUFF_RELEASE_BETA': {
     'identifier': 'PUFF_RELEASE_BETA',
     'skylab': {
       'cros_board': 'puff',
-      'cros_img': 'puff-release/R121-15699.40.0',
+      'cros_img': 'puff-release/R120-15662.16.0',
       'dut_pool': 'chrome',
     },
   },
   'CROS_PUFF_RELEASE_DEV': {
     'identifier': 'PUFF_RELEASE_DEV',
-    'enabled': False,
     'skylab': {
       'cros_board': 'puff',
-      'cros_img': 'puff-release/R122-15748.0.0',
+      'cros_img': 'puff-release/R121-15678.0.0',
       'dut_pool': 'chrome',
     },
   },
@@ -309,23 +205,8 @@
     'identifier': 'PUFF_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'puff',
-      'cros_img': 'puff-release/R120-15662.76.0',
+      'cros_img': 'puff-release/R118-15604.57.0',
       'dut_pool': 'chrome',
-    },
-  },
-  'CROS_STRONGBAD_RELEASE_BETA': {
-    'identifier': 'STRONGBAD_RELEASE_BETA',
-    'skylab': {
-      'cros_board': 'strongbad',
-      'cros_img': 'strongbad-release/R121-15699.40.0',
-    },
-  },
-  'CROS_STRONGBAD_RELEASE_DEV': {
-    'identifier': 'strongbad_RELEASE_DEV',
-    'enabled': False,
-    'skylab': {
-      'cros_board': 'strongbad',
-      'cros_img': 'strongbad-release/R122-15748.0.0',
     },
   },
   'CROS_STRONGBAD_RELEASE_LKGM': {
@@ -333,13 +214,6 @@
     'skylab': {
       'cros_board': 'strongbad',
       'use_lkgm': True,
-    },
-  },
-  'CROS_STRONGBAD_RELEASE_STABLE': {
-    'identifier': 'STRONGBAD_RELEASE_STABLE',
-    'skylab': {
-      'cros_board': 'strongbad',
-      'cros_img': 'strongbad-release/R120-15662.76.0',
     },
   },
   'CROS_TROGDOR_PUBLIC_LKGM': {
@@ -463,48 +337,48 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'identifier': 'Lacros version skew testing ash canary',
-    'description': 'Run with ash-chrome version 123.0.6267.0',
+    'description': 'Run with ash-chrome version 122.0.6174.0',
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v123.0.6267.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v122.0.6174.0/test_ash_chrome',
     ],
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v123.0.6267.0',
-          'revision': 'version:123.0.6267.0',
+          'location': 'lacros_version_skew_tests_v122.0.6174.0',
+          'revision': 'version:122.0.6174.0',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_DEV': {
     'identifier': 'Lacros version skew testing ash dev',
-    'description': 'Run with ash-chrome version 122.0.6241.0',
+    'description': 'Run with ash-chrome version 121.0.6154.0',
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v122.0.6241.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v121.0.6154.0/test_ash_chrome',
     ],
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v122.0.6241.0',
-          'revision': 'version:122.0.6241.0',
+          'location': 'lacros_version_skew_tests_v121.0.6154.0',
+          'revision': 'version:121.0.6154.0',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_STABLE': {
     'identifier': 'Lacros version skew testing ash stable',
-    'description': 'Run with ash-chrome version 120.0.6099.259',
+    'description': 'Run with ash-chrome version 119.0.6045.209',
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v120.0.6099.259/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.209/test_ash_chrome',
     ],
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v120.0.6099.259',
-          'revision': 'version:120.0.6099.259',
+          'location': 'lacros_version_skew_tests_v119.0.6045.209',
+          'revision': 'version:119.0.6045.209',
         },
       ],
     },

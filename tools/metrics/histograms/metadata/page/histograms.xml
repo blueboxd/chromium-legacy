@@ -798,6 +798,48 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="PageLoad.Clients.GoogleSearch.NavigationTiming.NavigationStartToFirstLoaderCallback"
+    units="ms" expires_after="2024-03-19">
+  <owner>kouhei@chromium.org</owner>
+  <owner>chrome-loading@google.com</owner>
+  <summary>
+    The time relative to navigation start that a callback for the navigation
+    loader is first invoked for the main resource of a main frame navigation,
+    for Google Search page loads. Only recorded for Search navigations that
+    happen entirely in the foreground. The metric is emitted when the navigation
+    is completed or the app is backgrounded on Android.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.GoogleSearch.NavigationTiming.NavigationStartToFirstRequestStart"
+    units="ms" expires_after="2024-03-19">
+  <owner>kouhei@chromium.org</owner>
+  <owner>chrome-loading@google.com</owner>
+  <summary>
+    The time relative to navigation start that the first HTTP request is sent
+    for the main resource of a main frame navigation, for Google Search page
+    loads. Only recorded for Search navigations that happen entirely in the
+    foreground. The metric is emitted when the navigation is completed or the
+    app is backgrounded on Android.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.GoogleSearch.NavigationTiming.NavigationStartToFirstResponseStart"
+    units="ms" expires_after="2024-03-19">
+  <owner>kouhei@chromium.org</owner>
+  <owner>chrome-loading@google.com</owner>
+  <summary>
+    The time relative to navigation start that the headers of the first HTTP
+    response is received for the main resource of a main frame navigation, for
+    Google Search page loads. Only recorded for Search navigations that happen
+    entirely in the foreground. The metric is emitted when the navigation is
+    completed or the app is backgrounded on Android.
+  </summary>
+</histogram>
+
+<histogram
     name="PageLoad.Clients.GoogleSearch.PaintTiming.NavigationToFirstContentfulPaint"
     units="ms" expires_after="2024-05-19">
   <owner>spelchat@chromium.org</owner>
@@ -844,7 +886,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Clients.LCPP.PaintTiming.ActualLCPIndex"
-    units="Index(1 origin)" expires_after="2024-03-31">
+    units="Index(1 origin)" expires_after="2024-06-02">
   <owner>yoichio@chromium.org</owner>
   <owner>
     src/third_party/blink/renderer/core/lcp_critical_path_predictor/OWNERS
@@ -861,7 +903,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.LCPP.PaintTiming.NavigationToFirstContentfulPaint"
-    units="ms" expires_after="2024-03-31">
+    units="ms" expires_after="2024-06-02">
   <owner>kouhei@chromium.org</owner>
   <owner>
     src/third_party/blink/renderer/core/lcp_critical_path_predictor/OWNERS
@@ -875,7 +917,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.LCPP.PaintTiming.NavigationToLargestContentfulPaint"
-    units="ms" expires_after="2024-03-31">
+    units="ms" expires_after="2024-06-02">
   <owner>kouhei@chromium.org</owner>
   <owner>
     src/third_party/blink/renderer/core/lcp_critical_path_predictor/OWNERS
@@ -888,7 +930,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Clients.LCPP.PaintTiming.PredictHitIndex"
-    units="Index(1 origin)" expires_after="2024-03-31">
+    units="Index(1 origin)" expires_after="2024-06-02">
   <owner>yoichio@chromium.org</owner>
   <owner>
     src/third_party/blink/renderer/core/lcp_critical_path_predictor/OWNERS
@@ -903,7 +945,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Clients.LCPP.PaintTiming.PredictLCPResult"
-    enum="LcppPredictResult" expires_after="2024-03-31">
+    enum="LcppPredictResult" expires_after="2024-06-02">
   <owner>yoichio@chromium.org</owner>
   <owner>
     src/third_party/blink/renderer/core/lcp_critical_path_predictor/OWNERS
@@ -1176,7 +1218,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.ServiceWorker2.PaintTiming.{Timing}.{HandlerType}"
-    units="ms" expires_after="2024-03-31">
+    units="ms" expires_after="2024-06-02">
   <owner>yyanagisawa@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1791,7 +1833,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Experimental.NavigationTiming.NavigationStartToFirstLoaderCallback"
-    units="ms" expires_after="2024-02-09">
+    units="ms" expires_after="2024-06-02">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -2818,6 +2860,8 @@ chromium-metrics-reviews@google.com.
 <histogram name="PageLoad.PageTiming.ForegroundDuration" units="ms"
     expires_after="2024-05-19">
   <owner>bmcquade@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
+  <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     For page loads that start in the foreground, measures the duration of time
     until one of the following events occurs: the load of the main resource

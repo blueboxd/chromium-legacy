@@ -1,6 +1,6 @@
 {
-  "version": "30.17",
-  "log_list_timestamp": "2024-02-01T12:55:51Z",
+  "version": "28.10",
+  "log_list_timestamp": "2023-12-09T12:53:46Z",
   "operators": [
     {
       "name": "Google",
@@ -186,8 +186,8 @@
           "url": "https://ct.cloudflare.com/logs/nimbus2025/",
           "mmd": 86400,
           "state": {
-            "usable": {
-              "timestamp": "2023-12-19T07:00:00Z"
+            "qualified": {
+              "timestamp": "2023-09-29T17:00:00Z"
             }
           },
           "temporal_interval": {
@@ -386,8 +386,8 @@
           "url": "https://mammoth2024h1.ct.sectigo.com/",
           "mmd": 86400,
           "state": {
-            "retired": {
-              "timestamp": "2024-01-29T00:00:00Z"
+            "usable": {
+              "timestamp": "2023-11-26T12:00:00Z"
             }
           },
           "temporal_interval": {

@@ -4,9 +4,9 @@
 
 #include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations.h"
 
+#include <fstream>
 #include <ios>
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -118,26 +118,20 @@ LoadAttestationsInternal(base::FilePath installed_file_path) {
   CHECK(base::FeatureList::IsEnabled(
       privacy_sandbox::kEnforcePrivacySandboxAttestations));
 
-  std::string proto_str;
-  // When reading the file, the `base::FilePath` directory should be used to
-  // make sure it works across platforms. If using the converted directory
-  // returned by `base::FilePath::AsUTF8Unsafe()`, it fails on Windows when the
-  // directory contains combining characters.
-  if (!base::ReadFileToString(installed_file_path, &proto_str)) {
+  std::ifstream stream(installed_file_path.AsUTF8Unsafe(),
+                       std::ios::binary | std::ios::in);
+  if (!stream.is_open()) {
+    // File does not exist.
     return base::unexpected(ParsingStatus::kFileNotExist);
   }
 
-  absl::optional<SentinelFile> sentinel_file =
-      base::FeatureList::IsEnabled(
-          privacy_sandbox::kPrivacySandboxAttestationSentinel)
-          ? absl::optional<SentinelFile>(installed_file_path.DirName())
-          : absl::nullopt;
-  if (sentinel_file.has_value() && sentinel_file->IsPresent()) {
+  SentinelFile sentinel_file(installed_file_path.DirName());
+  if (sentinel_file.IsPresent()) {
     // An existing sentinel file implies previous parsing has crashed.
     return base::unexpected(ParsingStatus::kSentinelFilePresent);
   }
 
-  if (sentinel_file.has_value() && !sentinel_file->Create()) {
+  if (!sentinel_file.Create()) {
     // Failed to create the sentinel file.
     return base::unexpected(ParsingStatus::kCannotCreateSentinel);
   }
@@ -147,7 +141,7 @@ LoadAttestationsInternal(base::FilePath installed_file_path) {
   // the attestations file from being parsed again.
   base::ElapsedTimer parsing_timer;
   absl::optional<PrivacySandboxAttestationsMap> attestations_map =
-      ParseAttestationsFromString(proto_str);
+      ParseAttestationsFromStream(stream);
   if (!attestations_map.has_value()) {
     // The parsing failed.
     return base::unexpected(ParsingStatus::kCannotParseFile);
@@ -164,7 +158,7 @@ LoadAttestationsInternal(base::FilePath installed_file_path) {
       kAttestationsMapMemoryUsageUMA,
       base::trace_event::EstimateMemoryUsage(attestations_map.value()) / 1024);
 
-  if (sentinel_file.has_value() && !sentinel_file->Remove()) {
+  if (!sentinel_file.Remove()) {
     // Failed to remove the sentinel file.
     return base::unexpected(ParsingStatus::kCannotRemoveSentinel);
   }

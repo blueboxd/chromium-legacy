@@ -35,15 +35,6 @@ inline constexpr char kTrackingProtectionNoticeLastShown[] =
 inline constexpr char kTrackingProtectionOnboardingAckedSince[] =
     "tracking_protection.tracking_protection_onboarding_acked_since";
 
-// Unsynced Pref that indicates when the notice was first requested.
-inline constexpr char kTrackingProtectionOnboardingNoticeFirstRequested[] =
-    "tracking_protection.tracking_protection_onboarding_notice_first_requested";
-
-// Unsynced Pref that indicates when the notice was last requested. This is only
-// being tracked until the profile is fully Onboarded.
-inline constexpr char kTrackingProtectionOnboardingNoticeLastRequested[] =
-    "tracking_protection.tracking_protection_onboarding_notice_last_requested";
-
 // Unsynced boolean that indicates whether or not the user has acknowledged the
 // onboarding message. This is kept separate from the onboardingStatus
 // intentionally.
@@ -139,8 +130,7 @@ enum class TrackingProtectionOnboardingStatus {
   kIneligible = 0,
   kEligible = 1,
   kOnboarded = 2,
-  kRequested = 3,
-  kMaxValue = kRequested,
+  kMaxValue = kOnboarded,
 };
 
 // Different tracking protection onboarding ack actions stored in the pref

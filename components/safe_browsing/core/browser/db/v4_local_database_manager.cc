@@ -935,21 +935,19 @@ void V4LocalDatabaseManager::HandleAllowlistCheckContinuation(
     }
   }
 
-  bool did_match_allowlist = *match == AsyncMatch::MATCH;
   if (check->client_callback_type == ClientCallbackType::CHECK_OTHER) {
+    bool result = *match == AsyncMatch::MATCH;
     if (GetPrefixMatchesIsAsync()) {
       // This is already asynchronous so no need for another PostTask.
-      std::move(callback).Run(did_match_allowlist);
+      std::move(callback).Run(result);
     } else {
-      sb_task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), did_match_allowlist));
+      sb_task_runner()->PostTask(FROM_HERE,
+                                 base::BindOnce(std::move(callback), result));
     }
   } else if (check->client_callback_type ==
              ClientCallbackType::CHECK_CSD_ALLOWLIST) {
     if (GetPrefixMatchesIsAsync()) {
-      check->most_severe_threat_type = did_match_allowlist
-                                           ? SB_THREAT_TYPE_CSD_ALLOWLIST
-                                           : SB_THREAT_TYPE_SAFE;
+      check->most_severe_threat_type = SB_THREAT_TYPE_CSD_ALLOWLIST;
       RespondToClient(std::move(check));
     }
   } else {

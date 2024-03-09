@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/tab_search/tab_search_page_handler.h"
 
-#include <stdint.h>
-
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/timer/mock_timer.h"
@@ -70,7 +68,6 @@ class MockPage : public tab_search::mojom::Page {
   MOCK_METHOD(void, TabsChanged, (tab_search::mojom::ProfileDataPtr));
   MOCK_METHOD(void, TabUpdated, (tab_search::mojom::TabUpdateInfoPtr));
   MOCK_METHOD(void, TabsRemoved, (tab_search::mojom::TabsRemovedInfoPtr));
-  MOCK_METHOD(void, TabSearchTabIndexChanged, (int32_t));
 };
 
 void ExpectNewTab(const tab_search::mojom::Tab* tab,
@@ -843,7 +840,7 @@ TEST_F(TabSearchPageHandlerTest, TabOrganizationToMojo) {
   std::unique_ptr<TabOrganization> organization =
       std::make_unique<TabOrganization>(
           std::vector<std::unique_ptr<TabData>>{},
-          std::vector<std::u16string>{u"default_name"});
+          std::vector<std::u16string>{u"default_name"}, 0u, std::nullopt);
   tab_search::mojom::TabOrganizationPtr mojo_tab_org_ptr =
       handler()->GetMojoForTabOrganization(organization.get());
 

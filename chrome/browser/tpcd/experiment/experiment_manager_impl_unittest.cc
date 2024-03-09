@@ -7,24 +7,17 @@
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "build/buildflag.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/tpcd/experiment/tpcd_experiment_features.h"
 #include "chrome/browser/tpcd/experiment/tpcd_pref_names.h"
 #include "chrome/browser/tpcd/experiment/tpcd_utils.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/common/content_features.h"
-#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace tpcd::experiment {
 namespace {
@@ -45,11 +38,12 @@ using Checkpoint = ::testing::MockFunction<void(int step)>;
 
 class ExperimentManagerImplTestBase : public testing::Test {
  public:
-  PrefService& prefs() { return *profile_manager_.local_state()->Get(); }
+  ExperimentManagerImplTestBase()
+      : local_state_(TestingBrowserProcess::GetGlobal()) {}
+
+  PrefService& prefs() { return *local_state_.Get(); }
 
   void SetUp() override {
-    ASSERT_TRUE(profile_manager_.SetUp());
-
     prefs().SetInteger(
         prefs::kTPCDExperimentClientState,
         static_cast<int>(utils::ExperimentState::kUnknownEligibility));
@@ -57,9 +51,9 @@ class ExperimentManagerImplTestBase : public testing::Test {
   }
 
  protected:
-  content::BrowserTaskEnvironment task_environment_{
+  base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
+  ScopedTestingLocalState local_state_;
   base::MockCallback<ExperimentManager::EligibilityDecisionCallback>
       mock_callback_;
   base::TimeDelta delay_time_;
@@ -322,14 +316,6 @@ TEST_F(ExperimentManagerImplTest, IsClientEligible_PrefIsUnknownReturnsEmpty) {
 
   EXPECT_EQ(TestingExperimentManagerImpl().IsClientEligible(), absl::nullopt);
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-TEST_F(ExperimentManagerImplTest, AshInternalProfile_NotCreated) {
-  auto* internal_profile =
-      profile_manager_.CreateTestingProfile(ash::kSigninBrowserContextBaseName);
-  EXPECT_FALSE(ExperimentManagerImpl::GetForProfile(internal_profile));
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // The parameter indicates whether to disable 3pcs.
 class ExperimentManagerImplSyntheticTrialTest

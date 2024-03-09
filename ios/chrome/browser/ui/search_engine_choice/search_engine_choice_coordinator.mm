@@ -93,7 +93,6 @@
       initWithSearchEngineTableViewController:
           _searchEnginesTableViewController];
   _viewController.actionDelegate = self;
-  _searchEnginesTableMediator.faviconUpdateConsumer = _viewController;
 
   _mediator =
       [[SearchEngineChoiceMediator alloc] initWithFaviconLoader:faviconLoader];

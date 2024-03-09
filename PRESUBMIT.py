@@ -1579,7 +1579,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
       True,
       [
-        _THIRD_PARTY_EXCEPT_BLINK,
+          # Implements BASE_DECLARE_FEATURE().
+          r'^base/feature_list\.h',
       ],
     ),
     BanRule(
@@ -5538,7 +5539,7 @@ _NON_INCLUSIVE_TERMS = (
         # ...' will not. This may require some tweaking to catch these cases
         # without triggering a lot of false positives. Leaving it naive and
         # less matchy for now.
-        r'/(?i)\b((black|white)list|master|slave)\b',  # nocheck
+        r'/\b(?i)((black|white)list|master|slave)\b',  # nocheck
         (
             'Please don\'t use blacklist, whitelist, '  # nocheck
             'or slave in your',  # nocheck

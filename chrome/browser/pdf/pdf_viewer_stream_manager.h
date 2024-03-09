@@ -108,12 +108,10 @@ class PdfViewerStreamManager
   // ensure such a stream info exists before calling this.
   void ClaimStreamInfoForTesting(content::RenderFrameHost* embedder_host);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(PdfViewerStreamManagerTest,
-                           AddAndGetStreamContainer);
-
+ protected:
   // Stream container stored for a single PDF navigation.
-  struct StreamInfo {
+  class StreamInfo {
+   public:
     StreamInfo(const std::string& embed_internal_id,
                std::unique_ptr<extensions::StreamContainer> stream_container);
 
@@ -122,36 +120,70 @@ class PdfViewerStreamManager
 
     ~StreamInfo();
 
+    const std::string& internal_id() const { return internal_id_; }
+
+    extensions::StreamContainer* stream() { return stream_.get(); }
+
+    bool did_extension_navigate() const { return did_extension_navigate_; }
+
+    const mojo::AssociatedRemote<
+        extensions::mojom::MimeHandlerViewContainerManager>&
+    mime_handler_view_container_manager() const {
+      return container_manager_;
+    }
+
+    void set_mime_handler_view_container_manager(
+        mojo::AssociatedRemote<
+            extensions::mojom::MimeHandlerViewContainerManager>
+            container_manager) {
+      container_manager_ = std::move(container_manager);
+    }
+
+    int32_t instance_id() const { return instance_id_; }
+
+    void SetExtensionNavigated();
+
+    bool DidPdfContentNavigate() const;
+
+   private:
     // A unique ID for the PDF viewer instance. Used to set up postMessage
     // support for the full-page PDF viewer.
-    const std::string internal_id;
+    const std::string internal_id_;
 
     // A container for the PDF stream. Holds data needed to load the PDF in the
     // PDF viewer.
-    std::unique_ptr<extensions::StreamContainer> stream;
+    const std::unique_ptr<extensions::StreamContainer> stream_;
 
     // True if the extension host has navigated to the PDF extension URL. Used
     // to avoid navigating multiple about:blank child hosts to the PDF extension
     // URL.
-    bool did_extension_navigate = false;
+    bool did_extension_navigate_ = false;
 
     // The container manager used to provide postMessage support.
     mojo::AssociatedRemote<extensions::mojom::MimeHandlerViewContainerManager>
-        container_manager;
+        container_manager_;
 
     // A unique ID for this instance. Used for postMessage support to identify
     // `extensions::MimeHandlerViewFrameContainer` objects.
-    int32_t instance_id;
+    int32_t instance_id_;
   };
-
-  friend class content::WebContentsUserData<PdfViewerStreamManager>;
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   explicit PdfViewerStreamManager(content::WebContents* contents);
 
   // Returns the stream info claimed by `embedder_host`, or nullptr if there's
   // no existing stream.
   StreamInfo* GetClaimedStreamInfo(content::RenderFrameHost* embedder_host);
+
+  // Returns the stream info for a PDF content navigation.
+  StreamInfo* GetClaimedStreamInfoFromPdfContentNavigation(
+      content::NavigationHandle* navigation_handle);
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(PdfViewerStreamManagerTest,
+                           AddAndGetStreamContainer);
+
+  friend class content::WebContentsUserData<PdfViewerStreamManager>;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   // Returns whether there's an unclaimed stream info with the default embedder
   // host info.

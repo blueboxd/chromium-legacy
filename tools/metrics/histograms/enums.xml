@@ -1300,14 +1300,6 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Prefill request not sent - not enough time."/>
 </enum>
 
-<enum name="AndroidEvictionReason">
-  <int value="0" label="TabUnusedTooLong"/>
-  <int value="1" label="TabUnusedInSession"/>
-  <int value="2" label="LimitOfActiveTabs"/>
-  <int value="3" label="EvictNTabs"/>
-  <int value="4" label="EvictAll"/>
-</enum>
-
 <enum name="AndroidMultiWindowActivityType">
   <int value="0" label="Enter"/>
   <int value="1" label="Exit"/>
@@ -1333,33 +1325,6 @@ Unknown properties are collapsed to zero. -->
   <int value="11" label="Unknown reason"/>
   <int value="12" label="User requested"/>
   <int value="13" label="User stopped"/>
-</enum>
-
-<enum name="AndroidSmsFcmMessageType">
-  <int value="0" label="Start"/>
-  <int value="1" label="Resume"/>
-  <int value="2" label="Stop"/>
-</enum>
-
-<enum name="AndroidStackUnwinder">
-  <int value="0" label="Not checked (obsolete)">
-    The stack unwinding implementation was not checked. The SamplingHeapProfiler
-    will collect stack samples but they may be invalid. (Starting in Sept 2022,
-    the implementation is always checked on Android so this is obsolete.)
-  </int>
-  <int value="1" label="Default">
-    The SamplingHeapProfiler uses the default unwind tables.
-  </int>
-  <int value="2" label="CFIBackTrace (obsolete)">
-    The SamplingHeapProfiler uses the trace_event::CFIBacktraceAndroid class.
-  </int>
-  <int value="3" label="Unavailable">
-    Stack unwinding is not available. The SamplingHeapProfiler will not collect
-    stack samples.
-  </int>
-  <int value="4" label="FramePointers">
-    The SamplingHeapProfiler uses the TraceStackFramePointers function.
-  </int>
 </enum>
 
 <enum name="AnrSkippedReason">
@@ -2084,11 +2049,6 @@ Unknown properties are collapsed to zero. -->
   <int value="22" label="UNLAUNCHED_VERTICAL_1"/>
   <int value="25" label="FIND_COUPONS"/>
   <int value="32" label="CHROME_FAST_CHECKOUT"/>
-</enum>
-
-<enum name="AutofillAutocompleteSingleEntryRemovalMethod">
-  <int value="0" label="Keyboard shift + delete pressed"/>
-  <int value="1" label="Delete button clicked"/>
 </enum>
 
 <enum name="AutofillAutocompleteState">
@@ -5291,6 +5251,14 @@ Called by update_autofill_enums.py.-->
   <int value="2" label="UnusableIncompleteProfile"/>
 </enum>
 
+<enum name="AutofillSingleEntryRemovalMethod">
+  <int value="0" label="Keyboard shift + delete pressed"/>
+  <int value="1" label="Delete button clicked"/>
+  <int value="2"
+      label="Keyboard accessory suggestion long pressed and deletion dialog
+             confirmed"/>
+</enum>
+
 <enum name="AutofillSubmissionSource">
   <int value="0" label="Same document navigation"/>
   <int value="1" label="XHR succeeded"/>
@@ -6243,11 +6211,6 @@ Called by update_autofill_enums.py.-->
   <int value="1" label="Notification click (within last 5 seconds)"/>
 </enum>
 
-<enum name="BooleanBrowserSwitch">
-  <int value="0" label="Stay"/>
-  <int value="1" label="Switch browser"/>
-</enum>
-
 <enum name="BooleanCacheHit">
   <int value="0" label="Miss"/>
   <int value="1" label="Hit"/>
@@ -6369,11 +6332,6 @@ Called by update_autofill_enums.py.-->
       label="Predicted direction was not the same as real trajectory"/>
 </enum>
 
-<enum name="BooleanDuplicate">
-  <int value="0" label="Not Duplicate"/>
-  <int value="1" label="Duplicate"/>
-</enum>
-
 <enum name="BooleanEmpty">
   <int value="0" label="Not Empty"/>
   <int value="1" label="Empty"/>
@@ -6392,11 +6350,6 @@ Called by update_autofill_enums.py.-->
 <enum name="BooleanExists">
   <int value="0" label="Does not exist"/>
   <int value="1" label="Exists"/>
-</enum>
-
-<enum name="BooleanExpected">
-  <int value="0" label="Unexpected"/>
-  <int value="1" label="Expected"/>
 </enum>
 
 <enum name="BooleanExpired">
@@ -6422,11 +6375,6 @@ Called by update_autofill_enums.py.-->
 <enum name="BooleanFromHTTPCache">
   <int value="0" label="Downloaded from network"/>
   <int value="1" label="HTTP cache hit"/>
-</enum>
-
-<enum name="BooleanGreaterOrEqualThan200MB">
-  <int value="0" label="lt; 200MB"/>
-  <int value="1" label="gt;= 200MB"/>
 </enum>
 
 <enum name="BooleanHadBlankText">
@@ -6547,16 +6495,6 @@ Called by update_autofill_enums.py.-->
   <int value="1" label="Known"/>
 </enum>
 
-<enum name="BooleanLabeledRendererTask">
-  <int value="0" label="Unlabeled renderer task"/>
-  <int value="1" label="Labeled renderer task"/>
-</enum>
-
-<enum name="BooleanLargeAllocationFromFreelist">
-  <int value="0" label="Allocated via IPC"/>
-  <int value="1" label="Allocated via Freelist"/>
-</enum>
-
 <enum name="BooleanLatched">
   <int value="0" label="Not latched"/>
   <int value="1" label="Latched"/>
@@ -6637,11 +6575,6 @@ Called by update_autofill_enums.py.-->
   <int value="1" label="Received"/>
 </enum>
 
-<enum name="BooleanRecorded">
-  <int value="0" label="Not Recorded"/>
-  <int value="1" label="Recorded"/>
-</enum>
-
 <enum name="BooleanRedirected">
   <int value="0" label="Not redirected"/>
   <int value="1" label="Redirected"/>
@@ -6670,11 +6603,6 @@ Called by update_autofill_enums.py.-->
 <enum name="BooleanRequested">
   <int value="0" label="Not requested"/>
   <int value="1" label="Requested"/>
-</enum>
-
-<enum name="BooleanReset">
-  <int value="0" label="Not reset"/>
-  <int value="1" label="Reset"/>
 </enum>
 
 <enum name="BooleanRevoked">
@@ -6725,11 +6653,6 @@ Called by update_autofill_enums.py.-->
 <enum name="BooleanSkipped">
   <int value="0" label="Not skipped"/>
   <int value="1" label="Skipped"/>
-</enum>
-
-<enum name="BooleanStale">
-  <int value="0" label="Fresh"/>
-  <int value="1" label="Stale"/>
 </enum>
 
 <enum name="BooleanStartedCompleted">
@@ -6785,11 +6708,6 @@ Called by update_autofill_enums.py.-->
 <enum name="BooleanUninstallable">
   <int value="0" label="Not uninstallable"/>
   <int value="1" label="Uninstallable"/>
-</enum>
-
-<enum name="BooleanUpgraded">
-  <int value="0" label="Not upgraded"/>
-  <int value="1" label="Upgraded"/>
 </enum>
 
 <enum name="BooleanUsage">
@@ -6911,27 +6829,6 @@ Called by update_autofill_enums.py.-->
   <int value="5" label="Deprecated(10/23): Guest (Ephemeral)"/>
 </enum>
 
-<enum name="BrowserServicesVerificationResult">
-  <summary>Result of Trusted Web Activity verification attempt.</summary>
-  <int value="0" label="Online Success"/>
-  <int value="1" label="Online Failure"/>
-  <int value="2" label="Offline Success"/>
-  <int value="3" label="Offline Failure"/>
-  <int value="4" label="Not HTTPS"/>
-  <int value="5" label="Request Failed"/>
-  <int value="6" label="Runtime Cache Success"/>
-</enum>
-
-<enum name="BrowserType">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Internet Explorer"/>
-  <int value="2" label="Firefox"/>
-  <int value="3" label="Opera"/>
-  <int value="4" label="Safari"/>
-  <int value="5" label="Chrome"/>
-  <int value="6" label="Edge"/>
-</enum>
-
 <enum name="BrowsingDataRemoverTasks">
   <int value="1" label="kSynchronous"/>
   <int value="2" label="kEmbedderData"/>
@@ -7001,13 +6898,6 @@ Called by update_autofill_enums.py.-->
   <int value="1" label="Update available"/>
   <int value="2" label="Enterprise rollback required"/>
   <int value="3" label="Channel rollback required"/>
-</enum>
-
-<enum name="CachedMetadataHandlerState">
-  <int value="0" label="Present"/>
-  <int value="1" label="DataType mismatch"/>
-  <int value="2" label="Was never present"/>
-  <int value="3" label="Was discarded"/>
 </enum>
 
 <enum name="CacheStorageErrorStorageType">
@@ -9111,6 +9001,7 @@ Called by update_net_error_codes.py.-->
       label="Translate text in image with non-Google visual search provider"/>
   <int value="28" label="Translate text in image with Google Lens"/>
   <int value="29" label="Search web for... in new tab"/>
+  <int value="30" label="Open link in preview"/>
 </enum>
 
 <enum name="ContextualSearchCardTag">
@@ -9240,6 +9131,26 @@ Called by update_net_error_codes.py.-->
   <int value="9" label="Source data missing - aggregatable report"/>
   <int value="10" label="Source data found - null aggregatable report"/>
   <int value="11" label="Metadata could not be deserialized"/>
+  <int value="12" label="Corresponding source not found"/>
+  <int value="13" label="Corresponding source - invalid source origin"/>
+  <int value="14" label="Corresponding source - invalid reporting origin"/>
+  <int value="15" label="Corresponding source - invalid source type"/>
+  <int value="16" label="Corresponding source - invalid attribution logic"/>
+  <int value="17" label="Corresponding source - invalid number of conversions"/>
+  <int value="18"
+      label="Corresponding source - invalid number of aggregatable reports"/>
+  <int value="19" label="Corresponding source - invalid aggregation keys"/>
+  <int value="20" label="Corresponding source - invalid filter data"/>
+  <int value="21" label="Corresponding source - invalid active state"/>
+  <int value="22" label="Corresponding source - invalid read only source data"/>
+  <int value="23" label="Corresponding source - invalid event report windows"/>
+  <int value="24"
+      label="Corresponding source - invalid max event level reports"/>
+  <int value="25" label="Corresponding source - invalid event level epsilon"/>
+  <int value="26"
+      label="Corresponding source - destination sites query failed"/>
+  <int value="27" label="Corresponding source - invalid destination sites"/>
+  <int value="28" label="Corresponding source - construction failed"/>
 </enum>
 
 <enum name="ConversionCreateAggregatableReportStatus">
@@ -10956,204 +10867,6 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="10" label="Restore Failed"/>
 </enum>
 
-<enum name="CryptAuthApiCallResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Timeout"/>
-  <int value="2" label="Network Request Error: Offline"/>
-  <int value="3" label="Network Request Error: Endpoint Not Found"/>
-  <int value="4" label="Network Request Error: Authentication Error"/>
-  <int value="5" label="Network Request Error: Bad Request"/>
-  <int value="6" label="Network Request Error: Response Malformed"/>
-  <int value="7" label="Network Request Error: Internal Server Error"/>
-  <int value="8" label="Network Request Error: Unknown"/>
-</enum>
-
-<enum name="CryptAuthAsyncTaskResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Timeout"/>
-  <int value="2" label="Error"/>
-</enum>
-
-<enum name="CryptAuthFeatureType">
-  <int value="0" label="Better Together Host (Supported)"/>
-  <int value="1" label="Better Together Host (Enabled)"/>
-  <int value="2" label="Better Together Client (Supported)"/>
-  <int value="3" label="Better Together Client (Enabled)"/>
-  <int value="4" label="Easy Unlock Host (Supported)"/>
-  <int value="5" label="Easy Unlock Host (Enabled)"/>
-  <int value="6" label="Easy Unlock Client (Supported)"/>
-  <int value="7" label="Easy Unlock Client (Enabled)"/>
-  <int value="8" label="Magic Tether Host (Supported)"/>
-  <int value="9" label="Magic Tether Host (Enabled)"/>
-  <int value="10" label="Magic Tether Client (Supported)"/>
-  <int value="11" label="Magic Tether Client (Enabled)"/>
-  <int value="12" label="SMS Connect Host (Supported)"/>
-  <int value="13" label="SMS Connect Host (Enabled)"/>
-  <int value="14" label="SMS Connect Client (Supported)"/>
-  <int value="15" label="SMS Connect Client (Enabled)"/>
-</enum>
-
-<enum name="CryptAuthSoftwareFeature">
-  <int value="0" label="UNKNOWN_FEATURE"/>
-  <int value="1" label="BETTER_TOGETHER_HOST"/>
-  <int value="2" label="BETTER_TOGETHER_CLIENT"/>
-  <int value="3" label="EASY_UNLOCK_HOST"/>
-  <int value="4" label="EASY_UNLOCK_CLIENT"/>
-  <int value="5" label="MAGIC_TETHER_HOST"/>
-  <int value="6" label="MAGIC_TETHER_CLIENT"/>
-  <int value="7" label="SMS_CONNECT_HOST"/>
-  <int value="8" label="SMS_CONNECT_CLIENT"/>
-</enum>
-
-<enum name="CryptAuthTargetService">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Enrollment"/>
-  <int value="2" label="DeviceSync"/>
-</enum>
-
-<enum name="CryptAuthV2DeviceSyncResultCode">
-  <int value="0" label="Success"/>
-  <int value="1" label="Finished with non-fatal errors"/>
-  <int value="2" label="Error: ClientAppMetadata fetch failed"/>
-  <int value="3" label="Error: Missing user key pair"/>
-  <int value="4" label="Error: Could not create group key"/>
-  <int value="5" label="Error: Could not encrypt device metadata"/>
-  <int value="6" label="Error: Could not establish group public key"/>
-  <int value="7" label="Error: No metadata in response"/>
-  <int value="8" label="Error: All metadata in response invalid"/>
-  <int value="9" label="Error: No local device metadata in response"/>
-  <int value="10" label="Error: Missing local device feature statuses"/>
-  <int value="11"
-      label="Error: Missing local device DeviceSyncBetterTogether key"/>
-  <int value="12" label="Error: Could not decrypt group private key"/>
-  <int value="13" label="Error: Could not encrypt group private key"/>
-  <int value="14" label="Error (SyncMetadata API call): Offline"/>
-  <int value="15" label="Error (SyncMetadata API call): Endpoint not found"/>
-  <int value="16" label="Error (SyncMetadata API call): Authentication error"/>
-  <int value="17" label="Error (SyncMetadata API call): Bad request"/>
-  <int value="18" label="Error (SyncMetadata API call): Response malformed"/>
-  <int value="19" label="Error (SyncMetadata API call): Internal server error"/>
-  <int value="20" label="Error (SyncMetadata API call): Unknown error"/>
-  <int value="21" label="Error (BatchGetFeatureStatuses API call): Offline"/>
-  <int value="22"
-      label="Error (BatchGetFeatureStatuses API call): Endpoint not found"/>
-  <int value="23"
-      label="Error (BatchGetFeatureStatuses API call): Authentication error"/>
-  <int value="24"
-      label="Error (BatchGetFeatureStatuses API call): Bad request"/>
-  <int value="25"
-      label="Error (BatchGetFeatureStatuses API call): Response malformed"/>
-  <int value="26"
-      label="Error (BatchGetFeatureStatuses API call): Internal server error"/>
-  <int value="27"
-      label="Error (BatchGetFeatureStatuses API call): Unknown error"/>
-  <int value="28" label="Error (ShareGroupPrivateKey API call): Offline"/>
-  <int value="29"
-      label="Error (ShareGroupPrivateKey API call): Endpoint not found"/>
-  <int value="30"
-      label="Error (ShareGroupPrivateKey API call): Authentication error"/>
-  <int value="31" label="Error (ShareGroupPrivateKey API call): Bad request"/>
-  <int value="32"
-      label="Error (ShareGroupPrivateKey API call): Response malformed"/>
-  <int value="33"
-      label="Error (ShareGroupPrivateKey API call): Internal server error"/>
-  <int value="34" label="Error (ShareGroupPrivateKey API call): Unknown error"/>
-  <int value="35" label="Error: Timeout waiting for group key creation"/>
-  <int value="36" label="Error: Timeout waiting for ClientAppMetadata"/>
-  <int value="37"
-      label="Error: Timeout waiting for local device metadata encryption"/>
-  <int value="38"
-      label="Error: Timeout waiting for first SyncMetadata response"/>
-  <int value="39"
-      label="Error: Timeout waiting for second SyncMetadata response"/>
-  <int value="40"
-      label="Error: Timeout waiting for group private key decryption"/>
-  <int value="41"
-      label="Error: Timeout waiting for device metadata decryption"/>
-  <int value="42"
-      label="Error: Timeout waiting for BatchGetFeatureStatuses response"/>
-  <int value="43"
-      label="Error: Timeout waiting for group private key encryption"/>
-  <int value="44"
-      label="Error: Timeout waiting for ShareGroupPrivateKey response"/>
-</enum>
-
-<enum name="CryptAuthV2DeviceSyncResultType">
-  <int value="0" label="Success"/>
-  <int value="1" label="Non-fatal error"/>
-  <int value="2" label="Fatal error"/>
-</enum>
-
-<enum name="CryptAuthV2EnrollmentResult">
-  <int value="0" label="Success: No new keys needed"/>
-  <int value="1" label="Success: New keys enrolled"/>
-  <int value="2" label="Error (SyncKeys API call): Offline"/>
-  <int value="3" label="Error (SyncKeys API call): Endpoint not found"/>
-  <int value="4" label="Error (SyncKeys API call): Authentication error"/>
-  <int value="5" label="Error (SyncKeys API call): Bad request"/>
-  <int value="6" label="Error (SyncKeys API call): Response malformed"/>
-  <int value="7" label="Error (SyncKeys API call): Internal server error"/>
-  <int value="8" label="Error (SyncKeys API call): Unknown error"/>
-  <int value="9" label="Error (EnrollKeys API call): Offline"/>
-  <int value="10" label="Error (EnrollKeys API call): Endpoint not found"/>
-  <int value="11" label="Error (EnrollKeys API call): Authentication error"/>
-  <int value="12" label="Error (EnrollKeys API call): Bad request"/>
-  <int value="13" label="Error (EnrollKeys API call): Response malformed"/>
-  <int value="14" label="Error (EnrollKeys API call): Internal server error"/>
-  <int value="15" label="Error (EnrollKeys API call): Unknown error"/>
-  <int value="16" label="Error: CryptAuth server overloaded"/>
-  <int value="17" label="Error: SyncKeysResponse missing random session ID"/>
-  <int value="18" label="Error: SyncKeysResponse invalid ClientDirective"/>
-  <int value="19" label="Error: Wrong number of SyncSingleKeyResponses"/>
-  <int value="20" label="Error: Wrong number of KeyActions"/>
-  <int value="21" label="Error: Invalid KeyAction enum value"/>
-  <int value="22" label="Error: KeyActions specify multiple active keys"/>
-  <int value="23" label="Error: KeyActions do not specify an active key"/>
-  <int value="24" label="Error: Key creation KeyType not supported"/>
-  <int value="25" label="Error: User key pair creation instructions invalid"/>
-  <int value="26"
-      label="Error: Symmetric key creation missing server Diffie-Hellman"/>
-  <int value="27" label="Error: Key proof computation failed"/>
-  <int value="28" label="Error: Timeout waiting for SyncKeys response"/>
-  <int value="29" label="Error: Timeout waiting for key creation"/>
-  <int value="30" label="Error: Timeout waiting for EnrollKeys response"/>
-  <int value="31" label="Error: GCM registration failed"/>
-  <int value="32" label="Error: ClientAppMetadata fetch failed"/>
-  <int value="33" label="Error: Timeout waiting for GCM registration"/>
-  <int value="34" label="Error: Timeout waiting for ClientAppMetadata"/>
-  <int value="35" label="Error: Failed to create user key pair"/>
-  <int value="36" label="Error: Failed to create legacy master key"/>
-  <int value="37"
-      label="Error: Failed to create DeviceSync:BetterTogether key"/>
-</enum>
-
-<enum name="CryptAuthV2EnrollmentUserKeyPairState">
-  <int value="0" label="v1 and v2 do not exist"/>
-  <int value="1" label="v1 exists but not v2"/>
-  <int value="2" label="v2 exists but not v1"/>
-  <int value="3" label="v1 and v2 exist and agree"/>
-  <int value="4" label="v1 and v2 exist and disagree"/>
-</enum>
-
-<enum name="CryptAuthV2InvocationReason">
-  <int value="0" label="Invocation reason unspecified"/>
-  <int value="1" label="Initialization"/>
-  <int value="2" label="Periodic"/>
-  <int value="3" label="Slow periodic"/>
-  <int value="4" label="Fast periodic"/>
-  <int value="5" label="Expiration"/>
-  <int value="6" label="Failure recovery"/>
-  <int value="7" label="New account"/>
-  <int value="8" label="Changed account"/>
-  <int value="9" label="Feature toggled"/>
-  <int value="10" label="Server initiated"/>
-  <int value="11" label="Address change"/>
-  <int value="12" label="Software update"/>
-  <int value="13" label="Manual"/>
-  <int value="14" label="Custom key invalidation"/>
-  <int value="15" label="Proximity periodic"/>
-</enum>
-
 <enum name="CryptidRenderResult">
   <int value="0" label="Success">
     The asset was successfully fetched and rendered.
@@ -11189,12 +10902,6 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3" label="Compliance not evaluated, build not timely"/>
 </enum>
 
-<enum name="CvcFillingFlowType">
-  <int value="0" label="CVC filled without any interactive authentication"/>
-  <int value="1" label="CVC filled by FIDO authentication"/>
-  <int value="2" label="CVC filed by mandatory re-auth"/>
-</enum>
-
 <enum name="DaemonError">
   <int value="132" label="SIGILL">
     MINIJAIL_ERR_SIG_BASE (128) + SIGILL (4) from libminijail
@@ -11227,12 +10934,6 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1" label="Dialog confirmed"/>
   <int value="2" label="Dialog canceled"/>
   <int value="3" label="Dialog dismissed"/>
-</enum>
-
-<enum name="DarkModeStatus">
-  <int value="0" label="Unavailable"/>
-  <int value="1" label="Light"/>
-  <int value="2" label="Dark"/>
 </enum>
 
 <enum name="DataUseContentType">
@@ -13648,59 +13349,6 @@ Called by update_document_policy_enum.py.-->
   <int value="3" label="Early swap for a navigation transition"/>
 </enum>
 
-<enum name="EasyUnlockAuthEvent">
-  <int value="0" label="Smart Lock success"/>
-  <int value="1" label="Smart Lock failure"/>
-  <int value="2" label="(Deprecated) Password entry: No pairing"/>
-  <int value="3" label="(Deprecated) Password entry: Pairing changed"/>
-  <int value="4" label="(Deprecated) Password entry: User hardlock"/>
-  <int value="5" label="Password entry: Service not active"/>
-  <int value="6" label="Password entry: No Bluetooth"/>
-  <int value="7" label="Password entry: Bluetooth connecting"/>
-  <int value="8" label="Password entry: No phone"/>
-  <int value="9" label="Password entry: Phone not authenticated"/>
-  <int value="10" label="Password entry: Phone locked"/>
-  <int value="11" label="Password entry: Phone not lockable"/>
-  <int value="12" label="Password entry: RSSI too low"/>
-  <int value="13" label="(Deprecated) Password entry: Phone not supported"/>
-  <int value="14" label="Password entry: Phone authenticated"/>
-  <int value="15" label="(Deprecated) Password entry: Tx power too high"/>
-  <int value="16" label="(Deprecated) Password entry: Easy sign-in failed"/>
-  <int value="17" label="(Deprecated) Password entry: Pairing added"/>
-  <int value="18" label="Password entry: No Smart Lock state handler"/>
-  <int value="19" label="Password entry: Phone locked and tx power too high"/>
-  <int value="20" label="(Deprecated) Password entry: Forced re-auth"/>
-  <int value="21"
-      label="(Deprecated) Password entry: Sign-in with Smart Lock disabled"/>
-  <int value="22" label="Password entry: Primary user absent"/>
-</enum>
-
-<enum name="EasyUnlockDeviceModelHash">
-  <int value="-1829584143" label="Motorola XT1097"/>
-  <int value="-1429808627" label="HTC One"/>
-  <int value="-1168032746" label="Motorola Nexus 6"/>
-  <int value="-617422855" label="LGE Nexus 4"/>
-  <int value="684891985" label="Motorola Moto X"/>
-  <int value="1286382027" label="Motorola XT1095"/>
-  <int value="1412446710" label="Motorola XT1096"/>
-  <int value="1881443083" label="LGE Nexus 5"/>
-</enum>
-
-<enum name="EasyUnlockDidUserManuallyUnlockPhone">
-  <int value="0" label="Never locked"/>
-  <int value="1" label="Manually unlocked"/>
-</enum>
-
-<enum name="EasyUnlockRemoteLockScreenState">
-  <int value="0" label="Unknown state"/>
-  <int value="1" label="Lock screen disabled, trust agent unsupported"/>
-  <int value="2" label="Lock screen disabled, trust agent disabled"/>
-  <int value="3" label="Lock screen disabled, trust agent enabled"/>
-  <int value="4" label="Lock screen enabled, trust agent unsupported"/>
-  <int value="5" label="Lock screen enabled, trust agent disabled"/>
-  <int value="6" label="Lock screen enabled, trust agent enabled"/>
-</enum>
-
 <enum name="EdidColorSpaceChecksOutcome">
   <int value="0" label="All checks passed"/>
   <int value="1" label="Bad primaries coordinates"/>
@@ -13717,14 +13365,6 @@ Called by update_document_policy_enum.py.-->
   <int value="3" label="Consent Logged Recived"/>
   <int value="4" label="Account Succesfully Added"/>
   <int value="5" label="Error"/>
-</enum>
-
-<enum name="EfficiencyMode">
-  <int value="0" label="Normal"/>
-  <int value="1" label="High Efficiency"/>
-  <int value="2" label="Battery Saver"/>
-  <int value="3" label="Both"/>
-  <int value="4" label="Mixed"/>
 </enum>
 
 <enum name="EmbeddedWorkerStartingPhase">
@@ -13789,43 +13429,6 @@ Called by update_document_policy_enum.py.-->
   <int value="3" label="Error"/>
 </enum>
 
-<enum name="EnterpriseCloudReportingDestination">
-<!-- This must be kept in sync with
-     //components/reporting/proto/synced/record_constants.proto's
-     Destination. -->
-
-  <int value="0" label="UNDEFINED_DESTINATION"/>
-  <int value="1" label="UPLOAD_EVENTS"/>
-  <int value="2" label="MEET_DEVICE_TELEMETRY"/>
-  <int value="3" label="WEB_PROTECT"/>
-  <int value="4" label="ARC_INSTALL"/>
-  <int value="5" label="POLICY_VALIDATION"/>
-  <int value="6" label="EXTENSION_INSTALL"/>
-  <int value="7" label="REPORTING_RECORD"/>
-  <int value="9" label="PRINT_JOBS"/>
-  <int value="10" label="EXTENSIONS_WORKFLOW"/>
-  <int value="11" label="DLP_EVENTS"/>
-  <int value="12" label="LOGIN_LOGOUT_EVENTS"/>
-  <int value="13" label="HEARTBEAT_EVENTS"/>
-  <int value="14" label="INFO_METRIC"/>
-  <int value="15" label="TELEMETRY_METRIC"/>
-  <int value="16" label="EVENT_METRIC"/>
-  <int value="17" label="ADDED_REMOVED_EVENTS"/>
-  <int value="18" label="CRD_EVENTS"/>
-  <int value="19" label="PERIPHERAL_EVENTS"/>
-  <int value="20" label="SUSPICIOUS_EVENTS"/>
-  <int value="21" label="LOCK_UNLOCK_EVENTS"/>
-  <int value="22" label="CROS_SECURITY_AGENT"/>
-  <int value="23" label="CROS_SECURITY_PROCESS"/>
-  <int value="24" label="OS_EVENTS"/>
-  <int value="25" label="LEGACY_TECH"/>
-  <int value="26" label="CROS_SECURITY_NETWORK"/>
-  <int value="27" label="LOG_UPLOAD"/>
-  <int value="28" label="CROS_SECURITY_USER"/>
-  <int value="29" label="KIOSK_HEARTBEAT_EVENTS"/>
-  <int value="30" label="CHROME_BROWSER_ENTERPRISE"/>
-</enum>
-
 <enum name="EnterpriseCloudReportingStatusCode">
   <summary>Defined as Code in components/reporting/util/status.h</summary>
   <int value="0" label="OK"/>
@@ -13858,34 +13461,6 @@ Called by update_document_policy_enum.py.-->
   <int value="3" label="3 retries"/>
   <int value="10" label="Request failed"/>
   <int value="11" label="Server returned error"/>
-</enum>
-
-<enum name="EnterpriseReportingPsrResult">
-  <summary>
-    Defined as code in
-    chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_psr_sampler_handler.cc
-  </summary>
-  <int value="0" label="OK"/>
-  <int value="1" label="Error getting PSR"/>
-  <int value="2" label="Unknown SystemResult type"/>
-  <int value="3" label="Null PsrInfo"/>
-  <int value="4" label="PSR is unsupported"/>
-  <int value="5" label="PSR was not started"/>
-  <int value="6" label="PSR has been stopped"/>
-  <int value="7" label="Unknown PSR log state"/>
-</enum>
-
-<enum name="EnterpriseReportingUnuploadedCrashShouldNotReportReason">
-  <summary>
-    Defined as ShouldReportResult in
-    chrome/browser/ash/policy/reporting/metrics_reporting/fatal_crash/fatal_crash_events_observer.h
-  </summary>
-  <int value="0" label="Should report"/>
-  <int value="1" label="Negative timestamp"/>
-  <int value="2" label="Has been reported"/>
-  <int value="3"
-      label="Crash is too old and the number of saved local IDs has reached
-             maximum"/>
 </enum>
 
 <enum name="ErrSecOSStatus">
@@ -15034,6 +14609,8 @@ Called by update_extension_histograms.py.-->
       label="INPUT_METHOD_PRIVATE_ON_LANGUAGE_PACK_STATUS_CHANGED"/>
   <int value="549" label="OS_DIAGNOSTICS_ON_VOLUME_BUTTON_ROUTINE_FINISHED"/>
   <int value="550" label="OS_DIAGNOSTICS_ON_FAN_ROUTINE_FINISHED"/>
+  <int value="551" label="ODFS_CONFIG_PRIVATE_MOUNT_CHANGED"/>
+  <int value="552" label="ODFS_CONFIG_PRIVATE_ACCOUNT_RESTRICTIONS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFromWebstoreInconcistencyEnum">
@@ -16978,14 +16555,6 @@ Called by update_extension_histograms.py.-->
   <int value="1854" label="ACCESSIBILITY_PRIVATE_GETDISPLAYBOUNDS"/>
   <int value="1855" label="AUTOFILLPRIVATE_SERVERIBANLINKCLICKED"/>
   <int value="1856" label="AUTOTESTPRIVATE_CLEARALLOWEDPREF"/>
-  <int value="1857" label="DOCUMENTSCAN_STARTSCAN"/>
-  <int value="1858" label="DOCUMENTSCAN_CANCELSCAN"/>
-  <int value="1859" label="DOCUMENTSCAN_READSCANDATA"/>
-  <int value="1860" label="DOCUMENTSCAN_SETOPTIONS"/>
-  <int value="1861" label="DOCUMENTSCAN_GETOPTIONGROUPS"/>
-  <int value="1862" label="ACCESSIBILITY_PRIVATE_SETSELECTTOSPEAKFOCUS"/>
-  <int value="1863"
-      label="DEVELOPERPRIVATE_DISMISSSAFETYHUBEXTENSIONSMENUNOTIFICATION"/>
 </enum>
 
 <enum name="ExtensionInProgressRequestState">
@@ -22556,7 +22125,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4655" label="V8FileSystemHandle_GetCloudIdentifiers_Method"/>
   <int value="4656" label="PrivateAggregationApiEnableDebugMode"/>
   <int value="4657" label="LineBreakPhrase"/>
-  <int value="4658" label="AttributionReportingUnderscorePrefixedFilterKey"/>
+  <int value="4658"
+      label="OBSOLETE_AttributionReportingUnderscorePrefixedFilterKey"/>
   <int value="4659" label="PercentOrCalcStickyUsedOffset"/>
   <int value="4660" label="PercentOrCalcRelativeUsedOffset"/>
   <int value="4661" label="AutoRelativeUsedOffset"/>
@@ -22676,6 +22246,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4752" label="TrustedTypesIntrospection"/>
   <int value="4753" label="TrustedTypesIsCheck"/>
   <int value="4754" label="MouseDragOnCancelledMouseMove"/>
+  <int value="4755" label="FedCmDomainHint"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
@@ -23542,72 +23113,6 @@ Called by update_permissions_policy_enum.py.-->
   <int value="2" label="Disabled"/>
 </enum>
 
-<enum name="FirstRunCloudPolicyStoreState">
-  <int value="0" label="Loaded before initialization">
-    The cloud policy store was already loaded when the FRE intro was first
-    initialiazed.
-  </int>
-  <int value="1" label="Loaded successfully">
-    The cloud policy store has loaded within the time delay specified in the
-    observer.
-  </int>
-  <int value="2" label="Not loaded in time">
-    The cloud policy store did not load within the time delay specified in the
-    observer.
-  </int>
-  <int value="3" label="Error raised">
-    The cloud policy store raised an error while loading.
-  </int>
-  <int value="4" label="Store is null">
-    The cloud policy store was null (no CBCM).
-  </int>
-</enum>
-
-<enum name="FirstRunDefaultBrowserChoice">
-  <summary>
-    User choice on the prompt to set Chrome as their default browser.
-  </summary>
-  <int value="0" label="ClickSetAsDefaultBrowser"/>
-  <int value="1" label="SkipDefaultBrowser"/>
-  <int value="2" label="QuitOnDefaultBrowser"/>
-  <int value="3" label="NotShownOnDefaultBrowserCheckTimeout"/>
-  <int value="4" label="SuccessfullySetAsDefaultBrowser"/>
-</enum>
-
-<enum name="FirstRunEntryPoint">
-  <int value="0" label="Other"/>
-  <int value="1" label="Process startup"/>
-  <int value="2" label="Web app launch"/>
-  <int value="3" label="Web app context menu command"/>
-</enum>
-
-<enum name="FirstRunExitStatus">
-  <summary>
-    Status code indicating how the first run experience was exited.
-  </summary>
-  <int value="0"
-      label="Completed: finished through the buttons in the experience"/>
-  <int value="1"
-      label="Quit early: window closed, experience not considered 'finished'
-             (Lacros only)"/>
-  <int value="2"
-      label="Quit at end: window closed, experience considered 'finished'"/>
-  <int value="3"
-      label="Abort task: user runs experience while it's already running.
-             Experience not considered 'finished'"/>
-  <int value="4"
-      label="Abandon flow: user does something to abandon the FRE (open a new
-             window etc..), experience is considered 'finished'"/>
-</enum>
-
-<enum name="FirstRunFinishReason">
-  <int value="0" label="ExperimentCounterfactual (feature is disabled)"/>
-  <int value="1" label="FinishedFlow (happy path)"/>
-  <int value="2"
-      label="ProfileAlreadySetUp (syncing on Lacros or signed in on Dice)"/>
-  <int value="3" label="SkippedByPolicies"/>
-</enum>
-
 <enum name="FirstRunLaunchSource">
   <summary>
     External applications/promotions that triggered Chrome launch and First Run.
@@ -23666,18 +23171,6 @@ Called by update_permissions_policy_enum.py.-->
   <int value="18" label="Show history sync screen"/>
   <int value="19" label="Close history sync with history sync enabled"/>
   <int value="20" label="Close history sync without history sync enabled"/>
-</enum>
-
-<enum name="FirstSmartLockStatus">
-  <int value="0" label="Bluetooth disabled"/>
-  <int value="1" label="Phone not lockable"/>
-  <int value="2" label="Phone not found"/>
-  <int value="3" label="Phone not authenticated"/>
-  <int value="4" label="Phone found but locked and distant"/>
-  <int value="5" label="Phone found and nearby but locked"/>
-  <int value="6" label="Phone found and unlocked but distant"/>
-  <int value="7" label="Phone authenticated, ready to unlock Chromebook"/>
-  <int value="8" label="Primary user absent"/>
 </enum>
 
 <enum name="FirstUserActionType">
@@ -24145,17 +23638,6 @@ Called by update_permissions_policy_enum.py.-->
   <int value="9" label="URL fetching failed: no headers"/>
 </enum>
 
-<enum name="GCMClientResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Invalid parameter"/>
-  <int value="2" label="GCM disabled"/>
-  <int value="3" label="Async operation pending"/>
-  <int value="4" label="Network error"/>
-  <int value="5" label="Server error"/>
-  <int value="6" label="TTL exceeded"/>
-  <int value="7" label="Unknown error"/>
-</enum>
-
 <enum name="GCMDecryptionResult">
   <int value="0" label="Success (message unencrypted)"/>
   <int value="1" label="Success (message decrypted per draft 03)"/>
@@ -24348,19 +23830,6 @@ Called by update_permissions_policy_enum.py.-->
   <int value="15" label="CHALLENGE_RESPONSE_REQUIRED"/>
 </enum>
 
-<enum name="GpuBlockedReason">
-  <int value="0" label="GPU config error"/>
-  <int value="1" label="Blocklisted"/>
-  <int value="2" label="Blocklisted for CPU adapter"/>
-  <int value="3" label="Not blocked"/>
-</enum>
-
-<enum name="GpuErrorReason">
-  <int value="0" label="Other"/>
-  <int value="1" label="DXGI_ERROR_DEVICE_HUNG"/>
-  <int value="2" label="DXGI_ERROR_DEVICE_REMOVED"/>
-</enum>
-
 <enum name="GpuImageUsageState">
   <int value="0" label="Wasted, once"/>
   <int value="1" label="Used, once"/>
@@ -24393,11 +23862,6 @@ Called by update_permissions_policy_enum.py.-->
   <int value="14" label="Sommelier X11 proxy"/>
   <int value="15" label="Cros-Sftp"/>
   <int value="16" label="Cros-Notificationd"/>
-</enum>
-
-<enum name="GuestProfileCreatedType">
-  <int value="0" label="ParentGuest"/>
-  <int value="1" label="FirstChildGuest"/>
 </enum>
 
 <enum name="GwpAsanCrashAnalysisResult">
@@ -24486,15 +23950,6 @@ Called by update_permissions_policy_enum.py.-->
   <int value="0" label="Unknown"/>
   <int value="1" label="False"/>
   <int value="2" label="True"/>
-</enum>
-
-<enum name="HatsStatus">
-  <int value="0" label="Device selected"/>
-  <int value="1" label="Survey was shown recently"/>
-  <int value="2" label="New device detected"/>
-  <int value="3" label="Notification displayed"/>
-  <int value="4" label="User dismissed notification"/>
-  <int value="5" label="User opened survey"/>
 </enum>
 
 <enum name="HdcpVersion">
@@ -25415,6 +24870,16 @@ Called by update_permissions_policy_enum.py.-->
   <int value="3" label="IBAN suggestion selected (once)"/>
 </enum>
 
+<enum name="IbanUploadEnabledStatus">
+  <int value="0" label="Sync service is null"/>
+  <int value="1" label="Sync service is paused"/>
+  <int value="2"
+      label="Sync service missing AUTOFILL_WALLET_DATA active data type"/>
+  <int value="3" label="User has an explicit sync passphrase"/>
+  <int value="4" label="Local sync is enabled"/>
+  <int value="5" label="Success, IBAN upload enabled"/>
+</enum>
+
 <enum name="IDBAction">
   <int value="0" label="BackingStoreOpenAttempt">
     Recorded when the there is an attempt to open the backing store from disk,
@@ -25791,137 +25256,6 @@ Called by update_permissions_policy_enum.py.-->
   <int value="10" label="value attribute"/>
   <int value="11" label="&lt;label&gt; for attribute"/>
   <int value="12" label="Succeeding DOM node overlaying the input"/>
-</enum>
-
-<enum name="InfoBarIdentifier">
-  <int value="1" label="APP_BANNER_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="2" label="APP_BANNER_INFOBAR_DELEGATE_DESKTOP (Obsolete)"/>
-  <int value="3"
-      label="ANDROID_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="4" label="DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="5" label="DOWNLOAD_REQUEST_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
-  <int value="6" label="FULLSCREEN_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="7" label="HUNG_PLUGIN_INFOBAR_DELEGATE"/>
-  <int value="8" label="HUNG_RENDERER_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
-  <int value="9" label="MEDIA_STREAM_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
-  <int value="10" label="MEDIA_THROTTLE_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="11" label="REQUEST_QUOTA_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="12" label="DEV_TOOLS_INFOBAR_DELEGATE"/>
-  <int value="13" label="EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE"/>
-  <int value="14" label="INCOGNITO_CONNECTABILITY_INFOBAR_DELEGATE"/>
-  <int value="15" label="THEME_INSTALLED_INFOBAR_DELEGATE"/>
-  <int value="16" label="GEOLOCATION_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
-  <int value="17" label="THREE_D_API_INFOBAR_DELEGATE"/>
-  <int value="18" label="INSECURE_CONTENT_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="19" label="MIDI_PERMISSION_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
-  <int value="20"
-      label="PROTECTED_MEDIA_IDENTIFIER_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
-  <int value="21" label="NACL_INFOBAR_DELEGATE"/>
-  <int value="22"
-      label="DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
-  <int value="23" label="NOTIFICATION_PERMISSION_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="24" label="AUTO_SIGNIN_FIRST_RUN_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="25" label="GENERATED_PASSWORD_SAVED_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="26" label="SAVE_PASSWORD_INFOBAR_DELEGATE_MOBILE"/>
-  <int value="27" label="PEPPER_BROKER_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="28" label="PERMISSION_UPDATE_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="29"
-      label="DURABLE_STORAGE_PERMISSION_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
-  <int value="30" label="NPAPI_REMOVAL_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="31" label="OUTDATED_PLUGIN_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="32" label="PLUGIN_METRO_MODE_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="33" label="RELOAD_PLUGIN_INFOBAR_DELEGATE"/>
-  <int value="34" label="PLUGIN_OBSERVER_INFOBAR_DELEGATE"/>
-  <int value="35" label="SSL_ADD_CERTIFICATE (Obsolete)"/>
-  <int value="36" label="SSL_ADD_CERTIFICATE_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="37" label="POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE"/>
-  <int value="38" label="FILE_ACCESS_DISABLED_INFOBAR_DELEGATE"/>
-  <int value="39" label="KEYSTONE_PROMOTION_INFOBAR_DELEGATE_MAC"/>
-  <int value="40" label="COLLECTED_COOKIES_INFOBAR_DELEGATE"/>
-  <int value="41" label="INSTALLATION_ERROR_INFOBAR_DELEGATE"/>
-  <int value="42" label="ALTERNATE_NAV_INFOBAR_DELEGATE"/>
-  <int value="43" label="BAD_FLAGS_INFOBAR_DELEGATE"/>
-  <int value="44" label="DEFAULT_BROWSER_INFOBAR_DELEGATE"/>
-  <int value="45" label="GOOGLE_API_KEYS_INFOBAR_DELEGATE"/>
-  <int value="46" label="OBSOLETE_SYSTEM_INFOBAR_DELEGATE"/>
-  <int value="47" label="SESSION_CRASHED_INFOBAR_DELEGATE_MAC_IOS"/>
-  <int value="48" label="PAGE_INFO_INFOBAR_DELEGATE"/>
-  <int value="49" label="AUTOFILL_CC_INFOBAR_DELEGATE_MOBILE"/>
-  <int value="50" label="TRANSLATE_INFOBAR_DELEGATE_NON_AURA"/>
-  <int value="51" label="IOS_CHROME_SAVE_PASSWORD_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="52" label="NATIVE_APP_INSTALLER_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="53" label="NATIVE_APP_LAUNCHER_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="54" label="NATIVE_APP_OPEN_POLICY_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="55" label="RE_SIGN_IN_INFOBAR_DELEGATE_IOS"/>
-  <int value="56" label="SHOW_PASSKIT_ERROR_INFOBAR_DELEGATE_IOS"/>
-  <int value="57" label="READER_MODE_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="58" label="SYNC_ERROR_INFOBAR_DELEGATE_IOS"/>
-  <int value="59" label="UPGRADE_INFOBAR_DELEGATE"/>
-  <int value="60" label="WINDOW_ERROR_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="61" label="DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="62" label="WINDOWS_DESKTOP_SEARCH_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="63" label="UPDATE_PASSWORD_INFOBAR_DELEGATE_MOBILE"/>
-  <int value="64" label="DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="65" label="AUTOFILL_CC_ASSIST_INFOBAR_DELEGATE"/>
-  <int value="66" label="ADS_BLOCKED_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="67" label="INSTANT_APPS_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="68"
-      label="DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="69" label="SCREEN_CAPTURE_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="70" label="GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="71" label="OFFLINE_PAGE_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="72"
-      label="SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="73" label="AUTOMATION_INFOBAR_DELEGATE"/>
-  <int value="74" label="VR_SERVICES_UPGRADE_ANDROID"/>
-  <int value="75" label="READER_MODE_INFOBAR_ANDROID"/>
-  <int value="76" label="VR_FEEDBACK_INFOBAR_ANDROID"/>
-  <int value="77" label="FRAMEBUST_BLOCK_INFOBAR_ANDROID"/>
-  <int value="78" label="SURVEY_INFOBAR_ANDROID"/>
-  <int value="79" label="NEAR_OOM_INFOBAR_ANDROID"/>
-  <int value="80" label="INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE"/>
-  <int value="81" label="PAGE_LOAD_CAPPING_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="82" label="DOWNLOAD_PROGRESS_INFOBAR_ANDROID"/>
-  <int value="83" label="AR_CORE_UPGRADE_ANDROID"/>
-  <int value="84" label="BLOATED_RENDERER_INFOBAR_DELEGATE"/>
-  <int value="85"
-      label="SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="86" label="NEAR_OOM_REDUCTION_INFOBAR_ANDROID"/>
-  <int value="87" label="LITE_PAGE_PREVIEWS_INFOBAR (Obsolete M91)"/>
-  <int value="88" label="MODULE_INSTALL_FAILURE_INFOBAR_ANDROID"/>
-  <int value="89" label="INLINE_UPDATE_READY_INFOBAR_ANDROID (Obsolete)"/>
-  <int value="90" label="INLINE_UPDATE_FAILED_INFOBAR_ANDROID (Obsolete)"/>
-  <int value="91" label="FLASH_DEPRECATION_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="92" label="SEND_TAB_TO_SELF_INFOBAR_DELEGATE"/>
-  <int value="93" label="TAB_SHARING_INFOBAR_DELEGATE"/>
-  <int value="94" label="SAFETY_TIP_INFOBAR_DELEGATE"/>
-  <int value="95" label="SMS_RECEIVER_INFOBAR_DELEGATE"/>
-  <int value="96" label="KNOWN_INTERCEPTION_DISCLOSURE_INFOBAR_DELEGATE"/>
-  <int value="97" label="SYNC_ERROR_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="98" label="MIXED_CONTENT_DOWNLOAD_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="99" label="CONDITIONAL_TAB_STRIP_INFOBAR_ANDROID"/>
-  <int value="100" label="LITE_MODE_HTTPS_IMAGE_COMPRESSION_INFOBAR_ANDROID"/>
-  <int value="101" label="SYSTEM_INFOBAR_DELEGATE_MAC (Obsolete)"/>
-  <int value="102" label="EXPERIMENTAL_INFOBAR_DELEGATE_LACROS (Obsolete)"/>
-  <int value="103" label="ROSETTA_REQUIRED_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="104" label="WEBID_PERMISSION_INFOBAR_DELEGATE (Obsolete)"/>
-  <int value="105" label="AUTOFILL_OFFER_NOTIFICATION_INFOBAR_DELEGATE"/>
-  <int value="106" label="AUTOFILL_ADDRESS_PROFILE_INFOBAR_DELEGATE_IOS"/>
-  <int value="107" label="ADD_TO_READING_LIST_IOS"/>
-  <int value="108" label="IOS_PERMISSIONS_INFOBAR_DELEGATE"/>
-  <int value="109"
-      label="SUPPORTED_LINKS_INFOBAR_DELEGATE_CHROMEOS (Obsolete)"/>
-  <int value="110"
-      label="AUTOFILL_VIRTUAL_CARD_ENROLLMENT_INFOBAR_DELEGATE_MOBILE"/>
-  <int value="111" label="TAILORED_SECURITY_SERVICE_INFOBAR_DELEGATE"/>
-  <int value="112" label="CHROME_FOR_TESTING_INFOBAR_DELEGATE"/>
-  <int value="113" label="EXTENSIONS_WEB_AUTH_FLOW_INFOBAR_DELEGATE"/>
-  <int value="114" label="TAB_PICKUP_INFOBAR_DELEGATE"/>
-  <int value="115" label="LOCAL_TEST_POLICIES_APPLIED_INFOBAR"/>
-  <int value="116"
-      label="BIDDING_AND_AUCTION_USER_CONSENTED_DEBUGGING_DELEGATE"/>
-  <int value="117" label="PARCEL_TRACKING_INFOBAR_DELEGATE"/>
-  <int value="118" label="TEST_THIRD_PARTY_COOKIE_PHASEOUT_DELEGATE"/>
 </enum>
 
 <enum name="InitialServiceWorkerStatus">
@@ -26354,104 +25688,16 @@ Called by update_permissions_policy_enum.py.-->
   <int value="7" label="Unknown error"/>
 </enum>
 
-<enum name="InstantTethering_ConnectionToHostResult_EndResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Internal error"/>
-  <int value="2" label="User cancelled connection attempt"/>
-  <int value="3" label="Provisioning failed"/>
-  <int value="4" label="No cellular data"/>
-  <int value="5" label="Tethering unsupported"/>
-</enum>
-
-<enum name="InstantTethering_ConnectionToHostResult_Failure">
-  <int value="0" label="Unknown error"/>
-  <int value="1" label="Tethering timed out"/>
-  <int value="2" label="Client connection error"/>
-  <int value="3" label="(obsolete) Tethering unsupported"/>
-  <int value="4" label="(obsolete) No cellular data"/>
-  <int value="5" label="Enabling hotspot failed"/>
-  <int value="6" label="Enabling hotspot timed out"/>
-  <int value="7" label="No response"/>
-  <int value="8" label="Invalid hotspot credentials"/>
-  <int value="9"
-      label="Successful request but no ConnectTetheringResponse message"/>
-  <int value="10" label="Unrecognized response error"/>
-  <int value="11" label="Invalid active existing soft AP config"/>
-  <int value="12" label="Invalid new soft AP config"/>
-  <int value="13" label="Invalid Wifi AP config"/>
-</enum>
-
-<enum name="InstantTethering_ConnectionToHostResult_Failure_ClientConnection">
-  <int value="0" label="Timeout while waiting to connect"/>
-  <int value="1" label="(obsolete) Canceled"/>
-  <int value="2" label="Internal error"/>
-</enum>
-
-<enum name="InstantTethering_ConnectionToHostResult_Failure_TetheringTimeout">
-  <int value="0" label="First-time setup was required"/>
-  <int value="1" label="First-time setup was not required"/>
-</enum>
-
-<enum name="InstantTethering_ConnectionToHostResult_ProvisioningFailureRate">
-  <int value="0" label="Provisioning failed"/>
-  <int value="1" label="Other"/>
-</enum>
-
-<enum name="InstantTethering_ConnectionToHostResult_SuccessRate">
-  <int value="0" label="Success"/>
-  <int value="1" label="Failure"/>
-</enum>
-
-<enum name="InstantTethering_FeatureState">
-  <int value="0" label="Shut down (deprecated)"/>
-  <int value="1" label="BLE advertising not supported"/>
-  <int value="2" label="Screen locked (deprecated)"/>
-  <int value="3" label="No available hosts"/>
-  <int value="4" label="Cellular disabled"/>
-  <int value="5" label="Prohibited"/>
-  <int value="6" label="Bluetooth disabled"/>
-  <int value="7" label="User preference disabled"/>
-  <int value="8" label="Enabled"/>
-  <int value="9" label="BLE not present"/>
-  <int value="10" label="WiFi not present"/>
-  <int value="11" label="Suspended"/>
-  <int value="12" label="Better Together suite disabled"/>
-</enum>
-
-<enum name="InstantTethering_HostScanResult">
-  <int value="0" label="No hosts found"/>
-  <int value="1" label="Notification shown for single host"/>
-  <int value="2" label="Notification shown for multiple hosts"/>
-  <int value="3" label="Hosts found but no notification shown"/>
-</enum>
-
-<enum name="InstantTethering_NotificationInteractionType">
-  <int value="0" label="Notification body clicked: Single host nearby"/>
-  <int value="1" label="Notification body clicked: Multiple hosts nearby"/>
-  <int value="2" label="Notification body clicked: Setup required"/>
-  <int value="3" label="Notification body clicked: Connection failed"/>
-  <int value="4" label="Notification button clicked: Single host nearby"/>
-</enum>
-
-<enum name="InstantTethering_SessionCompletionReason">
-  <int value="0" label="Other"/>
-  <int value="1" label="User disconnected"/>
-  <int value="2" label="Connection dropped"/>
-  <int value="3" label="User logged out"/>
-  <int value="4" label="User closed lid"/>
-  <int value="5" label="Pref disabled"/>
-  <int value="6" label="Bluetooth disabled"/>
-  <int value="7" label="Cellular disabled"/>
-  <int value="8" label="Wi-Fi disabled"/>
-  <int value="9" label="Bluetooth controller disappeared"/>
-  <int value="10" label="MultiDevice host unverified"/>
-  <int value="11" label="Better Together suite disabled"/>
-</enum>
-
 <enum name="IntentPickerIconEvent">
   <int value="0" label="Intent picker icon shown in Omnibox"/>
   <int value="1" label="Intent picker icon clicked in Omnibox"/>
   <int value="2" label="Intent picker dialog shown automatically"/>
+</enum>
+
+<enum name="InterestGroupAdAuctionExecutionMode">
+  <int value="0" label="compatibility"/>
+  <int value="1" label="group-by-origin"/>
+  <int value="2" label="frozen-context"/>
 </enum>
 
 <enum name="InterestGroupAdAuctionRoundUpdateResult">
@@ -29277,13 +28523,6 @@ Called by update_permissions_policy_enum.py.-->
   <int value="3" label="EmptyIndex"/>
 </enum>
 
-<enum name="LocalSiteCharacteristicsDBInitStatus">
-  <int value="0" label="Success"/>
-  <int value="1" label="Corruption"/>
-  <int value="2" label="IO Error"/>
-  <int value="3" label="Unknown Error"/>
-</enum>
-
 <enum name="LocalStorageOpenError">
   <int value="0" label="Directory open failed"/>
   <int value="1" label="Database open failed"/>
@@ -29415,6 +28654,7 @@ from previous Chrome versions.
   <int value="-2112547309" label="ClickToCallReceiver:enabled"/>
   <int value="-2111273398" label="SendTabToSelfManageDevicesLink:enabled"/>
   <int value="-2111196530" label="EnableAssistantLauncherUI:disabled"/>
+  <int value="-2110507629" label="ButterOnDesktopFollowup:disabled"/>
   <int value="-2108866112" label="FeedHeaderStickToTop:enabled"/>
   <int value="-2108836417" label="ArcvmSwapoutKeyboardShortcut:enabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
@@ -29678,6 +28918,7 @@ from previous Chrome versions.
   <int value="-2003354337"
       label="enable-search-button-in-omnibox-for-str-or-iip"/>
   <int value="-2003097010" label="TerminalSftp:enabled"/>
+  <int value="-2002754843" label="FedCmButtonMode:enabled"/>
   <int value="-2002461806" label="ShoppingAssist:enabled"/>
   <int value="-2001869199" label="ShillSandboxing:enabled"/>
   <int value="-2000862180" label="MerchantWidePromotion:disabled"/>
@@ -30289,7 +29530,6 @@ from previous Chrome versions.
   <int value="-1710772665" label="disable-my-files-navigation"/>
   <int value="-1710314754"
       label="MessagesForAndroidStackingAnimation:disabled"/>
-  <int value="-1707624866" label="SmdsSupportEuiccUpload:enabled"/>
   <int value="-1706483123" label="VmStatusPage:enabled"/>
   <int value="-1704630681" label="MediaAppPdfA11yOcr:enabled"/>
   <int value="-1704472714" label="UseMessagesGoogleComDomain:disabled"/>
@@ -30619,7 +29859,6 @@ from previous Chrome versions.
   <int value="-1559789642" label="RunAllFlashInAllowMode:enabled"/>
   <int value="-1559616006" label="DefaultANGLEVulkan:enabled"/>
   <int value="-1559292789" label="SideSearch:disabled"/>
-  <int value="-1559133637" label="ReadAloudPlayback:disabled"/>
   <int value="-1558734415" label="ArcHostVpn:enabled"/>
   <int value="-1558082361" label="ContinuousOverviewScrollAnimation:enabled"/>
   <int value="-1557747651" label="FractionalScrollOffsets:disabled"/>
@@ -30856,6 +30095,7 @@ from previous Chrome versions.
   <int value="-1454264660" label="ProminentDarkModeActiveTabTitle:disabled"/>
   <int value="-1453647118" label="PasswordLeakDetection:disabled"/>
   <int value="-1452786530" label="ChromeOSZramWriteback:enabled"/>
+  <int value="-1452178473" label="EnablePixDetection:enabled"/>
   <int value="-1452010225" label="WindowNaming:disabled"/>
   <int value="-1451644187" label="OverviewSwipeToClose:enabled"/>
   <int value="-1450657485" label="EnableHardwareMirrorMode:enabled"/>
@@ -31351,7 +30591,6 @@ from previous Chrome versions.
   <int value="-1227660915" label="WebContentsOcclusion:disabled"/>
   <int value="-1227571965" label="SnapGroup:enabled"/>
   <int value="-1226536953" label="DeskTemplateSync:disabled"/>
-  <int value="-1226486549" label="SmdsSupportEuiccUpload:disabled"/>
   <int value="-1225861190" label="SupportTool:disabled"/>
   <int value="-1225772151" label="OfflineHome:disabled"/>
   <int value="-1225629234" label="SyncPseudoUSSFavicons:enabled"/>
@@ -31780,6 +31019,7 @@ from previous Chrome versions.
   <int value="-1021038914" label="CrostiniImeSupport:enabled"/>
   <int value="-1020450980" label="gesture-deletion"/>
   <int value="-1020437363" label="LightweightReactions:disabled"/>
+  <int value="-1020250356" label="EnableEncryptedAV1:disabled"/>
   <int value="-1019967332" label="VrBrowsing:enabled"/>
   <int value="-1019760093" label="PrintWithPostScriptType42Fonts:enabled"/>
   <int value="-1019492310"
@@ -32268,15 +31508,11 @@ from previous Chrome versions.
   <int value="-783999903" label="FilesTrashDrive:disabled"/>
   <int value="-783890018" label="LacrosProfileMigrationForAnyUser:disabled"/>
   <int value="-783093620" label="WebViewHitTestInBlinkOnTouchStart:enabled"/>
-  <int value="-782689039"
-      label="FencedFramesCrossOriginAutomaticBeacons:enabled"/>
   <int value="-782193212"
       label="AutofillEnablePaymentsMandatoryReauth:enabled"/>
   <int value="-781625651"
       label="DisruptiveNotificationPermissionRevocation:enabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
-  <int value="-780646596"
-      label="CustomizeChromeWallpaperSearchInspirationCard:enabled"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-778098896" label="EnableAggregatedMlSearchRanking:disabled"/>
   <int value="-778047974" label="CrostiniUseBusterImage:disabled"/>
@@ -32318,6 +31554,7 @@ from previous Chrome versions.
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-762541013" label="enable-bluetooth-spp-in-serial-api"/>
   <int value="-761870200" label="CaptureModeDemoTools:disabled"/>
+  <int value="-761814801" label="NtpRealboxCr23HoverFillShape:disabled"/>
   <int value="-760729135"
       label="AutofillEnableCardArtServerSideStretching:disabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>
@@ -32476,7 +31713,6 @@ from previous Chrome versions.
   <int value="-686617279" label="WebAppEnableLaunchHandler:enabled"/>
   <int value="-685107150" label="FilesConflictDialog:enabled"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
-  <int value="-684568243" label="UserBypassUI:enabled"/>
   <int value="-684503292"
       label="OmniboxTabSwitchSuggestionsDedicatedRow:enabled"/>
   <int value="-684336980" label="IsolatedWebAppDevMode:enabled"/>
@@ -32863,6 +32099,7 @@ from previous Chrome versions.
   <int value="-506366023" label="VizHitTest:enabled"/>
   <int value="-506064880" label="EnableIPH:disabled"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>
+  <int value="-505264501" label="BackForwardTransitions:enabled"/>
   <int value="-504952236" label="AutocorrectParamsTuning:disabled"/>
   <int value="-504485318"
       label="AutofillFixServerQueriesIfPasswordManagerIsEnabled:enabled"/>
@@ -32885,7 +32122,6 @@ from previous Chrome versions.
   <int value="-496989565"
       label="DesktopPWAsFlashAppNameInsteadOfOrigin:disabled"/>
   <int value="-496879081" label="disable-ip-privacy-proxy"/>
-  <int value="-496551818" label="ReadAloudPlayback:enabled"/>
   <int value="-496119023" label="WebXR:enabled"/>
   <int value="-495991146" label="CustomizeChromeSidePanel:disabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
@@ -32959,7 +32195,6 @@ from previous Chrome versions.
   <int value="-459469509" label="SidePanelImprovedClobbering:enabled"/>
   <int value="-459318667" label="AccessiblePDFForm:enabled"/>
   <int value="-458726025" label="WebApkInstallFailureNotification:disabled"/>
-  <int value="-458406186" label="UserBypassUI:disabled"/>
   <int value="-458308082" label="ContextualTriggersSelectionMenu:disabled"/>
   <int value="-458090289" label="CrOSLateBootMissiveStorage:disabled"/>
   <int value="-457584339" label="TemporaryHoldingSpace:enabled"/>
@@ -33258,8 +32493,6 @@ from previous Chrome versions.
       label="BrokerFileOperationsOnDiskCacheInNetworkService:enabled"/>
   <int value="-313812707" label="VideoTutorials:disabled"/>
   <int value="-312144677" label="TFLiteLanguageDetectionEnabled:disabled"/>
-  <int value="-311509777"
-      label="CustomizeChromeWallpaperSearchInspirationCard:disabled"/>
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
   <int value="-310908854" label="new-wallpaper-picker"/>
   <int value="-310615515" label="EnableSuggestedFiles:disabled"/>
@@ -33422,6 +32655,7 @@ from previous Chrome versions.
   <int value="-242441279" label="SafetyCheckUnusedSitePermissions:enabled"/>
   <int value="-242431978" label="StartSurfaceRefactor:enabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
+  <int value="-241065111" label="BackForwardTransitions:disabled"/>
   <int value="-241061180" label="NotificationImageDrag:enabled"/>
   <int value="-240531943" label="ContextualSearchRankerQuery:disabled"/>
   <int value="-239616243" label="HighDynamicRange:enabled"/>
@@ -33574,6 +32808,7 @@ from previous Chrome versions.
   <int value="-167420098" label="WebBluetoothNewPermissionsBackend:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
   <int value="-165712979" label="AdaptiveChargingForTesting:enabled"/>
+  <int value="-165063145" label="LauncherManateeForKeyboardShortcuts:enabled"/>
   <int value="-165006916" label="EnableNeuralPalmDetectionFilter:enabled"/>
   <int value="-164673139" label="ForceShowContinueSection:disabled"/>
   <int value="-164539906"
@@ -33606,6 +32841,7 @@ from previous Chrome versions.
   <int value="-152349324" label="CameraAppMultiPageDocScan:disabled"/>
   <int value="-150820109" label="ProjectorAppDebug:disabled"/>
   <int value="-150077791" label="FontAccessChooser:disabled"/>
+  <int value="-149667706" label="CameraAppDigitalZoom:enabled"/>
   <int value="-149365748" label="CbdTimeframeRequired:enabled"/>
   <int value="-148627978" label="GlanceablesV2CalendarView:enabled"/>
   <int value="-148356419" label="PdfViewerPresentationMode:disabled"/>
@@ -34114,6 +33350,7 @@ from previous Chrome versions.
   <int value="89758831" label="FontAccessChooser:enabled"/>
   <int value="89785725"
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
+  <int value="89909398" label="CameraAppDigitalZoom:disabled"/>
   <int value="89934221" label="MediaAppPhotosIntegrationImage:disabled"/>
   <int value="90551098" label="UseWallpaperStagingUrl:enabled"/>
   <int value="90673685" label="cast-mirroring-target-playout-delay"/>
@@ -34205,7 +33442,6 @@ from previous Chrome versions.
   <int value="129458360" label="LiteVideo:disabled"/>
   <int value="130059719" label="ThreadedPreloadScanner:disabled"/>
   <int value="130939792" label="FilesJsModules:disabled"/>
-  <int value="131135725" label="PerformanceSettingsPreloadingSubpage:enabled"/>
   <int value="131881947" label="D3DVsync:enabled"/>
   <int value="132560299"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:disabled"/>
@@ -34677,7 +33913,6 @@ from previous Chrome versions.
   <int value="356453693" label="SystemNudgeV2:disabled"/>
   <int value="357138275" label="enable-floating-virtual-keyboard:disabled"/>
   <int value="357165937" label="ShareToGoogleCollections:enabled"/>
-  <int value="357322724" label="PerformanceSettingsPreloadingSubpage:disabled"/>
   <int value="357832577" label="OmniboxSuggestionHoverFillShape:disabled"/>
   <int value="358399482" label="enable-high-dpi-fixed-position-compositing"/>
   <int value="358493847" label="BackgroundLoader:disabled"/>
@@ -34884,6 +34119,7 @@ from previous Chrome versions.
   <int value="448463569" label="NewShortcutMapping:disabled"/>
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="452139294" label="VrShellExperimentalRendering:enabled"/>
+  <int value="452395990" label="EnablePixDetection:disabled"/>
   <int value="452955571" label="EnableFilesystemInIncognito:disabled"/>
   <int value="453017472"
       label="IntentBlockExternalFormRedirectsNoGesture:disabled"/>
@@ -35351,8 +34587,6 @@ from previous Chrome versions.
   <int value="684112629" label="BluetoothCoredump:disabled"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685406951" label="UseNotificationCompatBuilder:disabled"/>
-  <int value="685571935"
-      label="FencedFramesCrossOriginAutomaticBeacons:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
   <int value="686929809" label="BorealisWebUIInstaller:enabled"/>
   <int value="687838135" label="ThirdPartyDoodles:disabled"/>
@@ -35734,6 +34968,7 @@ from previous Chrome versions.
   <int value="859913799" label="EnableDesksTrackpadSwipeImprovements:disabled"/>
   <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="861351290" label="FontManagerEarlyInit:enabled"/>
+  <int value="861968979" label="EnableEncryptedAV1:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
   <int value="863493664" label="LacrosMoveProfileMigration:disabled"/>
   <int value="863584992" label="ExtensionsFSPInServiceWorkers:enabled"/>
@@ -35989,6 +35224,7 @@ from previous Chrome versions.
   <int value="992066588" label="SHA1ServerSignature:disabled"/>
   <int value="993486662" label="BorealisForceBetaClient:enabled"/>
   <int value="993539774" label="EnforceAshExtensionKeeplist:enabled"/>
+  <int value="993850099" label="FedCmButtonMode:disabled"/>
   <int value="994317727"
       label="AutofillSaveCreditCardUsesStrikeSystem:disabled"/>
   <int value="995112715" label="AutoDisableAccessibility:disabled"/>
@@ -36102,6 +35338,7 @@ from previous Chrome versions.
   <int value="1046878091" label="PasswordForceSaving:enabled"/>
   <int value="1046981538" label="OfflinePagesShowAlternateDinoPage:disabled"/>
   <int value="1047110483" label="ShelfHotseat:disabled"/>
+  <int value="1048263286" label="LauncherManateeForKeyboardShortcuts:disabled"/>
   <int value="1049339770" label="AppMenuMobileSiteOption:enabled"/>
   <int value="1049346775" label="OmniboxDocumentProviderAso:disabled"/>
   <int value="1049885154" label="OfflinePagesPrefetching:disabled"/>
@@ -36137,6 +35374,7 @@ from previous Chrome versions.
   <int value="1065451331" label="NtpRealboxPedals:disabled"/>
   <int value="1065481614" label="SystemEmojiPickerGIFSupport:disabled"/>
   <int value="1065547630" label="EnableInputNoiseCancellationUi:disabled"/>
+  <int value="1067488139" label="NtpRealboxCr23HoverFillShape:enabled"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1067990299" label="enable-ui-devtools"/>
   <int value="1069325321" label="CrostiniGpuSupport:enabled"/>
@@ -37193,6 +36431,7 @@ from previous Chrome versions.
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
   <int value="1568172566"
       label="OmniboxOnDeviceHeadProviderNonIncognito:disabled"/>
+  <int value="1569327162" label="ButterOnDesktopFollowup:enabled"/>
   <int value="1570178909" label="NewOverviewLayout:enabled"/>
   <int value="1571640975" label="EcheLauncherIconsInMoreAppsButton:enabled"/>
   <int value="1571998166" label="DetectingHeavyPages:disabled"/>
@@ -38831,12 +38070,6 @@ from previous Chrome versions.
   <int value="2" label="Valid URL"/>
 </enum>
 
-<enum name="MappedAndResidentPagesDumpState">
-  <int value="0" label="kAccessPagemapDenied"/>
-  <int value="1" label="kFailure"/>
-  <int value="2" label="kSuccess"/>
-</enum>
-
 <enum name="MappedCSSProperties">
 <!-- Generated from third_party/blink/public/mojom/use_counter/metrics/css_property_id.mojom.
 Called by update_use_counter_css.py.-->
@@ -40007,21 +39240,6 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="None"/>
 </enum>
 
-<enum name="MemoryPressureLevel">
-  <int value="0" label="No memory pressure"/>
-  <int value="1" label="Moderate memory pressure"/>
-  <int value="2" label="Critical memory pressure"/>
-</enum>
-
-<enum name="MemoryPressureLevelChanges">
-  <int value="0" label="No pressure to moderate pressure"/>
-  <int value="1" label="No pressure to critical pressure"/>
-  <int value="2" label="Moderate pressure to critical pressure"/>
-  <int value="3" label="Critical pressure to moderate pressure"/>
-  <int value="4" label="Critical pressure to no pressure"/>
-  <int value="5" label="Moderate pressure to no pressure"/>
-</enum>
-
 <enum name="MenuSourceType">
   <int value="0" label="None"/>
   <int value="1" label="Mouse"/>
@@ -40359,33 +39577,6 @@ Called by update_use_counter_css.py.-->
   <int value="11" label="11"/>
 </enum>
 
-<enum name="MultiDevice_DeviceSyncService_DeviceSyncRequestFailureReason">
-  <int value="0" label="Requested succeeded but unexpected result"/>
-  <int value="1" label="Service not yet initialized"/>
-  <int value="2" label="Device offline"/>
-  <int value="3" label="Server endpoint not found"/>
-  <int value="4" label="Authentication error"/>
-  <int value="5" label="Bad request"/>
-  <int value="6" label="Response malformed"/>
-  <int value="7" label="Internal server error"/>
-  <int value="8" label="Unknown network error"/>
-  <int value="9" label="Unknown error"/>
-</enum>
-
-<enum name="MultiDevice_DeviceSyncService_Features">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Better Together Suite"/>
-  <int value="2" label="Smart Lock"/>
-  <int value="3" label="Instant Tethering"/>
-  <int value="4" label="Messages"/>
-  <int value="5" label="Unexpected Client Feature"/>
-</enum>
-
-<enum name="MultiDevice_DeviceSyncService_ForceCryptAuthOperationResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Service not ready"/>
-</enum>
-
 <enum name="MultiDevice_FeatureState">
   <int value="0" label="Prohibited by policy"/>
   <int value="1" label="Disabled by user"/>
@@ -40405,98 +39596,6 @@ Called by update_use_counter_css.py.-->
   <int value="12"
       label="Unable, eligible host exists but no host set or set host is
              unverified"/>
-</enum>
-
-<enum name="MultiDevice_PostOOBESetupFlow_Page">
-  <int value="0" label="Unknown page"/>
-  <int value="1" label="Start page"/>
-  <int value="2" label="Password page"/>
-  <int value="3" label="Success page"/>
-</enum>
-
-<enum name="MultiDevice_Setup_HostStatus">
-  <int value="0" label="No eligible hosts"/>
-  <int value="1" label="Eligible host exists but no host set"/>
-  <int value="2" label="Host set locally but waiting for backend confirmation"/>
-  <int value="3" label="Host set but not yet verified"/>
-  <int value="4" label="Host verified"/>
-</enum>
-
-<enum name="MultiDevice_VerifyAndForgetHostConfirmationState">
-  <int value="0" label="Button clicked"/>
-  <int value="1" label="Completed Setup"/>
-</enum>
-
-<enum name="MultiDeviceNearbyConnectionsInitiatorResult">
-  <int value="0" label="Connection Success"/>
-  <int value="1" label="(Obsolete) Timeout Discovering Device"/>
-  <int value="2" label="(Obsolete) Nearby Api Error"/>
-  <int value="3" label="(Obsolete) Connection Rejected"/>
-  <int value="4" label="Connectivity Error"/>
-  <int value="5" label="Authentication Error"/>
-</enum>
-
-<enum name="MultiDeviceNearbyDisconnectionReason">
-  <int value="0" label="Disconnection requested by client"/>
-  <int value="1" label="Failed discovery"/>
-  <int value="2" label="Timeout during discovery"/>
-  <int value="3" label="Failed requesting connection"/>
-  <int value="4" label="Timeout during RequestConnection() call"/>
-  <int value="5" label="Failed accepting connection"/>
-  <int value="6" label="Timeout during AcceptConnection() call"/>
-  <int value="7" label="Connection rejected"/>
-  <int value="8" label="Timeout waiting for connection to be accepted"/>
-  <int value="9" label="SendMessage() failed"/>
-  <int value="10" label="Received unexpected payload type"/>
-  <int value="11" label="Connection lost"/>
-  <int value="12" label="Nearby process crash"/>
-  <int value="13" label="Nearby process Mojo dependency disconnection"/>
-  <int value="14" label="Received file paylad that wasn't registered"/>
-</enum>
-
-<enum name="MultiDeviceNearbyFileAction">
-  <int value="0" label="Registered file received"/>
-  <int value="1" label="Unexpected file received"/>
-</enum>
-
-<enum name="MultiDeviceNearbyFileTransferResult">
-  <int value="0" label="File transfer success"/>
-  <int value="1" label="File transfer failure"/>
-  <int value="2" label="File transfer canceled"/>
-</enum>
-
-<enum name="MultiDeviceNearbyMessageAction">
-  <int value="0" label="Message Sent"/>
-  <int value="1" label="Message Received"/>
-</enum>
-
-<enum name="MultiDeviceSetupDialogEntrypoint">
-  <int value="0" label="Opened from settings page"/>
-  <int value="1" label="Opened from setup notification"/>
-  <int value="2" label="Opened from Phone Hub bubble"/>
-  <int value="3" label="Opened from Phone Hub bubble after nudge"/>
-</enum>
-
-<enum name="MultiDeviceSetupNotification">
-  <int value="0" label="New user, potential host exists"/>
-  <int value="1" label="Existing user, host switched"/>
-  <int value="2" label="Existing user, new Chromebook added"/>
-  <int value="3" label="Unknown (error case)"/>
-  <int value="4" label="Wi-Fi Sync Announcement"/>
-</enum>
-
-<enum name="MultideviceSetupNudgeInteraction">
-  <int value="0" label="Click on nudge"/>
-  <int value="1" label="Click on Phone Hub icon when nudge is visible"/>
-</enum>
-
-<enum name="MultiDeviceSetupOOBEUserChoice">
-  <int value="0" label="MULTI_DEVICE_SETUP_OOBE_USER_CHOICE_ACCEPTED">
-    Accepted MultiDevice OOBE Setup.
-  </int>
-  <int value="1" label="MULTI_DEVICE_SETUP_OOBE_USER_CHOICE_DECLINED">
-    Declined MultiDevice OOBE Setup.
-  </int>
 </enum>
 
 <enum name="MultiDisplayModeDisplayCountRanges">
@@ -40769,18 +39868,6 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Disable cache"/>
 </enum>
 
-<enum name="NavigationDownloadPolicy">
-  <int value="0" label="DefaultAllowed"/>
-  <int value="1" label="View-source"/>
-  <int value="2" label="Interstitial"/>
-  <int value="5" label="Opener x-origin"/>
-  <int value="7" label="Sandbox no gesture"/>
-  <int value="8" label="Ad frame no gesture"/>
-  <int value="10" label="Ad frame"/>
-  <int value="11" label="Sandbox"/>
-  <int value="12" label="No gesture"/>
-</enum>
-
 <enum name="NavigationIsGuest">
   <int value="0" label="Not a guest navigation"/>
   <int value="1" label="Guest navigation"/>
@@ -40923,276 +40010,6 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Cross-origin subframe vibrate, no user gesture"/>
   <int value="5" label="Cross-origin subframe vibrate, with user gesture"/>
   <int value="6" label="In a fenced frame tree"/>
-</enum>
-
-<enum name="NearbyConnectionsMedium">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="mDNS"/>
-  <int value="2" label="Bluetooth"/>
-  <int value="3" label="WiFi hotspot"/>
-  <int value="4" label="BLE"/>
-  <int value="5" label="WiFi LAN"/>
-  <int value="6" label="WiFi Aware"/>
-  <int value="7" label="NFC"/>
-  <int value="8" label="WiFi Direct"/>
-  <int value="9" label="WebRTC"/>
-</enum>
-
-<enum name="NearbyConnectionsStatus">
-  <int value="0" label="Success"/>
-  <int value="1" label="Error"/>
-  <int value="2" label="Out-of-order API call"/>
-  <int value="3" label="Already have active strategy"/>
-  <int value="4" label="Already advertising"/>
-  <int value="5" label="Already discovering"/>
-  <int value="6" label="Endpoint IO error"/>
-  <int value="7" label="Endpoint unknown"/>
-  <int value="8" label="Connection rejected"/>
-  <int value="9" label="Already connected to endpoint"/>
-  <int value="10" label="Not connected to endpoint"/>
-  <int value="11" label="Bluetooth error"/>
-  <int value="12" label="BLE error"/>
-  <int value="13" label="Wi-Fi LAN error"/>
-  <int value="14" label="Payload unknown"/>
-  <int value="15" label="Already listening"/>
-  <int value="16" label="Connection was reset"/>
-  <int value="17" label="Connection timed out"/>
-  <int value="18" label="Unknown failure"/>
-</enum>
-
-<enum name="NearbyConnectionsUtilityProcessMojoDependencyName">
-  <int value="0" label="Nearby Connections"/>
-  <int value="1" label="Bluetooth Adapter"/>
-  <int value="2" label="Socket Manager"/>
-  <int value="3" label="MDNS Responder"/>
-  <int value="4" label="ICE Config Fetcher"/>
-  <int value="5" label="WebRTC Signaling Messenger"/>
-  <int value="6" label="Cros Network Config"/>
-  <int value="7" label="Firewall Hole Factory"/>
-  <int value="8" label="TCP Socket Factory"/>
-  <int value="9" label="Nearby Presence"/>
-  <int value="10" label="Nearby Share Decoder"/>
-  <int value="11" label="Quick Start Decoder"/>
-</enum>
-
-<enum name="NearbyConnectionsUtilityProcessShutdownReason">
-  <int value="0" label="Normal"/>
-  <int value="1" label="Crash"/>
-  <int value="2" label="Mojo pipe disconnection (deprecated)"/>
-  <int value="3" label="Utility process disconnected Decoder mojo pipe"/>
-  <int value="4" label="Utility process disconnected Connections mojo pipe"/>
-</enum>
-
-<enum name="NearbyConnectionsWifiLanConnectResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Canceled"/>
-  <int value="2" label="Error: Failed to create TCP socket"/>
-</enum>
-
-<enum name="NearbyConnectionsWifiLanListenResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Canceled"/>
-  <int value="2" label="Error: Invalid port"/>
-  <int value="3" label="Error fetching IP: Failed to get network state list"/>
-  <int value="4" label="Error fetching IP: Failed to get managed properties"/>
-  <int value="5" label="Error fetching IP: Missing IP configs"/>
-  <int value="6" label="Error fetching IP: No valid local IP address"/>
-  <int value="7" label="Error: Failed to create TCP server socket"/>
-  <int value="8" label="Error: Unexpected TCP server socket IP endpoint"/>
-  <int value="9" label="Error: Failed to create firewall hole"/>
-</enum>
-
-<enum name="NearbyHttpResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Timeout"/>
-  <int value="2" label="Offline"/>
-  <int value="3" label="Endpoint Not Found"/>
-  <int value="4" label="Authentication Error"/>
-  <int value="5" label="Bad Request"/>
-  <int value="6" label="Response Malformed"/>
-  <int value="7" label="Internal Server Error"/>
-  <int value="8" label="Unknown"/>
-</enum>
-
-<enum name="NearbyPresenceFirstTimeRegistrationResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Registration With Server Failure"/>
-  <int value="2" label="Credential Generation Failure"/>
-  <int value="3" label="Upload Local Credentials Failure"/>
-  <int value="4" label="Download Remote Credentials Failure"/>
-  <int value="5" label="Save Remote Credentials Failure"/>
-</enum>
-
-<enum name="NearbyShareAttachmentType">
-  <int value="0" label="Unknown File Type"/>
-  <int value="1" label="Unknown Text Type"/>
-  <int value="2" label="Image"/>
-  <int value="3" label="Video"/>
-  <int value="4" label="App"/>
-  <int value="5" label="Audio"/>
-  <int value="6" label="Text"/>
-  <int value="7" label="URL"/>
-  <int value="8" label="Address"/>
-  <int value="9" label="Phone number"/>
-  <int value="10" label="Wi-Fi Credentials"/>
-</enum>
-
-<enum
-    name="NearbyShareBackgroundScanningDeviceNearbySharingNotificationFlowEvent">
-  <int value="1" label="Background Notification Shown"/>
-  <int value="12" label="Enable"/>
-  <int value="13" label="Dismiss"/>
-  <int value="14" label="Clicked on 'x'"/>
-</enum>
-
-<enum name="NearbyShareBackgroundScanningDevicesDetectedEvent">
-  <int value="1" label="Nearby Devices Detected"/>
-</enum>
-
-<enum name="NearbyShareBackgroundScanningSetupNotificationFlowEvent">
-  <int value="1" label="Background Notification Shown"/>
-  <int value="12" label="Setup"/>
-  <int value="13" label="Dismiss"/>
-  <int value="14" label="Clicked on 'x'"/>
-</enum>
-
-<enum name="NearbyShareCertificateManagerGetDecryptedPublicCertificateResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="No Match"/>
-  <int value="2" label="Storage Failure"/>
-</enum>
-
-<enum name="NearbyShareCertificateStorageInitializationResult">
-  <int value="0" label="OK"/>
-  <int value="1" label="Not Initialized"/>
-  <int value="2" label="Error"/>
-  <int value="3" label="Corrupt"/>
-  <int value="4" label="Invalid Operation"/>
-</enum>
-
-<enum name="NearbyShareDeviceType">
-  <int value="0" label="Unknown device type"/>
-  <int value="1" label="Phone"/>
-  <int value="2" label="Tablet"/>
-  <int value="3" label="Laptop"/>
-</enum>
-
-<enum name="NearbyShareDiscoveryProgress">
-  <int value="0" label="Discovery not attempted"/>
-  <int value="1" label="Failed to start discovery"/>
-  <int value="2" label="Started discovery; nothing found"/>
-  <int value="3" label="Discovered share target; nothing sent"/>
-  <int value="4" label="Failed to look up selected share target"/>
-  <int value="5" label="Failed to start send"/>
-  <int value="6" label="Started send"/>
-</enum>
-
-<enum name="NearbyShareEnabledState">
-  <int value="0" label="Enabled and onboarded"/>
-  <int value="1" label="Enabled and not onboarded"/>
-  <int value="2" label="Disabled and onboarded"/>
-  <int value="3" label="Disabled and not onboarded"/>
-  <int value="4" label="Disallowed by policy"/>
-</enum>
-
-<enum name="NearbyShareFinalStatus">
-  <int value="0" label="Success"/>
-  <int value="1" label="Failure"/>
-  <int value="2" label="Canceled"/>
-</enum>
-
-<enum name="NearbyShareOnboardingEntryPoint">
-  <int value="0" label="Settings"/>
-  <int value="1" label="Tray icon/label"/>
-  <int value="2" label="Share Sheet"/>
-  <int value="3" label="Nearby Device is Trying to Share Notification"/>
-</enum>
-
-<enum name="NearbyShareOnboardingFinalState">
-  <int value="0" label="Cancelled on Device Name Page"/>
-  <int value="1" label="Candelled on Set Visibility Page"/>
-  <int value="2" label="Onboarding Complete"/>
-  <int value="3" label="Cancelled on initial page"/>
-</enum>
-
-<enum name="NearbyShareOnboardingFlowEvent">
-  <int value="1" label="Onboarding shown"/>
-  <int value="12" label="Confirm on initial page"/>
-  <int value="13" label="Cancel on initial page"/>
-  <int value="14" label="Visibility button on initial page clicked"/>
-  <int value="141" label="Device visibility page shown"/>
-  <int value="1412" label="All contacts visibility selected and confirmed"/>
-  <int value="1413" label="Some contacts visibility selected and confirmed"/>
-  <int value="1414" label="Hidden visibility selected and confirmed"/>
-  <int value="1415" label="Manage contacts selected"/>
-  <int value="1416" label="Cancel selected on visibility page"/>
-</enum>
-
-<enum name="NearbyShareServiceStatusCode">
-  <int value="0" label="Ok"/>
-  <int value="1" label="Error"/>
-  <int value="2" label="Out-of-order API call"/>
-  <int value="3" label="Already stopped"/>
-  <int value="4" label="Transfer already in progress"/>
-  <int value="5" label="No available connection medium"/>
-</enum>
-
-<enum name="NearbyShareStartAdvertisingFailureReason">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Error"/>
-  <int value="2" label="Out-of-order API call"/>
-  <int value="3" label="Already have active strategy"/>
-  <int value="4" label="Already advertising"/>
-  <int value="5" label="Bluetooth error"/>
-  <int value="6" label="BLE error"/>
-  <int value="7" label="WiFiLAN error"/>
-</enum>
-
-<enum name="NearbyShareTransferFinalStatus">
-  <int value="0" label="Complete"/>
-  <int value="1" label="Unknown"/>
-  <int value="2" label="Awaiting remote acceptance failed"/>
-  <int value="3" label="Failed"/>
-  <int value="4" label="Rejected"/>
-  <int value="5" label="Cancelled"/>
-  <int value="6" label="Timed out"/>
-  <int value="7" label="Media unavailable"/>
-  <int value="8" label="Not enough space"/>
-  <int value="9" label="Unsupported attachment type"/>
-  <int value="10" label="Decode advertisement failed"/>
-  <int value="11" label="Missing transfer update callback"/>
-  <int value="12" label="Missing share target"/>
-  <int value="13" label="Missing endpoint id"/>
-  <int value="14" label="Missing payloads"/>
-  <int value="15" label="Paired key verification failed"/>
-  <int value="16" label="Invalid introduction frame"/>
-  <int value="17" label="Incomplete payloads"/>
-  <int value="18" label="Failed to create share target"/>
-  <int value="19" label="Failed to initiate outgoing connection"/>
-  <int value="20" label="Failed to read outgoing connection response"/>
-  <int value="21" label="Unexpected disconnection"/>
-</enum>
-
-<enum name="NearbyShareUpgradedMedium">
-  <int value="0" label="Unknown upgraded medium"/>
-  <int value="1" label="mDNS"/>
-  <int value="2" label="Bluetooth"/>
-  <int value="3" label="WiFi hotspot"/>
-  <int value="4" label="BLE"/>
-  <int value="5" label="WiFi LAN"/>
-  <int value="6" label="WiFi Aware"/>
-  <int value="7" label="NFC"/>
-  <int value="8" label="WiFi Direct"/>
-  <int value="9" label="WebRTC"/>
-  <int value="10" label="No upgrade"/>
-  <int value="11" label="BLE L2CAP"/>
-</enum>
-
-<enum name="NearbyShareVisibility">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="No one"/>
-  <int value="2" label="All contacts"/>
-  <int value="3" label="Selected contacts"/>
 </enum>
 
 <enum name="NetErrorCodes">
@@ -42104,7 +40921,6 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Third party theme"/>
   <int value="4" label="Uploaded image"/>
   <int value="5" label="Wallpaper search image"/>
-  <int value="6" label="Wallpaper search inspiration image"/>
 </enum>
 
 <enum name="NTPChromeWebStoreOpen">
@@ -42169,11 +40985,6 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="First party collection theme selected."/>
   <int value="9" label="Wallpaper search thumbs up selected."/>
   <int value="10" label="Wallpaper search thumbs down selected."/>
-  <int value="11" label="Wallpaper search subject value changed."/>
-  <int value="12" label="Wallpaper search style value changed."/>
-  <int value="13" label="Wallpaper search mood value changed."/>
-  <int value="14" label="Wallpaper search color value changed."/>
-  <int value="15" label="Wallpaper search inspiration theme selected."/>
 </enum>
 
 <enum name="NTPCustomizedFeatures">
@@ -42352,13 +41163,6 @@ Called by update_net_error_codes.py.-->
   </int>
 </enum>
 
-<enum name="NtpWallpaperSearchStatus">
-  <int value="0" label="Okay"/>
-  <int value="1" label="Generic error"/>
-  <int value="2" label="Request throttled"/>
-  <int value="3" label="Offline"/>
-</enum>
-
 <enum name="NTSTATUS">
   <int value="-1073741818" label="0xC0000006 - STATUS_IN_PAGE_ERROR"/>
   <int value="-1073741810" label="0xC000000E - STATUS_NO_SUCH_DEVICE"/>
@@ -42376,15 +41180,6 @@ Called by update_net_error_codes.py.-->
   <int value="-1073740669" label="0xC0000483 - STATUS_DEVICE_HARDWARE_ERROR"/>
   <int value="-1073740023" label="0xC0000709 - STATUS_HARDWARE_MEMORY_ERROR"/>
   <int value="0" label="0x00000000 - STATUS_SUCCESS"/>
-</enum>
-
-<enum name="NukeProfileResult">
-  <int value="0" label="Success (1st attempt)"/>
-  <int value="1" label="Success (2nd attempt)"/>
-  <int value="2" label="Success (3rd attempt)"/>
-  <int value="10" label="Failure (1st attempt)"/>
-  <int value="11" label="Failure (2nd attempt)"/>
-  <int value="12" label="Failure (3rd attempt)"/>
 </enum>
 
 <enum name="NullableBoolean">
@@ -46390,10 +45185,16 @@ Called by update_net_error_codes.py.-->
   <int value="-2012727489" label="device.mojom.ScreenOrientation"/>
   <int value="-1398143678" label="blink.mojom.ClipboardHost (Unexpected)"/>
   <int value="-1354302262" label="blink.mojom.BackForwardCacheControllerHost"/>
+  <int value="-1150785480"
+      label="subresource_filter.mojom.SubresourceFilterHost"/>
+  <int value="-363037346"
+      label="extensions.mojom.EventRouter (Obsolete in M122)"/>
   <int value="-71187962" label="supervised_user.mojom.SupervisedUserCommands"/>
+  <int value="-10666109" label="chrome.mojom.PluginInfoHost"/>
   <int value="-4973921" label="blink.mojom.AttributionHost"/>
   <int value="191605727" label="content.mojom.PepperHost"/>
   <int value="828689080" label="blink.mojom.BlobURLStore (Obsolete)"/>
+  <int value="1515506006" label="extensions.mojom.RendererHost"/>
   <int value="1984681860"
       label="chrome.mojom.OpenSearchDescriptionDocumentHandler (Obsolete)"/>
 </enum>
@@ -46899,431 +45700,11 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Neither Available"/>
 </enum>
 
-<enum name="Profile">
-  <int value="0" label="Guest Profile"/>
-  <int value="1" label="Profile 01"/>
-  <int value="2" label="Profile 02"/>
-  <int value="3" label="Profile 03"/>
-  <int value="4" label="Profile 04"/>
-  <int value="5" label="Profile 05"/>
-  <int value="6" label="Profile 06"/>
-  <int value="7" label="Profile 07"/>
-  <int value="8" label="Profile 08"/>
-  <int value="9" label="Profile 09"/>
-  <int value="10" label="Profile 10"/>
-  <int value="11" label="Profile 11"/>
-  <int value="12" label="Profile 12"/>
-  <int value="13" label="Profile 13"/>
-  <int value="14" label="Profile 14"/>
-  <int value="15" label="Profile 15"/>
-  <int value="16" label="Profile 16"/>
-  <int value="17" label="Profile 17"/>
-  <int value="18" label="Profile 18"/>
-  <int value="19" label="Profile 19"/>
-  <int value="20" label="Profile 20"/>
-  <int value="21" label="Profile 21"/>
-  <int value="22" label="Profile 22"/>
-  <int value="23" label="Profile 23"/>
-  <int value="24" label="Profile 24"/>
-  <int value="25" label="Profile 25"/>
-  <int value="26" label="Profile 26"/>
-  <int value="27" label="Profile 27"/>
-  <int value="28" label="Profile 28"/>
-  <int value="29" label="Profile 29"/>
-  <int value="30" label="Profile 30"/>
-  <int value="31" label="Profile 31"/>
-  <int value="32" label="Profile 32"/>
-  <int value="33" label="Profile 33"/>
-  <int value="34" label="Profile 34"/>
-  <int value="35" label="Profile 35"/>
-  <int value="36" label="Profile 36"/>
-  <int value="37" label="Profile 37"/>
-  <int value="38" label="Profile 38"/>
-  <int value="39" label="Profile 39"/>
-  <int value="40" label="Profile 40"/>
-  <int value="41" label="Profile 41"/>
-  <int value="42" label="Profile 42"/>
-  <int value="43" label="Profile 43"/>
-  <int value="44" label="Profile 44"/>
-  <int value="45" label="Profile 45"/>
-  <int value="46" label="Profile 46"/>
-  <int value="47" label="Profile 47"/>
-  <int value="48" label="Profile 48"/>
-  <int value="49" label="Profile 49"/>
-  <int value="50" label="Profile 50"/>
-  <int value="51" label="Profile 51"/>
-  <int value="52" label="Profile 52"/>
-  <int value="53" label="Profile 53"/>
-  <int value="54" label="Profile 54"/>
-  <int value="55" label="Profile 55"/>
-  <int value="56" label="Profile 56"/>
-  <int value="57" label="Profile 57"/>
-  <int value="58" label="Profile 58"/>
-  <int value="59" label="Profile 59"/>
-  <int value="60" label="Profile 60"/>
-  <int value="61" label="Profile 61"/>
-  <int value="62" label="Profile 62"/>
-  <int value="63" label="Profile 63"/>
-  <int value="64" label="Profile 64"/>
-  <int value="65" label="Profile 65"/>
-  <int value="66" label="Profile 66"/>
-  <int value="67" label="Profile 67"/>
-  <int value="68" label="Profile 68"/>
-  <int value="69" label="Profile 69"/>
-  <int value="70" label="Profile 70"/>
-  <int value="71" label="Profile 71"/>
-  <int value="72" label="Profile 72"/>
-  <int value="73" label="Profile 73"/>
-  <int value="74" label="Profile 74"/>
-  <int value="75" label="Profile 75"/>
-  <int value="76" label="Profile 76"/>
-  <int value="77" label="Profile 77"/>
-  <int value="78" label="Profile 78"/>
-  <int value="79" label="Profile 79"/>
-  <int value="80" label="Profile 80"/>
-  <int value="81" label="Profile 81"/>
-  <int value="82" label="Profile 82"/>
-  <int value="83" label="Profile 83"/>
-  <int value="84" label="Profile 84"/>
-  <int value="85" label="Profile 85"/>
-  <int value="86" label="Profile 86"/>
-  <int value="87" label="Profile 87"/>
-  <int value="88" label="Profile 88"/>
-  <int value="89" label="Profile 89"/>
-  <int value="90" label="Profile 90"/>
-  <int value="91" label="Profile 91"/>
-  <int value="92" label="Profile 92"/>
-  <int value="93" label="Profile 93"/>
-  <int value="94" label="Profile 94"/>
-  <int value="95" label="Profile 95"/>
-  <int value="96" label="Profile 96"/>
-  <int value="97" label="Profile 97"/>
-  <int value="98" label="Profile 98"/>
-  <int value="99" label="Profile 99"/>
-  <int value="100" label="Profile 99+"/>
-</enum>
-
-<enum name="ProfileAddNewUser">
-  <int value="0" label="(Deprecated) Add new profile from icon menu"/>
-  <int value="1" label="(Deprecated) Add new profile from title bar menu"/>
-  <int value="2" label="Add new profile from the old create profile dialog"/>
-  <int value="3" label="Add new local profile from the Profile picker"/>
-  <int value="4" label="Auto-created after deleting last user"/>
-  <int value="5" label="Add new profile from sign-in interception"/>
-  <int value="6"
-      label="Add new profile from the sync flow (to avoid data clash)"/>
-  <int value="7" label="Add new signed-in profile from the Profile picker"/>
-</enum>
-
-<enum name="ProfileAllAccountsNames">
-  <int value="0" label="At most one name (or a rare hash collision)"/>
-  <int value="1" label="Multiple names (no sync)"/>
-  <int value="2" label="Multiple names (sync enabled for one of them)"/>
-</enum>
-
-<enum name="ProfileAvatar">
-  <int value="0" label="Generic"/>
-  <int value="1" label="Generic Aqua"/>
-  <int value="2" label="Generic Blue"/>
-  <int value="3" label="Generic Green"/>
-  <int value="4" label="Generic Orange"/>
-  <int value="5" label="Generic Purple"/>
-  <int value="6" label="Generic Red"/>
-  <int value="7" label="Generic Yellow"/>
-  <int value="8" label="Secret Agent"/>
-  <int value="9" label="Superhero"/>
-  <int value="10" label="Volleyball"/>
-  <int value="11" label="Businessman"/>
-  <int value="12" label="Ninja"/>
-  <int value="13" label="Alien"/>
-  <int value="14" label="Super Awesome Cool Smiley Face"/>
-  <int value="15" label="Flower"/>
-  <int value="16" label="Pizza"/>
-  <int value="17" label="Soccer"/>
-  <int value="18" label="Burger"/>
-  <int value="19" label="Cat"/>
-  <int value="20" label="Cupcake"/>
-  <int value="21" label="Dog"/>
-  <int value="22" label="Horse"/>
-  <int value="23" label="Margarita"/>
-  <int value="24" label="Note"/>
-  <int value="25" label="Sun And Cloud"/>
-  <int value="26" label="Placeholder"/>
-  <int value="27" label="Unknown"/>
-  <int value="28" label="GAIA"/>
-  <int value="29" label="Origami Cat"/>
-  <int value="30" label="Origami Corgi"/>
-  <int value="31" label="Origami Dragon"/>
-  <int value="32" label="Origami Elephant"/>
-  <int value="33" label="Origami Fox"/>
-  <int value="34" label="Origami Monkey"/>
-  <int value="35" label="Origami Panda"/>
-  <int value="36" label="Origami Penguin"/>
-  <int value="37" label="Origami Pink Butterfly"/>
-  <int value="38" label="Origami Rabbit"/>
-  <int value="39" label="Origami Unicorn"/>
-</enum>
-
-<enum name="ProfileAvatarState">
-  <int value="0" label="Signed In: Gaia avatar"/>
-  <int value="1" label="Signed In: Modern avatar"/>
-  <int value="2" label="Signed In: Old avatar"/>
-  <int value="3" label="Signed Out: Default avatar (Grey silhouette)"/>
-  <int value="4" label="Signed Out: Modern avatar"/>
-  <int value="5" label="Signed Out: Old avatar"/>
-</enum>
-
-<enum name="ProfileDeleteAction">
-  <int value="0" label="Settings Page">
-    The user confirmed deletion of a profile from the settings page. This metric
-    is recorded even if profile deletion is cancelled after the confirmation.
-  </int>
-  <int value="1" label="User Manager">
-    The user confirmed deletion of a profile from the User Manager. This metric
-    is recorded even if profile deletion is cancelled after the confirmation.
-  </int>
-  <int value="2" label="User Manager Warning Shown">
-    The user clicked 'Remove this person' in the user manager and was shown the
-    profile deletion warning. No profile deletion action has been started yet.
-  </int>
-  <int value="3" label="Settings Page Warning Shown">
-    The user clicked 'Remove...' or the 'X' in the settings page and was shown
-    the profile deletion warning. No profile deletion action has been started
-    yet.
-  </int>
-  <int value="4" label="Aborted after confirmation">
-    The user confirmed the deletion of a profile in either the settings page or
-    the User Manager, but clicked 'Stay' in an OnBeforeUnload dialog. Since the
-    browsing window of the profile was still open, profile deletion was
-    cancelled.
-  </int>
-  <int value="5" label="Dice web signout">
-    Deprecated. The user signed out on the web, and Chrome signout was
-    prohibited.
-  </int>
-  <int value="6" label="Primary account is not allowed">
-    The primary account is a managed account and is no longer allowed by policy.
-  </int>
-  <int value="7" label="Primary account was removed (Lacros only)">
-    The primary account was removed from the device on Lacros.
-  </int>
-  <int value="8" label="Signin is required with Mirror (Lacros only)">
-    The profile is not signed in, which is unsupported on Lacros.
-  </int>
-</enum>
-
-<enum name="ProfileDeleteContext">
-  <int value="0" label="Without browser window: the last profile">
-    The deletion happened from the profile picker when no browser window is
-    shown (which is a good proxy for happening on startup). It is the last
-    remaining profile.
-  </int>
-  <int value="1" label="Without browser window: an additional profile">
-    The deletion happened from the profile picker when no browser window is
-    shown (which is a good proxy for happening on startup). It is not the last
-    remaining profile.
-  </int>
-  <int value="2" label="With a browser window: the last profile">
-    The deletion happened with at least one browser window open. It is the last
-    remaining profile.
-  </int>
-  <int value="3" label="With a browser window: an additional profile">
-    The deletion happened with at least one browser window open. It is not the
-    last remaining profile.
-  </int>
-</enum>
-
-<enum name="ProfileDestructionType">
-  <int value="0" label="Immediately"/>
-  <int value="1" label="Delayed"/>
-  <int value="2" label="Delayed and Crashed"/>
-</enum>
-
 <enum name="ProfileEligibilityMismatch">
   <int value="0" label="kEligibleProfileInExperiment"/>
   <int value="1" label="kIneligibleProfileNotInExperiment"/>
   <int value="2" label="kIneligibleProfileInExperiment"/>
   <int value="3" label="kEligibleProfileNotInExperiment"/>
-</enum>
-
-<enum name="ProfileKeepAliveOrigin">
-  <int value="0" label="kWaitingForFirstBrowserWindow"/>
-  <int value="1" label="kBrowserWindow"/>
-  <int value="2" label="kBackgroundMode"/>
-  <int value="3" label="kOffTheRecordProfile"/>
-  <int value="4" label="kDownloadInProgress"/>
-  <int value="5" label="kAppControllerMac"/>
-  <int value="6" label="kClearingBrowsingData"/>
-  <int value="7" label="kAppWindow"/>
-  <int value="8" label="kBackgroundSync"/>
-  <int value="9" label="kNotification"/>
-  <int value="10" label="kPendingNotificationClickEvent"/>
-  <int value="11" label="kInFlightPushMessage"/>
-  <int value="12" label="kSessionRestore"/>
-  <int value="13" label="kChromeViewsDelegate"/>
-  <int value="14" label="kDevToolsWindow"/>
-  <int value="15" label="kWebAppPermissionDialogWindow"/>
-  <int value="16" label="kSessionDataDeleter"/>
-  <int value="17" label="kWebAppProtocolHandlerLaunch"/>
-  <int value="18" label="kExtensionUpdater"/>
-  <int value="19" label="kProfileCreationFlow"/>
-  <int value="20" label="kPendingNotificationCloseEvent"/>
-  <int value="21" label="kFeedbackDialog"/>
-  <int value="22" label="kWebAppUpdate"/>
-  <int value="23" label="kGettingWebAppInfo"/>
-  <int value="24" label="kCrxInstaller"/>
-  <int value="25" label="kProfilePickerView"/>
-  <int value="26" label="kCommanderFrontend"/>
-  <int value="27" label="kDiceWebSigninInterceptionBubble"/>
-  <int value="28" label="kHistoryMenuBridge"/>
-  <int value="29" label="kLacrosMainProfile"/>
-  <int value="30" label="kProfileCreationSamlFlow"/>
-  <int value="31" label="kDriveFsNativeMessageHostLacros"/>
-  <int value="32" label="kProfileDeletionProcess"/>
-  <int value="33" label="kProfileStatistics"/>
-  <int value="34" label="kIsolatedWebAppInstall"/>
-  <int value="35" label="kIsolatedWebAppUpdate"/>
-  <int value="36" label="kWebAppUninstall"/>
-  <int value="37" label="kOsIntegrationForceUnregistration"/>
-  <int value="38" label="kRemoteDebugging"/>
-</enum>
-
-<enum name="ProfileMenuActionableItem">
-  <int value="0" label="Manage your Google Account button"/>
-  <int value="1" label="Passwords button"/>
-  <int value="2" label="Credit cards button"/>
-  <int value="3" label="Addresses button"/>
-  <int value="4" label="Guest profile button"/>
-  <int value="5" label="Manage profiles button"/>
-  <int value="6" label="Lock button"/>
-  <int value="7" label="Exit profile button"/>
-  <int value="8" label="Sync error button"/>
-  <int value="9" label="Current profile card"/>
-  <int value="10" label="Sign-in and turn on sync button"/>
-  <int value="11" label="Turn on sync for account button"/>
-  <int value="12" label="Sign-out button"/>
-  <int value="13" label="Switch to another profile button"/>
-  <int value="14" label="Cookies cleared on exit link"/>
-  <int value="15" label="Add new profile button"/>
-  <int value="16" label="Sync settings(sync on) button"/>
-  <int value="17" label="Edit profile button"/>
-  <int value="18" label="Create incognito shortcut button (deprecated)"/>
-  <int value="19" label="Sign-in and turn on sync button for web-only account"/>
-</enum>
-
-<enum name="ProfileNetUserCount">
-  <int value="0" label="Added new user"/>
-  <int value="1" label="Deleted a profile"/>
-</enum>
-
-<enum name="ProfilePickerAction">
-  <int value="0" label="Launch existing profile"/>
-  <int value="1" label="Launch existing profile on customize settings page"/>
-  <int value="2" label="Launch guest profile"/>
-  <int value="3" label="Launch new profile"/>
-  <int value="4" label="Delete profile"/>
-</enum>
-
-<enum name="ProfilePickerEntryPoint">
-  <int value="0" label="On startup"/>
-  <int value="1" label="Manage profile button in the profile menu"/>
-  <int value="2" label="Add new profile button in the profile menu"/>
-  <int value="3" label="Open new window after profile deletion"/>
-  <int value="4" label="New session while running (e.g. from Windows tray)"/>
-  <int value="5" label="Profile locked"/>
-  <int value="6" label="Unable to create a browser"/>
-  <int value="7" label="Background mode manager"/>
-  <int value="8" label="Adding an account from OGB (on lacros)"/>
-  <int value="9" label="First Run Experience on Lacros"/>
-  <int value="10" label="Profile idle"/>
-  <int value="11" label="First Run Experience (non-Lacros)"/>
-  <int value="12" label="No usable profile at startup"/>
-  <int value="13" label="No usable profile for existing process"/>
-  <int value="14" label="Manage profile item in the app menu"/>
-  <int value="15" label="Add new profile item in the app menu"/>
-</enum>
-
-<enum name="ProfilePickerPages">
-  <int value="0" label="mainView"/>
-  <int value="1" label="profileTypeChoice"/>
-  <int value="2" label="localProfileCustomization"/>
-  <int value="3" label="loadSignIn"/>
-  <int value="4" label="loadForceSignIn"/>
-  <int value="5" label="profileSwitch"/>
-  <int value="6" label="accountSelectionLacros"/>
-</enum>
-
-<enum name="ProfilePickerReauthResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Success without reauthenticating"/>
-  <int value="2" label="Error: Reauthed with a new email"/>
-  <int value="3" label="Error: Reauthed with another signed in email"/>
-  <int value="4" label="Timeout: ForceSigninVerifier check"/>
-  <int value="5" label="Timeout: Sign in error"/>
-</enum>
-
-<enum name="ProfilePickerStartupProfileMode">
-  <int value="0" label="kBrowserWindow"/>
-  <int value="1" label="kProfilePicker"/>
-  <int value="2" label="kError"/>
-</enum>
-
-<enum name="ProfilePickerStartupProfileReason">
-  <int value="0" label="kError"/>
-  <int value="1" label="kMultipleProfiles"/>
-  <int value="2" label="kPickerForcedByPolicy"/>
-  <int value="10" label="kGuestModeRequested"/>
-  <int value="11" label="kGuestSessionLacros"/>
-  <int value="12" label="kProfileDirSwitch"/>
-  <int value="13" label="kProfileEmailSwitch"/>
-  <int value="14" label="kIgnoreProfilePicker"/>
-  <int value="15" label="kCommandLineTabs"/>
-  <int value="16" label="kPickerNotSupported"/>
-  <int value="17" label="kWasRestarted"/>
-  <int value="18" label="kIncognitoModeRequested"/>
-  <int value="19" label="kAppRequested"/>
-  <int value="20" label="kUninstallApp"/>
-  <int value="21" label="kGcpwSignin"/>
-  <int value="22" label="kLaunchWithoutWindow"/>
-  <int value="23" label="kNotificationLaunchIdWin1"/>
-  <int value="24" label="kNotificationLaunchIdWin2"/>
-  <int value="25" label="kPickerDisabledByPolicy"/>
-  <int value="26" label="kProfilesDisabledLacros"/>
-  <int value="27" label="kSingleProfile"/>
-  <int value="28" label="kInactiveProfiles"/>
-  <int value="29" label="kUserOptedOut"/>
-</enum>
-
-<enum name="ProfileSignedInFlowOutcome">
-  <int value="0" label="A consumer account is added and syncing"/>
-  <int value="1" label="A consumer account is added without sync"/>
-  <int value="2"
-      label="A consumer account is added with sync manually configured"/>
-  <int value="3" label="An enterprise account is added and syncing"/>
-  <int value="4" label="An enterprise account is added without sync"/>
-  <int value="5"
-      label="An enterprise account is added with no link data consent
-             (deprecated)"/>
-  <int value="6"
-      label="An enterprise account is added with sync manually configured"/>
-  <int value="7" label="An enterprise account is added but sync is disabled"/>
-  <int value="8" label="An account is added with some login error">
-    This includes the case that the account is already syncing in another
-    profile.
-  </int>
-  <int value="9" label="The SAML sign-in flow stated (with unclear outcome)."/>
-  <int value="10" label="The flow got aborted before successful sign-in."/>
-  <int value="11"
-      label="The flow got aborted after sign-in (not in enterprise welcome)."/>
-  <int value="12"
-      label="The flow got aborted after sign-in (in enterprise welcome)."/>
-  <int value="13"
-      label="The flow was skipped because the profile is already syncing."/>
-  <int value="14"
-      label="The flow was skipped due to the value of some policy(ies)."/>
-  <int value="15"
-      label="The flow got aborted after sync was declined while sign-in is
-             forced by policies."/>
 </enum>
 
 <enum name="ProfileSignInStatus">
@@ -47338,13 +45719,6 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="No profiles syncing"/>
   <int value="2" label="Mixed syncing status"/>
   <int value="3" label="Unknown syncing status"/>
-</enum>
-
-<enum name="ProfileUnconsentedPrimaryAccountType">
-  <int value="0" label="Consumer account"/>
-  <int value="1" label="Enterprise account"/>
-  <int value="2" label="Child account"/>
-  <int value="3" label="No account (signed-out)"/>
 </enum>
 
 <enum name="PromoBrowserCommandEnum">
@@ -47415,51 +45789,6 @@ Called by update_net_error_codes.py.-->
   <int value="28" label="Failed: Unique DB missing, shared deletion failed"/>
   <int value="29" label="Deleted shared db on repeated failures"/>
   <int value="30" label="Failed to deleted shared db on repeated failures"/>
-</enum>
-
-<enum name="ProximityAuth_BleWeaveConnectionResult">
-  <int value="0" label="Closed normally"/>
-  <int value="1" label="(Deprecated) Timeout: Setting connection latency"/>
-  <int value="2" label="Timeout: Creating GATT connection"/>
-  <int value="3" label="Timeout: Starting notify session"/>
-  <int value="4" label="Timeout: Finding GATT characteristics"/>
-  <int value="5" label="Timeout: Waiting for connection response"/>
-  <int value="6" label="Error: Bluetooth device not available"/>
-  <int value="7" label="Error: Creating GATT connection"/>
-  <int value="8" label="Error: Starting notify session"/>
-  <int value="9" label="Error: Finding GATT characteristics"/>
-  <int value="10" label="Error: Writing GATT characteristics"/>
-  <int value="11" label="Error: GATT characteristics not available"/>
-  <int value="12" label="Error: Write queue out of sync"/>
-  <int value="13" label="Error: Device lost"/>
-  <int value="14" label="Error: Connection dropped"/>
-  <int value="15" label="Timeout: Waiting for message to send"/>
-</enum>
-
-<enum name="ProximityAuth_BluetoothGattConnectionResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Error: Auth canceled"/>
-  <int value="2" label="Error: Auth failed"/>
-  <int value="3" label="Error: Auth rejected"/>
-  <int value="4" label="Error: Auth timeout"/>
-  <int value="5" label="Error: Failed"/>
-  <int value="6" label="Error: In progress"/>
-  <int value="7" label="Error: Unknown"/>
-  <int value="8" label="Error: Unsupported device"/>
-  <int value="9" label="Unknown result"/>
-</enum>
-
-<enum name="ProximityAuth_BluetoothGattServiceOperationResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="Error: Unknown"/>
-  <int value="2" label="Error: Failed"/>
-  <int value="3" label="Error: In progress"/>
-  <int value="4" label="Error: Invalid length"/>
-  <int value="5" label="Error: Not permitted"/>
-  <int value="6" label="Error: Not authorized"/>
-  <int value="7" label="Error: Not paired"/>
-  <int value="8" label="Error: Not supported"/>
-  <int value="9" label="Unknown result"/>
 </enum>
 
 <enum name="PushEventStatus">
@@ -48029,42 +46358,6 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Blocked. Synchronous Compositor Only."/>
 </enum>
 
-<enum name="RendererType">
-  <int value="1" label="Normal renderer"/>
-  <int value="2" label="Extension renderer"/>
-</enum>
-
-<enum name="RenderProcessHostBlockedURLReason">
-  <int value="0" label="Invalid URL"/>
-  <int value="1" label="Failed CanRequestURL Check"/>
-</enum>
-
-<enum name="RenderProcessHostDelayShutdownReason">
-  <int value="0" label="No Delay"/>
-  <int value="1" label="Other Active Or Pending Views">
-    There are active or pending views other than the ones shutting down.
-  </int>
-  <int value="2" label="Single Process Mode">
-    Single process mode never shuts down the renderer.
-  </int>
-  <int value="3" label="No Process">
-    Render process hasn't started or is probably crashed.
-  </int>
-  <int value="4" label="Unload Handler Exists"/>
-  <int value="5" label="Fetch Keepalive Request">
-    There is pending fetch keepalive request.
-  </int>
-  <int value="6" label="Worker Exists"/>
-  <int value="7" label="Pending Reuse">The process is pending to reuse.</int>
-  <int value="8" label="Process Requested Delay">
-    The process is requested to delay shutdown.
-  </int>
-  <int value="9" label="Listener Exists"/>
-  <int value="10" label="In Observer Callback">
-    Delays until all observer callbacks completed.
-  </int>
-</enum>
-
 <enum name="RenderViewContextMenuItem">
   <int value="0" label="IDC_CONTENT_CONTEXT_CUSTOM_FIRST"/>
   <int value="1" label="IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST"/>
@@ -48222,6 +46515,7 @@ Called by update_net_error_codes.py.-->
   <int value="141" label="IDC_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS"/>
   <int value="142" label="IDC_CONTENT_CONTEXT_SEARCHLENSFORVIDEOFRAME"/>
   <int value="143" label="IDC_CONTENT_CONTEXT_SEARCHWEBFORVIDEOFRAME"/>
+  <int value="144" label="IDC_CONTENT_CONTEXT_OPENLINKPREVIEW"/>
 </enum>
 
 <enum name="ReportProcessingResult">
@@ -48381,8 +46675,6 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Undo ignore"/>
   <int value="7" label="Undo reset"/>
   <int value="8" label="Open review UI"/>
-  <int value="9" label="Undo block all"/>
-  <int value="10" label="Go to settings"/>
 </enum>
 
 <enum name="SafetyCheckPasswordsStatus">
@@ -48418,7 +46710,6 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Undo allow again"/>
   <int value="4" label="Undo acknowledge all"/>
   <int value="5" label="Minimize review UI"/>
-  <int value="6" label="Go to settings"/>
 </enum>
 
 <enum name="SafetyCheckUpdateStatus">
@@ -49131,12 +47422,6 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="From omnibox"/>
 </enum>
 
-<enum name="SearchProviderOverrideStatus">
-  <int value="0" label="kNoPref"/>
-  <int value="1" label="kEmptyPref"/>
-  <int value="2" label="kPrefHasValidUrls"/>
-</enum>
-
 <enum name="SearchResumptionModule.ModuleNotShownReason">
   <int value="0" label="Not enough suggestions available"/>
   <int value="1" label="Feature flags aren't enabled"/>
@@ -49193,14 +47478,6 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="Missing nearby connector"/>
   <int value="15"
       label="Connection was intentionally cancelled due to a status change"/>
-</enum>
-
-<enum name="SecureChannelNearbyConnectionMedium">
-  <int value="0" label="Connected via Bluetooth"/>
-  <int value="1" label="Upgraded bandwidth to WebRTC"/>
-  <int value="2"
-      label="Disconnected in under 30s without WebRTC upgrade; not provided
-             enough time to complete bandwidth upgrade process"/>
 </enum>
 
 <enum name="SecurePaymentConfirmationAuthenticationDialogResult">
@@ -50441,7 +48718,6 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="Opened from a link in side panel"/>
   <int value="15" label="Opened from Read Anything omnibox icon"/>
   <int value="16" label="Opened from Read Anything via address bar"/>
-  <int value="17" label="Opened from toolbar overflow menu"/>
 </enum>
 
 <enum name="SideSearchAvailabilityChangeType">
@@ -50707,86 +48983,6 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Suspend"/>
 </enum>
 
-<enum name="SmartLockAuthEventPasswordState">
-  <int value="0" label="Unknown state"/>
-  <int value="1" label="(obsolete) No pairing"/>
-  <int value="2" label="(obsolete) Pairing changed"/>
-  <int value="3" label="(obsolete) User hardlock"/>
-  <int value="4" label="Service not active"/>
-  <int value="5" label="No Bluetooth"/>
-  <int value="6" label="Bluetooth connecting"/>
-  <int value="7" label="Could not connect to phone"/>
-  <int value="8" label="Phone not authenticated"/>
-  <int value="9" label="Phone locked"/>
-  <int value="10" label="RSSI too low"/>
-  <int value="11" label="Phone authenticated"/>
-  <int value="12" label="(obsolete) Sign-in failed"/>
-  <int value="13" label="(obsolete) Pairing added"/>
-  <int value="14" label="(obsolete) No screenlock state handler"/>
-  <int value="15" label="Phone locked and RSSI too low"/>
-  <int value="16" label="(obsolete) Forced Reauthentication"/>
-  <int value="17" label="(obsolete) Sign-in with Smart Lock disabled"/>
-  <int value="18" label="Phone not lockable"/>
-  <int value="19" label="Primary user absent"/>
-</enum>
-
-<enum name="SmartLockAuthMethodChoice">
-  <int value="0" label="Smart Lock"/>
-  <int value="1" label="Other"/>
-</enum>
-
-<enum name="SmartLockAuthResultFailureReason">
-  <int value="0" label="Unlock not allowed"/>
-  <int value="1" label="(obsolete) Already attempting auth"/>
-  <int value="2" label="Empty user account"/>
-  <int value="3" label="Invalid account id"/>
-  <int value="4" label="Auth attempt cannot start"/>
-  <int value="5" label="No pending or active host"/>
-  <int value="6" label="Authentication channel dropped"/>
-  <int value="7" label="Failed to send unlock request"/>
-  <int value="8" label="(obsolete) Failed to decrypt sign-in"/>
-  <int value="9" label="Failed to notify host device that Smart Lock was used"/>
-  <int value="10" label="Authentication attempt timed out"/>
-  <int value="11" label="Unlock event sent but not attempting auth"/>
-  <int value="12" label="Unlock request sent but not attempting auth"/>
-  <int value="13" label="(obsolete) Login display host does not exist"/>
-  <int value="14" label="(obsolete) User controller sign in failure"/>
-</enum>
-
-<enum name="SmartLockEnabledState">
-  <int value="0" label="Enabled"/>
-  <int value="1" label="Disabled"/>
-  <int value="2" label="Unset"/>
-</enum>
-
-<enum name="SmartLockFindAndConnectToHostResult">
-  <int value="0" label="Found and connected to host"/>
-  <int value="1" label="Canceled, Bluetooth disabled"/>
-  <int value="2" label="Canceled, user entered password"/>
-  <int value="3" label="Connection attempt failure with SecureChannel service"/>
-  <int value="4"
-      label="Timed out (phone is too far, it or its Bluetooth is off, or a
-             connection error occurred)"/>
-</enum>
-
-<enum name="SmartLockGetRemoteStatusResultFailureReason">
-  <int value="0" label="Canceled, Bluetooth disabled"/>
-  <int value="1"
-      label="(Deprecated) Timed out could not establish authenticated channel"/>
-  <int value="2" label="Timed out did not receive remote status update"/>
-  <int value="3"
-      label="(Deprecated) User entered password while Bluetooth disabled"/>
-  <int value="4" label="Canceled, user entered password"/>
-  <int value="5" label="Authenticated channel dropped"/>
-</enum>
-
-<enum name="SmartLockToggle">
-  <int value="0" label="Enabled on multidevice page"/>
-  <int value="1" label="Disabled on multidevice page"/>
-  <int value="2" label="Enabled on lock screen settings"/>
-  <int value="3" label="Disabled on lock screen settings"/>
-</enum>
-
 <enum name="SmsParsingStatus">
   <int value="0" label="Parsed"/>
   <int value="1" label="OTP format regex not match"/>
@@ -50856,6 +49052,7 @@ Called by update_net_error_codes.py.-->
   <int value="58" label="UMA_CREATOR_UNFOLLOW_SUCCESS"/>
   <int value="59" label="UMA_CREATOR_UNFOLLOW_FAILURE"/>
   <int value="60" label="UMA_QUICK_DELETE"/>
+  <int value="61" label="UMA_AUTO_TRANSLATE"/>
 </enum>
 
 <enum name="SnapshotItemId">
@@ -50933,25 +49130,6 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Used, relock failed"/>
   <int value="3" label="Wasted, relocked"/>
   <int value="4" label="Used, relocked"/>
-</enum>
-
-<enum name="SpareProcessMaybeTakeAction">
-  <int value="0" label="NoSparePresent"/>
-  <int value="1" label="MismatchedBrowserContext"/>
-  <int value="2" label="MismatchedStoragePartition"/>
-  <int value="3" label="RefusedByEmbedder">
-    Refused via BrowserContentClient::ShouldUseSpareRenderProcessHost (typically
-    because of incompatible renderer flavour like NTP or extension - see
-    https://crbug.com/834324).
-  </int>
-  <int value="4" label="SpareTaken"/>
-  <int value="5" label="RefusedBySiteInstance">
-    Refused via SiteInstanceImpl::CanAssociateWithAlreadyInitializedProcessHost
-    (typically because of tab discarding or session restore which may desire to
-    have WebContents without an associated renderer process - see
-    https://crbug.com/840409).
-  </int>
-  <int value="6" label="RefusedForPdfContent"/>
 </enum>
 
 <enum name="SpecialLocalePromoAction">
@@ -51630,18 +49808,6 @@ would be helpful to identify which type is being sent.
   <int value="4" label="DataError"/>
 </enum>
 
-<enum name="SupportToolWebUIActionType">
-  <summary>
-    Actions that the user can take on Support Tool WebUI (chrome://support-tool)
-  </summary>
-  <int value="0" label="kOpenSupportToolPage"/>
-  <int value="1" label="kOpenURLGeneratorPage"/>
-  <int value="2" label="kCreateSupportPacket"/>
-  <int value="3" label="kCancelDataCollection"/>
-  <int value="4" label="kGenerateURL"/>
-  <int value="5" label="kGenerateToken"/>
-</enum>
-
 <enum name="SuspendAttempt">
   <int value="0" label="Attempted"/>
 </enum>
@@ -51797,38 +49963,6 @@ would be helpful to identify which type is being sent.
   <int value="37" label="Unified password manager error"/>
 </enum>
 
-<enum name="TabbedPaintPreviewCompositorFailureReason">
-  <int value="0" label="OK"/>
-  <int value="1" label="URL Mismatch"/>
-  <int value="2" label="Compositor Service Disconnected"/>
-  <int value="3" label="Compositor Client Disconnected"/>
-  <int value="4" label="Protobuf Deserialization Error"/>
-  <int value="5" label="Compositor Deserialization Error"/>
-  <int value="6" label="Invalid Root Frame SKP"/>
-  <int value="7" label="Invalid Request"/>
-  <int value="8" label="Old Version"/>
-  <int value="9" label="Unexpected Version"/>
-  <int value="10" label="Capture Expired"/>
-  <int value="11" label="No Capture"/>
-  <int value="12" label="Timed Out"/>
-  <int value="13" label="Stopped Due To Memory Pressure"/>
-  <int value="14" label="Skipped Due To Memory Pressure"/>
-  <int value="15" label="Failure When Requesting Bitmap"/>
-</enum>
-
-<enum name="TabbedPaintPreviewExitCause">
-  <int value="0" label="Pull to Refresh"/>
-  <int value="1" label="Actionbar Action"/>
-  <int value="2" label="Compositor Failed to Load"/>
-  <int value="3" label="Tab Finished Loading"/>
-  <int value="4" label="Link Clicked"/>
-  <int value="5" label="Navigation Started"/>
-  <int value="6" label="Tab Destroyed"/>
-  <int value="7" label="Tab Hidden"/>
-  <int value="8" label="Offline Available"/>
-  <int value="9" label="Accessibility Not Supported"/>
-</enum>
-
 <enum name="TabForegroundState">
   <int value="0" label="Foreground (app in foreground)"/>
   <int value="1" label="Background (app in foreground)"/>
@@ -51840,12 +49974,6 @@ would be helpful to identify which type is being sent.
   <int value="0" label="Active"/>
   <int value="1" label="Background"/>
   <int value="2" label="Closed"/>
-</enum>
-
-<enum name="TabSwitchResult2">
-  <int value="0" label="Success"/>
-  <int value="1" label="Tab hidden before a frame is presented"/>
-  <int value="2" label="Tab shown twice without being hidden"/>
 </enum>
 
 <enum name="TextFragmentLinkOpenSource">
@@ -52069,13 +50197,6 @@ would be helpful to identify which type is being sent.
   <int value="29" label="kMediaStorageIdSalt"/>
   <int value="30" label="kModuleBlocklistCacheMD5Digest"/>
   <int value="32" label="kMediaCdmOriginData"/>
-</enum>
-
-<enum name="TrackingProtectionInternalOnboardingStatus">
-  <int value="0" label="kIneligible"/>
-  <int value="1" label="kEligible"/>
-  <int value="2" label="kOnboarded"/>
-  <int value="3" label="kRequested"/>
 </enum>
 
 <enum name="TrackingProtectionMetricsNoticeEvent">
@@ -52531,7 +50652,6 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Download recovered from cache"/>
   <int value="2" label="Session has ongoing download"/>
   <int value="3" label="New download task created"/>
-  <int value="4" label="Rejected (too many tasks)"/>
 </enum>
 
 <enum name="UpdateClientCanUpdateResult">
@@ -53091,12 +51211,6 @@ would be helpful to identify which type is being sent.
   </int>
 </enum>
 
-<enum name="VeryLowPerformanceReason">
-  <int value="0" label="Low RAM"/>
-  <int value="1" label="Slow output"/>
-  <int value="2" label="Slow input"/>
-</enum>
-
 <enum name="VideoCodec">
   <int value="0" label="kUnknownVideoCodec"/>
   <int value="1" label="kCodecH264"/>
@@ -53399,51 +51513,6 @@ would be helpful to identify which type is being sent.
   <int value="7005" label="HIDDEN_to_WILL_HIDE"/>
   <int value="7006" label="HIDDEN_to_HIDING"/>
   <int value="7007" label="HIDDEN_to_HIDDEN"/>
-</enum>
-
-<enum name="VmmmsRequestPriority">
-<!-- This must be kept in sync with enum ResizePriority in ChromeOS
-src/platform2/system_api/non_standard_ipc/vm_memory_management
-vm_memory_management.proto -->
-
-  <int value="0" label="RESIZE_PRIORITY_UNSPECIFIED"/>
-  <int value="1" label="RESIZE_PRIORITY_BALLOON_STALL"/>
-  <int value="2" label="RESIZE_PRIORITY_NO_KILL_CANDIDATES_HOST"/>
-  <int value="3" label="RESIZE_PRIORITY_NO_KILL_CANDIDATES_GUEST"/>
-  <int value="4" label="RESIZE_PRIORITY_FOCUSED_TAB"/>
-  <int value="5" label="RESIZE_PRIORITY_FOCUSED_APP"/>
-  <int value="6" label="RESIZE_PRIORITY_PERCEPTIBLE_TAB"/>
-  <int value="7" label="RESIZE_PRIORITY_PERCEPTIBLE_APP"/>
-  <int value="8" label="RESIZE_PRIORITY_CACHED_TAB"/>
-  <int value="9" label="RESIZE_PRIORITY_CACHED_APP"/>
-  <int value="10" label="RESIZE_PRIORITY_MGLRU_RECLAIM"/>
-</enum>
-
-<enum name="VmmSwapDisableReason">
-  <int value="0" label="VM shutdown while active"/>
-  <int value="1" label="VM shutdown while inactive"/>
-  <int value="2" label="Low disk space while active"/>
-  <int value="3" label="Low disk space while inactive"/>
-  <int value="4" label="Disable request while active"/>
-  <int value="5" label="Disable request while inactive"/>
-</enum>
-
-<enum name="VmmSwapPolicyResult">
-  <int value="0" label="Approve enable request"/>
-  <int value="1" label="Cool down reject on enable request"/>
-  <int value="2" label="Usage reject on enable request"/>
-  <int value="3" label="TBW limit on enable request"/>
-  <int value="4" label="Low disk on enable request"/>
-  <int value="5" label="Approve maintenance request"/>
-  <int value="6" label="Cool down reject on maintenance request"/>
-  <int value="7" label="Usage reject on maintenance request"/>
-  <int value="8" label="TBW limit on maintenance request"/>
-  <int value="9" label="Low disk on maintenance request"/>
-</enum>
-
-<enum name="VmmSwapState">
-  <int value="0" label="Enabled"/>
-  <int value="1" label="Disabled"/>
 </enum>
 
 <enum name="VoiceIntentTarget">
@@ -53976,6 +52045,7 @@ Called by update_scheduler_enums.py.-->
   <int value="62" label="WebSerial"/>
   <int value="63" label="WebSocketSticky"/>
   <int value="64" label="WebRTCSticky"/>
+  <int value="65" label="SmartCard"/>
 </enum>
 
 <enum name="WebShareMethod">

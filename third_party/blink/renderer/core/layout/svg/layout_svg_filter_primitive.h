@@ -73,10 +73,6 @@ class LayoutSVGFilterPrimitive final : public LayoutObject {
     NOT_DESTROYED();
     return gfx::RectF();
   }
-  gfx::RectF DecoratedBoundingBox() const override {
-    NOT_DESTROYED();
-    return gfx::RectF();
-  }
 };
 
 }  // namespace blink

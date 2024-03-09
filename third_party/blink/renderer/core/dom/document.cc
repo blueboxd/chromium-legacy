@@ -401,7 +401,8 @@ enum class RequestStorageResult {
   REJECTED_CREDENTIALLESS_IFRAME = 11,
   APPROVED_NEW_OR_EXISTING_GRANT = 12,
   REJECTED_FENCED_FRAME = 13,
-  kMaxValue = REJECTED_FENCED_FRAME,
+  REJECTED_INVALID_ORIGIN = 14,
+  kMaxValue = REJECTED_INVALID_ORIGIN,
 };
 void FireRequestStorageAccessHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess2",
@@ -2272,6 +2273,10 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   // states not allowing tree mutations.
   CHECK(Lifecycle().StateAllowsTreeMutations());
 
+  // No SVG resources should be scheduled for invalidation outside of
+  // style-recalc and layout tree detach (Node::DetachLayoutTree).
+  DCHECK(svg_resources_needing_invalidation_.empty());
+
   TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData",
                      [&](perfetto::TracedValue context) {
                        inspector_recalculate_styles_event::Data(
@@ -2295,6 +2300,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   UpdateStyleInvalidationIfNeeded();
   UpdateStyle();
   GetStyleResolver().ClearResizedForViewportUnits();
+  InvalidatePendingSVGResources();
 
   rendering_had_begun_for_last_style_update_ = RenderingHasBegun();
 
@@ -2862,6 +2868,19 @@ void Document::UpdateUseShadowTreesIfNeeded() {
     for (SVGUseElement* element : elements)
       element->BuildPendingResource();
   }
+}
+
+void Document::ScheduleSVGResourceInvalidation(LocalSVGResource& resource) {
+  svg_resources_needing_invalidation_.insert(&resource);
+}
+
+void Document::InvalidatePendingSVGResources() {
+  HeapHashSet<Member<LocalSVGResource>> pending_resources;
+  svg_resources_needing_invalidation_.swap(pending_resources);
+  for (LocalSVGResource* resource : pending_resources) {
+    resource->NotifyContentChanged();
+  }
+  DCHECK(svg_resources_needing_invalidation_.empty());
 }
 
 StyleResolver& Document::GetStyleResolver() const {
@@ -6450,6 +6469,17 @@ ScriptPromise Document::requestStorageAccessFor(ScriptState* script_state,
   }
 
   KURL origin_as_kurl{origin};
+  if (!origin_as_kurl.IsValid()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
+        "requestStorageAccessFor: Invalid origin."));
+    FireRequestStorageAccessForHistogram(
+        RequestStorageResult::REJECTED_INVALID_ORIGIN);
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), "Invalid origin"));
+    return promise;
+  }
+
   scoped_refptr<SecurityOrigin> supplied_origin =
       SecurityOrigin::Create(origin_as_kurl);
   if (supplied_origin->IsOpaque()) {
@@ -8865,6 +8895,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(element_data_cache_clear_timer_);
   visitor->Trace(element_data_cache_);
   visitor->Trace(use_elements_needing_update_);
+  visitor->Trace(svg_resources_needing_invalidation_);
   visitor->Trace(node_move_scope_items_);
   visitor->Trace(template_document_);
   visitor->Trace(template_document_host_);

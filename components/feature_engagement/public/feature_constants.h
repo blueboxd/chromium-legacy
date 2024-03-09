@@ -36,7 +36,6 @@ BASE_DECLARE_FEATURE(kIPHDesktopCustomizeChromeFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopCustomizeChromeRefreshFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopNewTabPageModulesCustomizeFeature);
 BASE_DECLARE_FEATURE(kIPHDownloadToolbarButtonFeature);
-BASE_DECLARE_FEATURE(kIPHExperimentalAIPromoFeature);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 BASE_DECLARE_FEATURE(kIPHExtensionsMenuFeature);
 BASE_DECLARE_FEATURE(kIPHExtensionsRequestAccessButtonFeature);
@@ -230,6 +229,7 @@ BASE_DECLARE_FEATURE(kIPHiOSParcelTrackingFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPullToRefreshFeature);
 BASE_DECLARE_FEATURE(kIPHiOSReplaceSyncPromosWithSignInPromos);
 BASE_DECLARE_FEATURE(kIPHiOSBlueDotPromoEnhancedSafeBrowsingFeature);
+BASE_DECLARE_FEATURE(kIPHiOSInlinePromoEnhancedSafeBrowsingFeature);
 
 // A feature flag to enable and parametrize the sliding window of time for a
 // user's eligibility to be shown a default browser promo. This is not an FET

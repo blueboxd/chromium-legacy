@@ -11,7 +11,6 @@
 #include "components/plus_addresses/plus_address_client.h"
 #include "components/plus_addresses/plus_address_prefs.h"
 #include "components/plus_addresses/plus_address_types.h"
-#include "components/prefs/pref_service.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/persistent_repeating_timer.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -54,11 +53,8 @@ PlusAddressService::PlusAddressService(
       pref_service_(pref_service),
       plus_address_client_(std::move(plus_address_client)),
       excluded_sites_(GetAndParseExcludedSites()) {
-  if (pref_service) {
-    // Clear the pref to always force a poll on service construction.
-    pref_service->ClearPref(prefs::kPlusAddressLastFetchedTime);
-    CreateAndStartTimer();
-  }
+  // Begin PlusAddress periodic actions at construction.
+  CreateAndStartTimer();
   if (identity_manager) {
     identity_manager_observation_.Observe(identity_manager);
   }
@@ -120,36 +116,6 @@ void PlusAddressService::SavePlusAddress(url::Origin origin,
 bool PlusAddressService::IsPlusAddress(std::string potential_plus_address) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return plus_addresses_.contains(potential_plus_address);
-}
-
-void PlusAddressService::OfferPlusAddressCreation(
-    const url::Origin& origin,
-    PlusAddressCallback callback) {
-  if (!is_enabled()) {
-    return;
-  }
-  // Check the local mapping before issuing a network request.
-  if (absl::optional<std::string> plus_address = GetPlusAddress(origin);
-      plus_address) {
-    std::move(callback).Run(plus_address.value());
-    return;
-  }
-  plus_address_client_.CreatePlusAddress(
-      origin,
-      // On receiving the PlusAddress...
-      base::BindOnce(
-          // ... first send it back to Autofill
-          [](PlusAddressCallback callback, const std::string& plus_address) {
-            std::move(callback).Run(plus_address);
-            return plus_address;
-          },
-          std::move(callback))
-          // ... then save it in this service.
-          .Then(base::BindOnce(
-              &PlusAddressService::SavePlusAddress,
-              // base::Unretained is safe here since PlusAddressService owns
-              // the PlusAddressClient and they will have the same lifetime.
-              base::Unretained(this), origin)));
 }
 
 void PlusAddressService::ReservePlusAddress(

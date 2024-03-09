@@ -5636,16 +5636,22 @@ interface MLGraphBuilder
     method cos
     method div
     method elu
+    method equal
     method erf
     method exp
     method expand
     method floor
     method gather
     method gemm
+    method greater
     method hardSwish
     method identity
     method input
+    method instanceNormalization
+    method layerNormalization
     method leakyRelu
+    method lesser
+    method linear
     method log
     method logicalNot
     method matmul

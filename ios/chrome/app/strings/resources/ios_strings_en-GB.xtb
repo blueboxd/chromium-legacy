@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">You can change the default site view to desktop in Settings, then Content settings</translation>
 <translation id="1054745118061919935">By continuing, you agree to the <ph name="BEGIN_LINK" />Terms of Service<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Manage Sync</translation>
-<translation id="1066101356081285416">Chrome will detect tracking numbers on sites that you visit and show you package updates on the New tab page. The package tracking number and website name will be sent to Google to provide this feature and to improve Google Shopping features for everyone. You can update this at any time in <ph name="BEGIN_LINK" />package tracking settings<ph name="END_LINK" />.</translation>
 <translation id="1069154182096085577">Password already exists</translation>
 <translation id="1076421457278169141">Code scanned</translation>
 <translation id="1076785341346483463">Sync with managed account</translation>
@@ -66,7 +65,7 @@ To change this setting, <ph name="BEGIN_LINK" />clear the Chrome data in your ac
 <translation id="1283524564873030414">Last 24 hours</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1291506870746876680"><ph name="BEGIN_BOLD" />'<ph name="SITE_NAME" />'<ph name="END_BOLD" /> permissions will reset to off when you leave this site.</translation>
-<translation id="1295289763199166823">Customise Menu</translation>
+<translation id="1295289763199166823">Customise menu</translation>
 <translation id="1305822519689023679">To make sure that you can always use the passwords in your Google Account, verify that it's you.</translation>
 <translation id="1312721752506309252">Enhanced protection is on</translation>
 <translation id="1321993286294231467">Error saving image.</translation>
@@ -143,7 +142,6 @@ To change this setting, <ph name="BEGIN_LINK" />clear the Chrome data in your ac
 <translation id="165877110639533037">No open tabs</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Request Mobile Site</translation>
-<translation id="168715261339224929">To get your bookmarks on all your devices, turn on sync.</translation>
 <translation id="1687475363370981210">Mark All Read</translation>
 <translation id="1689333818294560261">Nickname</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selected</translation>
@@ -663,7 +661,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="452750746583162491">Review your synced data</translation>
 <translation id="4527660062930312477">Your account is managed</translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
-<translation id="4540780316273593836">Something went wrong.</translation>
+<translation id="4540780316273593836">Something went wrong</translation>
 <translation id="4550040941166547650">Only on this device</translation>
 <translation id="457292989631956153">{COUNT,plural, =1{Close {COUNT} inactive tab?}other{Close {COUNT} inactive tabs?}}</translation>
 <translation id="457386861538956877">More...</translation>
@@ -1049,7 +1047,6 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="6476253015009698798">Price tracking isn't available for this page.</translation>
 <translation id="6476800141292307438">Translating the page to <ph name="LANGUAGE" />. Options available near bottom of the screen.</translation>
 <translation id="648164694371393720">Authentication error</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items deleted</translation>
 <translation id="6484712497741564393">Signed in as <ph name="EMAIL" />.
 
 Your data is encrypted with your passphrase. Enter it to use and save Chrome data in your Google Account.</translation>
@@ -1136,6 +1133,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="6869389390665537774">You can see the pages that you've visited or clear them from your history</translation>
 <translation id="687135068089457384">Show settings</translation>
 <translation id="6873263987691478642">Split view</translation>
+<translation id="687586529977635009">Chrome will detect tracking numbers on sites you visit and show you package updates on the New Tab page. Your data will be shared with Google to provide this feature and to improve Shopping for everyone. You can change this in <ph name="BEGIN_LINK" />Package Tracking Settings<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Standard protection against websites, downloads and extensions that are known to be dangerous.</translation>
 <translation id="6888009575607455378">Are you sure that you want to discard your changes?</translation>
 <translation id="6896758677409633944">Copy</translation>
@@ -1228,7 +1226,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="7466693328838535498">In the Search Widgets box, enter Chrome</translation>
 <translation id="746684838091935575">3. Select Chrome</translation>
 <translation id="7472734401283673885">Company Name</translation>
-<translation id="7473891865547856676">No Thanks</translation>
+<translation id="7473891865547856676">No, thanks</translation>
 <translation id="7488874549363591659">Delivered</translation>
 <translation id="7491131399623468277">Go to Settings…</translation>
 <translation id="7492574581995589075">Your organisation turned off the ability to use and save Chrome data in your Google Account. New bookmarks, passwords and more will be saved only to this device.</translation>
@@ -1416,7 +1414,6 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8428634594422941299">Got it</translation>
 <translation id="8446884382197647889">Learn More</translation>
 <translation id="8449347986464073209">Delete and sign out</translation>
-<translation id="8458397775385147834">1 item deleted</translation>
 <translation id="8459333855531264009">Not Secure</translation>
 <translation id="8487667956631253959">On</translation>
 <translation id="8487700953926739672">Available offline</translation>
@@ -1482,7 +1479,6 @@ Your data was encrypted with your passphrase on <ph name="TIME" />. Enter it to 
 <translation id="8766790350274092814">Passwords for <ph name="WEBSITE" /> and <ph name="SECOND_WEBSITE" /> will be deleted. Your accounts won't be deleted.</translation>
 <translation id="8775144690796719618">Invalid URL</translation>
 <translation id="8780076847684176174">{count,plural, =1{Review the tab...}other{Review all tabs...}}</translation>
-<translation id="8782570580170191813">Always track packages</translation>
 <translation id="8787968206789828143">Search on web</translation>
 <translation id="8792626944327216835">microphone</translation>
 <translation id="8803639129939845298">Secure</translation>

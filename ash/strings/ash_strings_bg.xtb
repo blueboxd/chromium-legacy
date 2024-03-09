@@ -389,7 +389,7 @@
 <translation id="2624588537172718173">Аудио от устройството и микрофона</translation>
 <translation id="263399434338050016">„Select all“</translation>
 <translation id="2644422758626431000">Фиксиране на прозореца отляво</translation>
-<translation id="2645435784669275700">ChromeOS</translation>
+<translation id="2645435784669275700">Chrome OS</translation>
 <translation id="2653019840645008922">Заснемане на прозореца</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2658778018866295321">Кликване и преместване с плъзгане</translation>
@@ -447,6 +447,7 @@
 <translation id="2914580577416829331">Екранни снимки</translation>
 <translation id="2924416280450782352">Елементите не могат да се покажат. Опитайте да отворите отново този панел.</translation>
 <translation id="2931572158271115754">В този списък със задачи няма нищо.</translation>
+<translation id="2935225303485967257">Управление на потребителските профили</translation>
 <translation id="2941112035454246133">Нисък</translation>
 <translation id="2942350706960889382">Лупа в прикрепен режим</translation>
 <translation id="2942516765047364088">Позиция на лавицата</translation>
@@ -624,7 +625,6 @@
 <translation id="3593646411856133110">Прекарайте пръст нагоре и задръжте, за да видите отворените приложения</translation>
 <translation id="3595596368722241419">Батерията е заредена</translation>
 <translation id="3596012367874587041">Настройки за приложението</translation>
-<translation id="3598452309062311481">клавиша „търсене“ + h</translation>
 <translation id="3600061223661453002">Изкл.</translation>
 <translation id="3604801046548457007">Работен кът <ph name="DESK_TITILE" /> е създаден</translation>
 <translation id="3606978283550408104">Брайловият дисплей е свързан.</translation>
@@ -776,7 +776,6 @@
 <translation id="4190780880566297084">Отхвърляне на настройването на прегледа на скорошните снимки, мултимедийни файлове и приложения на телефона ви</translation>
 <translation id="4192112279662688596">или</translation>
 <translation id="4193857202545160520">Показване на кликванията и клавишите</translation>
-<translation id="4193969623755915875">Отворете „Помощ“ в приложението Explore посредством <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4195579532193195633">Текуща версия: <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">Продължаване оттам, откъдето сте прекъснали</translation>
 <translation id="4195877955194704651">Бутон за менюто за автоматични кликвания</translation>
@@ -959,7 +958,6 @@
 <translation id="4889868803215848840">Оставете незадължителни отзиви, за да подобрите предложенията:</translation>
 <translation id="4890187583552566966">Администраторът ви е деактивирал Google Асистент.</translation>
 <translation id="4890408602550914571">Уверете се, че телефонът ви е наблизо и че сте включили Bluetooth.</translation>
-<translation id="4892981359753171125">Контролиране с лице</translation>
 <translation id="4895488851634969361">Батерията е пълна.</translation>
 <translation id="490375751687810070">Вертикално</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% батерия</translation>

@@ -300,7 +300,7 @@ TEST_F(SyncPrefsTest,
        DefaultSelectedTypesForAccountInTransportMode_SyncToSigninDisabled) {
   base::test::ScopedFeatureList features;
   features.InitWithFeatures(
-      /*enabled_features=*/{kEnableBookmarksAccountStorage,
+      /*enabled_features=*/{kEnableBookmarkFoldersForAccountStorage,
                             kReadingListEnableSyncTransportModeUponSignIn,
                             password_manager::features::
                                 kEnablePasswordsAccountStorage,
@@ -308,14 +308,13 @@ TEST_F(SyncPrefsTest,
                             kEnablePreferencesAccountStorage},
       /*disabled_features=*/{kReplaceSyncPromosWithSignInPromos});
 
-  // Based on the feature flags set above, Bookmarks, ReadingList, Passwords,
-  // Autofill and Payments are supported and enabled by default.
-  // Preferences, History, and Tabs are not supported without
-  // kReplaceSyncPromosWithSignInPromos.
-  UserSelectableTypeSet expected_types{
-      UserSelectableType::kBookmarks, UserSelectableType::kReadingList,
-      UserSelectableType::kPasswords, UserSelectableType::kAutofill,
-      UserSelectableType::kPayments};
+  // Based on the feature flags set above, Passwords, Autofill and Payments
+  // are supported and enabled by default. Bookmarks and ReadingList are
+  // supported, but not enabled by default. Preferences, History, and Tabs are
+  // not supported without kReplaceSyncPromosWithSignInPromos.
+  UserSelectableTypeSet expected_types{UserSelectableType::kPasswords,
+                                       UserSelectableType::kAutofill,
+                                       UserSelectableType::kPayments};
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // On Desktop, kPasswords is disabled by default.
@@ -330,6 +329,8 @@ TEST_F(SyncPrefsTest,
                                         UserSelectableType::kReadingList}));
 
   sync_prefs_->SetBookmarksAndReadingListAccountStorageOptIn(true);
+  expected_types.PutAll(
+      {UserSelectableType::kBookmarks, UserSelectableType::kReadingList});
 #endif
 
   EXPECT_EQ(sync_prefs_->GetSelectedTypesForAccount(gaia_id_hash_),
@@ -340,8 +341,8 @@ TEST_F(SyncPrefsTest,
        DefaultSelectedTypesForAccountInTransportMode_SyncToSigninEnabled) {
   base::test::ScopedFeatureList features;
   features.InitWithFeatures(
-      /*enabled_features=*/{kReplaceSyncPromosWithSignInPromos,
-                            kEnableBookmarksAccountStorage,
+      /*enabled_features=*/{kEnableBookmarkFoldersForAccountStorage,
+                            kReplaceSyncPromosWithSignInPromos,
                             kReadingListEnableSyncTransportModeUponSignIn,
                             password_manager::features::
                                 kEnablePasswordsAccountStorage,
@@ -381,7 +382,7 @@ TEST_F(SyncPrefsTest, PasswordsDefaultWithExplicitBrowserSignin) {
 
   // With an explicit sign in, passwords are enabled by default.
   EXPECT_TRUE(sync_prefs_->GetSelectedTypesForAccount(gaia_id_hash_)
-                  .Has(UserSelectableType::kPayments));
+                  .Has(UserSelectableType::kPasswords));
 }
 #endif
 
@@ -681,7 +682,7 @@ class SyncPrefsMigrationTest : public testing::Test {
     // Enable various features that are required for data types to be supported
     // in transport mode.
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{kEnableBookmarksAccountStorage,
+        /*enabled_features=*/{kEnableBookmarkFoldersForAccountStorage,
                               kReadingListEnableSyncTransportModeUponSignIn,
                               password_manager::features::
                                   kEnablePasswordsAccountStorage,
@@ -1001,12 +1002,18 @@ TEST_F(SyncPrefsSyncToSigninMigrationTest, MigratesBookmarksOptedIn) {
     disable_sync_to_signin.InitAndDisableFeature(
         kReplaceSyncPromosWithSignInPromos);
 
-    // Bookmarks and ReadingList are enabled (by default - the actual prefs are
-    // not set explicitly). On iOS, an additional opt-in pref is required.
+    // The user enables Bookmarks and ReadingList. On iOS, this involves a
+    // special opt-in pref.
     SyncPrefs prefs(&pref_service_);
 #if BUILDFLAG(IS_IOS)
     prefs.SetBookmarksAndReadingListAccountStorageOptIn(true);
+#else
+    prefs.SetSelectedTypeForAccount(UserSelectableType::kBookmarks, true,
+                                    gaia_id_hash_);
+    prefs.SetSelectedTypeForAccount(UserSelectableType::kReadingList, true,
+                                    gaia_id_hash_);
 #endif  // BUILDFLAG(IS_IOS)
+
     ASSERT_TRUE(prefs.GetSelectedTypesForAccount(gaia_id_hash_)
                     .Has(UserSelectableType::kBookmarks));
     ASSERT_TRUE(prefs.GetSelectedTypesForAccount(gaia_id_hash_)

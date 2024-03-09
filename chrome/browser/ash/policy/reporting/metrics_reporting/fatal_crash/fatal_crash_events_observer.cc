@@ -4,18 +4,21 @@
 
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/fatal_crash/fatal_crash_events_observer.h"
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
 
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/shell.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
@@ -30,7 +33,6 @@
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
 #include "components/user_manager/user_type.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
 
@@ -72,13 +74,13 @@ FatalCrashTelemetry::SessionType GetSessionType(
 }
 
 // Get the user email of the given session.
-absl::optional<std::string> GetUserEmail(const ash::UserSession* user_session) {
+std::optional<std::string> GetUserEmail(const ash::UserSession* user_session) {
   if (!user_session || !user_session->user_info.is_managed) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   if (!user_session->user_info.account_id.is_valid()) {
     LOG(ERROR) << "Invalid user account ID.";
-    return absl::nullopt;
+    return std::nullopt;
   }
   return user_session->user_info.account_id.GetUserEmail();
 }
@@ -136,6 +138,17 @@ int64_t FatalCrashEventsObserver::ConvertTimeToMicroseconds(base::Time t) {
          base::Time::kMicrosecondsPerMillisecond;
 }
 
+// static
+const base::flat_set<CrashEventInfo::CrashType>&
+FatalCrashEventsObserver::GetAllowedCrashTypes() {
+  // This may appear to be overkilling for only 2 crash types, but it provides
+  // more robustness for future crash type additions.
+  static const base::NoDestructor<base::flat_set<CrashEventInfo::CrashType>>
+      allowed_crash_types({CrashEventInfo::CrashType::kKernel,
+                           CrashEventInfo::CrashType::kEmbeddedController});
+  return *allowed_crash_types;
+}
+
 void FatalCrashEventsObserver::OnEvent(EventInfoPtr info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(settings_for_test_->sequence_checker);
@@ -160,8 +173,16 @@ void FatalCrashEventsObserver::OnEvent(EventInfoPtr info) {
 
 void FatalCrashEventsObserver::ProcessEvent(EventInfoPtr info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(settings_for_test_->sequence_checker);
 
   auto& crash_event_info = info->get_crash_event_info();
+  if (!GetAllowedCrashTypes().contains(crash_event_info->crash_type)) {
+    // A type of crash that is uninteresting to us. Don't process it.
+    settings_for_test_->skipped_uninteresting_crash_type_callback.Run(
+        crash_event_info->crash_type);
+    return;
+  }
+
   if (crash_event_info->upload_info.is_null()) {
     ProcessUnuploadedCrashEvent(std::move(crash_event_info));
   } else {
@@ -304,7 +325,8 @@ MetricData FatalCrashEventsObserver::FillFatalCrashTelemetry(
     case CrashEventInfo::CrashType::kUnknown:
       [[fallthrough]];
     default:  // Other types added by healthD that are unknown here yet.
-      data.set_type(FatalCrashTelemetry::CRASH_TYPE_UNSPECIFIED);
+      NOTREACHED_NORETURN()
+          << "Encountered unhandled or unknown crash type " << info->crash_type;
   }
 
   const auto* const user_session = GetCurrentUserSession();

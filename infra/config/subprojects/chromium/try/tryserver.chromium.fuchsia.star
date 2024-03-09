@@ -63,11 +63,6 @@ try_.builder(
     mirrors = [
         "ci/fuchsia-arm64-rel",
     ],
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
     gn_args = gn_args.config(
         configs = [
             "release_try_builder",
@@ -76,6 +71,11 @@ try_.builder(
             "arm64_host",
         ],
     ),
+    experiments = {
+        "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
+    },
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -97,8 +97,6 @@ try_.builder(
     name = "fuchsia-binary-size",
     branch_selector = branches.selector.FUCHSIA_BRANCHES,
     executable = "recipe:binary_size_fuchsia_trybot",
-    builderless = not settings.is_main,
-    cores = 16 if settings.is_main else 8,
     gn_args = gn_args.config(
         configs = [
             "release",
@@ -107,9 +105,10 @@ try_.builder(
             "fuchsia",
             "arm64",
             "cast_receiver_size_optimized",
-            "use_dummy_lastchange",
         ],
     ),
+    builderless = not settings.is_main,
+    cores = 16 if settings.is_main else 8,
     properties = {
         "$build/binary_size": {
             "analyze_targets": [
@@ -131,10 +130,10 @@ This builder shadows fuchsia-binary-size builder to compare between Siso builds 
 This builder should be removed after migrating size from Ninja to Siso. b/277863839
 """,
     executable = "recipe:binary_size_fuchsia_trybot",
+    gn_args = "try/fuchsia-binary-size",
     builderless = False,
     cores = 16,
     contact_team_email = "chrome-build-team@google.com",
-    gn_args = "try/fuchsia-binary-size",
     properties = {
         "$build/binary_size": {
             "analyze_targets": [
@@ -163,7 +162,6 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "ci/fuchsia-x64-dbg",
-            "use_dummy_lastchange",
         ],
     ),
     tryjob = try_.job(
@@ -196,9 +194,9 @@ try_.builder(
 try_.builder(
     name = "fuchsia-fyi-x64-asan",
     mirrors = ["ci/fuchsia-fyi-x64-asan"],
+    gn_args = "ci/fuchsia-fyi-x64-asan",
     contact_team_email = "chrome-fuchsia-engprod@google.com",
     execution_timeout = 10 * time.hour,
-    gn_args = "ci/fuchsia-fyi-x64-asan",
 )
 
 try_.builder(
@@ -210,9 +208,9 @@ try_.builder(
 try_.builder(
     name = "fuchsia-fyi-x64-dbg-persistent-emulator",
     mirrors = ["ci/fuchsia-fyi-x64-dbg-persistent-emulator"],
+    gn_args = "ci/fuchsia-fyi-x64-dbg",
     contact_team_email = "chrome-fuchsia-engprod@google.com",
     execution_timeout = 10 * time.hour,
-    gn_args = "ci/fuchsia-fyi-x64-dbg",
 )
 
 try_.orchestrator_builder(
@@ -221,14 +219,6 @@ try_.orchestrator_builder(
     mirrors = [
         "ci/fuchsia-x64-cast-receiver-rel",
     ],
-    compilator = "fuchsia-x64-cast-receiver-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        # go/nplus1shardsproposal
-        "chromium.add_one_test_shard": 10,
-        "chromium.compilator_can_outlive_parent": 100,
-        "chromium.skip_successful_tests": 50,
-    },
     gn_args = gn_args.config(
         configs = [
             "ci/fuchsia-x64-cast-receiver-rel",
@@ -238,6 +228,14 @@ try_.orchestrator_builder(
             "partial_code_coverage_instrumentation",
         ],
     ),
+    compilator = "fuchsia-x64-cast-receiver-rel-compilator",
+    coverage_test_types = ["unit", "overall"],
+    experiments = {
+        # go/nplus1shardsproposal
+        "chromium.add_one_test_shard": 10,
+        "chromium.compilator_can_outlive_parent": 100,
+        "chromium.skip_successful_tests": 50,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -258,11 +256,6 @@ try_.builder(
     mirrors = [
         "ci/fuchsia-x64-rel",
     ],
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
     gn_args = gn_args.config(
         configs = [
             "release_try_builder",
@@ -270,12 +263,17 @@ try_.builder(
             "fuchsia",
         ],
     ),
+    experiments = {
+        "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
+    },
     main_list_view = "try",
 )
 
 try_.builder(
     name = "fuchsia-code-coverage",
     mirrors = ["ci/fuchsia-code-coverage"],
-    execution_timeout = 20 * time.hour,
     gn_args = "ci/fuchsia-code-coverage",
+    execution_timeout = 20 * time.hour,
 )

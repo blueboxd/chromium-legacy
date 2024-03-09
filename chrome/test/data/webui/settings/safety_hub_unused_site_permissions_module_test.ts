@@ -11,19 +11,17 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {ContentSettingsTypes, SettingsSafetyHubUnusedSitePermissionsModuleElement, SafetyHubBrowserProxyImpl, SafetyHubEvent, UnusedSitePermissions} from 'chrome://settings/lazy_load.js';
-import {MetricsBrowserProxyImpl, Router, routes, SafetyCheckUnusedSitePermissionsModuleInteractions, SettingsPluralStringProxyImpl, SettingsRoutes} from 'chrome://settings/settings.js';
+import {Router, routes, SettingsPluralStringProxyImpl, SettingsRoutes} from 'chrome://settings/settings.js';
 import {isMac} from 'chrome://resources/js/platform.js';
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
-import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestSafetyHubBrowserProxy} from './test_safety_hub_browser_proxy.js';
 // clang-format on
 
 suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
   let browserProxy: TestSafetyHubBrowserProxy;
   let pluralString: TestPluralStringProxy;
-  let metricsBrowserProxy: TestMetricsBrowserProxy;
 
   let testElement: SettingsSafetyHubUnusedSitePermissionsModuleElement;
   let testRoutes: SettingsRoutes;
@@ -110,8 +108,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
     browserProxy = new TestSafetyHubBrowserProxy();
     browserProxy.setUnusedSitePermissions(mockData);
     SafetyHubBrowserProxyImpl.setInstance(browserProxy);
-    metricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
     pluralString = new TestPluralStringProxy();
     SettingsPluralStringProxyImpl.setInstance(pluralString);
     testRoutes = {
@@ -119,7 +115,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
     } as unknown as SettingsRoutes;
     Router.resetInstanceForTesting(new Router(routes));
     await createPage();
-    metricsBrowserProxy.reset();
     assertInitialUi();
   });
 
@@ -161,13 +156,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
         siteList[3]!.querySelector('.cr-secondary-text')!.textContent!.trim());
   });
 
-  test('Record Suggestions Count', async function() {
-    await createPage();
-    const result = await metricsBrowserProxy.whenCalled(
-        'recordSafetyHubUnusedSitePermissionsModuleListCountHistogram');
-    assertEquals(getSiteList().length, result);
-  });
-
   test('Allow Again Click', async function() {
     const siteList = getSiteList();
     siteList[0]!.querySelector('cr-icon-button')!.click();
@@ -178,12 +166,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
     const [origin] =
         await browserProxy.whenCalled('allowPermissionsAgainForUnusedSite');
     assertEquals(origin, expectedOrigin);
-
-    // Ensure the metric for 'Allow Again' action is recorded.
-    const result = await metricsBrowserProxy.whenCalled(
-        'recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram');
-    assertEquals(
-        SafetyCheckUnusedSitePermissionsModuleInteractions.ALLOW_AGAIN, result);
   });
 
   test('Undo Allow Again', async function() {
@@ -197,10 +179,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
       const expectedToastText = testElement.i18n(
           'safetyCheckUnusedSitePermissionsToastLabel', expectedOrigin);
       assertToast(true, expectedToastText);
-
-      // Reset the action captured by clicking the allow again button.
-      metricsBrowserProxy.reset();
-
       // Ensure proxy call for undo is sent correctly.
       testElement.$.toastUndoButton.click();
       const [unusedSitePermissions] = await browserProxy.whenCalled(
@@ -212,14 +190,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
       webUIListenerCallback(
           SafetyHubEvent.UNUSED_PERMISSIONS_MAYBE_CHANGED, mockData);
       flush();
-
-      // Ensure the metric for 'Undo Allow Again' action is recorded.
-      const result = await metricsBrowserProxy.whenCalled(
-          'recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram');
-      assertEquals(
-          SafetyCheckUnusedSitePermissionsModuleInteractions.UNDO_ALLOW_AGAIN,
-          result);
-
       assertInitialUi();
     }
   });
@@ -233,9 +203,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
       allowAgainButton.click();
       const expectedOrigin =
           site!.querySelector('.site-representation')!.textContent!.trim();
-
-      // Reset the action captured by pressing Ctrl+Z.
-      metricsBrowserProxy.reset();
 
       // Ensure the toast behaves correctly.
       const expectedToastText = testElement.i18n(
@@ -252,14 +219,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
       webUIListenerCallback(
           SafetyHubEvent.UNUSED_PERMISSIONS_MAYBE_CHANGED, mockData);
       flush();
-
-      // Ensure the metric for 'Undo Allow Again' action is recorded.
-      const result = await metricsBrowserProxy.whenCalled(
-          'recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram');
-      assertEquals(
-          SafetyCheckUnusedSitePermissionsModuleInteractions.UNDO_ALLOW_AGAIN,
-          result);
-
       assertInitialUi();
     }
   });
@@ -271,13 +230,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
     // Ensure the browser proxy call is done.
     await browserProxy.whenCalled(
         'acknowledgeRevokedUnusedSitePermissionsList');
-
-    // Ensure the metric for 'Acknowledge All' action is recorded.
-    const result = await metricsBrowserProxy.whenCalled(
-        'recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram');
-    assertEquals(
-        SafetyCheckUnusedSitePermissionsModuleInteractions.ACKNOWLEDGE_ALL,
-        result);
   });
 
   test('Undo Got It', async function() {
@@ -287,10 +239,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
         'safetyCheckUnusedSitePermissionsToastBulkLabel', mockData.length, 2);
     assertToast(true);
     // Ensure proxy call is sent correctly for undo.
-
-    // Reset the action captured by clicking the Got It button.
-    metricsBrowserProxy.reset();
-
     testElement.$.bulkUndoButton.click();
     const [unusedSitePermissionsList] = await browserProxy.whenCalled(
         'undoAcknowledgeRevokedUnusedSitePermissionsList');
@@ -302,13 +250,6 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
     // Check visibility of buttons
     assertTrue(isVisible(testElement.$.gotItButton));
     assertFalse(isVisible(testElement.$.bulkUndoButton));
-
-    // Ensure the metric for 'Undo Acknowledge All' action is recorded.
-    const result = await metricsBrowserProxy.whenCalled(
-        'recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram');
-    assertEquals(
-        SafetyCheckUnusedSitePermissionsModuleInteractions.UNDO_ACKNOWLEDGE_ALL,
-        result);
   });
 
   test('Got It Toast Strings', async function() {
@@ -373,12 +314,5 @@ suite('CrSettingsSafetyHubUnusedSitePermissionsTest', function() {
     assertFalse(isVisible(testElement.$.headerActionMenu.getDialog()));
     // Ensure the site settings page is shown.
     assertEquals(routes.SITE_SETTINGS, Router.getInstance().getCurrentRoute());
-
-    // Ensure the metric for 'Go To Settings' action is recorded.
-    const result = await metricsBrowserProxy.whenCalled(
-        'recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram');
-    assertEquals(
-        SafetyCheckUnusedSitePermissionsModuleInteractions.GO_TO_SETTINGS,
-        result);
   });
 });

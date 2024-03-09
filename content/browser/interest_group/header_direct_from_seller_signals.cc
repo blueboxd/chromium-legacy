@@ -124,8 +124,7 @@ HeaderDirectFromSellerSignals::ParseAndFindCompletedInfo::
                               url::Origin origin,
                               std::string ad_slot,
                               ParseAndFindCompletedCallback callback)
-    : start_time(std::move(start_time)),
-      origin(std::move(origin)),
+    : origin(std::move(origin)),
       ad_slot(std::move(ad_slot)),
       callback(std::move(callback)) {}
 

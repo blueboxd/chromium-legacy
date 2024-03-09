@@ -1137,7 +1137,25 @@ class AutofillChildrenSuggestionsGenenarationTest
   const AutofillProfile profile_ = test::GetFullProfile();
 };
 
-// Test that the differentiating label is added when the suggestion main text
+// Test that only "Fill full address" is added when the target field is
+// ADDRESS_HOME_LINE1 and no other suggestion exist with the same
+// `Suggestion::main_text` and granular filling label.
+TEST_F(AutofillChildrenSuggestionsGenenarationTest,
+       CreateSuggestionsFromProfiles_GroupFillingLabels_AddOnlyFillAddress) {
+  std::vector<Suggestion> suggestions = CreateSuggestionWithChildrenFromProfile(
+      profile(),
+      /*last_targeted_fields=*/
+      GetAddressFieldsForGroupFilling(),
+      /*trigger_field_type=*/ADDRESS_HOME_LINE1,
+      /*field_types=*/{NAME_FIRST});
+
+  ASSERT_EQ(suggestions.size(), 1u);
+  EXPECT_EQ(suggestions[0].labels,
+            std::vector<std::vector<Suggestion::Text>>(
+                {{Suggestion::Text(u"Fill full address")}}));
+}
+
+// Test that the differentiating label is added when the `Suggestion::main_text`
 // and granular filling label are not unique across suggestions.
 TEST_F(
     AutofillChildrenSuggestionsGenenarationTest,
@@ -1153,32 +1171,50 @@ TEST_F(
   std::vector<Suggestion> suggestions =
       suggestion_generator()->CreateSuggestionsFromProfiles(
           {&profile_1, &profile_2}, {ADDRESS_HOME_LINE1, ADDRESS_HOME_ZIP},
-          GetServerFieldTypesOfGroup(FieldTypeGroup::kName), ADDRESS_HOME_LINE1,
+          GetAddressFieldsForGroupFilling(), ADDRESS_HOME_LINE1,
           /*trigger_field_max_length=*/0);
 
   ASSERT_EQ(suggestions.size(), 2u);
   EXPECT_EQ(suggestions[0].labels,
             std::vector<std::vector<Suggestion::Text>>(
-                {{Suggestion::Text(u"Fill full address"),
-                  Suggestion::Text(u"-"), Suggestion::Text(u"1234")}}));
+                {{Suggestion::Text(u"Fill full address - 1234")}}));
 }
 
-TEST_F(AutofillChildrenSuggestionsGenenarationTest,
-       CreateSuggestionsFromProfiles_GroupFillingLabels_AddOnlyFillAddress) {
-  std::vector<Suggestion> suggestions = CreateSuggestionWithChildrenFromProfile(
-      profile(),
-      /*last_targeted_fields=*/
-      GetServerFieldTypesOfGroup(FieldTypeGroup::kName), ADDRESS_HOME_ADDRESS,
-      /*field_types=*/{NAME_FIRST});
+// Test similar to the one above. However also makes sure that
+// `ADDRESS_HOME_LINE1` value is added to the granullar filling labels list if
+// the targeting field does not contain street address related information
+// (ADDRESS_LINE1, ADDRESS_LINE2, ADRRESS_STREET_NAME and ADDRESS_HOME_ADDRESS).
+TEST_F(
+    AutofillChildrenSuggestionsGenenarationTest,
+    CreateSuggestionsFromProfiles_GroupFillingLabels_AddFillAddressAddressLine1AndDifferentiatingLabel) {
+  AutofillProfile profile_1 = test::GetFullProfile();
+  profile_1.SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER, u"42");
 
-  ASSERT_EQ(suggestions.size(), 1u);
-  EXPECT_EQ(suggestions[0].labels,
-            std::vector<std::vector<Suggestion::Text>>(
-                {{Suggestion::Text(u"Fill full address")}}));
+  AutofillProfile profile_2 = test::GetFullProfile();
+  profile_2.SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER, u"23");
+
+  // `profile_1` and `profile_2` have the same `ADDRESS_HOME_ZIP`, which
+  // will lead to the necessity of a differentiating label
+  // (`ADDRESS_HOME_HOUSE_NUMBER`).
+  std::vector<Suggestion> suggestions =
+      suggestion_generator()->CreateSuggestionsFromProfiles(
+          {&profile_1, &profile_2},
+          {ADDRESS_HOME_HOUSE_NUMBER, ADDRESS_HOME_ZIP},
+          GetAddressFieldsForGroupFilling(), ADDRESS_HOME_ZIP,
+          /*trigger_field_max_length=*/0);
+
+  ASSERT_EQ(suggestions.size(), 2u);
+  EXPECT_EQ(
+      suggestions[0].labels,
+      std::vector<std::vector<Suggestion::Text>>(
+          {{Suggestion::Text(
+                u"Fill full address - " +
+                profile_1.GetInfo(ADDRESS_HOME_LINE1, app_locale()) + u", "),
+            Suggestion::Text(u"42")}}));
 }
 
 // When there is no differentiating label, we add only the granular filling
-// label, either "Fill full name" or "Fill address".
+// label, either "Fill full name" or "Fill full address".
 TEST_F(AutofillChildrenSuggestionsGenenarationTest,
        CreateSuggestionsFromProfiles_GroupFillingLabels_AddOnlyFillName) {
   std::vector<Suggestion> suggestions = CreateSuggestionWithChildrenFromProfile(
@@ -1214,8 +1250,7 @@ TEST_F(
   ASSERT_EQ(suggestions.size(), 2u);
   EXPECT_EQ(suggestions[0].labels,
             std::vector<std::vector<Suggestion::Text>>(
-                {{Suggestion::Text(u"Fill full name"), Suggestion::Text(u"-"),
-                  Suggestion::Text(u"Cersei Lannister")}}));
+                {{Suggestion::Text(u"Fill full name - Cersei Lannister")}}));
 }
 
 TEST_F(AutofillChildrenSuggestionsGenenarationTest,
@@ -1254,39 +1289,39 @@ TEST_F(AutofillChildrenSuggestionsGenenarationTest,
       ElementsAre(
           EqualsSuggestion(PopupItemId::kFillFullName),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(NAME_FIRST, app_locale()), NAME_FIRST,
               Suggestion::Guid(profile().guid())),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(NAME_MIDDLE, app_locale()), NAME_MIDDLE,
               Suggestion::Guid(profile().guid())),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(NAME_LAST, app_locale()), NAME_LAST,
               Suggestion::Guid(profile().guid())),
           EqualsSuggestion(PopupItemId::kSeparator),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(ADDRESS_HOME_LINE1, app_locale()),
               ADDRESS_HOME_LINE1, Suggestion::Guid(profile().guid())),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(ADDRESS_HOME_LINE2, app_locale()),
               ADDRESS_HOME_LINE2, Suggestion::Guid(profile().guid())),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(ADDRESS_HOME_ZIP, app_locale()),
               ADDRESS_HOME_ZIP, Suggestion::Guid(profile().guid())),
           EqualsSuggestion(PopupItemId::kSeparator),
           // Triggering field is not a phone number, international phone number
           // should be shown to the user.
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               GetFormattedInternationalNumber(), PHONE_HOME_WHOLE_NUMBER,
               Suggestion::Guid(profile().guid())),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(EMAIL_ADDRESS, app_locale()), EMAIL_ADDRESS,
               Suggestion::Guid(profile().guid())),
           EqualsSuggestion(PopupItemId::kSeparator),
@@ -1309,12 +1344,12 @@ TEST_F(AutofillChildrenSuggestionsGenenarationTest,
       suggestions[0].children[5].children,
       ElementsAre(
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(ADDRESS_HOME_HOUSE_NUMBER, app_locale()),
               ADDRESS_HOME_HOUSE_NUMBER, Suggestion::Guid(profile().guid()),
               {{Suggestion::Text(u"Building number")}}),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kAddressFieldByFieldFilling,
               profile().GetInfo(ADDRESS_HOME_STREET_NAME, app_locale()),
               ADDRESS_HOME_STREET_NAME, Suggestion::Guid(profile().guid()),
               {{Suggestion::Text(u"Street")}})));
@@ -1329,7 +1364,7 @@ TEST_F(
   ASSERT_EQ(suggestions.size(), 1u);
   EXPECT_THAT(suggestions[0],
               EqualsFieldByFieldFillingSuggestion(
-                  PopupItemId::kFieldByFieldFilling,
+                  PopupItemId::kAddressFieldByFieldFilling,
                   profile().GetInfo(NAME_FIRST, app_locale()), NAME_FIRST,
                   Suggestion::Guid(profile().guid()), {{}}));
 }
@@ -1369,9 +1404,9 @@ TEST_F(AutofillChildrenSuggestionsGenenarationTest,
 
 // Asserts that when the triggering field is a phone field, the phone number
 // suggestion is of type `PopupItemId::kFillFullPhoneNumber`. In other
-// scenarios, phone number is of type `PopupItemId::kFieldByFieldFilling` as the
-// user expressed intent to use their phone number their phone number on a
-// "random" field.
+// scenarios, phone number is of type `PopupItemId::kAddressFieldByFieldFilling`
+// as the user expressed intent to use their phone number their phone number on
+// a "random" field.
 TEST_F(
     AutofillChildrenSuggestionsGenenarationTest,
     CreateSuggestionsFromProfiles_ChildrenSuggestionsPhoneField_Intenational) {
@@ -1406,8 +1441,8 @@ TEST_F(
 
 // Asserts that when the triggering field is a phone field, the phone number
 // suggestion is of type `PopupItemId::kFillFullPhoneNumber`. In other
-// scenarios, phone number is of type `PopupItemId::kFieldByFieldFilling` as the
-// user expressed intent to use their phone number on a "random" field.
+// scenarios, phone number is of type `PopupItemId::kAddressFieldByFieldFilling`
+// as the user expressed intent to use their phone number on a "random" field.
 TEST_F(
     AutofillChildrenSuggestionsGenenarationTest,
     CreateSuggestionsFromProfiles_ChildrenSuggestionsPhoneField_CountryCode) {
@@ -1442,9 +1477,9 @@ TEST_F(
 
 // Asserts that when the triggering field is a phone field, the phone number
 // suggestion is of type `PopupItemId::kFillFullPhoneNumber`. In other
-// scenarios, phone number is of type `PopupItemId::kFieldByFieldFilling` as the
-// user expressed intent to use their phone number their phone number on a
-// "random" field.
+// scenarios, phone number is of type `PopupItemId::kAddressFieldByFieldFilling`
+// as the user expressed intent to use their phone number their phone number on
+// a "random" field.
 TEST_F(AutofillChildrenSuggestionsGenenarationTest,
        CreateSuggestionsFromProfiles_ChildrenSuggestionsPhoneField_Local) {
   std::vector<Suggestion> suggestions = CreateSuggestionWithChildrenFromProfile(
@@ -1546,14 +1581,14 @@ TEST_F(
   // The address line 1 (sixth child) should have the street name as child.
   EXPECT_THAT(suggestions[0].children[1].children,
               ElementsAre(EqualsFieldByFieldFillingSuggestion(
-                  PopupItemId::kFieldByFieldFilling,
+                  PopupItemId::kAddressFieldByFieldFilling,
                   profile.GetInfo(ADDRESS_HOME_STREET_NAME, app_locale()),
                   ADDRESS_HOME_STREET_NAME, Suggestion::Guid(profile.guid()),
                   {{Suggestion::Text(u"Street")}})));
   // The address line 2 (seventh child) should have the house number as child.
   EXPECT_THAT(suggestions[0].children[2].children,
               ElementsAre(EqualsFieldByFieldFillingSuggestion(
-                  PopupItemId::kFieldByFieldFilling,
+                  PopupItemId::kAddressFieldByFieldFilling,
                   profile.GetInfo(ADDRESS_HOME_HOUSE_NUMBER, app_locale()),
                   ADDRESS_HOME_HOUSE_NUMBER, Suggestion::Guid(profile.guid()),
                   {{Suggestion::Text(u"Building number")}})));
@@ -2711,7 +2746,7 @@ TEST_F(AutofillCreditCardSuggestionContentTest,
 
   // Only the name is displayed on the first line.
   EXPECT_EQ(server_card_suggestion.popup_item_id,
-            PopupItemId::kEntryNotSelectable);
+            PopupItemId::kPaymentsEntryNotSelectable);
   // For Desktop, split the first line and populate the card name and
   // the last 4 digits separately.
   EXPECT_EQ(server_card_suggestion.main_text.value, u"Visa");
@@ -2751,18 +2786,18 @@ TEST_F(AutofillCreditCardSuggestionContentTest,
       server_card_suggestion.children,
       ElementsAre(
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kCreditCardFieldByFieldFilling,
               server_card.GetInfo(CREDIT_CARD_NAME_FULL, app_locale()),
               CREDIT_CARD_NAME_FULL, Suggestion::Guid(server_card.guid())),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kCreditCardFieldByFieldFilling,
               server_card.ObfuscatedNumberWithVisibleLastFourDigits(12),
               CREDIT_CARD_NUMBER, Suggestion::Guid(server_card.guid()),
               {{Suggestion::Text(l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_PAYMENTS_MANUAL_FALLBACK_AUTOFILL_POPUP_CC_NUMBER_SUGGESTION_LABEL))}}),
           AllOf(Field(&Suggestion::popup_item_id, PopupItemId::kSeparator)),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kCreditCardFieldByFieldFilling,
               server_card.GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
                                   app_locale()),
               CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
@@ -2796,11 +2831,11 @@ TEST_F(
       server_card_suggestion.children,
       ElementsAre(
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kCreditCardFieldByFieldFilling,
               credit_card.GetInfo(CREDIT_CARD_NAME_FULL, app_locale()),
               CREDIT_CARD_NAME_FULL, Suggestion::Guid(credit_card.guid())),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kCreditCardFieldByFieldFilling,
               credit_card.ObfuscatedNumberWithVisibleLastFourDigits(12),
               CREDIT_CARD_NUMBER, Suggestion::Guid(credit_card.guid()),
               {{Suggestion::Text(l10n_util::GetStringUTF16(
@@ -2829,7 +2864,7 @@ TEST_F(
   EXPECT_THAT(
       server_card_suggestion.children,
       ElementsAre(EqualsFieldByFieldFillingSuggestion(
-          PopupItemId::kFieldByFieldFilling,
+          PopupItemId::kCreditCardFieldByFieldFilling,
           credit_card.GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, app_locale()),
           CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
           Suggestion::Guid(credit_card.guid()),
@@ -2855,14 +2890,14 @@ TEST_F(AutofillCreditCardSuggestionContentTest,
       server_card_suggestion.children[3].children,
       ElementsAre(
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kCreditCardFieldByFieldFilling,
               server_card.GetInfo(CREDIT_CARD_EXP_2_DIGIT_YEAR, app_locale()),
               CREDIT_CARD_EXP_2_DIGIT_YEAR,
               Suggestion::Guid(server_card.guid()),
               {{Suggestion::Text(l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_PAYMENTS_MANUAL_FALLBACK_AUTOFILL_POPUP_CC_EXPIRY_YEAR_SUGGESTION_LABEL))}}),
           EqualsFieldByFieldFillingSuggestion(
-              PopupItemId::kFieldByFieldFilling,
+              PopupItemId::kCreditCardFieldByFieldFilling,
               server_card.GetInfo(CREDIT_CARD_EXP_MONTH, app_locale()),
               CREDIT_CARD_EXP_MONTH, Suggestion::Guid(server_card.guid()),
               {{Suggestion::Text(l10n_util::GetStringUTF16(

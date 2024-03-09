@@ -447,6 +447,7 @@
 <translation id="2914580577416829331">צילומי מסך</translation>
 <translation id="2924416280450782352">לא ניתן להציג את הפריטים. אפשר לנסות לפתוח את החלונית הזו מחדש.</translation>
 <translation id="2931572158271115754">אין משימות לביצוע ברשימת המשימות.</translation>
+<translation id="2935225303485967257">ניהול פרופילים</translation>
 <translation id="2941112035454246133">נמוכה</translation>
 <translation id="2942350706960889382">זכוכית מגדלת במצב עגינה</translation>
 <translation id="2942516765047364088">מיקום המדף</translation>
@@ -624,7 +625,6 @@
 <translation id="3593646411856133110">כדי להציג את האפליקציות הפתוחות, מחליקים כלפי מעלה ולוחצים לחיצה ארוכה</translation>
 <translation id="3595596368722241419">סוללה מלאה</translation>
 <translation id="3596012367874587041">הגדרות האפליקציה</translation>
-<translation id="3598452309062311481">‏מקש החיפוש + h</translation>
 <translation id="3600061223661453002">כבוי</translation>
 <translation id="3604801046548457007">שולחן העבודה <ph name="DESK_TITILE" /> נוצר</translation>
 <translation id="3606978283550408104">צג ברייל מחובר</translation>
@@ -776,7 +776,6 @@
 <translation id="4190780880566297084">ביטול ההגדרה של הצגת התמונות, המדיה והאפליקציות שבטלפון מהזמן האחרון</translation>
 <translation id="4192112279662688596">או</translation>
 <translation id="4193857202545160520">הצגת קליקים ושימוש במקשים</translation>
-<translation id="4193969623755915875">‏פתיחה של 'עזרה' באפליקציה 'מה חדש ב-Chromebook' באמצעות <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4195579532193195633">הגרסה הנוכחית <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">אני רוצה להמשיך מהמקום שבו הפסקתי</translation>
 <translation id="4195877955194704651">לחצן קליקים אוטומטיים</translation>
@@ -959,7 +958,6 @@
 <translation id="4889868803215848840">אפשר להוסיף משוב לשיפור ההצעות:</translation>
 <translation id="4890187583552566966">‏Google Assistant הושבתה על-ידי מנהל המערכת.</translation>
 <translation id="4890408602550914571">‏יש לוודא שהטלפון נמצא בקרבת מקום ושה-Bluetooth מופעל.</translation>
-<translation id="4892981359753171125">שליטה באמצעות תנועות הפנים</translation>
 <translation id="4895488851634969361">הסוללה טעונה במלואה.</translation>
 <translation id="490375751687810070">אנכי</translation>
 <translation id="490788395437447240">%<ph name="BATTERY_PERCENTAGE" /> סוללה</translation>
@@ -978,7 +976,7 @@
 <translation id="495046168593986294">גלילה למעלה</translation>
 <translation id="4952936045814352993">איתור הטלפון לא זמין כשצלילי ההתראות מושבתים</translation>
 <translation id="4960324571663582548">בהתאם לבקשה של <ph name="MANAGER" />, עליך להחזיר את ה-<ph name="DEVICE_TYPE" /> לגרסה קודמת. המכשיר יעבור איפוס וכל הנתונים שבו יימחקו.</translation>
-<translation id="4961318399572185831">העברת המסך</translation>
+<translation id="4961318399572185831">העברת מסך</translation>
 <translation id="4966431234408005599">הגברת עוצמת הקול</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> שעות <ph name="MINUTES" /> דקות <ph name="SECONDS" /> שניות</translation>
 <translation id="4975771730019223894">תיוג אפליקציות</translation>

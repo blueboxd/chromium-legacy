@@ -44,7 +44,7 @@ RecordUmaForPageLoadInternalSoftNavigationFromReferenceInvalidTiming(
 
 // This class contains the logic for calculating Single-Page-App soft navigation
 // heuristics. See https://github.com/WICG/soft-navigations
-class CORE_EXPORT SoftNavigationHeuristics
+class SoftNavigationHeuristics
     : public GarbageCollected<SoftNavigationHeuristics>,
       public Supplement<LocalDOMWindow>,
       public scheduler::TaskAttributionTracker::Observer {
@@ -86,10 +86,7 @@ class CORE_EXPORT SoftNavigationHeuristics
   // If there are nested EventParameters, pop one, restore it to the
   // current_event_parameters_ and return true. Otherwise, return false.
   bool PopNestedEventParametersIfNeeded();
-
-  bool GetInitialInteractionEncounteredForTest() {
-    return initial_interaction_encountered_;
-  }
+  void SetCurrentTimeAsStartTime(ScriptState* script_state);
 
  private:
   enum FlagType : uint8_t {
@@ -97,7 +94,7 @@ class CORE_EXPORT SoftNavigationHeuristics
     kMainModification,
   };
   using FlagTypeSet = base::EnumSet<FlagType, kURLChange, kMainModification>;
-  struct PerInteractionData {
+  struct PerInteractionData : public GarbageCollected<PerInteractionData> {
     // The timestamp just before the event responding to the user's interaction
     // started processing. In case of multiple events for a single interaction
     // (e.g. a keyboard key press resulting in keydown, keypress, and keyup),
@@ -106,10 +103,12 @@ class CORE_EXPORT SoftNavigationHeuristics
     base::TimeTicks user_interaction_timestamp;
     FlagTypeSet flag_set;
     String url;
+    void Trace(Visitor*) const {}
   };
 
   void ReportSoftNavigationToMetrics(LocalFrame* frame) const;
-  void CheckSoftNavigationConditions(PerInteractionData& data);
+  void CheckSoftNavigationConditions(const PerInteractionData& data,
+                                     ScriptState* script_state);
   void SetIsTrackingSoftNavigationHeuristicsOnDocument(bool value) const;
 
   absl::optional<scheduler::TaskAttributionId>
@@ -132,12 +131,12 @@ class CORE_EXPORT SoftNavigationHeuristics
       soft_navigation_descendant_cache_;
   bool did_reset_paints_ = false;
   bool did_commit_previous_paints_ = false;
-  WTF::HashMap<scheduler::TaskAttributionIdType, PerInteractionData>
+  HeapHashMap<scheduler::TaskAttributionIdType, Member<PerInteractionData>>
       interaction_task_id_to_interaction_data_;
   base::TimeTicks pending_interaction_timestamp_;
   absl::optional<scheduler::TaskAttributionId>
       last_soft_navigation_ancestor_task_;
-  PerInteractionData soft_navigation_interaction_data_;
+  Member<const PerInteractionData> soft_navigation_interaction_data_;
   WTF::HashMap<scheduler::TaskAttributionIdType,
                scheduler::TaskAttributionIdType>
       task_id_to_interaction_task_id_;
@@ -145,8 +144,9 @@ class CORE_EXPORT SoftNavigationHeuristics
   uint64_t softnav_painted_area_ = 0;
   uint64_t initial_painted_area_ = 0;
   uint64_t viewport_area_ = 0;
-  scheduler::TaskAttributionIdType last_interaction_task_id_ = 0;
+  scheduler::TaskAttributionId last_interaction_task_id_;
   bool soft_navigation_conditions_met_ = false;
+  bool paint_conditions_met_ = false;
   bool initial_interaction_encountered_ = false;
   struct EventParameters {
     explicit EventParameters() = default;
@@ -159,6 +159,7 @@ class CORE_EXPORT SoftNavigationHeuristics
   EventParameters top_event_parameters_;
   WTF::Deque<EventParameters> nested_event_parameters_;
   EventParameters* current_event_parameters_ = nullptr;
+  bool seen_first_observer = false;
 };
 
 // This class defines a scope that would cover click or navigation related

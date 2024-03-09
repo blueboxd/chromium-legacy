@@ -241,6 +241,18 @@ bool ShouldRecordFkeyMetrics(const mojom::Keyboard& keyboard) {
           keyboard.settings->f12.has_value());
 }
 
+void RecordButtonMetrics(const mojom::Button& button,
+                         const std::string* metric_name_prefix) {
+  if (button.is_customizable_button()) {
+    base::UmaHistogramEnumeration(
+        base::StrCat({*metric_name_prefix, "CustomizableButton"}),
+        button.get_customizable_button());
+  } else if (button.is_vkey()) {
+    base::UmaHistogramSparse(base::StrCat({*metric_name_prefix, "Vkey"}),
+                             button.get_vkey());
+  }
+}
+
 void RecordButtonRemappingNameIfChanged(
     const mojom::ButtonRemappingPtr& original_remapping,
     const mojom::ButtonRemappingPtr& new_remapping,
@@ -249,14 +261,7 @@ void RecordButtonRemappingNameIfChanged(
       base::StrCat({"ChromeOS.Settings.Device.", peripheral_kind,
                     ".ButtonRemapping.Name.Changed."});
   if (original_remapping->name != new_remapping->name) {
-    if (original_remapping->button->is_customizable_button()) {
-      base::UmaHistogramEnumeration(
-          base::StrCat({metric_name_prefix, "CustomizableButton"}),
-          original_remapping->button->get_customizable_button());
-    } else if (original_remapping->button->is_vkey()) {
-      base::UmaHistogramSparse(base::StrCat({metric_name_prefix, "Vkey"}),
-                               original_remapping->button->get_vkey());
-    }
+    RecordButtonMetrics(*(original_remapping->button), &metric_name_prefix);
   }
 }
 
@@ -359,36 +364,29 @@ void HandleSettingsUpdatedMetric(const T& device) {
                         std::move(updated_settings_update_info_dict));
 }
 
-void RecordButtonRemappingAction(
-    const mojom::ButtonRemappingPtr& button_remapping,
-    const char* peripheral_kind,
-    const char* metric_name_suffix) {
-  if (!button_remapping->remapping_action) {
-    // TOOD(dpad): Add metric for recording default button remapping.
-    return;
-  }
-
+void RecordButtonRemappingAction(const mojom::RemappingAction& remapping_action,
+                                 const char* peripheral_kind,
+                                 const char* metric_name_suffix) {
   const std::string metric_name_prefix = base::StrCat(
       {"ChromeOS.Settings.Device.", peripheral_kind, ".ButtonRemapping."});
-  switch (button_remapping->remapping_action->which()) {
+  switch (remapping_action.which()) {
     case mojom::RemappingAction::Tag::kAcceleratorAction:
       base::UmaHistogramSparse(
           base::StrCat(
               {metric_name_prefix, "AcceleratorAction.", metric_name_suffix}),
-          button_remapping->remapping_action->get_accelerator_action());
+          remapping_action.get_accelerator_action());
       break;
     case mojom::RemappingAction::Tag::kStaticShortcutAction:
       base::UmaHistogramEnumeration(
           base::StrCat({metric_name_prefix, "StaticShortcutAction.",
                         metric_name_suffix}),
-          button_remapping->remapping_action->get_static_shortcut_action());
+          remapping_action.get_static_shortcut_action());
       break;
     case mojom::RemappingAction::Tag::kKeyEvent:
       base::UmaHistogramSparse(
           base::StrCat({metric_name_prefix, "KeyEvent.", metric_name_suffix}),
-          GetEncodedShortcut(
-              button_remapping->remapping_action->get_key_event()->modifiers,
-              button_remapping->remapping_action->get_key_event()->vkey));
+          GetEncodedShortcut(remapping_action.get_key_event()->modifiers,
+                             remapping_action.get_key_event()->vkey));
       break;
   }
 }
@@ -397,15 +395,28 @@ void RecordButtonRemappingActionIfChanged(
     const mojom::ButtonRemappingPtr& original_remapping,
     const mojom::ButtonRemappingPtr& new_remapping,
     const char* peripheral_kind) {
-  if (original_remapping->remapping_action != new_remapping->remapping_action) {
-    RecordButtonRemappingAction(new_remapping, peripheral_kind, "Changed");
+  if (new_remapping->remapping_action &&
+      original_remapping->remapping_action != new_remapping->remapping_action) {
+    RecordButtonRemappingAction(*(new_remapping->remapping_action),
+                                peripheral_kind, "Changed");
   }
 }
 
-void RecordCurrentButtonRemappingAction(
+void RecordInitialButtonRemappingAction(
     const mojom::ButtonRemappingPtr& button_remapping,
     const char* peripheral_kind) {
-  RecordButtonRemappingAction(button_remapping, peripheral_kind, "Initial");
+  if (!button_remapping->remapping_action) {
+    // Add metrics for recording default button remapping.
+    const std::string metric_name_prefix =
+        base::StrCat({"ChromeOS.Settings.Device.", peripheral_kind,
+                      ".ButtonRemapping.DefaultRemapping."});
+    RecordButtonMetrics(*(button_remapping->button), &metric_name_prefix);
+    return;
+  }
+
+  // Add metrics for recording remapping actions.
+  RecordButtonRemappingAction(*(button_remapping->remapping_action),
+                              peripheral_kind, "Initial");
 }
 
 }  // namespace
@@ -606,9 +617,16 @@ void InputDeviceSettingsMetricsManager::RecordMouseInitialMetrics(
       mouse.settings->swap_right);
 
   for (const auto& button_remapping : mouse.settings->button_remappings) {
-    RecordCurrentButtonRemappingAction(button_remapping,
+    RecordInitialButtonRemappingAction(button_remapping,
                                        /*peripheral_kind=*/"Mouse");
   }
+}
+
+void InputDeviceSettingsMetricsManager::RecordRemappingActionWhenButtonPressed(
+    const mojom::RemappingAction& remapping_action,
+    const char* peripheral_kind) {
+  RecordButtonRemappingAction(remapping_action, peripheral_kind,
+                              /*metrics_name_suffix=*/"Pressed");
 }
 
 void InputDeviceSettingsMetricsManager::RecordMouseChangedMetrics(
@@ -673,8 +691,7 @@ void InputDeviceSettingsMetricsManager::RecordMouseChangedMetrics(
                                            /*peripheral_kind=*/
                                            "Mouse");
         RecordButtonRemappingActionIfChanged(original_remapping, new_remapping,
-                                             /*peripheral_kind=*/
-                                             "Mouse");
+                                             /*peripheral_kind=*/"Mouse");
       }
     }
   }
@@ -878,12 +895,12 @@ void InputDeviceSettingsMetricsManager::RecordGraphicsTabletInitialMetrics(
 
   for (const auto& button_remapping :
        graphics_tablet.settings->pen_button_remappings) {
-    RecordCurrentButtonRemappingAction(button_remapping,
+    RecordInitialButtonRemappingAction(button_remapping,
                                        /*peripheral_kind=*/"GraphicsTabletPen");
   }
   for (const auto& button_remapping :
        graphics_tablet.settings->tablet_button_remappings) {
-    RecordCurrentButtonRemappingAction(button_remapping,
+    RecordInitialButtonRemappingAction(button_remapping,
                                        /*peripheral_kind=*/"GraphicsTablet");
   }
 }
@@ -999,14 +1016,7 @@ void InputDeviceSettingsMetricsManager::RecordNewButtonRegisteredMetrics(
   const std::string metric_name_prefix =
       base::StrCat({"ChromeOS.Settings.Device.", peripheral_kind,
                     ".ButtonRemapping.Registered."});
-  if (button.is_customizable_button()) {
-    base::UmaHistogramEnumeration(
-        base::StrCat({metric_name_prefix, "CustomizableButton"}),
-        button.get_customizable_button());
-  } else if (button.is_vkey()) {
-    base::UmaHistogramSparse(base::StrCat({metric_name_prefix, "Vkey"}),
-                             button.get_vkey());
-  }
+  RecordButtonMetrics(button, &metric_name_prefix);
 }
 
 }  // namespace ash

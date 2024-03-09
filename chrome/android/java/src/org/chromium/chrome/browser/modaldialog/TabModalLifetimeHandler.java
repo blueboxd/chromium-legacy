@@ -159,9 +159,7 @@ public class TabModalLifetimeHandler
     @Override
     public @BackPressResult int handleBackPress() {
         int result = shouldInterceptBackPress() ? BackPressResult.SUCCESS : BackPressResult.FAILURE;
-        if (result == BackPressResult.SUCCESS) {
-            mPresenter.dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE);
-        }
+        mPresenter.dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE);
         return result;
     }
 

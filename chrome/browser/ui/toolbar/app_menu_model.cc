@@ -83,7 +83,6 @@
 #include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/url_utils.h"
-#include "components/feature_engagement/public/event_constants.h"
 #include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -202,7 +201,7 @@ std::u16string GetInstallPWALabel(const Browser* browser) {
 // Returns the appropriate menu label for the IDC_OPEN_IN_PWA_WINDOW command if
 // available.
 std::u16string GetOpenPWALabel(const Browser* browser) {
-  absl::optional<webapps::AppId> app_id =
+  std::optional<webapps::AppId> app_id =
       web_app::GetWebAppForActiveTab(browser);
   if (!app_id.has_value()) {
     return std::u16string();
@@ -440,7 +439,7 @@ bool ProfileSubMenuModel::BuildSyncSection() {
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
   // First, check for sync errors. They may exist even if sync-the-feature is
   // disabled and only sync-the-transport is running.
-  const absl::optional<AvatarSyncErrorType> error =
+  const std::optional<AvatarSyncErrorType> error =
       GetAvatarSyncErrorType(profile_);
   if (error.has_value()) {
     if (error == AvatarSyncErrorType::kSyncPaused) {
@@ -697,7 +696,7 @@ void ToolsMenuModel::Build(Browser* browser) {
     AddItemWithStringId(IDC_TOGGLE_QUICK_COMMANDS, IDS_TOGGLE_QUICK_COMMANDS);
   }
 
-  if (features::IsSidePanelPinningEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
     AddItemWithStringId(IDC_SHOW_READING_MODE_SIDE_PANEL,
                         IDS_SHOW_READING_MODE_SIDE_PANEL);
     SetElementIdentifierAt(
@@ -862,19 +861,11 @@ void AppMenuModel::ExecuteCommand(int command_id, int event_flags) {
 }
 
 void AppMenuModel::LogSafetyHubInteractionMetrics(
-    absl::optional<safety_hub::SafetyHubModuleType> expected_module) {
-  // TODO(crbug.com/1443466): Remove when the service is only created when the
-  // feature is enabled.
-  if (!base::FeatureList::IsEnabled(features::kSafetyHub)) {
-    return;
-  }
-  auto* const safety_hub_menu_notification_service =
+    std::optional<safety_hub::SafetyHubModuleType> expected_module) {
+  auto const* safety_hub_menu_notification_service =
       SafetyHubMenuNotificationServiceFactory::GetForProfile(
           browser_->profile());
-  if (!safety_hub_menu_notification_service) {
-    return;
-  }
-  absl::optional<safety_hub::SafetyHubModuleType> sh_module =
+  std::optional<safety_hub::SafetyHubModuleType> sh_module =
       safety_hub_menu_notification_service->GetModuleOfActiveNotification();
   if (sh_module.has_value() && (!expected_module.has_value() ||
                                 expected_module.value() == sh_module.value())) {
@@ -947,9 +938,6 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
             "WrenchMenu.TimeToAction.ShowBookmarkSidePanel", delta);
       }
       LogMenuAction(MENU_ACTION_SHOW_BOOKMARK_SIDE_PANEL);
-      // Close IPH for side panel menu, if shown.
-      browser()->window()->NotifyFeatureEngagementEvent(
-          feature_engagement::events::kSidePanelFromMenuShown);
       break;
     case IDC_SHOW_BOOKMARK_MANAGER:
       if (!uma_action_recorded_) {
@@ -1222,9 +1210,6 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
             "WrenchMenu.TimeToAction.ShowReadingModeSidePanel", delta);
       }
       LogMenuAction(MENU_ACTION_SHOW_READING_MODE_SIDE_PANEL);
-      // Close IPH for side panel menu, if shown.
-      browser()->window()->NotifyFeatureEngagementEvent(
-          feature_engagement::events::kSidePanelFromMenuShown);
       break;
 
     // Zoom menu
@@ -1558,7 +1543,7 @@ void AppMenuModel::Build() {
                   kDefaultIconSize)
             : ui::ImageModel::FromVectorIcon(
                   kBrowserToolsUpdateIcon,
-                  app_menu_icon_controller_->GetIconColor(absl::nullopt));
+                  app_menu_icon_controller_->GetIconColor(std::nullopt));
     if (browser_defaults::kShowUpgradeMenuItem) {
       AddItemWithIcon(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName(),
                       update_icon);
@@ -1571,9 +1556,37 @@ void AppMenuModel::Build() {
 #endif
   }
 
-  if (AddSafetyHubMenuItem() || AddGlobalErrorMenuItems() || need_separator) {
-    AddSeparator(ui::NORMAL_SEPARATOR);
+  if (base::FeatureList::IsEnabled(features::kSafetyHub) &&
+      !browser_->profile()->IsGuestSession() &&
+      !browser_->profile()->IsIncognitoProfile()) {
+    auto* safety_hub_menu_notification_service =
+        SafetyHubMenuNotificationServiceFactory::GetForProfile(
+            browser_->profile());
+    std::optional<MenuNotificationEntry> notification =
+        safety_hub_menu_notification_service->GetNotificationToShow();
+    if (notification.has_value()) {
+      base::UmaHistogramEnumeration(
+          "Settings.SafetyHub.Impression",
+          safety_hub::SafetyHubSurfaces::kThreeDotMenu);
+      base::UmaHistogramEnumeration(
+          "Settings.SafetyHub.EntryPointImpression",
+          safety_hub::SafetyHubEntryPoint::kMenuNotifications);
+      std::optional<safety_hub::SafetyHubModuleType> sh_module =
+          safety_hub_menu_notification_service->GetModuleOfActiveNotification();
+      if (sh_module.has_value()) {
+        base::UmaHistogramEnumeration(
+            "Settings.SafetyHub.MenuNotificationImpression", sh_module.value());
+      }
+      const auto safety_hub_icon = ui::ImageModel::FromVectorIcon(
+          kSecurityIcon, ui::kColorMenuIcon, kDefaultIconSize);
+      AddItemWithIcon(notification->command, notification->label,
+                      safety_hub_icon);
+      need_separator = true;
+    }
   }
+
+  if (AddGlobalErrorMenuItems() || need_separator)
+    AddSeparator(ui::NORMAL_SEPARATOR);
 
   AddItemWithStringId(IDC_NEW_TAB, browser_->profile()->IsIncognitoProfile()
                                        ? IDS_NEW_INCOGNITO_TAB
@@ -1753,7 +1766,7 @@ void AppMenuModel::Build() {
     } else if (dom_distiller::ShowReaderModeOption(
                    browser_->profile()->GetPrefs())) {
       // Show the menu option if the page is distillable.
-      absl::optional<dom_distiller::DistillabilityResult> distillability =
+      std::optional<dom_distiller::DistillabilityResult> distillability =
           dom_distiller::GetLatestResult(
               browser()->tab_strip_model()->GetActiveWebContents());
       if (distillability && distillability.value().is_distillable)
@@ -1925,40 +1938,6 @@ bool AppMenuModel::AddGlobalErrorMenuItems() {
   return menu_items_added;
 }
 
-bool AppMenuModel::AddSafetyHubMenuItem() {
-  // TODO(crbug.com/1443466): Remove when the service is only created when the
-  // feature is enabled.
-  if (!base::FeatureList::IsEnabled(features::kSafetyHub)) {
-    return false;
-  }
-  auto* const safety_hub_menu_notification_service =
-      SafetyHubMenuNotificationServiceFactory::GetForProfile(
-          browser_->profile());
-  if (!safety_hub_menu_notification_service) {
-    return false;
-  }
-  absl::optional<MenuNotificationEntry> notification =
-      safety_hub_menu_notification_service->GetNotificationToShow();
-  if (!notification.has_value()) {
-    return false;
-  }
-  base::UmaHistogramEnumeration("Settings.SafetyHub.Impression",
-                                safety_hub::SafetyHubSurfaces::kThreeDotMenu);
-  base::UmaHistogramEnumeration(
-      "Settings.SafetyHub.EntryPointImpression",
-      safety_hub::SafetyHubEntryPoint::kMenuNotifications);
-  absl::optional<safety_hub::SafetyHubModuleType> sh_module =
-      safety_hub_menu_notification_service->GetModuleOfActiveNotification();
-  if (sh_module.has_value()) {
-    base::UmaHistogramEnumeration(
-        "Settings.SafetyHub.MenuNotificationImpression", sh_module.value());
-  }
-  const auto safety_hub_icon = ui::ImageModel::FromVectorIcon(
-      kSecurityIcon, ui::kColorMenuIcon, kDefaultIconSize);
-  AddItemWithIcon(notification->command, notification->label, safety_hub_icon);
-  return true;
-}
-
 #if BUILDFLAG(IS_CHROMEOS)
 void AppMenuModel::UpdateSettingsItemState() {
   bool is_disabled =
@@ -1966,7 +1945,7 @@ void AppMenuModel::UpdateSettingsItemState() {
           policy::SystemFeature::kBrowserSettings,
           g_browser_process->local_state());
 
-  absl::optional<size_t> index = GetIndexOfCommandId(IDC_OPTIONS);
+  std::optional<size_t> index = GetIndexOfCommandId(IDC_OPTIONS);
   if (index.has_value())
     SetEnabledAt(index.value(), !is_disabled);
 

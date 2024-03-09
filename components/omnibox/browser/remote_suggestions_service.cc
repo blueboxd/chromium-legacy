@@ -102,8 +102,6 @@ RemoteSuggestionsService::StartSuggestionsRequest(
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = suggest_url;
   request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
-  // Set the SiteForCookies to the request URL's site to avoid cookie blocking.
-  request->site_for_cookies = net::SiteForCookies::FromUrl(suggest_url);
   // Add Chrome experiment state to the request headers.
   AddVariationHeaders(request.get());
 
@@ -183,7 +181,7 @@ RemoteSuggestionsService::StartZeroPrefixSuggestionsRequest(
   if (search_terms_args.bypass_cache) {
     request->load_flags |= net::LOAD_BYPASS_CACHE;
   }
-  // Set the SiteForCookies to the request URL's site to avoid cookie blocking.
+  // Try to attach cookies for signed in user.
   request->site_for_cookies = net::SiteForCookies::FromUrl(suggest_url);
   // Add Chrome experiment state to the request headers.
   AddVariationHeaders(request.get());
@@ -284,8 +282,6 @@ RemoteSuggestionsService::StartDeletionRequest(
         })");
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
-  // Set the SiteForCookies to the request URL's site to avoid cookie blocking.
-  request->site_for_cookies = net::SiteForCookies::FromUrl(url);
   // Add Chrome experiment state to the request headers.
   AddVariationHeaders(request.get());
 

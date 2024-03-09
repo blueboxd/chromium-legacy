@@ -1884,8 +1884,6 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1490607): Fix and re-enable.
           "-Wno-thread-safety-reference-return",
-
-          "-Wno-c++11-narrowing-const-reference",
         ]
       }
     }

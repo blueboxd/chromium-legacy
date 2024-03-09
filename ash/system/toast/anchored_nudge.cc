@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -68,8 +67,6 @@ AnchoredNudge::AnchoredNudge(AnchoredNudgeData& nudge_data)
       anchored_to_shelf_(nudge_data.anchored_to_shelf),
       click_callback_(std::move(nudge_data.click_callback)),
       dismiss_callback_(std::move(nudge_data.dismiss_callback)) {
-  DCHECK(features::IsSystemNudgeV2Enabled());
-
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_color(SK_ColorTRANSPARENT);
   set_margins(gfx::Insets());
@@ -99,11 +96,6 @@ AnchoredNudge::~AnchoredNudge() {
 
 gfx::Rect AnchoredNudge::GetBubbleBounds() {
   auto* root_window = GetWidget()->GetNativeWindow();
-
-  // This can happen during destruction.
-  if (!root_window) {
-    return gfx::Rect();
-  }
 
   gfx::Rect work_area_bounds =
       WorkAreaInsets::ForWindow(root_window)->user_work_area_bounds();
@@ -149,8 +141,6 @@ void AnchoredNudge::AddedToWidget() {
   GetDialogClientView()->RemoveAccelerator(
       ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
-  // Widget needs a native window in order to observe its shelf.
-  CHECK(GetWidget()->GetNativeWindow());
   auto* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
 
   if (anchored_to_shelf_) {
@@ -211,7 +201,7 @@ void AnchoredNudge::OnHotseatStateChanged(HotseatState old_state,
 
 void AnchoredNudge::OnShelfAlignmentChanged(aura::Window* root_window,
                                             ShelfAlignment old_alignment) {
-  if (!GetWidget() || !GetWidget()->GetNativeWindow()) {
+  if (!GetWidget()) {
     return;
   }
 
@@ -243,7 +233,7 @@ void AnchoredNudge::SetArrowFromShelf(Shelf* shelf) {
 }
 
 void AnchoredNudge::SetDefaultAnchorRect() {
-  if (!GetWidget() || !GetWidget()->GetNativeWindow()) {
+  if (!GetWidget()) {
     return;
   }
 

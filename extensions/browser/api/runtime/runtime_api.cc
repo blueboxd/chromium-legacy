@@ -839,9 +839,7 @@ RuntimeGetContextsFunction::GetWorkerContext() {
 
   std::vector<WorkerId> active_workers =
       process_manager->GetServiceWorkersForExtension(extension()->id());
-  // TODO(crbug.com/1493391): Upgrade this to a CHECK once multiple active
-  // workers has been resolved.
-  DCHECK_LE(active_workers.size(), 1u);
+  CHECK_LE(active_workers.size(), 1u);
 
   if (active_workers.empty()) {
     return std::nullopt;

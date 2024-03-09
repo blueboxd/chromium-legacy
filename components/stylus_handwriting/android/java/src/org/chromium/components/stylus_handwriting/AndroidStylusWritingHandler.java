@@ -32,6 +32,7 @@ public class AndroidStylusWritingHandler implements StylusWritingHandler, Stylus
     private static final String TAG = "AndroidStylus";
 
     private final InputMethodManager mInputMethodManager;
+    private View mTargetView;
 
     public static boolean isEnabled(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false;
@@ -94,6 +95,8 @@ public class AndroidStylusWritingHandler implements StylusWritingHandler, Stylus
 
         View view = webContents.getViewAndroidDelegate().getContainerView();
         view.setAutoHandwritingEnabled(false);
+
+        mTargetView = view;
     }
 
     @Override
@@ -107,10 +110,10 @@ public class AndroidStylusWritingHandler implements StylusWritingHandler, Stylus
     }
 
     @Override
-    public boolean requestStartStylusWriting(View view) {
+    public boolean requestStartStylusWriting() {
         Log.d(TAG, "Requesting Stylus Writing");
         StylusApiOption.recordStylusHandwritingTriggered(Api.ANDROID);
-        mInputMethodManager.startStylusHandwriting(view);
+        mInputMethodManager.startStylusHandwriting(mTargetView);
         return true;
     }
 

@@ -258,7 +258,6 @@
 <translation id="1455413310270022028">ইৰেজাৰ</translation>
 <translation id="1458140305240870199">অন্তর্বাস</translation>
 <translation id="1459693405370120464">বতৰ</translation>
-<translation id="1461041542809785877">কাৰ্যক্ষমতা</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1462951478840426066">আপোনাৰ কম্পিউটাৰত থকা ফ’ণ্ট ব্যৱহাৰ কৰক যাতে আপুনি উচ্চমানৰ সমল সৃষ্টি কৰিব পাৰে</translation>
 <translation id="1467432559032391204">বাওঁফালে</translation>
@@ -829,6 +828,7 @@
             <ph name="LIST_ITEM" />কুকি আৰু ছাইটৰ ডেটা
             <ph name="LIST_ITEM" />ফৰ্মত দিয়া তথ্য
           <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">ভৰাওক</translation>
 <translation id="2625385379895617796">আপোনাৰ ঘড়ীৰ সময় আগবাঢ়ি আছে</translation>
 <translation id="262745152991669301">ইউএছবি ডিভাইচৰ সৈতে সংযোগ কৰিবলৈ বিচাৰিব পাৰে</translation>
 <translation id="2629325967560697240">Chromeৰ সৰ্বোচ্চ স্তৰৰ সুৰক্ষা লাভ কৰিবলৈ <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />বৰ্ধিত সুৰক্ষাৰ সুবিধাটো অন কৰক<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -1587,6 +1587,7 @@
 <translation id="4177501066905053472">বিজ্ঞাপনৰ বিষয়বস্তু</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">মূল্য ট্ৰেক কৰা বন্ধ কৰক</translation>
+<translation id="4191334393248735295">দৈৰ্ঘ্য</translation>
 <translation id="4195459680867822611">Chromeৰ পৰামৰ্শ চোৱাৰ বুটাম, Chromeৰ সুবিধাসমূহৰ বিষয়ে জানিবলৈ সক্ৰিয় কৰক</translation>
 <translation id="4195643157523330669">নতুন টেবত খোলক</translation>
 <translation id="4196861286325780578">স্থানান্তৰ &amp;কৰাটো ৰিডু কৰক</translation>
@@ -2601,7 +2602,6 @@
 <translation id="6232271601416750929">প্ৰাকৃতিক সৌন্দৰ্য</translation>
 <translation id="6234122620015464377">প্ৰতিখন নথিৰ পাছত ট্ৰিম কৰক</translation>
 <translation id="6236290670123303279">ছেটিংসমূহ পৰিচালনা কৰক</translation>
-<translation id="623825323736974198">সদায় সক্ৰিয় হৈ থকা আৰু সেইসমূহৰ পৰা স্মৃতি খালী নকৰা ছাইটসমূহ পৰিচালনা কৰক</translation>
 <translation id="6240447795304464094">Google Pay ৰ ল’গ’</translation>
 <translation id="6241121617266208201">পৰামৰ্শসমূহ লুকুৱাওক</translation>
 <translation id="624499991300733384">প্ৰিণ্ট কম্প’জিটৰ সেৱা</translation>

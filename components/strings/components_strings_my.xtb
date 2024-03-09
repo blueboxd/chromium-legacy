@@ -258,7 +258,6 @@
 <translation id="1455413310270022028">ခဲဖျက်</translation>
 <translation id="1458140305240870199">အတွင်းခံအဝတ်အစား</translation>
 <translation id="1459693405370120464">မိုးလေဝသ</translation>
-<translation id="1461041542809785877">ဆောင်ရွက်မှု</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1462951478840426066">ရှင်းလင်းထင်ရှားသော အကြောင်းအရာများ ရေးသားနိုင်ရန် သင့်ကွန်ပျူတာရှိဖောင့်များ အသုံးပြုမည်</translation>
 <translation id="1467432559032391204">ဘယ်</translation>
@@ -834,6 +833,7 @@
             <ph name="LIST_ITEM" />ကွတ်ကီးနှင့် ဝဘ်ဆိုက်ဒေတာ
             <ph name="LIST_ITEM" />ဖောင်များတွင်ထည့်ထားသော အချက်အလက်
           <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">ထည့်သွင်းရန်</translation>
 <translation id="2625385379895617796">သင်၏ နာရီမှာ စောနေ</translation>
 <translation id="262745152991669301">USB ကိရိယာများနှင့် ချိတ်ဆက်ရန် ခွင့်တောင်းနိုင်သည်</translation>
 <translation id="2629325967560697240">Chrome ၏ အမြင့်ဆုံးလုံခြုံရေး ရရှိရန် <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />အဆင့်မြှင့်တင်ထားသော ကာကွယ်မှုကို ဖွင့်ပါ<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -1590,6 +1590,7 @@
 <translation id="4177501066905053472">ကြော်ငြာအကြောင်းအရာများ</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">ဈေးနှုန်း မစောင့်ကြည့်ရန်</translation>
+<translation id="4191334393248735295">အရှည်</translation>
 <translation id="4195459680867822611">Chrome ၏ တူးလ်များအကြောင်း လေ့လာရန်အတွက် ‘Chrome အကြံပြုချက်များ ကြည့်ရန်’ ခလုတ်ကို နှိပ်နိုင်သည်</translation>
 <translation id="4195643157523330669">တဘ်အသစ်တွင် ဖွင့်ရန်</translation>
 <translation id="4196861286325780578">&amp;ရွေ့ရှားမှုကို ပြန်လုပ်ရန်</translation>
@@ -2606,7 +2607,6 @@
 <translation id="6232271601416750929">သဘာဝ အလှကုန်</translation>
 <translation id="6234122620015464377">မှတ်တမ်းတစ်ခုအပြီး ဖြတ်ထုတ်ရန်</translation>
 <translation id="6236290670123303279">ဆက်တင်များ စီမံခန့်ခွဲရန်</translation>
-<translation id="623825323736974198">အမြဲပွင့်နေပြီး မှတ်ဉာဏ်ထဲမှ ဖယ်ထုတ်မရနိုင်သည့် ဝဘ်ဆိုက်များကို စီမံပါ</translation>
 <translation id="6240447795304464094">Google Pay အမှတ်တံဆိပ်</translation>
 <translation id="6241121617266208201">အကြံပြုချက်များကို ဝှက်ရန်</translation>
 <translation id="624499991300733384">ပုံနှိပ်မှုဆိုင်ရာ ပြင်ဆင်ဖွဲ့စည်းသည့် ဝန်ဆောင်မှု</translation>

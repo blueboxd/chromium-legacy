@@ -356,11 +356,6 @@ const char kEnableAutofillAddressSavePromptName[] =
 const char kEnableAutofillAddressSavePromptDescription[] =
     "Enable the Autofill address save prompts.";
 
-const char kEnableBookmarksAccountStorageName[] =
-    "Enable Bookmarks Account Storage";
-const char kEnableBookmarksAccountStorageDescription[] =
-    "Enable bookmarks account storage and related UI features.";
-
 const char kEnableCompromisedPasswordsMutingName[] =
     "Enable the muting of compromised passwords in the Password Manager";
 const char kEnableCompromisedPasswordsMutingDescription[] =
@@ -564,11 +559,6 @@ const char kIOSPasswordBottomSheetName[] = "IOS Password Manager Bottom Sheet";
 const char kIOSPasswordBottomSheetDescription[] =
     "Enables the display of the password bottom sheet on IOS.";
 
-const char kIOSPasswordBottomSheetAutofocusName[] =
-    "IOS Password Manager Bottom Sheet Autofocus";
-const char kIOSPasswordBottomSheetAutofocusDescription[] =
-    "Enables triggering the password bottom sheet on autofocus on IOS.";
-
 const char kIOSPasswordSettingsBulkUploadLocalPasswordsName[] =
     "iOS Bulk Upload Local Passwords";
 const char kIOSPasswordSettingsBulkUploadLocalPasswordsDescription[] =
@@ -743,18 +733,6 @@ const char kOmniboxPopulateShortcutsDatabaseName[] =
 const char kOmniboxPopulateShortcutsDatabaseDescription[] =
     "Enables storing successful query/match in the omnibox shortcut database "
     "to provider better suggestions ranking.";
-
-const char kOmniboxReportAssistedQueryStatsName[] =
-    "Omnibox Assisted Query Stats param";
-const char kOmniboxReportAssistedQueryStatsDescription[] =
-    "Enables reporting the Assisted Query Stats param in search destination "
-    "URLs originated from the Omnibox.";
-
-const char kOmniboxReportSearchboxStatsName[] =
-    "Omnibox Searchbox Stats proto param";
-const char kOmniboxReportSearchboxStatsDescription[] =
-    "Enables reporting the serialized Searchbox Stats proto param in search "
-    "destination URLs originated from the Omnibox.";
 
 extern const char kOmniboxSuggestionsRTLImprovementsName[] =
     "Omnibox Improved RTL Suggestion Layout";
@@ -983,12 +961,6 @@ const char kEnableSessionSerializationOptimizationsDescription[] =
     "Enables the use of multiple separate files to save the session state "
     "and the ability to load only the minimum amount of data when restoring "
     "the session from disk.";
-
-const char kTabGridAlwaysBounceName[] =
-    "Let the tab grid bounce even if the content fits the screen";
-const char kTabGridAlwaysBounceDescription[] =
-    "When enabled, the Tab Grid bounces (aka overscrolls) even if all tabs are "
-    "fully visible on screen.";
 
 const char kTabGridCompositionalLayoutName[] =
     "Enable tab grid with the new compositional layout";

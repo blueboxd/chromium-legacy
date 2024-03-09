@@ -167,7 +167,7 @@
 <translation id="3804247818991980532"><ph name="TYPE_1" />。<ph name="TYPE_2" />。</translation>
 <translation id="381841723434055211">電話號碼</translation>
 <translation id="3826050100957962900">第三方登入</translation>
-<translation id="3835233591525155343">裝置使用狀態</translation>
+<translation id="3835233591525155343">你的裝置使用狀態</translation>
 <translation id="3843916486309149084">Chrome 將於今天再次封鎖 Cookie</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3859306556332390985">快轉到特定的播放時間點</translation>
@@ -473,7 +473,6 @@
 <translation id="8803526663383843427">開啟時</translation>
 <translation id="8805385115381080995">降低網站確認你是否為真人的機率，提供更快速的瀏覽體驗</translation>
 <translation id="8816026460808729765">禁止網站存取感應器</translation>
-<translation id="8823559166155093873">封鎖 Cookie</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8874790741333031443">請嘗試暫時允許使用第三方 Cookie，這代表網頁瀏覽保護程度較低，但網站功能較容易正常運作。</translation>
 <translation id="8889294078294184559">你隨後瀏覽的網站可從 Chrome 取得前一個網站提供的資訊，確認你應該是真人</translation>

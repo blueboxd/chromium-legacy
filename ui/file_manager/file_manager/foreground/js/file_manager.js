@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cros_components/switch/switch.js';
+import '../../background/js/file_manager_base.js';
+import '../../background/js/test_util.js';
 import '../../definitions/file_manager_private.js';
 import '../../widgets/xf_jellybean.js';
-import 'chrome://resources/cros_components/switch/switch.js';
-import '../../background/js/test_util.js';
-import '../../background/js/file_manager_base.js';
 
 import {assert, assertInstanceof} from 'chrome://resources/ash/common/assert.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
@@ -56,6 +56,7 @@ import {ActionsController} from './actions_controller.js';
 import {AndroidAppListModel} from './android_app_list_model.js';
 import {AppStateController} from './app_state_controller.js';
 import {BannerController} from './banner_controller.js';
+import {CommandHandler} from './command_handler.js';
 import {findQueryMatchedDirectoryEntry} from './crossover_search_utils.js';
 import {CrostiniController} from './crostini_controller.js';
 import {DialogActionController} from './dialog_action_controller.js';
@@ -64,7 +65,7 @@ import {DirectoryModel} from './directory_model.js';
 import {DirectoryTreeNamingController} from './directory_tree_naming_controller.js';
 import {importElements} from './elements_importer.js';
 import {EmptyFolderController} from './empty_folder_controller.js';
-import {CommandHandler, CommandUtil} from './file_manager_commands.js';
+import {forceDefaultHandler} from './file_manager_commands_util.js';
 import {FileSelection, FileSelectionHandler} from './file_selection.js';
 import {FileTasks} from './file_tasks.js';
 import {FileTransferController} from './file_transfer_controller.js';
@@ -703,7 +704,7 @@ export class FileManager extends EventTarget {
     this.directoryModel_.addEventListener('directory-changed', event => {
       const
           customEvent = /**
-                           @type {import('../../definitions/directory_change_event.js').DirectoryChangeEvent}
+                           @type {import('./directory_model.js').DirectoryChangeEvent}
                              */
           (event);
       // @ts-ignore: error TS2531: Object is possibly 'null'.
@@ -753,7 +754,7 @@ export class FileManager extends EventTarget {
     this.actionsController_ = new ActionsController(
         // @ts-ignore: error TS2345: Argument of type 'MetadataModel | null' is
         // not assignable to parameter of type 'MetadataModel'.
-        this.volumeManager_, assert(this.metadataModel_), this.directoryModel_,
+        this.volumeManager_, assert(this.metadataModel_),
         assert(this.folderShortcutsModel_), this.selectionHandler_,
         assert(this.ui_));
     this.lastModifiedController_ = new LastModifiedController(
@@ -893,10 +894,7 @@ export class FileManager extends EventTarget {
     // @ts-ignore: error TS2531: Object is possibly 'null'.
     assert(this.ui_.textContextMenu);
 
-    this.commandHandler_ =
-        // @ts-ignore: error TS2345: Argument of type 'FileSelectionHandler |
-        // null' is not assignable to parameter of type 'FileSelectionHandler'.
-        new CommandHandler(this, assert(this.selectionHandler_));
+    this.commandHandler_ = new CommandHandler(this);
 
     // TODO(hirono): Move the following block to the UI part.
     // Hook up the cr-button commands.
@@ -966,10 +964,10 @@ export class FileManager extends EventTarget {
    * @private
    */
   registerInputCommands_(node) {
-    CommandUtil.forceDefaultHandler(node, 'cut');
-    CommandUtil.forceDefaultHandler(node, 'copy');
-    CommandUtil.forceDefaultHandler(node, 'paste');
-    CommandUtil.forceDefaultHandler(node, 'delete');
+    forceDefaultHandler(node, 'cut');
+    forceDefaultHandler(node, 'copy');
+    forceDefaultHandler(node, 'paste');
+    forceDefaultHandler(node, 'delete');
     node.addEventListener('keydown', e => {
       // @ts-ignore: error TS2339: Property 'keyCode' does not exist on type
       // 'Event'.
@@ -1279,7 +1277,7 @@ export class FileManager extends EventTarget {
     this.recentEntry_ = new FakeEntryImpl(
         str('RECENT_ROOT_LABEL'), RootType.RECENT, this.getSourceRestriction_(),
         chrome.fileManagerPrivate.FileCategory.ALL);
-    // @ts-ignore: error TS2741: Property 'getUIChildren' is missing in type
+    // @ts-ignore: error TS2741: Property 'getUiChildren' is missing in type
     // 'FakeEntry' but required in type 'FakeEntryImpl'.
     this.store_.dispatch(addUiEntry({entry: this.recentEntry_}));
     assert(this.launchParams_);
@@ -1497,9 +1495,6 @@ export class FileManager extends EventTarget {
 
     if (isGuestOsEnabled()) {
       this.guestOsController_ = new GuestOsController(
-          // @ts-ignore: error TS2345: Argument of type 'DirectoryModel | null'
-          // is not assignable to parameter of type 'DirectoryModel'.
-          assert(this.directoryModel_),
           // TODO(b/285977941): `DirectoryTree` is only used when
           // FileExperimental flag is off, remove it after the tree replacement.
           // @ts-ignore: error TS2531: Object is possibly 'null'.
@@ -1879,6 +1874,11 @@ export class FileManager extends EventTarget {
     // FilesAppDirEntry | FakeEntry | null' is not assignable to type
     // 'FileSystemDirectoryEntry | FilesAppDirEntry | FakeEntry'.
     return this.directoryModel_ && this.directoryModel_.getCurrentDirEntry();
+  }
+
+  /** Expose the unload method for integration tests. */
+  onUnloadForTest() {
+    this.onUnload_();
   }
 
   /**

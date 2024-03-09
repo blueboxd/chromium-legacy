@@ -34,6 +34,7 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
+#include "sql/sqlite_result_code.h"
 #include "sql/statement.h"
 #include "sql/statement_id.h"
 #include "sql/transaction.h"
@@ -632,6 +633,17 @@ AggregationServiceStorageSql::GetRequestsReportingOnOrBefore(
       continue;
     }
 
+    // Exclude internals page requests
+    if (!not_after_time.is_max()) {
+      base::UmaHistogramCustomTimes(
+          "PrivacySandbox.AggregationService.Storage.Sql."
+          "RequestDelayFromUpdatedReportTime",
+          not_after_time - get_requests_statement.ColumnTime(1),
+          /*min=*/base::Seconds(1),
+          /*max=*/base::Days(24),
+          /*buckets=*/50);
+    }
+
     result.push_back(AggregationServiceStorage::RequestAndId{
         .request = std::move(parsed_request.value()), .id = request_id});
   }
@@ -1013,6 +1025,11 @@ void AggregationServiceStorageSql::DatabaseErrorCallback(int extended_error,
 
   // Consider the database closed to avoid further errors.
   db_init_status_ = DbStatus::kClosed;
+
+  // Note that this histogram will not be recorded when errors are fatal.
+  base::UmaHistogramEnumeration(
+      "PrivacySandbox.AggregationService.Storage.Sql.Error",
+      sql::ToSqliteLoggedResultCode(extended_error));
 }
 
 }  // namespace content

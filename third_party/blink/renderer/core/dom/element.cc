@@ -616,7 +616,7 @@ bool Element::IsFocusableStyle(UpdateBehavior update_behavior) const {
   // activation reason, we simply return false to avoid updating style & layout
   // tree for this node.
   absl::optional<DocumentLifecycle::DisallowTransitionScope> disallow_scope;
-  if (UNLIKELY(update_behavior == UpdateBehavior::kNoneForAccessibility)) {
+  if (UNLIKELY(update_behavior != UpdateBehavior::kStyleAndLayout)) {
     DCHECK(!NeedsStyleRecalc()) << this;
     disallow_scope.emplace(GetDocument().Lifecycle());
   } else {
@@ -3446,7 +3446,13 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     // If we are re-attaching us or any of our descendants, we need to attach
     // the descendants before we know if this element generates a ::first-letter
     // and which element the ::first-letter inherits style from.
-    if (child_change.ReattachLayoutTree()) {
+    //
+    // If style recalc was suppressed for this element, it means it's a size
+    // query container, and child_change.ReattachLayoutTree() comes from the
+    // skipped style recalc. In that case we haven't updated the style, and we
+    // will not update the ::first-letter style in the originating element's
+    // AttachLayoutTree().
+    if (child_change.ReattachLayoutTree() && !change.IsSuppressed()) {
       // Make sure we reach this element during reattachment. There are cases
       // where we compute and store the styles for a subtree but stop attaching
       // layout objects at an element that does not allow child boxes. Marking
@@ -5870,7 +5876,13 @@ void Element::SetFocused(bool received, mojom::blink::FocusType focus_type) {
     }
   }
 
-  if (IsFocused() == received) {
+  // We'd like to invalidate :focus style for kPage even if element's focus
+  // state has not been changed, because the element might have been focused
+  // while the page was inactive.
+  if (IsFocused() == received &&
+      (!RuntimeEnabledFeatures::
+           FocusStyleInvalidationOnPageActivationEnabled() ||
+       focus_type != mojom::blink::FocusType::kPage)) {
     return;
   }
 
@@ -6085,7 +6097,7 @@ bool Element::CanBeKeyboardFocusableScroller(
   // to have up to date style and layout before calling IsScrollableNode.
   // However, for a11y code, layout updates should not be performed here.
   absl::optional<DocumentLifecycle::DisallowTransitionScope> disallow_scope;
-  if (UNLIKELY(update_behavior == UpdateBehavior::kNoneForAccessibility)) {
+  if (UNLIKELY(update_behavior != UpdateBehavior::kStyleAndLayout)) {
     disallow_scope.emplace(GetDocument().Lifecycle());
   } else {
     auto* box = GetLayoutObject();

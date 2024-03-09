@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">તમે સેટિંગ પછી કન્ટેન્ટ સેટિંગમાં જઈને ડિફૉલ્ટ સાઇટ વ્યૂ બદલીને ડેસ્કટૉપ વ્યૂ મોડ કરી શકો છો</translation>
 <translation id="1054745118061919935">આગળ વધીને, તમે <ph name="BEGIN_LINK" />સેવાની શરતો<ph name="END_LINK" /> સાથે સંમત થાઓ છો.</translation>
 <translation id="1066060668811609597">સિંક મેનેજ કરો</translation>
-<translation id="1066101356081285416">Chrome, તમે મુલાકાત લેતા હો તે સાઇટ પરના ટ્રૅકિંગ નંબરની ભાળ મેળવશે અને તમને નવા ટૅબ પેજ પર પૅકેજ સંબંધિત અપડેટ બતાવશે. દરેક જણને આ સુવિધા પ્રદાન કરવા અને Google પર શૉપિંગની સુવિધાઓને બહેતર બનાવવા માટે, Googleને પૅકેજ ટ્રૅકિંગ નંબર અને વેબસાઇટનું નામ મોકલવામાં આવશે. તમે કોઈપણ સમયે <ph name="BEGIN_LINK" />પૅકેજ ટ્રૅકિંગના સેટિંગ<ph name="END_LINK" />માં જઈને આને અપડેટ કરી શકો છો.</translation>
 <translation id="1069154182096085577">પાસવર્ડ પહેલેથી જ અસ્તિત્વમાં છે</translation>
 <translation id="1076421457278169141">કોડ સ્કેન કર્યો</translation>
 <translation id="1076785341346483463">મેનેજ કરેલા એકાઉન્ટ સાથે સિંક કરો</translation>
@@ -143,7 +142,6 @@
 <translation id="165877110639533037">કોઈ ખુલ્લા ટેબ્સ નથી</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />થી<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">મોબાઇલ સાઇટ માટે વિનંતી કરો</translation>
-<translation id="168715261339224929">તમારા બધા ડિવાઇસ પર તમારા બુકમાર્ક મેળવવા માટે, સિંક કરવાનું ચાલુ કરો.</translation>
 <translation id="1687475363370981210">તમામને વાંચેલ તરીકે ચિહ્નિત કરો</translation>
 <translation id="1689333818294560261">ઉપનામ</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> પસંદ કર્યાં</translation>
@@ -839,7 +837,6 @@
 <translation id="5457226814769348910">ઑફલાઇન વર્ઝન ખોલો</translation>
 <translation id="5475069061743940393">પૅકેજ ટ્રૅકિંગ</translation>
 <translation id="5478327362747197944">કોઈ વેબપેજમાં કોઈ તારીખ પર ક્લિક કરીને સીધા Calendar ઇવેન્ટ બનાવો.</translation>
-<translation id="5482922178977937393">શું તમે તમારી રુચિઓના આધારે ન્યૂઝ, રમતગમત અને વધુ માટે નોટિફિકેશન મેળવવા માગો છો?</translation>
 <translation id="5489208564673669003">બધી સાઇટ માટે કુકી મેનેજ કરવા, <ph name="BEGIN_LINK" />કુકી સેટિંગ જુઓ<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">બધી કુકીને બ્લૉક કરો (સુઝાવ આપતા નથી)</translation>
 <translation id="5497202150450073388">ડિલિવરી કરવાનો પ્રયાસ કર્યો. ફરી પ્રયાસ કરીશું</translation>
@@ -1049,7 +1046,6 @@
 <translation id="6476253015009698798">આ પેજ માટે કિંમત ટ્રૅક કરવાની સુવિધા ઉપલબ્ધ નથી.</translation>
 <translation id="6476800141292307438">પેજનો અનુવાદ <ph name="LANGUAGE" />માં કરી રહ્યા છે. વિકલ્પો સ્ક્રીનની નીચેની બાજુએ ઉપલબ્ધ રહે છે.</translation>
 <translation id="648164694371393720">પ્રમાણીકરણ ભૂલ</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> આઇટમ કાઢી નાખી</translation>
 <translation id="6484712497741564393"><ph name="EMAIL" /> તરીકે સાઇન ઇન થયાં.
 
 તમારો ડેટા તમારા પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો છે. તમારા Google એકાઉન્ટમાં Chrome ડેટાનો ઉપયોગ કરવા અને તેને સાચવવા માટે, તમારો પાસફ્રેઝ દાખલ કરો.</translation>
@@ -1136,6 +1132,7 @@
 <translation id="6869389390665537774">તમે જેની મુલાકાત લીધેલી હોય તેવા પેજ તમે તમારા ઇતિહાસમાં જોઈ શકો છો અથવા તેમાંથી તેને સાફ કરી શકો છો</translation>
 <translation id="687135068089457384">સેટિંગ બતાવો</translation>
 <translation id="6873263987691478642">વિભાજિત દૃશ્ય</translation>
+<translation id="687586529977635009">Chrome, તમે મુલાકાત લેતા હો તે સાઇટ પરના ટ્રૅકિંગ નંબરની ભાળ મેળવશે અને તમને નવા ટૅબ પેજ પર પૅકેજ સંબંધિત અપડેટ બતાવશે. તમારો ડેટા Google સાથે શેર કરવામાં આવશે, જેથી આ સુવિધા પ્રદાન કરી શકાય તેમજ દરેક જણ માટે શૉપિંગનો અનુભવ બહેતર બનાવી શકાય. તમે <ph name="BEGIN_LINK" />પૅકેજ ટ્રૅકિંગ સેટિંગ<ph name="END_LINK" />માં જઈને આને બદલી શકો છો.</translation>
 <translation id="6882836635272038266">જોખમકારક જણાતી હોય એવી વેબસાઇટ, ડાઉનલોડ અને એક્સ્ટેંશન સામે માનક સંરક્ષણ.</translation>
 <translation id="6888009575607455378">શું તમે ખરેખર તમારા ફેરફારો કાઢી નાખવા ઇચ્છો છો?</translation>
 <translation id="6896758677409633944">કૉપિ કરો</translation>
@@ -1228,7 +1225,7 @@
 <translation id="7466693328838535498">શોધ વિજેટ બૉક્સમાં, Chrome દાખલ કરો</translation>
 <translation id="746684838091935575">3. Chrome પસંદ કરો</translation>
 <translation id="7472734401283673885">કંપનીનું નામ</translation>
-<translation id="7473891865547856676">ના, આભાર</translation>
+<translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="7488874549363591659">ડિલિવર કર્યું</translation>
 <translation id="7491131399623468277">સેટિંગ પર જાઓ…</translation>
 <translation id="7492574581995589075">તમારી સંસ્થાએ તમારા Google એકાઉન્ટમાં Chrome ડેટાનો ઉપયોગ કરવાની અને તેને સાચવવાની ક્ષમતા બંધ કરી છે. નવા બુકમાર્ક, પાસવર્ડ વગેરે માત્ર આ ડિવાઇસમાં સાચવવામાં આવશે.</translation>
@@ -1416,7 +1413,6 @@
 <translation id="8428634594422941299">સમજાઈ ગયું</translation>
 <translation id="8446884382197647889">વધુ જાણો</translation>
 <translation id="8449347986464073209">ડિલીટ કરો અને સાઇન આઉટ કરો</translation>
-<translation id="8458397775385147834">1 આઇટમ કાઢી નાખી</translation>
 <translation id="8459333855531264009">સુરક્ષિત નથી</translation>
 <translation id="8487667956631253959">ચાલુ</translation>
 <translation id="8487700953926739672">ઑફલાઇન ઉપલબ્ધ</translation>
@@ -1482,7 +1478,6 @@
 <translation id="8766790350274092814"><ph name="WEBSITE" /> અને <ph name="SECOND_WEBSITE" /> માટેના પાસવર્ડ ડિલીટ કરવામાં આવશે. તમારા એકાઉન્ટ ડિલીટ થશે નહીં.</translation>
 <translation id="8775144690796719618">અમાન્ય URL</translation>
 <translation id="8780076847684176174">{count,plural, =1{ટૅબનો રિવ્યૂ કરો...}one{તમામ ટૅબનો રિવ્યૂ કરો...}other{તમામ ટૅબનો રિવ્યૂ કરો...}}</translation>
-<translation id="8782570580170191813">પૅકેજને હંમેશાં ટ્રૅક કરો</translation>
 <translation id="8787968206789828143">વેબ પર શોધો</translation>
 <translation id="8792626944327216835">માઇક્રોફોન</translation>
 <translation id="8803639129939845298">સુરક્ષિત</translation>

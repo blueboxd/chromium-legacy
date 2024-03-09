@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
@@ -18,15 +17,10 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 
 /** Utility methods for the Minimized Custom Tab feature. */
 public class MinimizedFeatureUtils {
-    public static final IntCachedFieldTrialParameter ICON_VARIANT =
-            new IntCachedFieldTrialParameter(ChromeFeatureList.CCT_MINIMIZED, "icon_variant", 0);
-
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
     @IntDef({
@@ -108,9 +102,5 @@ public class MinimizedFeatureUtils {
     public static void setMinimizeCustomTabAvailableForTesting(boolean availability) {
         sMinimizedCustomTabAvailableForTesting = availability;
         ResettersForTesting.register(() -> sMinimizedCustomTabAvailableForTesting = false);
-    }
-
-    public static @DrawableRes int getMinimizeIcon() {
-        return ICON_VARIANT.getValue() == 1 ? R.drawable.ic_pip_24dp : R.drawable.ic_minimize;
     }
 }

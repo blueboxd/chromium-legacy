@@ -60,6 +60,7 @@ class Buffer {
 
   void SetTimeAsFrameID(uint64_t usec);
   struct timeval GetTimeval() const;
+  uint64_t GetTimeAsFrameID() const;
 
   // Method for copying compressed input data into a Buffer's backing store. It
   // is limited to destination buffers that have a single plane and are memory
@@ -149,7 +150,7 @@ class MEDIA_GPU_EXPORT Device : public base::RefCountedThreadSafe<Device> {
   // number does not need to be the same as |count|.
   absl::optional<uint32_t> RequestBuffers(BufferType type,
                                           MemoryType memory,
-                                          size_t count);
+                                          uint32_t count);
 
   // Uses the VIDIOC_QUERYBUF ioctl to fill out and return a |Buffer|.
   absl::optional<Buffer> QueryBuffer(BufferType type,

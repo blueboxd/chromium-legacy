@@ -6,7 +6,6 @@
 #define COMPONENTS_PRIVACY_SANDBOX_TRACKING_PROTECTION_ONBOARDING_H_
 
 #include <optional>
-
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
@@ -35,8 +34,7 @@ class TrackingProtectionOnboarding : public KeyedService {
     kEligible = 1,
     kOnboarded = 2,
     kOffboarded = 3,
-    kOnboardingRequested = 4,
-    kMaxValue = kOnboardingRequested,
+    kMaxValue = kOffboarded,
   };
 
   // Enum value interfacing with the TrackingProtectionOnboarding service
@@ -147,8 +145,7 @@ class TrackingProtectionOnboarding : public KeyedService {
   };
 
   TrackingProtectionOnboarding(PrefService* pref_service,
-                               version_info::Channel channel,
-                               bool is_silent_onboarding_enabled = false);
+                               version_info::Channel channel);
   ~TrackingProtectionOnboarding() override;
 
   virtual void AddObserver(Observer* observer);
@@ -184,12 +181,6 @@ class TrackingProtectionOnboarding : public KeyedService {
 
   // Returns whether the profile has been offboarded.
   bool IsOffboarded() const;
-
-  // To be called by UI code when we've requested the onboarding notice.
-  void OnboardingNoticeRequested();
-
-  // To be called by UI code when we've requested the notice.
-  void NoticeRequested(NoticeType notice_type);
 
   // To be Called by UI code when the user has been shown the notice.
   void NoticeShown(NoticeType notice_type);
@@ -251,7 +242,6 @@ class TrackingProtectionOnboarding : public KeyedService {
   raw_ptr<PrefService> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
   version_info::Channel channel_;
-  bool is_silent_onboarding_enabled_;
 };
 
 }  // namespace privacy_sandbox

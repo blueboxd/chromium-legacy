@@ -85,7 +85,6 @@ export function getLocalizationStringForContentType(
     // The following members do not have a mid-sentence localization.
     case ContentSettingsTypes.ANTI_ABUSE:
     case ContentSettingsTypes.PDF_DOCUMENTS:
-    case ContentSettingsTypes.PERFORMANCE:
     case ContentSettingsTypes.PRIVATE_NETWORK_DEVICES:
     case ContentSettingsTypes.SITE_DATA:
       return null;

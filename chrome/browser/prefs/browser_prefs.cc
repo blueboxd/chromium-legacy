@@ -218,7 +218,7 @@
 #include "chrome/browser/ash/net/system_proxy_manager.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/ash/policy/networking/euicc_status_uploader.h"
-#include "chrome/browser/ash/policy/remote_commands/crd_admin_session_controller.h"
+#include "chrome/browser/ash/policy/remote_commands/crd/crd_admin_session_controller.h"
 #include "chrome/browser/ash/settings/hardware_data_usage_controller.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
@@ -266,6 +266,7 @@
 #include "chrome/browser/lens/android/lens_prefs.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager.h"
 #include "chrome/browser/notifications/notification_channels_provider_android.h"
+#include "chrome/browser/password_manager/android/password_manager_android_util.h"
 #include "chrome/browser/readaloud/android/prefs.h"
 #include "chrome/browser/ssl/known_interception_disclosure_infobar_delegate.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck crbug.com/1125897
@@ -989,6 +990,10 @@ constexpr char kImageSearchPrivacyNotice[] =
     "ash.launcher.image_search_privacy_notice";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Deprecated 11/2023.
+constexpr char kWebAndAppActivityEnabledForShopping[] =
+    "web_and_app_activity_enabled_for_shopping";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1405,6 +1410,9 @@ void RegisterProfilePrefsForMigration(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterDictionaryPref(kImageSearchPrivacyNotice);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Deprecated 11/2023.
+  registry->RegisterBooleanPref(kWebAndAppActivityEnabledForShopping, true);
 }
 
 void ClearSyncRequestedPrefAndMaybeMigrate(PrefService* profile_prefs) {
@@ -2303,7 +2311,8 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 
 // This method should be periodically pruned of year+ old migrations.
 // See chrome/browser/prefs/README.md for details.
-void MigrateObsoleteProfilePrefs(PrefService* profile_prefs) {
+void MigrateObsoleteProfilePrefs(PrefService* profile_prefs,
+                                 const base::FilePath& profile_path) {
   // IMPORTANT NOTE: This code is *not* run on iOS Chrome. If a pref is migrated
   // or cleared here, and that pref is also used in iOS Chrome, it may also need
   // to be migrated or cleared specifically for iOS as well. This could be by
@@ -2628,6 +2637,18 @@ void MigrateObsoleteProfilePrefs(PrefService* profile_prefs) {
       profile_prefs);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_ANDROID)
+  // Added 11/2023, but DO NOT REMOVE after the usual year!
+  // TODO(crbug.com/1445497): The pref kPasswordsUseUPMLocalAndSeparateStores
+  // and this call (to compute said pref) should be removed once
+  // kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration is launched and
+  // enough clients have migrated. UsesSplitStoresAndUPMForLocal() should be
+  // updated to check the GmsCoreVersion directly instead of the pref, or might
+  // be removed entirely, depending how the outdated GmsCore case is handled.
+  password_manager_android_util::SetUsesSplitStoresAndUPMForLocal(profile_prefs,
+                                                                  profile_path);
+#endif
+
   // Deprecated 11/2023.
   profile_prefs->ClearPref(kPasswordChangeSuccessTrackerFlows);
   profile_prefs->ClearPref(kPasswordChangeSuccessTrackerVersion);
@@ -2636,6 +2657,9 @@ void MigrateObsoleteProfilePrefs(PrefService* profile_prefs) {
   // Deprecated 11/2023
   profile_prefs->ClearPref(kImageSearchPrivacyNotice);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Added 11/2023.
+  profile_prefs->ClearPref(kWebAndAppActivityEnabledForShopping);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

@@ -302,7 +302,6 @@ public abstract class ChromeFeatureList {
     public static final String INCOGNITO_REAUTHENTICATION_FOR_ANDROID =
             "IncognitoReauthenticationForAndroid";
     public static final String INCOGNITO_SCREENSHOT = "IncognitoScreenshot";
-    public static final String INFOBAR_SCROLL_OPTIMIZATION = "InfobarScrollOptimization";
     public static final String INSTALLABLE_AMBIENT_BADGE_MESSAGE = "InstallableAmbientBadgeMessage";
     public static final String INSTANCE_SWITCHER = "InstanceSwitcher";
     public static final String INSTANT_START = "InstantStart";
@@ -389,7 +388,6 @@ public abstract class ChromeFeatureList {
     public static final String QUIET_NOTIFICATION_PROMPTS = "QuietNotificationPrompts";
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
     public static final String READALOUD = "ReadAloud";
-    public static final String READALOUD_PLAYBACK = "ReadAloudPlayback";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String RECORD_SUPPRESSION_METRICS = "RecordSuppressionMetrics";
     public static final String RECOVER_FROM_NEVER_SAVE_ANDROID =
@@ -422,7 +420,6 @@ public abstract class ChromeFeatureList {
             "SafeBrowsingNewGmsApiForBrowseUrlDatabaseCheck";
     public static final String SAFE_BROWSING_SKIP_SUBRESOURCES = "SafeBrowsingSkipSubResources";
     public static final String SCREENSHOTS_FOR_ANDROID_V2 = "ScreenshotsForAndroidV2";
-    public static final String SCROLL_TO_TLD_OPTIMIZATION = "ScrollToTLDOptimization";
     public static final String SEARCH_ENGINES_PROMO_V3 = "SearchEnginesPromoV3";
     public static final String SEARCH_ENGINE_CHOICE = "SearchEngineChoice";
     public static final String SEARCH_READY_OMNIBOX_ALLOW_QUERY_EDIT =
@@ -475,8 +472,6 @@ public abstract class ChromeFeatureList {
     public static final String THUMBNAIL_PLACEHOLDER = "ThumbnailPlaceholder";
     public static final String TOOLBAR_SCROLL_ABLATION_ANDROID = "ToolbarScrollAblationAndroid";
     public static final String TOOLBAR_USE_HARDWARE_BITMAP_DRAW = "ToolbarUseHardwareBitmapDraw";
-    public static final String TRACKING_PROTECTION_NOTICE_REQUEST_TRACKING =
-            "TrackingProtectionNoticeRequestTracking";
     public static final String TRACKING_PROTECTION_SETTINGS_PAGE_ROLLBACK_NOTICE =
             "TrackingProtectionSettingsPageRollbackNotice";
     public static final String TRACKING_PROTECTION_ONBOARDING_SKIP_SECURE_PAGE_CHECK =
@@ -749,11 +744,9 @@ public abstract class ChromeFeatureList {
     // MutableFlagWithSafeDefault instances
     /* Alphabetical: */
     public static final MutableFlagWithSafeDefault sAdvancedPeripheralsSupportTabStrip =
-            newMutableFlagWithSafeDefault(ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP, false);
+            newMutableFlagWithSafeDefault(ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP, true);
     public static final MutableFlagWithSafeDefault sAndroidImprovedBookmarks =
             newMutableFlagWithSafeDefault(ANDROID_IMPROVED_BOOKMARKS, false);
-    public static final MutableFlagWithSafeDefault sAvoidRelayoutDuringFocusAnimation =
-            newMutableFlagWithSafeDefault(AVOID_RELAYOUT_DURING_FOCUS_ANIMATION, true);
     public static final MutableFlagWithSafeDefault sCctRealTimeEngagementSignals =
             newMutableFlagWithSafeDefault(CCT_REAL_TIME_ENGAGEMENT_SIGNALS, false);
     public static final MutableFlagWithSafeDefault sCctTextFragmentLookupApiEnabled =
@@ -789,8 +782,6 @@ public abstract class ChromeFeatureList {
             newMutableFlagWithSafeDefault(READER_MODE_IN_CCT, false);
     public static final MutableFlagWithSafeDefault sRecordSuppressionMetrics =
             newMutableFlagWithSafeDefault(RECORD_SUPPRESSION_METRICS, true);
-    public static final MutableFlagWithSafeDefault sScrollToTLDOptimizations =
-            newMutableFlagWithSafeDefault(SCROLL_TO_TLD_OPTIMIZATION, false);
     public static final MutableFlagWithSafeDefault sSearchReadyOmniboxAllowQueryEdit =
             newMutableFlagWithSafeDefault(SEARCH_READY_OMNIBOX_ALLOW_QUERY_EDIT, false);
     public static final MutableFlagWithSafeDefault sShortCircuitUnfocusAnimation =
@@ -798,7 +789,7 @@ public abstract class ChromeFeatureList {
     public static final MutableFlagWithSafeDefault sSuppressionToolbarCaptures =
             newMutableFlagWithSafeDefault(SUPPRESS_TOOLBAR_CAPTURES, false);
     public static final MutableFlagWithSafeDefault sThumbnailPlaceholder =
-            newMutableFlagWithSafeDefault(THUMBNAIL_PLACEHOLDER, false);
+            newMutableFlagWithSafeDefault(THUMBNAIL_PLACEHOLDER, true);
     public static final MutableFlagWithSafeDefault sToolbarScrollAblation =
             newMutableFlagWithSafeDefault(TOOLBAR_SCROLL_ABLATION_ANDROID, false);
     public static final MutableFlagWithSafeDefault sTouchDownTriggerForPrefetch =

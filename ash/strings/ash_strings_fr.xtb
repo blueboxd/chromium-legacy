@@ -354,7 +354,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2484513351006226581">Appuyez sur <ph name="KEYBOARD_SHORTCUT" /> pour changer la disposition du clavier.</translation>
 <translation id="2487915095798731898">Rejoindre</translation>
-<translation id="2501920221385095727">Touches rémanentes</translation>
+<translation id="2501920221385095727">Touches persistantes</translation>
 <translation id="2504454902900101003">Ignorer la configuration concernant l'affichage des photos, notifications et contenus multimédias récents de votre téléphone</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
 <translation id="2514415433888497495">Arrêter <ph name="CAPTURE_MEDIUM" />. <ph name="CAPTURE_MEDIUM" /> <ph name="CAPTURE_STATE" />.</translation>
@@ -395,7 +395,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2658778018866295321">Cliquer et faire glisser</translation>
 <translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> et <ph name="UNAVAILABLE_APPS_TWO" /> ne sont pas sur cet appareil.</translation>
 <translation id="2673968385134502798">Jeux</translation>
-<translation id="2678852583403169292">Menu Sélectionner pour écouter</translation>
+<translation id="2678852583403169292">Menu Sélectionner pour prononcer</translation>
 <translation id="2687510499067466116">Le raccourci clavier a changé</translation>
 <translation id="2689613560355655046">Bureau 8</translation>
 <translation id="2695305337569143674">web</translation>
@@ -447,6 +447,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2914580577416829331">Captures d'écran</translation>
 <translation id="2924416280450782352">Impossible d'afficher les éléments. Essayez de rouvrir ce panneau.</translation>
 <translation id="2931572158271115754">Rien dans cette liste de tâches.</translation>
+<translation id="2935225303485967257">Gérer les profils</translation>
 <translation id="2941112035454246133">Faible</translation>
 <translation id="2942350706960889382">Loupe ancrée</translation>
 <translation id="2942516765047364088">Position de l'étagère</translation>
@@ -624,7 +625,6 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="3593646411856133110">Balayez l'écran vers le haut et appuyez de manière prolongée pour afficher les applications ouvertes</translation>
 <translation id="3595596368722241419">Batterie pleine</translation>
 <translation id="3596012367874587041">Paramètres de l'appli</translation>
-<translation id="3598452309062311481">recherche+h</translation>
 <translation id="3600061223661453002">Désactivé</translation>
 <translation id="3604801046548457007">Bureau <ph name="DESK_TITILE" /> créé</translation>
 <translation id="3606978283550408104">La plage braille est connectée.</translation>
@@ -776,7 +776,6 @@ Certaines fonctionnalités sont limitées afin d'augmenter l'autonomie de la bat
 <translation id="4190780880566297084">Ignorer la configuration concernant l'affichage des photos, applis et contenus multimédias récents de votre téléphone</translation>
 <translation id="4192112279662688596">ou</translation>
 <translation id="4193857202545160520">Afficher les clics et les touches</translation>
-<translation id="4193969623755915875">Ouvrez "Aide" dans l'appli Explorer avec <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4195579532193195633">Version actuelle : <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">Reprendre où vous avez arrêté</translation>
 <translation id="4195877955194704651">Bouton de clics automatiques</translation>
@@ -959,7 +958,6 @@ Certaines fonctionnalités sont limitées afin d'augmenter l'autonomie de la bat
 <translation id="4889868803215848840">Ajoutez des commentaires pour améliorer les suggestions (facultatif) :</translation>
 <translation id="4890187583552566966">L'administrateur a désactivé l'Assistant Google.</translation>
 <translation id="4890408602550914571">Vérifiez que votre téléphone est à proximité et que le Bluetooth est activé.</translation>
-<translation id="4892981359753171125">Contrôle du visage</translation>
 <translation id="4895488851634969361">La batterie est pleine.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="490788395437447240">Niveau de la batterie : <ph name="BATTERY_PERCENTAGE" /> %</translation>
@@ -1661,7 +1659,7 @@ Pour éteindre l'appareil, appuyez à nouveau de manière prolongée sur le bout
 <translation id="7748275671948949022">Mettre en surbrillance le bouton du lanceur d'applications sur l'étagère</translation>
 <translation id="7749443890790263709">Vous avez atteint le nombre maximal de bureaux.</translation>
 <translation id="776344839111254542">Cliquer pour afficher les informations relatives à la mise à jour</translation>
-<translation id="7768784765476638775">Sélectionner pour écouter</translation>
+<translation id="7768784765476638775">Sélectionner pour prononcer</translation>
 <translation id="7769299611924763557">Votre GIF sera bientôt prêt</translation>
 <translation id="7773536009433685931">Activer le Wi-Fi à la place</translation>
 <translation id="7780094051999721182">raccourcis</translation>
@@ -1752,7 +1750,7 @@ Pour éteindre l'appareil, appuyez à nouveau de manière prolongée sur le bout
 <translation id="8098591350844501178">Arrêter de diffuser l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="810637681351706236">Retirer l'appli de l'étagère</translation>
 <translation id="8113423164597455979">Activées, toutes applis</translation>
-<translation id="8113515504791187892">Bouton Sélectionner pour écouter</translation>
+<translation id="8113515504791187892">Bouton "Sélectionner pour prononcer"</translation>
 <translation id="8120151603115102514">Votre téléphone n'a pas d'écran de verrouillage. Déverrouillez votre Chromebook avec votre mot de passe.</translation>
 <translation id="8127095419621171197">Ouvrir l'application Calculatrice</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
@@ -1827,7 +1825,7 @@ Pour éteindre l'appareil, appuyez à nouveau de manière prolongée sur le bout
 <translation id="8444246603146515890">Bureau <ph name="DESK_TITILE" /> activé</translation>
 <translation id="8446884382197647889">En savoir plus</translation>
 <translation id="8456543082656546101"><ph name="SHORTCUT_KEY_NAME" />+V</translation>
-<translation id="8462305545768648477">Fermer Sélectionner pour écouter</translation>
+<translation id="8462305545768648477">Fermer Sélectionner pour prononcer</translation>
 <translation id="8468806060683421065">pour le <ph name="DUE_DATE_AND_TIME" /></translation>
 <translation id="847056008324733326">Paramètres de l'échelle d'affichage</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> a <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>

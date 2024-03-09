@@ -1091,14 +1091,7 @@ void TrayBackgroundView::AddRippleLayer() {
 void TrayBackgroundView::RemoveRippleLayer() {
   CHECK(!pulse_animation_cool_down_timer_.IsRunning());
   if (ripple_layer_) {
-    // The `parent_layer` will be null during `StatusAreaWidgetDelegate`
-    // shutdown (ie. after display disconnect).
-    // `views::view::RemoveAllChildViews()` is called, which recursively orphans
-    // layers prior to destroying the view.
-    auto* parent_layer = layer()->parent();
-    if (parent_layer) {
-      parent_layer->Remove(ripple_layer_.get());
-    }
+    layer()->parent()->Remove(ripple_layer_.get());
     ripple_layer_.reset();
   }
 }

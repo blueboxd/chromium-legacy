@@ -40,7 +40,6 @@ class OptimizationGuideBridge;
 }  // namespace android
 class ChromeHintsManager;
 class ModelExecutionEnterprisePolicyBrowserTest;
-class ModelExecutionLiveTest;
 class ModelExecutionManager;
 class ModelInfo;
 class ModelQualityLogEntry;
@@ -178,7 +177,6 @@ class OptimizationGuideKeyedService
   void SimulateBrowserRestartForControllerTesting();
 
  private:
-  friend class BrowserView;
   friend class ChromeBrowserMainExtraPartsOptimizationGuide;
   friend class ChromeBrowsingDataRemoverDelegate;
   friend class HintsFetcherBrowserTest;
@@ -187,7 +185,6 @@ class OptimizationGuideKeyedService
   friend class OptimizationGuideMessageHandler;
   friend class OptimizationGuideWebContentsObserver;
   friend class optimization_guide::ModelExecutionEnterprisePolicyBrowserTest;
-  friend class optimization_guide::ModelExecutionLiveTest;
   friend class optimization_guide::PredictionManagerBrowserTestBase;
   friend class optimization_guide::PredictionModelDownloadClient;
   friend class optimization_guide::PredictionModelStoreBrowserTestBase;
@@ -243,10 +240,6 @@ class OptimizationGuideKeyedService
   // given `feature`. This should only be called by settings UX.
   bool IsSettingVisible(
       optimization_guide::proto::ModelExecutionFeature feature) const;
-
-  // Returns whether all conditions are met to show the IPH promo for
-  // experimental AI.
-  bool ShouldShowExperimentalAIPromo() const;
 
   download::BackgroundDownloadService* BackgroundDownloadServiceProvider();
 

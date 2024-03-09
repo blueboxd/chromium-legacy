@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/metric_reporting_manager.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -26,6 +27,7 @@
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/metrics/collector_base.h"
 #include "components/reporting/metrics/event_driven_telemetry_collector_pool.h"
@@ -44,7 +46,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using testing::_;
 using testing::ByMove;
@@ -108,7 +109,7 @@ class FakeCollector : public CollectorBase {
  protected:
   // CollectorBase:
   void OnMetricDataCollected(bool is_event_driven,
-                             absl::optional<MetricData> metric_data) override {}
+                             std::optional<MetricData> metric_data) override {}
   bool CanCollect() const override { return true; }
 
  private:
@@ -131,7 +132,7 @@ class MockDelegate : public MetricReportingManager::Delegate {
       Destination destination,
       Priority priority,
       std::unique_ptr<RateLimiterInterface> rate_limiter,
-      absl::optional<SourceInfo> source_info) override {
+      std::optional<SourceInfo> source_info) override {
     return CreateMetricReportQueueMock(event_type, destination, priority,
                                        rate_limiter.get(), source_info);
   }
@@ -146,7 +147,7 @@ class MockDelegate : public MetricReportingManager::Delegate {
                Destination destination,
                Priority priority,
                RateLimiterInterface* rate_limiter,
-               absl::optional<SourceInfo> source_info),
+               std::optional<SourceInfo> source_info),
               ());
 
   MOCK_METHOD(std::unique_ptr<MetricReportQueue>,
@@ -158,7 +159,7 @@ class MockDelegate : public MetricReportingManager::Delegate {
                const std::string& rate_setting_path,
                base::TimeDelta default_rate,
                int rate_unit_to_ms,
-               absl::optional<SourceInfo> source_info),
+               std::optional<SourceInfo> source_info),
               (override));
 
   MOCK_METHOD(std::unique_ptr<CollectorBase>,
@@ -378,9 +379,20 @@ class MetricReportingManagerTest
 
     auto telemetry_queue = std::make_unique<test::FakeMetricReportQueue>();
     telemetry_queue_ptr_ = telemetry_queue.get();
-    // Only one periodic upload report queue should be created.
-    ON_CALL(*mock_delegate_, CreatePeriodicUploadReportQueue)
+    // Only one periodic upload report queue should be created for .
+    ON_CALL(*mock_delegate_,
+            CreatePeriodicUploadReportQueue(_, Destination::TELEMETRY_METRIC, _,
+                                            _, _, _, _, _))
         .WillByDefault(Return(ByMove(std::move(telemetry_queue))));
+
+    auto heartbeat_queue = std::make_unique<test::FakeMetricReportQueue>();
+    heartbeat_queue_ptr_ = heartbeat_queue.get();
+    // Only one periodic upload report queue should be created for
+    // KIOSK_HEARTBEAT_EVENTS.
+    ON_CALL(*mock_delegate_,
+            CreatePeriodicUploadReportQueue(
+                _, Destination::KIOSK_HEARTBEAT_EVENTS, _, _, _, _, _, _))
+        .WillByDefault(Return(ByMove(std::move(heartbeat_queue))));
   }
 
   ::ash::SessionTerminationManager session_termination_manager_;
@@ -402,6 +414,8 @@ class MetricReportingManagerTest
       app_event_queue_ptr_;
   raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged | ExperimentalAsh>
       website_event_queue_ptr_;
+  raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged | ExperimentalAsh>
+      heartbeat_queue_ptr_;
 
   std::unique_ptr<::testing::NiceMock<MockDelegate>> mock_delegate_;
 };
@@ -1081,6 +1095,50 @@ INSTANTIATE_TEST_SUITE_P(
         MetricReportingManagerTelemetryTest::ParamType>& info) {
       return info.param.test_name;
     });
+
+class KioskHeartbeatTelemetryTest : public MetricReportingManagerTest {
+ protected:
+  void SetUp() override {
+    MetricReportingManagerTest::SetUp();
+    auto* const mock_delegate_ptr = mock_delegate_.get();
+    ON_CALL(*mock_delegate_ptr, IsUserAffiliated).WillByDefault(Return(true));
+    // Mock app service unavailability to eliminate noise.
+    ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
+        .WillByDefault(Return(false));
+  }
+};
+
+TEST_F(KioskHeartbeatTelemetryTest, Init) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::features::kKioskHeartbeatsViaERP);
+
+  auto* const mock_delegate_ptr = mock_delegate_.get();
+  auto metric_reporting_manager = MetricReportingManager::CreateForTesting(
+      std::move(mock_delegate_), nullptr);
+
+  // MetricReportQueue for KIOSK_HEARTBEAT_EVENTS has to be created for feature
+  // flag kKioskHeartbeatsViaERP
+  EXPECT_CALL(*mock_delegate_ptr,
+              CreatePeriodicUploadReportQueue(
+                  _, Destination::KIOSK_HEARTBEAT_EVENTS, _, _, _, _, _, _))
+      .Times(1);
+  metric_reporting_manager->OnLogin(profile());
+}
+
+TEST_F(KioskHeartbeatTelemetryTest, Disabled) {
+  auto* const mock_delegate_ptr = mock_delegate_.get();
+  auto metric_reporting_manager = MetricReportingManager::CreateForTesting(
+      std::move(mock_delegate_), nullptr);
+
+  // MetricReportQueue for KIOSK_HEARTBEAT_EVENTS must not be created for
+  // disabled flag kKioskHeartbeatsViaERP
+  EXPECT_CALL(*mock_delegate_ptr,
+              CreatePeriodicUploadReportQueue(
+                  _, Destination::KIOSK_HEARTBEAT_EVENTS, _, _, _, _, _, _))
+      .Times(0);
+  metric_reporting_manager->OnLogin(profile());
+}
 
 struct EventDrivenTelemetryCollectorPoolTestCase {
   std::string test_name;

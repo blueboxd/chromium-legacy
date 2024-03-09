@@ -135,24 +135,18 @@ public class TrackingProtectionNoticeController {
     }
 
     private void showNotice() {
-        if (mMessageDispatcher == null) return;
-
-        Resources resources = mContext.getResources();
-
-        if (mMessage != null) {
-            logNoticeControllerEvent(NoticeControllerEvent.NOTICE_ALREADY_SHOWING);
-        }
-
         if (getNoticeType() == NoticeType.SILENT_ONBOARDING) {
             TrackingProtectionBridge.noticeShown(getNoticeType());
             destroy();
             return;
         }
 
-        if (ChromeFeatureList.isEnabled(
-                ChromeFeatureList.TRACKING_PROTECTION_NOTICE_REQUEST_TRACKING)) {
-            // At this point, we're enqueuing the message, aka requesting the notice.
-            TrackingProtectionBridge.noticeRequested(getNoticeType());
+        if (mMessageDispatcher == null) return;
+
+        Resources resources = mContext.getResources();
+
+        if (mMessage != null) {
+            logNoticeControllerEvent(NoticeControllerEvent.NOTICE_ALREADY_SHOWING);
         }
 
         mMessage =

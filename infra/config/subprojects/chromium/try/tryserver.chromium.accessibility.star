@@ -31,7 +31,6 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "ci/fuchsia-x64-accessibility-rel",
-            "use_dummy_lastchange",
         ],
     ),
     tryjob = try_.job(
@@ -47,14 +46,13 @@ try_.builder(
 try_.builder(
     name = "linux-blink-web-tests-force-accessibility-rel",
     mirrors = ["ci/linux-blink-web-tests-force-accessibility-rel"],
-    check_for_flakiness = False,
-    check_for_flakiness_with_resultdb = False,
     gn_args = gn_args.config(
         configs = [
             "ci/linux-blink-web-tests-force-accessibility-rel",
-            "use_dummy_lastchange",
         ],
     ),
+    check_for_flakiness = False,
+    check_for_flakiness_with_resultdb = False,
     tryjob = try_.job(
         location_filters = [
             "third_party/blink/renderer/modules/accessibility/.+",

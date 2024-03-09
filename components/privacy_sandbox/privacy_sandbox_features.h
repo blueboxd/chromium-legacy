@@ -24,12 +24,6 @@ BASE_DECLARE_FEATURE(kPrivacySandboxSettings4);
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kPrivacySandboxAdsNoticeCCT);
-
-COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
-extern const char kPrivacySandboxAdsNoticeCCTAppIdName[];
-
-COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
-extern const base::FeatureParam<std::string> kPrivacySandboxAdsNoticeCCTAppId;
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Split out name definitions since about_flags otherwise complains about the
@@ -132,10 +126,6 @@ BASE_DECLARE_FEATURE(kEnforcePrivacySandboxAttestations);
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kDefaultAllowPrivacySandboxAttestations);
 
-// Enables the sentinel file guard for Privacy Sandbox Attestations.
-COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
-BASE_DECLARE_FEATURE(kPrivacySandboxAttestationSentinel);
-
 // Gives a list of sites permission to use Privacy Sandbox features without
 // being officially enrolled.
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
@@ -170,19 +160,6 @@ BASE_DECLARE_FEATURE(kTrackingProtectionOnboardingRollback);
 // deprecation experiment.
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kAttributionDebugReportingCookieDeprecationTesting);
-
-// Enables Private Aggregation debug reporting to be enabled during the
-// third-party cookie deprecation experiment.
-COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
-BASE_DECLARE_FEATURE(kPrivateAggregationDebugReportingCookieDeprecationTesting);
-
-#if BUILDFLAG(IS_ANDROID)
-// Enables the trackingProtectionNoticeController to notify the
-// TrackingProtectionOnboardingService when a notice was requested (Message
-// enqueued).
-COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
-BASE_DECLARE_FEATURE(kTrackingProtectionNoticeRequestTracking);
-#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace privacy_sandbox
 

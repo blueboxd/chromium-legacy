@@ -31,7 +31,7 @@ void OverlayViewTestBase::PressAddButton() {
   if (!editing_list_) {
     return;
   }
-  editing_list_->OnAddButtonPressed();
+  LeftClickOn(editing_list_->add_button_);
 }
 
 size_t OverlayViewTestBase::GetActionViewSize() {
@@ -48,8 +48,8 @@ ButtonOptionsMenu* OverlayViewTestBase::ShowButtonOptionsMenu(Action* action) {
   return controller_->GetButtonOptionsMenu();
 }
 
-views::Widget* OverlayViewTestBase::GetTargetViewWidget() {
-  return controller_->target_widget_.get();
+TargetView* OverlayViewTestBase::GetTargetView() const {
+  return controller_->GetTargetView();
 }
 
 // Create a GIO enabled window with default actions including two action tap and

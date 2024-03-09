@@ -100,8 +100,7 @@ void AppLauncherTabHelper::SetBrowserPresentationProvider(
 void AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
                                               const GURL& source_page_url,
                                               bool link_transition,
-                                              bool is_user_initiated,
-                                              bool user_tapped_recently) {
+                                              bool is_user_initiated) {
   // Don't open external application if chrome is not active, or if the
   // web_state is not visible.
   if ([[UIApplication sharedApplication] applicationState] !=
@@ -122,8 +121,7 @@ void AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
     return;
   }
 
-  if (!(is_user_initiated ||
-        (url.SchemeIs(url::kTelScheme) && user_tapped_recently))) {
+  if (!is_user_initiated) {
     ShowAppLaunchAlert(AppLauncherAlertCause::kNoUserInteraction, url);
     return;
   }
@@ -236,8 +234,7 @@ void AppLauncherTabHelper::ShouldAllowRequest(
     RequestToLaunchApp(app_launch_request.url,
                        app_launch_request.source_page_url,
                        app_launch_request.link_transition,
-                       app_launch_request.is_user_initiated,
-                       app_launch_request.user_tapped_recently);
+                       app_launch_request.has_user_gesture);
   }
 
   std::move(callback).Run(policy_decision);
@@ -276,23 +273,15 @@ AppLauncherTabHelper::GetPolicyDecisionAndOptionalAppLaunchRequest(
     return {PolicyDecision::Cancel(), kNoAppLaunchRequest};
   }
 
-  // Disallow launching Chrome from within Chrome, as there are no good use
-  // cases for this but allowing it opens the door to abuse.
-  bool is_chrome_launch_attempt = HasChromeAppScheme(request_url);
-  UMA_HISTOGRAM_BOOLEAN("IOS.AppLauncher.AppURLHasChromeLaunchScheme",
-                        is_chrome_launch_attempt);
-  if (is_chrome_launch_attempt) {
-    return {PolicyDecision::Cancel(), kNoAppLaunchRequest};
-  }
-
   ExternalURLRequestStatus request_status =
       ExternalURLRequestStatus::kMainFrameRequestAllowed;
   // TODO(crbug.com/852489): Check if the source frame should also be
   // considered.
   if (!request_info.target_frame_is_main) {
     request_status = ExternalURLRequestStatus::kSubFrameRequestAllowed;
-    // Don't allow navigations from iframe to apps if there is no user gesture.
-    if (!request_info.is_user_initiated) {
+    // Don't allow navigations from iframe to apps if there is no user gesture
+    // or the URL scheme is for Chrome app.
+    if (!request_info.has_user_gesture || HasChromeAppScheme(request_url)) {
       request_status = ExternalURLRequestStatus::kSubFrameRequestBlocked;
     }
   }
@@ -334,9 +323,9 @@ AppLauncherTabHelper::GetPolicyDecisionAndOptionalAppLaunchRequest(
       !web_state_->GetNavigationManager()->GetLastCommittedItem()) {
     // Launch the app if the URL is valid or if it is the first page of the
     // tab.
-    optional_app_launch_request = AppLaunchRequest{
-        request_url, last_committed_url, is_link_transition,
-        request_info.is_user_initiated, request_info.user_tapped_recently};
+    optional_app_launch_request =
+        AppLaunchRequest{request_url, last_committed_url, is_link_transition,
+                         request_info.has_user_gesture};
   }
   return {PolicyDecision::Cancel(), std::move(optional_app_launch_request)};
 }

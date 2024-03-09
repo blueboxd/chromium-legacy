@@ -22,7 +22,7 @@ export class TestTabSearchApiProxy extends TestBrowserProxy implements
       'openRecentlyClosedEntry',
       'requestTabOrganization',
       'removeTabFromOrganization',
-      'restartSession',
+      'resetSession',
       'switchToTab',
       'saveRecentlyClosedExpandedPref',
       'setTabIndex',
@@ -83,8 +83,8 @@ export class TestTabSearchApiProxy extends TestBrowserProxy implements
         'removeTabFromOrganization', sessionId, organizationId, tab);
   }
 
-  restartSession() {
-    this.methodCalled('restartSession');
+  resetSession() {
+    this.methodCalled('resetSession');
   }
 
   switchToTab(info: SwitchToTabInfo) {

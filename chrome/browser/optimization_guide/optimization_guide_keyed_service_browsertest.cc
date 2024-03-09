@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
-
 #include <memory>
 
 #include "base/base64.h"
@@ -12,27 +10,22 @@
 #include "base/run_loop.h"
 #include "base/strings/escape.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/optimization_guide/browser_test_util.h"
 #include "chrome/browser/optimization_guide/chrome_hints_manager.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/profile_waiter.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/optimization_guide/core/command_line_top_host_provider.h"
 #include "components/optimization_guide/core/model_execution/model_execution_features.h"
 #include "components/optimization_guide/core/model_execution/model_execution_features_controller.h"
-#include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
@@ -42,16 +35,11 @@
 #include "components/optimization_guide/core/optimization_hints_component_update_listener.h"
 #include "components/optimization_guide/core/test_hints_component_creator.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -64,26 +52,6 @@
 namespace {
 
 using optimization_guide::proto::OptimizationType;
-
-class ScopedSetMetricsConsent {
- public:
-  // Enables or disables metrics consent based off of |consent|.
-  explicit ScopedSetMetricsConsent(bool consent) : consent_(consent) {
-    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
-        &consent_);
-  }
-
-  ScopedSetMetricsConsent(const ScopedSetMetricsConsent&) = delete;
-  ScopedSetMetricsConsent& operator=(const ScopedSetMetricsConsent&) = delete;
-
-  ~ScopedSetMetricsConsent() {
-    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
-        nullptr);
-  }
-
- private:
-  const bool consent_;
-};
 
 // A WebContentsObserver that asks whether an optimization type can be applied.
 class OptimizationGuideConsumerWebContentsObserver
@@ -195,10 +163,6 @@ class OptimizationGuideKeyedServiceBrowserTest
          {optimization_guide::features::kOptimizationGuideModelExecution, {}},
          {optimization_guide::features::internal::kComposeSettingsVisibility,
           {}},
-         {optimization_guide::features::kLogOnDeviceMetricsOnStartup,
-          {
-              {"on_device_startup_metric_delay", "0"},
-          }},
          {optimization_guide::features::internal::
               kTabOrganizationSettingsVisibility,
           {{"allow_unsigned_user", "true"}}}},
@@ -215,8 +179,6 @@ class OptimizationGuideKeyedServiceBrowserTest
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch(optimization_guide::switches::kPurgeHintsStore);
   }
-
-  void SetUp() override { InProcessBrowserTest::SetUp(); }
 
   void SetUpOnMainThread() override {
     OptimizationGuideKeyedServiceDisabledBrowserTest::SetUpOnMainThread();
@@ -334,17 +296,6 @@ class OptimizationGuideKeyedServiceBrowserTest
     return consumer_->last_can_apply_optimization_decision();
   }
 
-  std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-  GetModelQualityLogEntryForCompose() {
-    std::unique_ptr<optimization_guide::proto::LogAiDataRequest>
-        log_ai_data_request(new optimization_guide::proto::LogAiDataRequest());
-    optimization_guide::proto::ComposeLoggingData compose_logging_data;
-    *(log_ai_data_request->mutable_compose()) = compose_logging_data;
-
-    return std::make_unique<optimization_guide::ModelQualityLogEntry>(
-        std::move(log_ai_data_request));
-  }
-
   GURL url_with_hints() { return url_with_hints_; }
 
   GURL url_that_redirects_to_hints() { return url_that_redirects_; }
@@ -356,14 +307,9 @@ class OptimizationGuideKeyedServiceBrowserTest
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
   void EnableSignIn() {
-    auto account_info =
-        identity_test_env_adaptor_->identity_test_env()
-            ->MakePrimaryAccountAvailable("user@gmail.com",
-                                          signin::ConsentLevel::kSignin);
-    AccountCapabilitiesTestMutator mutator(&account_info.capabilities);
-    mutator.set_can_use_model_execution_features(true);
     identity_test_env_adaptor_->identity_test_env()
-        ->UpdateAccountInfoForAccount(account_info);
+        ->MakePrimaryAccountAvailable("user@gmail.com",
+                                      signin::ConsentLevel::kSignin);
   }
 
   void SignOut() {
@@ -377,13 +323,8 @@ class OptimizationGuideKeyedServiceBrowserTest
         ->IsSettingVisible(feature);
   }
 
-  void SetMetricsConsent(bool consent) {
-    scoped_metrics_consent_.emplace(consent);
-  }
-
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
-  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -407,8 +348,6 @@ class OptimizationGuideKeyedServiceBrowserTest
   GURL url_with_hints_;
   GURL url_that_redirects_;
   GURL url_that_redirects_to_no_hints_;
-
-  absl::optional<ScopedSetMetricsConsent> scoped_metrics_consent_;
 
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
@@ -1216,35 +1155,6 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
           MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
 }
 
-// Creating multiple profiles isn't supported easily on ash and android.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
-                       LogOnDeviceMetricsSingleTimeForMultipleProfiles) {
-  OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
-
-  // Add a second profile which should not log performance class.
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath path = profile_manager->GenerateNextProfileDirectoryPath();
-  ProfileWaiter profile_waiter;
-  profile_manager->CreateProfileAsync(path, {});
-  profile_waiter.WaitForProfileAdded();
-
-  EXPECT_TRUE(base::test::RunUntil([&]() {
-    return histogram_tester()
-               ->GetAllSamples(
-                   "OptimizationGuide.ModelExecution."
-                   "OnDeviceModelPerformanceClass")
-               .size() > 0;
-  }));
-
-  // Make sure all tasks have finished running.
-  content::RunAllTasksUntilIdle();
-
-  histogram_tester()->ExpectTotalCount(
-      "OptimizationGuide.ModelExecution.OnDeviceModelPerformanceClass", 1);
-}
-#endif
-
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 // CreateGuestBrowser() is not supported for Android or ChromeOS out of the box.
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
@@ -1459,155 +1369,3 @@ IN_PROC_BROWSER_TEST_F(
                            kNotAllowedByOptimizationFilter),
       1);
 }
-
-IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
-                       CheckUploadWithMetricsConsent) {
-  // Enable metrics consent.
-  SetMetricsConsent(true);
-  ASSERT_TRUE(
-      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
-
-  auto* profile = browser()->profile();
-  OptimizationGuideKeyedService* ogks =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-
-  // Create a new ModelQualityLogEntry and pass it to the
-  // UploadModelQualityLogs.
-  std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry_1 =
-      GetModelQualityLogEntryForCompose();
-
-  ogks->UploadModelQualityLogs(std::move(log_entry_1));
-
-  // Upload shouldn't be blocked by metrics consent.
-  histogram_tester()->ExpectBucketCount(
-      "OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.Compose",
-      optimization_guide::ModelQualityLogsUploadStatus::kNoMetricsConsent, 0);
-
-  // Disable metrics consent.
-  SetMetricsConsent(false);
-  ASSERT_FALSE(
-      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
-
-  // Create a new ModelQualityLogEntry and pass it to the
-  // UploadModelQualityLogs.
-  std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry_2 =
-      GetModelQualityLogEntryForCompose();
-
-  ogks->UploadModelQualityLogs(std::move(log_entry_2));
-
-  // Upload should be disabled as there is no metrics consent, so total
-  // histogram bucket count will be 1.
-  histogram_tester()->ExpectBucketCount(
-      "OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.Compose",
-      optimization_guide::ModelQualityLogsUploadStatus::kNoMetricsConsent, 1);
-}
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
-
-class OptimizationGuideKeyedServiceEnterpriseBrowserTest
-    : public OptimizationGuideKeyedServiceBrowserTest {
- public:
-  void SetUp() override {
-    policy_provider_.SetDefaultReturns(
-        /*is_initialization_complete_return=*/true,
-        /*is_first_policy_load_complete_return=*/true);
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
-        &policy_provider_);
-    OptimizationGuideKeyedServiceBrowserTest::SetUp();
-  }
-
- protected:
-  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
-};
-
-IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceEnterpriseBrowserTest,
-                       CheckUploadWithEnterprisePolicy) {
-  // Enable metrics consent and sign in.
-  SetMetricsConsent(true);
-  EnableSignIn();
-
-  auto* profile = browser()->profile();
-  OptimizationGuideKeyedService* ogks =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-  auto compose_feature = optimization_guide::proto::ModelExecutionFeature::
-      MODEL_EXECUTION_FEATURE_COMPOSE;
-  auto* prefs = profile->GetPrefs();
-  prefs->SetInteger(
-      optimization_guide::prefs::GetSettingEnabledPrefName(compose_feature),
-      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
-  ogks->SimulateBrowserRestartForControllerTesting();
-
-  policy::PolicyMap policies;
-
-  // Disable logging via via the enterprise policy to state
-  // kAllowWithoutLogging.
-  policies.Set(
-      policy::key::kHelpMeWriteSettings, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::Value(static_cast<int>(
-          optimization_guide::model_execution::prefs::
-              ModelExecutionEnterprisePolicyValue::kAllowWithoutLogging)),
-      nullptr);
-  policy_provider_.UpdateChromePolicy(policies);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(
-      ogks->ShouldFeatureBeCurrentlyAllowedForLogging(compose_feature));
-
-  // Create a new ModelQualityLogEntry and pass it to the
-  // UploadModelQualityLogs.
-  std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry_1 =
-      GetModelQualityLogEntryForCompose();
-
-  ogks->UploadModelQualityLogs(std::move(log_entry_1));
-
-  // Disable logging via via the enterprise policy to kDisable state.
-  policies.Set(policy::key::kHelpMeWriteSettings, policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::Value(static_cast<int>(
-                   optimization_guide::model_execution::prefs::
-                       ModelExecutionEnterprisePolicyValue::kDisable)),
-               nullptr);
-  policy_provider_.UpdateChromePolicy(policies);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(
-      ogks->ShouldFeatureBeCurrentlyAllowedForLogging(compose_feature));
-
-  // Create a new ModelQualityLogEntry and pass it to the
-  // UploadModelQualityLogs.
-  std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entr_2 =
-      GetModelQualityLogEntryForCompose();
-
-  ogks->UploadModelQualityLogs(std::move(log_entr_2));
-
-  // Enable logging via via the enterprise policy to state kAllow this shouldn't
-  // stop upload.
-  policies.Set(policy::key::kHelpMeWriteSettings, policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::Value(static_cast<int>(
-                   optimization_guide::model_execution::prefs::
-                       ModelExecutionEnterprisePolicyValue::kAllow)),
-               nullptr);
-  policy_provider_.UpdateChromePolicy(policies);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyAllowedForLogging(compose_feature));
-
-  // Create a new ModelQualityLogEntry and pass it to the
-  // UploadModelQualityLogs.
-  std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry_3 =
-      GetModelQualityLogEntryForCompose();
-
-  ogks->UploadModelQualityLogs(std::move(log_entry_3));
-
-  // Upload should be disabled twice when logging is disabled via enterprise
-  // policy, total count should be 2.
-  histogram_tester()->ExpectBucketCount(
-      "OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.Compose",
-      optimization_guide::ModelQualityLogsUploadStatus::
-          kDisabledDueToEnterprisePolicy,
-      2);
-}
-
-#endif  //  !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)

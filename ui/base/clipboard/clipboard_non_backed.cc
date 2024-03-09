@@ -233,15 +233,15 @@ class ClipboardInternal {
   }
 
   // Reads data of type |type| from the ClipboardData.
-  void ReadCustomData(const std::u16string& type,
-                      std::u16string* result) const {
+  void ReadWebCustomData(const std::u16string& type,
+                         std::u16string* result) const {
     result->clear();
     const ClipboardData* data = GetData();
     if (!HasFormat(ClipboardInternalFormat::kCustom))
       return;
 
     absl::optional<std::u16string> maybe_result = ReadCustomDataForType(
-        base::as_bytes(base::span(data->custom_data_data())), type);
+        base::as_bytes(base::span(data->GetWebCustomData())), type);
     if (maybe_result) {
       *result = std::move(*maybe_result);
     }
@@ -268,13 +268,11 @@ class ClipboardInternal {
       *url = data->bookmark_url();
   }
 
-  void ReadData(const std::string& type, std::string* result) const {
+  void ReadData(const ClipboardFormatType& type, std::string* result) const {
     result->clear();
-    const ClipboardData* data = GetData();
-    if (!HasFormat(ClipboardInternalFormat::kCustom) ||
-        type != data->custom_data_format())
-      return;
-    *result = data->custom_data_data();
+    if (data_) {
+      *result = data_->GetCustomData(type);
+    }
   }
 
   // Writes |data| to the ClipboardData and returns the previous data.
@@ -289,14 +287,17 @@ class ClipboardInternal {
   }
 
   bool IsReadAllowed(const DataTransferEndpoint* data_dst,
-                     absl::optional<ClipboardInternalFormat> format) const {
+                     absl::optional<ClipboardInternalFormat> format,
+                     const absl::optional<ClipboardFormatType>&
+                         custom_data_format = absl::nullopt) const {
     DataTransferPolicyController* policy_controller =
         DataTransferPolicyController::Get();
     auto* data = GetData();
     if (!policy_controller || !data)
       return true;
-    return policy_controller->IsClipboardReadAllowed(data->source(), data_dst,
-                                                     data->size(format));
+    return policy_controller->IsClipboardReadAllowed(
+        data->source(), data_dst,
+        data->CalculateSize(format, custom_data_format));
   }
 
   int NumImagesEncodedForTesting() const {
@@ -578,7 +579,7 @@ bool ClipboardNonBacked::IsFormatAvailable(
   }
 
   const ClipboardData* data = clipboard_internal.GetData();
-  return data && data->custom_data_format() == format.GetName();
+  return data && data->HasCustomDataFormat(format);
 }
 
 void ClipboardNonBacked::Clear(ClipboardBuffer buffer) {
@@ -629,7 +630,7 @@ void ClipboardNonBacked::ReadAvailableTypes(
   if (clipboard_internal.IsFormatAvailable(ClipboardInternalFormat::kCustom) &&
       clipboard_internal.GetData()) {
     ReadCustomDataTypes(base::as_bytes(base::span(
-                            clipboard_internal.GetData()->custom_data_data())),
+                            clipboard_internal.GetData()->GetWebCustomData())),
                         types);
   }
 }
@@ -790,8 +791,9 @@ void ClipboardNonBacked::ReadCustomData(ClipboardBuffer buffer,
 
   const ClipboardInternal& clipboard_internal = GetInternalClipboard(buffer);
 
-  if (!clipboard_internal.IsReadAllowed(data_dst,
-                                        ClipboardInternalFormat::kCustom)) {
+  if (!clipboard_internal.IsReadAllowed(
+          data_dst, ClipboardInternalFormat::kCustom,
+          ClipboardFormatType::WebCustomDataType())) {
     return;
   }
 
@@ -800,7 +802,7 @@ void ClipboardNonBacked::ReadCustomData(ClipboardBuffer buffer,
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   RecordRead(ClipboardFormatMetric::kCustomData);
-  clipboard_internal.ReadCustomData(type, result);
+  clipboard_internal.ReadWebCustomData(type, result);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
@@ -865,7 +867,8 @@ void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
   const ClipboardInternal& clipboard_internal =
       GetInternalClipboard(ClipboardBuffer::kCopyPaste);
 
-  if (!clipboard_internal.IsReadAllowed(data_dst, absl::nullopt)) {
+  if (!clipboard_internal.IsReadAllowed(
+          data_dst, ClipboardInternalFormat::kCustom, format)) {
     return;
   }
 
@@ -874,7 +877,7 @@ void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   RecordRead(ClipboardFormatMetric::kData);
-  clipboard_internal.ReadData(format.GetName(), result);
+  clipboard_internal.ReadData(format, result);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
@@ -955,9 +958,14 @@ void ClipboardNonBacked::WriteBitmap(const SkBitmap& bitmap) {
 }
 
 void ClipboardNonBacked::WriteData(const ClipboardFormatType& format,
+<<<<<<< HEAD
                                    const char* data_data,
                                    size_t data_len) {
   ClipboardDataBuilder::WriteData(format.GetName(), data_data, data_len);
+=======
+                                   base::span<const uint8_t> data) {
+  ClipboardDataBuilder::WriteData(format, data);
+>>>>>>> origin/main
 }
 
 const ClipboardInternal& ClipboardNonBacked::GetInternalClipboard(

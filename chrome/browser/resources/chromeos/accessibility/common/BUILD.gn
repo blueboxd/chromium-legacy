@@ -15,6 +15,7 @@ assert(is_chromeos_ash)
 
 accessibility_common_out_dir =
     "$root_out_dir/resources/chromeos/accessibility/common"
+tsc_out_dir = "$target_gen_dir/tsc"
 
 group("build") {
   deps = [
@@ -23,25 +24,30 @@ group("build") {
   ]
 }
 
-tsc_out_dir = "$target_gen_dir/tsc"
-
 # Add typescript files to compile here.
 ts_modules = [
   "array_util.ts",
+  "chrome_event_handler.ts",
+  "flags.ts",
+  "instance_checker.ts",
   "paragraph_utils.ts",
+  "word_utils.ts",
+  "string_util.ts",
 ]
 
-# JS files required for ts build.
-js_files = [ "instance_checker.js" ]
-
-# Root dir must be the parent directory so it can reach common.
 ts_library("ts_build") {
-  in_files = js_files + ts_modules
+  in_files = ts_modules
   out_dir = tsc_out_dir
   definitions = [
     "../definitions/tts.d.ts",
     "../definitions/automation.d.ts",
+    "../definitions/command_line_private.d.ts",
+    "../definitions/extensions.d.ts",
+    "../definitions/runtime.d.ts",
     "../definitions/i18n.d.ts",
+    "../definitions/tabs.d.ts",
+    "../definitions/extension_types.d.ts",
+    "//tools/typescript/definitions/windows.d.ts",
   ]
 
   tsconfig_base = "../tsconfig.base.json"
@@ -52,22 +58,17 @@ run_jsbundler("accessibility_common_copied_files") {
   dest_dir = accessibility_common_out_dir
   deps = [ ":ts_build" ]
   sources = [
-    "$tsc_out_dir/array_util.js",
-    "$tsc_out_dir/paragraph_utils.js",
     "async_util.js",
     "automation_predicate.js",
     "automation_util.js",
     "browser_util.js",
-    "chrome_event_handler.js",
     "constants.js",
     "cursors/cursor.js",
     "cursors/range.js",
     "cursors/recovery_strategy.js",
     "event_generator.js",
     "event_handler.js",
-    "flags.js",
     "gdocs_script.js",
-    "instance_checker.js",
     "key_code.js",
     "local_storage.js",
     "node_navigation_utils.js",
@@ -77,12 +78,16 @@ run_jsbundler("accessibility_common_copied_files") {
     "repeated_tree_change_handler.js",
     "sentence_utils.js",
     "settings.js",
-    "string_util.js",
     "testing/accessibility_test_base.js",
     "testing/test_node_generator.js",
     "tree_walker.js",
-    "word_utils.js",
   ]
+
+  foreach(_ts_file, ts_modules) {
+    sources += [ "$tsc_out_dir/" + get_path_info(_ts_file, "dir") + "/" +
+                 get_path_info(_ts_file, "name") + ".js" ]
+  }
+
   rewrite_rules = [
     rebase_path(tsc_out_dir, root_build_dir) + ":",
     rebase_path(".", root_build_dir) + ":",

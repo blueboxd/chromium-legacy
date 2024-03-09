@@ -158,8 +158,9 @@ struct CapturedWheelAction {
   int32 wheel_delta_y;
 };
 
-// The result of a call to SendWheel().
-enum SendWheelResult {
+// The result of a call to any of the Captured Surface Control APIs.
+// https://screen-share.github.io/captured-surface-control/
+enum CapturedSurfaceControlResult {
   kSuccess,
   kUnknownError,
   kNoPermissionError,
@@ -294,7 +295,17 @@ interface MediaStreamDispatcherHost {
   // |callback| will be invoked with the result.
   [EnableIfNot=is_android]
   SendWheel(mojo_base.mojom.UnguessableToken device_id,
-            CapturedWheelAction action) => (SendWheelResult result);
+            CapturedWheelAction action) =>
+    (CapturedSurfaceControlResult result);
+
+  // Retrieves the zoom level from the captured tab.
+  //
+  // |device_id| identifies the captured tab.
+  // |zoom_level| will contain the zoom level if the request is successful.
+  // |result| reports if the call was successful or what type of error occurred.
+  [EnableIfNot=is_android]
+  GetZoomLevel(mojo_base.mojom.UnguessableToken device_id)
+           => (int32? zoom_level, CapturedSurfaceControlResult result);
 
   // Get a MediaStreamDevice metadata object which refers to the same flow of
   // media backing an existing MediaStreamDevice.

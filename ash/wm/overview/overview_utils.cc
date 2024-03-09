@@ -26,12 +26,14 @@
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_overview_session.h"
+#include "ash/wm/splitview/split_view_types.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/work_area_insets.h"
+#include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -177,6 +179,7 @@ void MaximizeIfSnapped(aura::Window* window) {
 gfx::Rect GetGridBoundsInScreen(aura::Window* target_root) {
   return GetGridBoundsInScreen(target_root,
                                /*window_dragging_state=*/std::nullopt,
+                               /*divider_changed=*/false,
                                /*account_for_hotseat=*/true);
 }
 
@@ -184,6 +187,7 @@ gfx::Rect GetGridBoundsInScreen(
     aura::Window* target_root,
     std::optional<SplitViewDragIndicators::WindowDraggingState>
         window_dragging_state,
+    bool divider_changed,
     bool account_for_hotseat) {
   auto* split_view_controller = SplitViewController::Get(target_root);
   SplitViewController::State state = split_view_controller->state();
@@ -207,7 +211,7 @@ gfx::Rect GetGridBoundsInScreen(
   gfx::Rect bounds;
   gfx::Rect work_area =
       WorkAreaInsets::ForWindow(target_root)->ComputeStableWorkArea();
-  std::optional<SplitViewController::SnapPosition> opposite_position;
+  std::optional<SnapPosition> opposite_position;
 
   // We should show partial overview for the following use cases:
   // 1. In tablet split view mode;
@@ -232,15 +236,15 @@ gfx::Rect GetGridBoundsInScreen(
     switch (state) {
       case SplitViewController::State::kPrimarySnapped:
         bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
-            SplitViewController::SnapPosition::kSecondary,
-            /*window_for_minimum_size=*/nullptr);
-        opposite_position = SplitViewController::SnapPosition::kSecondary;
+            SnapPosition::kSecondary,
+            /*window_for_minimum_size=*/nullptr, chromeos::kDefaultSnapRatio);
+        opposite_position = SnapPosition::kSecondary;
         break;
       case SplitViewController::State::kSecondarySnapped:
         bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
-            SplitViewController::SnapPosition::kPrimary,
-            /*window_for_minimum_size=*/nullptr);
-        opposite_position = SplitViewController::SnapPosition::kPrimary;
+            SnapPosition::kPrimary,
+            /*window_for_minimum_size=*/nullptr, chromeos::kDefaultSnapRatio);
+        opposite_position = SnapPosition::kPrimary;
         break;
       case SplitViewController::State::kNoSnap:
         bounds = work_area;
@@ -280,13 +284,12 @@ gfx::Rect GetGridBoundsInScreen(
     }
   }
 
-  if (!opposite_position) {
-    // `opposite_position` is only non-empty if we are in split view state not
-    // `kNoSnap`.
+  if (!divider_changed) {
     return bounds;
   }
 
-  const bool horizontal = SplitViewController::IsLayoutHorizontal(target_root);
+  DCHECK(opposite_position);
+  const bool horizontal = IsLayoutHorizontal(target_root);
   const int min_length =
       (horizontal ? work_area.width() : work_area.height()) / 3;
   const int current_length = horizontal ? bounds.width() : bounds.height();
@@ -300,8 +303,7 @@ gfx::Rect GetGridBoundsInScreen(
   else
     bounds.set_height(min_length);
 
-  if (SplitViewController::IsPhysicalLeftOrTop(*opposite_position,
-                                               target_root)) {
+  if (IsPhysicalLeftOrTop(*opposite_position, target_root)) {
     // If we are shifting to the left or top we need to update the origin as
     // well.
     const int offset = min_length - current_length;
@@ -330,13 +332,14 @@ std::optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio() {
           ->current_window_dragging_state();
   if (!SplitViewController::Get(root_window)->InSplitViewMode() &&
       SplitViewDragIndicators::GetSnapPosition(window_dragging_state) ==
-          SplitViewController::SnapPosition::kNone) {
+          SnapPosition::kNone) {
     return std::nullopt;
   }
 
   // The hotseat bounds do not affect splitview after a window is snapped, so
   // the aspect ratio should reflect it and not worry about the hotseat.
   return gfx::RectF(GetGridBoundsInScreen(root_window, window_dragging_state,
+                                          /*divider_changed=*/false,
                                           /*account_for_hotseat=*/false));
 }
 

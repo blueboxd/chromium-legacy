@@ -52,7 +52,6 @@
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/button_test_api.h"
@@ -137,29 +136,29 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
               SidePanelEntry::Id::kSideSearch);
   }
 
-  void VerifyEntryExistenceAndValue(absl::optional<SidePanelEntry*> entry,
+  void VerifyEntryExistenceAndValue(std::optional<SidePanelEntry*> entry,
                                     SidePanelEntry::Id id) {
     ASSERT_TRUE(entry.has_value());
     EXPECT_EQ(entry.value()->key().id(), id);
   }
 
-  void VerifyEntryExistenceAndValue(absl::optional<SidePanelEntry*> entry,
+  void VerifyEntryExistenceAndValue(std::optional<SidePanelEntry*> entry,
                                     const SidePanelEntry::Key& key) {
     ASSERT_TRUE(entry.has_value());
     EXPECT_EQ(entry.value()->key(), key);
   }
 
-  void VerifyEntryExistenceAndValue(absl::optional<SidePanelEntry::Id> entry,
+  void VerifyEntryExistenceAndValue(std::optional<SidePanelEntry::Id> entry,
                                     SidePanelEntry::Id id) {
     ASSERT_TRUE(entry.has_value());
     EXPECT_EQ(entry.value(), id);
   }
 
-  absl::optional<SidePanelEntry::Key> GetLastActiveEntryKey() {
+  std::optional<SidePanelEntry::Key> GetLastActiveEntryKey() {
     return coordinator_->GetLastActiveEntryKey();
   }
 
-  absl::optional<SidePanelEntry::Key> GetSelectedKey() {
+  std::optional<SidePanelEntry::Key> GetSelectedKey() {
     return coordinator_->GetSelectedKey();
   }
 
@@ -1365,7 +1364,7 @@ TEST_F(SidePanelCoordinatorTest, ComboboxAdditionsDoNotChangeSelection) {
   contextual_registry->Deregister(SidePanelEntry::Key(earlier_sorted_entry));
   coordinator_->Show(later_sorted_entry);
   // Verify the selected index in the combobox is the later entry.
-  absl::optional<size_t> selected_index =
+  std::optional<size_t> selected_index =
       coordinator_->GetComboboxForTesting()->GetSelectedIndex();
   EXPECT_TRUE(selected_index.has_value());
   EXPECT_EQ(coordinator_->GetComboboxModelForTesting()
@@ -1764,8 +1763,7 @@ TEST_F(SidePanelCoordinatorTest, DeregisterAndReturnView) {
 class SidePanelPinningCoordinatorTest : public SidePanelCoordinatorTest {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kSidePanelPinning, features::kChromeRefresh2023}, {});
+    scoped_feature_list_.InitWithFeatures({features::kSidePanelPinning}, {});
     SidePanelCoordinatorTest::SetUp();
     content::WebContents* const web_contents =
         browser_view()->browser()->tab_strip_model()->GetWebContentsAt(0);
@@ -1840,8 +1838,8 @@ class SidePanelPinningCoordinatorTest : public SidePanelCoordinatorTest {
   // Calls chrome.sidePanel.setOptions() for the given `extension`, `path` and
   // `enabled` and returns when the API call is complete.
   void RunSetOptions(const extensions::Extension& extension,
-                     absl::optional<int> tab_id,
-                     absl::optional<std::string> path,
+                     std::optional<int> tab_id,
+                     std::optional<std::string> path,
                      bool enabled) {
     auto function =
         base::MakeRefCounted<extensions::SidePanelSetOptionsFunction>();
@@ -1928,7 +1926,7 @@ TEST_F(SidePanelPinningCoordinatorTest, ExtensionSidePanelHasPinButton) {
       LoadSidePanelExtension();
 
   // Set a global panel with the path to the side panel to use.
-  RunSetOptions(*extension, /*tab_id=*/absl::nullopt,
+  RunSetOptions(*extension, /*tab_id=*/std::nullopt,
                 /*path=*/"panel.html",
                 /*enabled=*/true);
 

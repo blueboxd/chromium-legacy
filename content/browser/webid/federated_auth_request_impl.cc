@@ -851,6 +851,12 @@ void FederatedAuthRequestImpl::RequestToken(
   network_manager_ = CreateNetworkManager();
   request_dialog_controller_ = CreateDialogController();
   start_time_ = base::TimeTicks::Now();
+  // TODO(crbug.com/1307709): handle button mode with multiple IdP.
+  if (IsFedCmButtonModeEnabled() &&
+      idp_get_params_ptrs[0]->mode == blink::mojom::RpMode::kButton &&
+      render_frame_host().HasTransientUserActivation()) {
+    rp_mode_ = RpMode::kButton;
+  }
 
   FederatedApiPermissionStatus permission_status = GetApiPermissionStatus();
 
@@ -878,7 +884,7 @@ void FederatedAuthRequestImpl::RequestToken(
       break;
   }
 
-  if (error_token_status) {
+  if (error_token_status && rp_mode_ == RpMode::kWidget) {
     CompleteRequestWithError(request_result, *error_token_status,
                              /*token_error=*/absl::nullopt,
                              /*should_delay_callback=*/true);
@@ -940,9 +946,12 @@ void FederatedAuthRequestImpl::RequestToken(
           return;
         } else if (idp_get_params_ptr->mode == blink::mojom::RpMode::kButton) {
           // Only a compromised renderer can set mode = button without the
-          // AuthZ flag enabled (which controls the JS WebIDL), so we crash
+          // ButtonMode enabled (which controls the JS WebIDL), so we crash
           // here if we ever get to this situation.
-          CHECK(IsFedCmAuthzEnabled());
+          if (!IsFedCmButtonModeEnabled()) {
+            mojo::ReportBadMessage("FedCM button mode is not enabled.");
+            return;
+          }
           if (!render_frame_host().HasTransientUserActivation()) {
             // The button flow requires user activation and a valid login_url.
             // TODO(crbug.com/1487270): use a more specific error.
@@ -1206,7 +1215,7 @@ void FederatedAuthRequestImpl::OnAllConfigAndWellKnownFetched(
       // to sign-in to the IdP and return early.
       // TODO(https://crbug.com/1490611): handle the "unknown" status and button
       // flows.
-      if (IsFedCmAuthzEnabled() &&
+      if (IsFedCmButtonModeEnabled() &&
           idp_info->rp_mode == blink::mojom::RpMode::kButton &&
           idp_info->metadata.idp_login_url.is_valid()) {
         // We fail sooner before, but just to double check, we assert that
@@ -1247,11 +1256,15 @@ void FederatedAuthRequestImpl::OnAllConfigAndWellKnownFetched(
 void FederatedAuthRequestImpl::CompleteDisconnectRequest(
     DisconnectCallback callback,
     blink::mojom::DisconnectStatus status) {
-  if (!disconnect_request_) {
-    NOTREACHED() << "The completed disconnect request is nowhere to be found";
+  // `disconnect_request_` may be null here if the completion is invoked from
+  // the FederatedAuthRequestImpl destructor, which destroys
+  // `disconnect_request_`. The FederatedAuthDisconnectRequest destructor would
+  // trigger the callback.
+  if (!disconnect_request_ &&
+      status == blink::mojom::DisconnectStatus::kSuccess) {
+    NOTREACHED() << "The successful disconnect request is nowhere to be found";
     return;
   }
-
   std::move(callback).Run(status);
   disconnect_request_.reset();
 }
@@ -1358,7 +1371,9 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
   // able to disable FedCM API (e.g. via settings or dismissing another FedCM UI
   // on the same RP origin) before the browser receives the accounts response.
   // We should exit early without showing any UI.
-  if (GetApiPermissionStatus() != FederatedApiPermissionStatus::GRANTED) {
+  // Note that for the button flow is not affected by the permission status.
+  if (GetApiPermissionStatus() != FederatedApiPermissionStatus::GRANTED &&
+      rp_mode_ != RpMode::kButton) {
     CompleteRequestWithError(
         FederatedAuthRequestResult::kErrorDisabledInSettings,
         TokenStatus::kDisabledInSettings,
@@ -1366,39 +1381,6 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
         /*should_delay_callback=*/true);
     return;
   }
-
-  // The RenderFrameHost may be alive but not visible in the following
-  // situations:
-  // Situation #1: User switched tabs
-  // Situation #2: User navigated the page. The RenderFrameHost is still
-  //   alive thanks to the BFCache.
-  //
-  // - If this fetch is as a result of an IdP sign-in status change, the FedCM
-  // dialog is either visible or temporarily hidden. Update the contents of
-  // the dialog.
-  // - If the FedCM dialog has not already been shown, do not show the dialog
-  // if the RenderFrameHost is hidden because the user does not seem interested
-  // in the contents of the current page.
-  if (!fetch_data_.for_idp_signin) {
-    bool is_visible = IsFrameVisible(render_frame_host().GetMainFrame());
-    fedcm_metrics_->RecordWebContentsVisibilityUponReadyToShowDialog(
-        is_visible);
-
-    if (!is_visible) {
-      CompleteRequestWithError(
-          FederatedAuthRequestResult::kErrorRpPageNotVisible,
-          TokenStatus::kRpPageNotVisible,
-          /*token_error=*/absl::nullopt,
-          /*should_delay_callback=*/true);
-      return;
-    }
-
-    show_accounts_dialog_time_ = base::TimeTicks::Now();
-    fedcm_metrics_->RecordShowAccountsDialogTime(show_accounts_dialog_time_ -
-                                                 start_time_);
-  }
-
-  fetch_data_ = FetchData();
 
   if (IsFedCmAddAccountEnabled()) {
     // This map may have contents already if we came here through the "Add
@@ -1414,9 +1396,6 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
       idp_data_for_display_.push_back(*idp_info_it->second->data);
     }
   }
-
-  // RenderFrameHost should be in the primary page (ex not in the BFCache).
-  DCHECK(render_frame_host().GetPage().IsPrimary());
 
   // TODO(crbug.com/1383384): Handle auto_reauthn_ for multi IDP.
   bool auto_reauthn_enabled =
@@ -1494,6 +1473,64 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
     }
   }
 
+  if (dialog_type_ != kAutoReauth) {
+    identity_selection_type_ = kExplicit;
+  } else if (!IsFedCmButtonModeEnabled() ||
+             rp_mode_ == blink::mojom::RpMode::kWidget) {
+    identity_selection_type_ = kAutoWidget;
+  } else {
+    identity_selection_type_ = kAutoButton;
+  }
+
+  if (auto_reauthn_enabled) {
+    fedcm_metrics_->RecordAutoReauthnMetrics(
+        has_single_returning_account, auto_reauthn_account,
+        dialog_type_ == kAutoReauth, !is_auto_reauthn_setting_enabled,
+        is_auto_reauthn_embargoed, time_from_embargo, requires_user_mediation);
+  }
+
+  if (identity_selection_type_ == kAutoButton) {
+    OnAccountSelected(auto_reauthn_idp->idp_metadata.config_url,
+                      auto_reauthn_account->id, /*is_sign_in=*/true);
+    return;
+  }
+
+  // The RenderFrameHost may be alive but not visible in the following
+  // situations:
+  // Situation #1: User switched tabs
+  // Situation #2: User navigated the page. The RenderFrameHost is still
+  //   alive thanks to the BFCache.
+  //
+  // - If this fetch is as a result of an IdP sign-in status change, the FedCM
+  // dialog is either visible or temporarily hidden. Update the contents of
+  // the dialog.
+  // - If the FedCM dialog has not already been shown, do not show the dialog
+  // if the RenderFrameHost is hidden because the user does not seem interested
+  // in the contents of the current page.
+  if (!fetch_data_.for_idp_signin) {
+    bool is_visible = IsFrameVisible(render_frame_host().GetMainFrame());
+    fedcm_metrics_->RecordWebContentsVisibilityUponReadyToShowDialog(
+        is_visible);
+
+    if (!is_visible) {
+      CompleteRequestWithError(
+          FederatedAuthRequestResult::kErrorRpPageNotVisible,
+          TokenStatus::kRpPageNotVisible,
+          /*token_error=*/absl::nullopt,
+          /*should_delay_callback=*/true);
+      return;
+    }
+
+    show_accounts_dialog_time_ = base::TimeTicks::Now();
+    fedcm_metrics_->RecordShowAccountsDialogTime(show_accounts_dialog_time_ -
+                                                 start_time_);
+  }
+
+  fetch_data_ = FetchData();
+
+  // RenderFrameHost should be in the primary page (ex not in the BFCache).
+  DCHECK(render_frame_host().GetPage().IsPrimary());
+
   // TODO(crbug.com/1408520): opt-out affordance is not included in the origin
   // trial. Should revisit based on the OT feedback.
   bool show_auto_reauthn_checkbox = false;
@@ -1519,8 +1556,6 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
       base::BindOnce(&FederatedAuthRequestImpl::CompleteRequestWithError,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  identity_selection_type_ =
-      dialog_type_ == kAutoReauth ? kAutoWidget : kExplicit;
   // TODO(crbug.com/1382863): Handle UI where some IDPs are successful and some
   // IDPs are failing in the multi IDP case.
   request_dialog_controller_->ShowAccountsDialog(
@@ -1550,13 +1585,6 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
   // Although not useful for catching malicious IDPs, it should only be a very
   // small percentage of the samples recorded.
   fedcm_metrics_->RecordAccountsDialogShown();
-
-  if (auto_reauthn_enabled) {
-    fedcm_metrics_->RecordAutoReauthnMetrics(
-        has_single_returning_account, auto_reauthn_account,
-        dialog_type_ == kAutoReauth, !is_auto_reauthn_setting_enabled,
-        is_auto_reauthn_embargoed, time_from_embargo, requires_user_mediation);
-  }
 }
 
 void FederatedAuthRequestImpl::HandleAccountsFetchFailure(
@@ -1820,7 +1848,9 @@ void FederatedAuthRequestImpl::OnAccountSelected(const GURL& idp_config_url,
   // settings are changed while an existing FedCM UI is displayed. Ideally, we
   // should enforce this check before all requests but users typically won't
   // have time to disable the FedCM API in other types of requests.
-  if (GetApiPermissionStatus() != FederatedApiPermissionStatus::GRANTED) {
+  // Note that for the button flow is not affected by the permission status.
+  if (GetApiPermissionStatus() != FederatedApiPermissionStatus::GRANTED &&
+      rp_mode_ != RpMode::kButton) {
     CompleteRequestWithError(
         FederatedAuthRequestResult::kErrorDisabledInSettings,
         TokenStatus::kDisabledInSettings,
@@ -1855,7 +1885,7 @@ void FederatedAuthRequestImpl::OnAccountSelected(const GURL& idp_config_url,
       idp_info.endpoints.token, account_id_,
       ComputeUrlEncodedTokenPostData(
           idp_info.provider->config->client_id, idp_info.provider->nonce,
-          account_id, is_sign_in, identity_selection_type_ == kAutoWidget,
+          account_id, is_sign_in, identity_selection_type_ != kExplicit,
           idp_info.provider->scope, idp_info.provider->responseType,
           idp_info.provider->params),
       base::BindOnce(&FederatedAuthRequestImpl::OnTokenResponseReceived,
@@ -1888,6 +1918,7 @@ void FederatedAuthRequestImpl::OnDismissFailureDialog(
 
   fedcm_metrics_->RecordCancelReason(dismiss_reason);
 
+  should_embargo &= rp_mode_ == RpMode::kWidget;
   if (should_embargo) {
     api_permission_delegate_->RecordDismissAndEmbargo(GetEmbeddingOrigin());
   }
@@ -1957,6 +1988,7 @@ void FederatedAuthRequestImpl::OnDialogDismissed(
   }
   fedcm_metrics_->RecordCancelReason(dismiss_reason);
 
+  should_embargo &= rp_mode_ == RpMode::kWidget;
   if (should_embargo) {
     api_permission_delegate_->RecordDismissAndEmbargo(GetEmbeddingOrigin());
   }
@@ -2413,13 +2445,20 @@ void FederatedAuthRequestImpl::CompleteUserInfoRequest(
       [request](const std::unique_ptr<FederatedAuthUserInfoRequest>& ptr) {
         return ptr.get() == request;
       });
-  if (it == user_info_requests_.end()) {
-    NOTREACHED() << "The completed user info request is nowhere to be found";
+  // The request may not be found if the completion is invoked from
+  // FederatedAuthRequestImpl destructor. The destructor clears
+  // `user_info_requests_`, which destroys the FederatedAuthUserInfoRequests it
+  // contains. The FederatedAuthUserInfoRequest destructor invokes this
+  // callback.
+  if (it == user_info_requests_.end() &&
+      status == blink::mojom::RequestUserInfoStatus::kSuccess) {
+    NOTREACHED() << "The successful user info request is nowhere to be found";
     return;
   }
-
   std::move(callback).Run(status, std::move(user_info));
-  user_info_requests_.erase(it);
+  if (it != user_info_requests_.end()) {
+    user_info_requests_.erase(it);
+  }
 }
 
 std::unique_ptr<IdpNetworkRequestManager>

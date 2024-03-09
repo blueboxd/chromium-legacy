@@ -143,13 +143,15 @@ void ModelExecutionManager::ExecuteModel(
     OptimizationGuideModelExecutionResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto previous_fetcher_it = active_model_execution_fetchers_.find(feature);
-  if (previous_fetcher_it != active_model_execution_fetchers_.end()) {
-    // Cancel the existing fetcher and let the new one continue.
-    active_model_execution_fetchers_.erase(previous_fetcher_it);
+  if (active_model_execution_fetchers_.find(feature) !=
+      active_model_execution_fetchers_.end()) {
     RecordModelExecutionResultHistogram(feature, false);
-    CHECK(active_model_execution_fetchers_.find(feature) ==
-          active_model_execution_fetchers_.end());
+    std::move(callback).Run(
+        base::unexpected(
+            OptimizationGuideModelExecutionError::FromModelExecutionError(
+                ModelExecutionError::kGenericFailure)),
+        nullptr);
+    return;
   }
 
   if (optimization_guide_logger_->ShouldEnableDebugLogs()) {
@@ -247,12 +249,12 @@ void ModelExecutionManager::OnModelExecuteResponse(
 
   // Set the id if present.
   if (execute_response->has_server_execution_id()) {
-    log_entry->set_model_execution_id(execute_response->server_execution_id());
+    log_entry.get()->set_model_execution_id(
+        execute_response->server_execution_id());
   }
 
   if (execute_response->has_error_response()) {
     scoped_logger.set_message("Error: No Response Metadata");
-    log_entry->set_error_response(execute_response->error_response());
     // For unallowed error states, don't log request data.
     auto error =
         OptimizationGuideModelExecutionError::FromModelExecutionServerError(

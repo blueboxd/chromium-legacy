@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/settings/safety_hub_handler.h"
+
 #include <memory>
 
 #include "base/check.h"
@@ -136,7 +137,7 @@ base::Value::Dict CardDataToValue(int header_id,
 // Returns true if the card dict indicates there is something actionable for the
 // user.
 bool CardHasRecommendations(base::Value::Dict card_data) {
-  absl::optional<int> state = card_data.FindInt(safety_hub::kCardStateKey);
+  std::optional<int> state = card_data.FindInt(safety_hub::kCardStateKey);
   CHECK(state.has_value());
   SafetyHubCardState card_state =
       static_cast<SafetyHubCardState>(state.value());
@@ -376,15 +377,7 @@ void SafetyHubHandler::HandleDismissActiveMenuNotification(
 void SafetyHubHandler::HandleDismissPasswordMenuNotification(
     const base::Value::List& args) {
   SafetyHubMenuNotificationServiceFactory::GetForProfile(profile_)
-      ->DismissActiveNotificationOfModule(
-          safety_hub::SafetyHubModuleType::PASSWORDS);
-}
-
-void SafetyHubHandler::HandleDismissExtensionsMenuNotification(
-    const base::Value::List& args) {
-  SafetyHubMenuNotificationServiceFactory::GetForProfile(profile_)
-      ->DismissActiveNotificationOfModule(
-          safety_hub::SafetyHubModuleType::EXTENSIONS);
+      ->DismissPasswordNotification();
 }
 
 void SafetyHubHandler::HandleBlockNotificationPermissionForOrigins(
@@ -705,11 +698,6 @@ void SafetyHubHandler::RegisterMessages() {
           &SafetyHubHandler::HandleDismissPasswordMenuNotification,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "dismissSafetyHubExtensionsMenuNotification",
-      base::BindRepeating(
-          &SafetyHubHandler::HandleDismissExtensionsMenuNotification,
-          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "blockNotificationPermissionForOrigins",
       base::BindRepeating(
           &SafetyHubHandler::HandleBlockNotificationPermissionForOrigins,
@@ -775,7 +763,7 @@ void SafetyHubHandler::SendNotificationPermissionReviewList() {
 int SafetyHubHandler::GetNumberOfExtensionsThatNeedReview() {
   extensions::CWSInfoService* cws_info_service =
       extensions::CWSInfoServiceFactory::GetForProfile(profile_);
-  absl::optional<std::unique_ptr<SafetyHubService::Result>> sh_result =
+  std::optional<std::unique_ptr<SafetyHubService::Result>> sh_result =
       SafetyHubExtensionsResult::GetResult(cws_info_service, profile_, false);
   if (!sh_result.has_value()) {
     return 0;

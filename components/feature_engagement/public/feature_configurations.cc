@@ -142,34 +142,6 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
-  if (kIPHSidePanelGenericMenuFeature.name == feature->name) {
-    absl::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    // Show the promo once a year if the side panel was not opened.
-    config->trigger = EventConfig("side_panel_from_menu_trigger",
-                                  Comparator(EQUAL, 0), 360, 360);
-    config->used = EventConfig("side_panel_from_menu_shown",
-                               Comparator(EQUAL, 0), 360, 360);
-    return config;
-  }
-
-  if (kIPHSidePanelGenericPinnableFeature.name == feature->name) {
-    absl::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    // Show the promo once a year if the side panel was not opened.
-    config->trigger = EventConfig("side_panel_pinnable_trigger",
-                                  Comparator(EQUAL, 0), 360, 360);
-    config->used = EventConfig(feature_engagement::events::kSidePanelPinned,
-                               Comparator(EQUAL, 0), 360, 360);
-    return config;
-  }
-
   if (kIPHGMCCastStartStopFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -214,19 +186,6 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->event_configs.insert(
         EventConfig("iph_desktop_shared_highlighting_trigger",
                     Comparator(EQUAL, 0), 7, 360));
-    return config;
-  }
-
-  if (kIPHExperimentalAIPromoFeature.name == feature->name) {
-    absl::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(EQUAL, 0);
-    // Show the IPH once per year.
-    config->trigger = EventConfig("iph_experimental_ai_promo_trigger",
-                                  Comparator(EQUAL, 0), 360, 360);
-    config->used = EventConfig("iph_experimental_ai_promo_shown",
-                               Comparator(EQUAL, 0), 360, 360);
     return config;
   }
 
@@ -1992,6 +1951,28 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         Comparator(GREATER_THAN_OR_EQUAL, 1), 7, 360));
     config->used =
         EventConfig("enhanced_safe_browsing_blue_dot_promo_used",
+                    Comparator(EQUAL, 0), feature_engagement::kMaxStoragePeriod,
+                    feature_engagement::kMaxStoragePeriod);
+    config->blocked_by.type = BlockedBy::Type::NONE;
+    config->blocking.type = Blocking::Type::NONE;
+    return config;
+  }
+
+  if (kIPHiOSInlinePromoEnhancedSafeBrowsingFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(LESS_THAN, 1);
+    config->trigger = EventConfig("enhanced_safe_browsing_inline_promo_trigger",
+                                  Comparator(ANY, 0), 360, 360);
+    config->event_configs.insert(EventConfig(
+        feature_engagement::events::kEnhancedSafeBrowsingPromoCriterionMet,
+        Comparator(GREATER_THAN_OR_EQUAL, 1), 7, 360));
+    config->event_configs.insert(EventConfig(
+        feature_engagement::events::kEnhancedSafeBrowsingInlinePromoClosed,
+        Comparator(LESS_THAN, 1), 360, 360));
+    config->used =
+        EventConfig("enhanced_safe_browsing_inline_promo_used",
                     Comparator(EQUAL, 0), feature_engagement::kMaxStoragePeriod,
                     feature_engagement::kMaxStoragePeriod);
     config->blocked_by.type = BlockedBy::Type::NONE;

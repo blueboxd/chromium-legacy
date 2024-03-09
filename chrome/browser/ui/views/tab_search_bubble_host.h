@@ -42,10 +42,7 @@ class TabSearchBubbleHost : public views::WidgetObserver,
   // When this is called the bubble may already be showing or be loading in.
   // This returns true if the method call results in the creation of a new Tab
   // Search bubble.
-  // TODO(emshack): Either use an enum for tab_index here or break this out
-  // into multiple methods for improved readability.
-  bool ShowTabSearchBubble(bool triggered_by_keyboard_shortcut = false,
-                           int tab_index = -1);
+  bool ShowTabSearchBubble(bool triggered_by_keyboard_shortcut = false);
   void CloseTabSearchBubble();
 
   const Browser* GetBrowser() const;
@@ -55,7 +52,7 @@ class TabSearchBubbleHost : public views::WidgetObserver,
   WebUIBubbleManager* webui_bubble_manager_for_testing() {
     return &webui_bubble_manager_;
   }
-  const absl::optional<base::TimeTicks>& bubble_created_time_for_testing()
+  const std::optional<base::TimeTicks>& bubble_created_time_for_testing()
       const {
     return bubble_created_time_;
   }
@@ -77,7 +74,7 @@ class TabSearchBubbleHost : public views::WidgetObserver,
   views::WidgetOpenTimer widget_open_timer_;
 
   // Timestamp for when the current bubble was created.
-  absl::optional<base::TimeTicks> bubble_created_time_;
+  std::optional<base::TimeTicks> bubble_created_time_;
 
   raw_ptr<views::MenuButtonController> menu_button_controller_ = nullptr;
 

@@ -67,6 +67,7 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
+    base::RunLoop().RunUntilIdle();
     // Make sure to close any showing popups prior to tearing down the UI.
     content::WebContents* web_contents =
         active_browser_->tab_strip_model()->GetActiveWebContents();
@@ -163,9 +164,8 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
     base::MockCallback<SingleFieldFormFiller::OnSuggestionsReturnedCallback>
         callback;
     std::vector<Suggestion> suggestions;
-    EXPECT_CALL(callback, Run).WillOnce(testing::SaveArg<2>(&suggestions));
+    EXPECT_CALL(callback, Run).WillOnce(testing::SaveArg<1>(&suggestions));
     EXPECT_TRUE(autocomplete_history_manager()->OnGetSingleFieldSuggestions(
-        AutofillSuggestionTriggerSource::kFormControlElementClicked,
         test::CreateTestFormField(/*label=*/"", input_name, prefix,
                                   FormControlType::kInputText),
         manager().client(), callback.Get(), SuggestionsContext()));

@@ -284,13 +284,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kFeedbackSurveysEnabled,
     policy::policy_prefs::kFeedbackSurveysEnabled,
     base::Value::Type::BOOLEAN },
-// We avoid checking for BUILDFLAG(ENABLE_NACL) since we may want the policy to
-// exist (deprecated) even if NACL is no longer being built.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
-  { key::kNativeClientForceAllowed,
-    prefs::kNativeClientForceAllowed,
-    base::Value::Type::BOOLEAN },
-#endif
   { key::kPasswordManagerEnabled,
     password_manager::prefs::kCredentialsEnableService,
     base::Value::Type::BOOLEAN },
@@ -401,6 +394,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER },
   { key::kWebXRImmersiveArEnabled,
     prefs::kWebXRImmersiveArEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kListenToThisPageEnabled,
+    prefs::kListenToThisPageEnabled,
     base::Value::Type::BOOLEAN },
 #else // !BUILDFLAG(IS_ANDROID)
   { key::kAbusiveExperienceInterventionEnforce,
@@ -1867,11 +1863,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kRemoteAccessHostAllowEnterpriseRemoteSupportConnections,
     prefs::kRemoteAccessHostAllowEnterpriseRemoteSupportConnections,
     base::Value::Type::BOOLEAN },
-  { key::kClientSidePhishingProtectionAllowed,
-    prefs::kSafeBrowsingCsdPhishingProtectionAllowedByPolicy,
-    base::Value::Type::BOOLEAN },
   { key::kSafeBrowsingExtensionProtectionAllowed,
     prefs::kSafeBrowsingExtensionProtectionAllowedByPolicy,
+    base::Value::Type::BOOLEAN },
+  // We avoid checking for BUILDFLAG(ENABLE_NACL) since we may want the policy
+  // to exist (deprecated) even if NACL is no longer being built.
+  { key::kNativeClientForceAllowed,
+    prefs::kNativeClientForceAllowed,
     base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS)
 
@@ -1974,12 +1972,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAccessControlAllowMethodsInCORSPreflightSpecConformant,
     prefs::kAccessControlAllowMethodsInCORSPreflightSpecConformant,
     base::Value::Type::BOOLEAN},
-  { key::kOffsetParentNewSpecBehaviorEnabled,
-    policy_prefs::kOffsetParentNewSpecBehaviorEnabled,
-    base::Value::Type::BOOLEAN},
-  { key::kSendMouseEventsDisabledFormControlsEnabled,
-    policy_prefs::kSendMouseEventsDisabledFormControlsEnabled,
-    base::Value::Type::BOOLEAN},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   { key::kDeviceAutofillSAMLUsername,
     ash::prefs::kUrlParameterToAutofillSAMLUsername,
@@ -2060,17 +2052,17 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
-  { key::kTabOrganizerSettings,
+  { key::kTabOrganizationAllowed,
     optimization_guide::model_execution::prefs::kTabOrganizationEnterprisePolicyAllowed,
     base::Value::Type::INTEGER},
 #endif
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
-  { key::kHelpMeWriteSettings,
+  { key::kComposeAllowed,
     optimization_guide::model_execution::prefs::kComposeEnterprisePolicyAllowed,
     base::Value::Type::INTEGER},
 #endif
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
-  { key::kCreateThemesSettings,
+  { key::kWallpaperSearchAllowed,
     optimization_guide::model_execution::prefs::kWallpaperSearchEnterprisePolicyAllowed,
     base::Value::Type::INTEGER},
 #endif

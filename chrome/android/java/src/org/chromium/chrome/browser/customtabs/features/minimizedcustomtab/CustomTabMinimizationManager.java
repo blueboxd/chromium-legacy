@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs.features.minimizedcustomtab;
 
-import static org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter.reportJavaException;
 import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedCardProperties.ALL_KEYS;
 import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedCardProperties.FAVICON;
 import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedCardProperties.TITLE;
@@ -15,7 +14,6 @@ import static org.chromium.chrome.browser.tab.TabSelectionType.FROM_USER;
 import android.app.PictureInPictureParams;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Rational;
 
@@ -25,18 +23,15 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.PictureInPictureModeChangedInfo;
 import androidx.core.util.Consumer;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle.State;
 
-import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.InflationObserver;
-import org.chromium.chrome.browser.lifecycle.SaveInstanceStateObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tab.TabHidingType;
@@ -46,19 +41,12 @@ import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /** Class that manages minimizing a Custom Tab into picture-in-picture. */
 @RequiresApi(VERSION_CODES.O)
 public class CustomTabMinimizationManager
-        implements CustomTabMinimizeDelegate,
-                Consumer<PictureInPictureModeChangedInfo>,
-                SaveInstanceStateObserver {
+        implements CustomTabMinimizeDelegate, Consumer<PictureInPictureModeChangedInfo> {
     // List of possible minimization events - maximize is effectively an 'un-PiP', whereas destroy
     // refers to the activity being finished either by user action or otherwise.
     // These values are persisted to logs. Entries should not be renumbered and
@@ -79,40 +67,12 @@ public class CustomTabMinimizationManager
     }
 
     @VisibleForTesting static final Rational ASPECT_RATIO = new Rational(16, 9);
-
-    @VisibleForTesting static WeakReference<CustomTabMinimizeDelegate> sLastMinimizeDelegate;
-
-    @VisibleForTesting static final String KEY_IS_CCT_MINIMIZED = "isCctMinimized";
-
-    @VisibleForTesting
-    static final String KEY_CCT_MINIMIZATION_SYSTEM_TIME = "cctMinimizationSystemTime";
-
-    // --- For debugging
-    private static final String TAG = "CTMinimizationMgr";
-    private static final String SUCCESS_AFTER_EXCEPTION_HISTOGRAM_NAME =
-            "CustomTabs.MinimizeSuccessAfterException.";
-    private static final String TASK_DISPLAY_AREA_NPE_STR =
-            "com.android.server.wm.TaskDisplayArea.positionStackAtTop";
-    private static final String DEVICE_DOES_NOT_SUPPORT_ISE_STR =
-            "Device doesn't support picture-in-picture mode";
-    private static final String ACTIVITY_DOES_NOT_SUPPORT_ISE_STR =
-            "Current activity does not support picture-in-picture";
-    private static final String ROOT_TASK_IAE_STR = "addRootTaskReferenceIfNeeded: root pinned";
-
-    private final Map<String, Integer> mExceptionImpressions = new HashMap<>();
-    private final Set<String> mMinimizeSuccessAfterException = new HashSet<>();
-    // ---
-
     private final AppCompatActivity mActivity;
     private final ActivityTabProvider mTabProvider;
     private final MinimizedCustomTabFeatureEngagementDelegate mFeatureEngagementDelegate;
     private final BrowserServicesIntentDataProvider mIntentData;
     private final Runnable mCloseTabRunnable;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
-    private final ActivityLifecycleDispatcher mLifecycleDispatcher;
-    private final Supplier<Bundle> mSavedInstanceStateSupplier;
-    private MinimizedCardCoordinator mCoordinator;
-    private PropertyModel mModel;
     private long mMinimizationSystemTime;
     private boolean mMinimized;
 
@@ -123,93 +83,35 @@ public class CustomTabMinimizationManager
      * @param featureEngagementDelegate The {@link MinimizedCustomTabFeatureEngagementDelegate}.
      * @param closeTabRunnable The {@link Runnable} to close the Custom Tab when the minimized tab
      *     is dismissed.
-     * @param intentData The {@link BrowserServicesIntentDataProvider}.
-     * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher}.
-     * @param savedInstanceStateSupplier {@link Supplier} for the saved instance state.
      */
     public CustomTabMinimizationManager(
             AppCompatActivity activity,
             ActivityTabProvider tabProvider,
             MinimizedCustomTabFeatureEngagementDelegate featureEngagementDelegate,
             Runnable closeTabRunnable,
-            BrowserServicesIntentDataProvider intentData,
-            ActivityLifecycleDispatcher lifecycleDispatcher,
-            Supplier<Bundle> savedInstanceStateSupplier) {
+            BrowserServicesIntentDataProvider intentData) {
         mActivity = activity;
         mTabProvider = tabProvider;
         mFeatureEngagementDelegate = featureEngagementDelegate;
         mCloseTabRunnable = closeTabRunnable;
         mIntentData = intentData;
-        mLifecycleDispatcher = lifecycleDispatcher;
-        mSavedInstanceStateSupplier = savedInstanceStateSupplier;
-
-        mLifecycleDispatcher.register(this);
-
-        maybeInitializeAsMinimized();
     }
 
     public void destroy() {
         mActivity.removeOnPictureInPictureModeChangedListener(this);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        if (mMinimized) {
-            outState.putBoolean(KEY_IS_CCT_MINIMIZED, true);
-            outState.putLong(KEY_CCT_MINIMIZATION_SYSTEM_TIME, mMinimizationSystemTime);
-            putIntoBundleFromModel(outState, mModel);
-        }
-    }
-
     /** Minimize the Custom Tab into picture-in-picture. */
     @Override
     public void minimize() {
-        if (mMinimized) return;
         if (!mTabProvider.hasValue()) return;
         mFeatureEngagementDelegate.notifyUserEngaged();
         var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
         if (VERSION.SDK_INT >= VERSION_CODES.S) {
             builder.setSeamlessResizeEnabled(false);
         }
-
-        maybeDismissLastMinimizedTab();
-
-        // Sometimes an exception may be thrown by the framework code. If it's something we've seen
-        // before, catch it and report with extra debug information without crashing. Otherwise,
-        // rethrow so we don't inadvertently hide other crashes.
-        try {
-            mMinimized = mActivity.enterPictureInPictureMode(builder.build());
-        } catch (NullPointerException e) {
-            if (doesExceptionMatch(e, TASK_DISPLAY_AREA_NPE_STR)) {
-                String msg = "NullPointerException";
-                incrementExceptionImpressionAndReport(TASK_DISPLAY_AREA_NPE_STR, msg, e);
-            } else {
-                throw e;
-            }
-        } catch (IllegalStateException e) {
-            if (doesExceptionMatch(e, DEVICE_DOES_NOT_SUPPORT_ISE_STR)) {
-                String msg = "Device doesn't support picture-in-picture mode.";
-                incrementExceptionImpressionAndReport(DEVICE_DOES_NOT_SUPPORT_ISE_STR, msg, e);
-            } else if (doesExceptionMatch(e, ACTIVITY_DOES_NOT_SUPPORT_ISE_STR)) {
-                String msg =
-                        "Current activity does not support picture-in-picture. Activity class: "
-                                + mActivity.getLocalClassName();
-                incrementExceptionImpressionAndReport(ACTIVITY_DOES_NOT_SUPPORT_ISE_STR, msg, e);
-            } else {
-                throw e;
-            }
-        } catch (IllegalArgumentException e) {
-            if (doesExceptionMatch(e, ROOT_TASK_IAE_STR)) {
-                String msg = "IllegalArgumentException";
-                incrementExceptionImpressionAndReport(ROOT_TASK_IAE_STR, msg, e);
-            } else {
-                throw e;
-            }
-        }
+        mMinimized = mActivity.enterPictureInPictureMode(builder.build());
         if (!mMinimized) return;
-        recordMinimizeSuccessAfterException();
-
-        maybeSaveLastMinimizeDelegate();
 
         mActivity.addOnPictureInPictureModeChangedListener(this);
         notifyObservers(true);
@@ -241,22 +143,8 @@ public class CustomTabMinimizationManager
         if (!mMinimized) return;
 
         Tab tab = mTabProvider.get();
-
-        if (tab == null) {
-            boolean wasInitializedMinimized =
-                    mSavedInstanceStateSupplier.hasValue()
-                            && mSavedInstanceStateSupplier.get().getBoolean(KEY_IS_CCT_MINIMIZED);
-            String msg =
-                    "Tab is null. Activity state is "
-                            + mActivity.getLifecycle().getCurrentState()
-                            + ". wasInitializedMinimized: "
-                            + wasInitializedMinimized;
-            Log.e(TAG, msg);
-            reportJavaException(new Exception(msg));
-        }
-
+        assert tab != null;
         if (pictureInPictureModeChangedInfo.isInPictureInPictureMode()) {
-            showMinimizedCard(/* fromSavedState= */ false);
             updateTabForMinimization(tab);
             CustomTabsConnection.getInstance().onMinimized(mIntentData.getSession());
             RecordHistogram.recordEnumeratedHistogram(
@@ -267,7 +155,6 @@ public class CustomTabMinimizationManager
             mMinimized = false;
             mActivity.removeOnPictureInPictureModeChangedListener(this);
             notifyObservers(false);
-            maybeClearLastMinimizedTabRef();
             // We receive an update here when PiP is dismissed and the Activity is being stopped
             // before destruction. In that case, the state will be CREATED.
             var state = mActivity.getLifecycle().getCurrentState();
@@ -301,59 +188,26 @@ public class CustomTabMinimizationManager
         }
     }
 
-    private void maybeInitializeAsMinimized() {
-        mMinimized =
-                mSavedInstanceStateSupplier.hasValue()
-                        && mSavedInstanceStateSupplier.get().getBoolean(KEY_IS_CCT_MINIMIZED);
-
-        if (mMinimized) {
-            mLifecycleDispatcher.register(
-                    new InflationObserver() {
-                        @Override
-                        public void onPreInflationStartup() {}
-
-                        @Override
-                        public void onPostInflationStartup() {
-                            maybeSaveLastMinimizeDelegate();
-                            mActivity.addOnPictureInPictureModeChangedListener(
-                                    CustomTabMinimizationManager.this);
-                            showMinimizedCard(/* fromSavedState= */ true);
-                            notifyObservers(true);
-                            mMinimizationSystemTime =
-                                    mSavedInstanceStateSupplier
-                                            .get()
-                                            .getLong(KEY_CCT_MINIMIZATION_SYSTEM_TIME);
-                            mLifecycleDispatcher.unregister(this);
-                        }
-                    });
-        }
-    }
-
-    private void showMinimizedCard(boolean fromSavedState) {
-        if (fromSavedState) {
-            assert mSavedInstanceStateSupplier.hasValue();
-            mModel = toModel(mSavedInstanceStateSupplier.get());
-        } else {
-            Tab tab = mTabProvider.get();
-            if (tab == null) return;
-            GURL url =
-                    DomDistillerUrlUtils.isDistilledPage(tab.getUrl())
-                            ? tab.getOriginalUrl()
-                            : tab.getUrl();
-            mModel =
-                    new PropertyModel.Builder(ALL_KEYS)
-                            .with(TITLE, tab.getTitle())
-                            .with(URL, url.getHost())
-                            .with(FAVICON, TabFavicon.getBitmap(tab))
-                            .build();
-        }
-        mCoordinator =
-                new MinimizedCardCoordinator(
-                        mActivity, mActivity.findViewById(android.R.id.content), mModel);
-    }
-
     private void updateTabForMinimization(Tab tab) {
         if (tab == null) return;
+
+        GURL url =
+                DomDistillerUrlUtils.isDistilledPage(tab.getUrl())
+                        ? tab.getOriginalUrl()
+                        : tab.getUrl();
+
+        PropertyModel model =
+                new PropertyModel.Builder(ALL_KEYS)
+                        .with(TITLE, tab.getTitle())
+                        .with(URL, url.getHost())
+                        .with(FAVICON, TabFavicon.getBitmap(tab))
+                        .build();
+        var fragment = MinimizedCardDialogFragment.newInstance(model);
+        FragmentTransaction transaction = mActivity.getSupportFragmentManager().beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_NONE);
+        transaction
+                .add(android.R.id.content, fragment, MinimizedCardDialogFragment.TAG)
+                .commitNow();
 
         tab.stopLoading();
         tab.hide(TabHidingType.ACTIVITY_HIDDEN);
@@ -371,132 +225,17 @@ public class CustomTabMinimizationManager
         if (webContents != null) {
             webContents.setAudioMuted(false);
         }
-        if (mCoordinator != null) {
-            mCoordinator.dismiss();
-        }
+        var fragment =
+                (DialogFragment)
+                        mActivity
+                                .getSupportFragmentManager()
+                                .findFragmentByTag(MinimizedCardDialogFragment.TAG);
+        fragment.dismissNow();
     }
 
     private void notifyObservers(boolean minimized) {
         for (var obs : mObservers) {
             obs.onMinimizationChanged(minimized);
         }
-    }
-
-    private CustomTabMinimizeDelegate getLastMinimizeDelegate() {
-        if (sLastMinimizeDelegate == null) return null;
-
-        return sLastMinimizeDelegate.get();
-    }
-
-    private void maybeSaveLastMinimizeDelegate() {
-        if (VERSION.SDK_INT < VERSION_CODES.R || VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) return;
-
-        sLastMinimizeDelegate = new WeakReference<>(this);
-    }
-
-    private void clearLastMinimizeDelegate() {
-        if (sLastMinimizeDelegate == null) return;
-
-        sLastMinimizeDelegate.clear();
-        sLastMinimizeDelegate = null;
-    }
-
-    private void maybeDismissLastMinimizedTab() {
-        // On Android R and S, minimizing a tab while there is already an active PiP window unPiPs
-        // the current one instead of closing the Activity. This can cause some weird issues if it
-        // happens multiple times back-to-back. To prevent these issues, we dismiss the last
-        // minimized Custom Tab. This only works for the Minimized Custom Tabs feature and doesn't
-        // affect other uses of PiP such as fullscreen video.
-        if (VERSION.SDK_INT < VERSION_CODES.R || VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) return;
-
-        var lastMinimized = getLastMinimizeDelegate();
-        if (lastMinimized != null) {
-            lastMinimized.dismiss();
-            clearLastMinimizeDelegate();
-        }
-    }
-
-    private void maybeClearLastMinimizedTabRef() {
-        var lastMinimized = getLastMinimizeDelegate();
-        if (lastMinimized == this) {
-            clearLastMinimizeDelegate();
-        }
-    }
-
-    private static void putIntoBundleFromModel(Bundle out, PropertyModel model) {
-        if (model == null) return;
-
-        out.putString(TITLE.toString(), model.get(TITLE));
-        out.putString(URL.toString(), model.get(URL));
-        out.putParcelable(FAVICON.toString(), model.get(FAVICON));
-    }
-
-    private static PropertyModel toModel(Bundle bundle) {
-        return new PropertyModel.Builder(ALL_KEYS)
-                .with(TITLE, bundle.getString(TITLE.toString()))
-                .with(URL, bundle.getString(URL.toString()))
-                .with(FAVICON, bundle.getParcelable(FAVICON.toString()))
-                .build();
-    }
-
-    private boolean doesExceptionMatch(Exception e, String subString) {
-        return e.getMessage() != null && e.getMessage().contains(subString);
-    }
-
-    private void incrementExceptionImpression(String key) {
-        mExceptionImpressions.compute(key, (k, v) -> v == null ? 1 : v + 1);
-    }
-
-    private void incrementExceptionImpressionAndReport(String key, String msg, Exception e) {
-        incrementExceptionImpression(key);
-        Log.e(TAG, msg, e);
-        reportJavaException(new Exception(msg, e));
-    }
-
-    private void recordMinimizeSuccessAfterException() {
-        if (shouldRecordSuccessAfterException(TASK_DISPLAY_AREA_NPE_STR)) {
-            mMinimizeSuccessAfterException.add(TASK_DISPLAY_AREA_NPE_STR);
-            RecordHistogram.recordCustomCountHistogram(
-                    SUCCESS_AFTER_EXCEPTION_HISTOGRAM_NAME + "NPE",
-                    mExceptionImpressions.get(TASK_DISPLAY_AREA_NPE_STR),
-                    1,
-                    10,
-                    10);
-        }
-        if (shouldRecordSuccessAfterException(DEVICE_DOES_NOT_SUPPORT_ISE_STR)) {
-            mMinimizeSuccessAfterException.add(DEVICE_DOES_NOT_SUPPORT_ISE_STR);
-            RecordHistogram.recordCustomCountHistogram(
-                    SUCCESS_AFTER_EXCEPTION_HISTOGRAM_NAME + "ISE_DEVICE",
-                    mExceptionImpressions.get(DEVICE_DOES_NOT_SUPPORT_ISE_STR),
-                    1,
-                    10,
-                    10);
-        }
-        if (shouldRecordSuccessAfterException(ACTIVITY_DOES_NOT_SUPPORT_ISE_STR)) {
-            mMinimizeSuccessAfterException.add(ACTIVITY_DOES_NOT_SUPPORT_ISE_STR);
-            RecordHistogram.recordCustomCountHistogram(
-                    SUCCESS_AFTER_EXCEPTION_HISTOGRAM_NAME + "ISE_ACTIVITY",
-                    mExceptionImpressions.get(ACTIVITY_DOES_NOT_SUPPORT_ISE_STR),
-                    1,
-                    10,
-                    10);
-        }
-        if (shouldRecordSuccessAfterException(ROOT_TASK_IAE_STR)) {
-            mMinimizeSuccessAfterException.add(ROOT_TASK_IAE_STR);
-            RecordHistogram.recordCustomCountHistogram(
-                    SUCCESS_AFTER_EXCEPTION_HISTOGRAM_NAME + "IAE",
-                    mExceptionImpressions.get(ROOT_TASK_IAE_STR),
-                    1,
-                    10,
-                    10);
-        }
-
-        // We should count the exceptions since the last successful minimize event.
-        mExceptionImpressions.clear();
-    }
-
-    private boolean shouldRecordSuccessAfterException(String key) {
-        return !mMinimizeSuccessAfterException.contains(key)
-                && mExceptionImpressions.containsKey(key);
     }
 }

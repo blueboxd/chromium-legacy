@@ -728,7 +728,7 @@
 <translation id="641081527798843608">Samsvörun viðfangs</translation>
 <translation id="6411934471898487866">birtustig lyklaborðs</translation>
 <translation id="6412715219990689313">Innbyggt lyklaborð</translation>
-<translation id="6417265370957905582">Google-hjálpari</translation>
+<translation id="6417265370957905582">Google hjálpari</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Lítill (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Fara í reikningsstillingar</translation>
@@ -739,7 +739,7 @@
 <translation id="6488559935020624631">Sérstakur skjávari <ph name="PRODUCT_NAME" /></translation>
 <translation id="649050271426829538">Stöðvað – pappírsstífla</translation>
 <translation id="6494974875566443634">Sérsnið</translation>
-<translation id="6500818810472529210">Sjá niðurstöður í Google-leit</translation>
+<translation id="6500818810472529210">Sjá niðurstöður í Google leit</translation>
 <translation id="650266656685499220">Farðu í Google-myndir til að búa til möppur</translation>
 <translation id="6505750420152840539">Frá dögun til rökkurs</translation>
 <translation id="6516990319416533844">Til að prófa hleðsluhraða rafhlöðunnar skaltu láta rafhleðsluna minnka í stutta stund</translation>
@@ -847,7 +847,7 @@
 <translation id="7311368985037279727">litur lyklaborðs</translation>
 <translation id="7317831949569936035">Skólaskráning</translation>
 <translation id="7319430975418800333">A3</translation>
-<translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Ýttu á leitarhnappinn og bilslána til að skoða niðurstöður í Google-leit.</translation>
+<translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Ýttu á leitarhnappinn og bilslána til að skoða niðurstöður í Google leit.</translation>
 <translation id="7343649194310845056">Netkerfistæki</translation>
 <translation id="7353413232959255829">Leitarniðurstaða <ph name="LIST_POSITION" /> af <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Ýttu á Enter til að fara í flýtileið.</translation>
 <translation id="7359657277149375382">Skráargerð</translation>
@@ -1014,7 +1014,7 @@
 <translation id="8660881923941176839">pund</translation>
 <translation id="8670574982334489519">hægri</translation>
 <translation id="8675354002693747642">PSK-lykill</translation>
-<translation id="8677859815076891398">Engin albúm. Búðu til albúm í <ph name="LINK_BEGIN" />Google-myndum<ph name="LINK_END" />.</translation>
+<translation id="8677859815076891398">Engin albúm. Búðu til albúm í <ph name="LINK_BEGIN" />Google myndum<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Notaðu ör til vinstri eða ör til hægri til að stjórna þessum eiginleika.</translation>
 <translation id="8712637175834984815">Ég skil</translation>
 <translation id="871560550817059752">Mistókst – blekið er búið</translation>
@@ -1024,7 +1024,7 @@
 <translation id="8730621377337864115">Lokið</translation>
 <translation id="8747900814994928677">Staðfesta breytingu</translation>
 <translation id="8764414543112028321">WireGuard</translation>
-<translation id="87646919272181953">Albúm í Google-myndum</translation>
+<translation id="87646919272181953">Albúm í Google myndum</translation>
 <translation id="8775713578693478175">Aðgangsstaður mótalds</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8789196995628578448">Flýtilykillinn er notaður fyrir „<ph name="CONFLICT_ACCEL_NAME" />“. Ýttu á nýjan flýtilykil. Ýttu aftur á þennan flýtilykil til að skipta upprunalega flýtilyklinum út.</translation>

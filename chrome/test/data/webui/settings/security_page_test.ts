@@ -167,7 +167,6 @@ suite('SecurityPageHappinessTrackingSurveys', function() {
     page = document.createElement('settings-security-page');
     page.prefs = settingsPrefs.prefs;
     document.body.appendChild(page);
-    Router.getInstance().navigateTo(routes.SECURITY);
     return flushTasks();
   });
 
@@ -176,41 +175,21 @@ suite('SecurityPageHappinessTrackingSurveys', function() {
     Router.getInstance().navigateTo(routes.BASIC);
   });
 
-  test('SecurityPageBeforeUnloadCallsHatsProxy', async function() {
-    // Interact with the security page.
+  test('SecurityPageRadioButtonTriggerTest', async function() {
     page.$.safeBrowsingEnhanced.click();
-    flush();
-
-    const t1 = 10000;
-    testHatsBrowserProxy.setNow(t1);
-    window.dispatchEvent(new Event('focus'));
-
-    const t2 = 20000;
-    testHatsBrowserProxy.setNow(t2);
-    window.dispatchEvent(new Event('blur'));
-
-    const t3 = 60000;
-    testHatsBrowserProxy.setNow(t3);
-    window.dispatchEvent(new Event('focus'));
-
-    const t4 = 80000;
-    testHatsBrowserProxy.setNow(t4);
-    window.dispatchEvent(new Event('blur'));
-
-    // Fire the beforeunload event to simulate closing the page.
-    window.dispatchEvent(new Event('beforeunload'));
-    const args =
-        await testHatsBrowserProxy.whenCalled('securityPageHatsRequest');
-
-    // Verify the latest interaction type.
+    const args = await testHatsBrowserProxy.whenCalled(
+        'securityPageInteractionOccurred');
     assertEquals(SecurityPageInteraction.RADIO_BUTTON_ENHANCED_CLICK, args[0]);
-
-    // Verify the safe browsing state on open.
     assertEquals(SafeBrowsingSetting.STANDARD, args[1]);
+  });
 
-    // Verify the time the user spend on the security page.
-    const expectedTotalTimeInFocus = t2 - t1 + t4 - t3;
-    assertEquals(expectedTotalTimeInFocus, args[2]);
+  test('SecurityPageExpandButtonTriggerTest', async function() {
+    const radioButton = page.$.safeBrowsingEnhanced;
+    radioButton.$.expandButton.click();
+    const args = await testHatsBrowserProxy.whenCalled(
+        'securityPageInteractionOccurred');
+    assertEquals(SecurityPageInteraction.EXPAND_BUTTON_ENHANCED_CLICK, args[0]);
+    assertEquals(SafeBrowsingSetting.ENHANCED, args[1]);
   });
 });
 

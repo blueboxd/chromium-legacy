@@ -20,7 +20,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -30,13 +29,11 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.FakeTimeTestRule;
+import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.Features;
-import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.components.messages.MessageStateHandler.Position;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -44,14 +41,12 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /** Tests for {@link SingleActionMessage}. */
 @RunWith(BaseJUnit4ClassRunner.class)
 @Batch(Batch.UNIT_TESTS)
-@Features.EnableFeatures({
-    MessageFeatureList.MESSAGES_ANDROID_EXTRA_HISTOGRAMS,
-    MessageFeatureList.MESSAGES_FOR_ANDROID_FULLY_VISIBLE_CALLBACK,
-    MessageFeatureList.MESSAGES_FOR_ANDROID_STACKING_ANIMATION
-})
 public class SingleActionMessageTest {
     @ClassRule
     public static DisableAnimationsTestRule sDisableAnimationsRule =
@@ -77,8 +72,6 @@ public class SingleActionMessageTest {
     }
 
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
-    @Rule public FakeTimeTestRule mFakeTime = new FakeTimeTestRule();
     @Mock private SwipeAnimationHandler mSwipeAnimationHandler;
     @Mock private MessageBannerCoordinator mMessageBanner;
 
@@ -87,6 +80,7 @@ public class SingleActionMessageTest {
     private CallbackHelper mDismissCallback;
     private SingleActionMessage.DismissCallback mEmptyDismissCallback =
             (model, dismissReason) -> {};
+    private Map<String, Boolean> mFeatureMap = new HashMap<>();
 
     @BeforeClass
     public static void setupSuite() {
@@ -102,6 +96,9 @@ public class SingleActionMessageTest {
         mDismissCallback = new CallbackHelper();
         mPrimaryActionCallback = new CallbackHelper();
         mSecondaryActionCallback = new CallbackHelper();
+        mFeatureMap.put(MessageFeatureList.MESSAGES_FOR_ANDROID_FULLY_VISIBLE_CALLBACK, true);
+        mFeatureMap.put(MessageFeatureList.MESSAGES_FOR_ANDROID_STACKING_ANIMATION, false);
+        FeatureList.setTestFeatures(mFeatureMap);
     }
 
     @Test
@@ -151,56 +148,6 @@ public class SingleActionMessageTest {
 
     @Test
     @MediumTest
-    public void testHistogramRecordOnDismiss() {
-        MessageContainer container = new MessageContainer(sActivity, null);
-        PropertyModel m1 = createBasicSingleActionMessageModel(MessageIdentifier.SYNC_ERROR);
-        PropertyModel m2 = createBasicSingleActionMessageModel(MessageIdentifier.DOWNLOAD_PROGRESS);
-        PropertyModel m3 = createBasicSingleActionMessageModel(MessageIdentifier.POPUP_BLOCKED);
-
-        var fullyVisible =
-                HistogramWatcher.newBuilder()
-                        .expectIntRecords(
-                                "Android.Messages.FullyVisible",
-                                MessageIdentifier.SYNC_ERROR,
-                                MessageIdentifier.DOWNLOAD_PROGRESS)
-                        .build();
-
-        var dismissal =
-                HistogramWatcher.newBuilder()
-                        .expectIntRecords(
-                                "Android.Messages.DismissedWithoutFullyVisible",
-                                MessageIdentifier.POPUP_BLOCKED)
-                        .expectIntRecord("Android.Messages.TimeToFullyShow.SyncError", 1000)
-                        .expectIntRecord("Android.Messages.TimeToFullyShow.DownloadProgress", 1500)
-                        .build();
-
-        final MessageBannerView view1 = createMessageBannerView(container);
-        final MessageBannerView view2 = createMessageBannerView(container);
-        final MessageBannerView view3 = createMessageBannerView(container);
-        var sam1 = createSingleActionMessage(container, m1, view1);
-        var sam2 = createSingleActionMessage(container, m2, view2);
-        var sam3 = createSingleActionMessage(container, m3, view3);
-
-        // dismiss without showing
-        sam3.dismiss(DismissReason.DISMISSED_BY_FEATURE);
-
-        mFakeTime.advanceMillis(1000);
-        sam1.show(Position.INVISIBLE, Position.FRONT);
-        sam2.show(Position.FRONT, Position.BACK);
-
-        // to test this will not trigger a recordation of DismissedWithoutFullyVisible.
-        sam1.dismiss(DismissReason.GESTURE);
-
-        mFakeTime.advanceMillis(500);
-        // move to front to make sam2 also fully visible.
-        sam2.show(Position.BACK, Position.FRONT);
-
-        fullyVisible.assertExpected("Messages should have been fully visible before");
-        dismissal.assertExpected("Histograms are not recorded when a message is dismissed");
-    }
-
-    @Test
-    @MediumTest
     public void testAutoDismissDuration() {
         MessageContainer container = new MessageContainer(sActivity, null);
         PropertyModel model = createBasicSingleActionMessageModel();
@@ -244,7 +191,6 @@ public class SingleActionMessageTest {
 
     @Test(expected = IllegalStateException.class)
     @MediumTest
-    @Features.DisableFeatures(MessageFeatureList.MESSAGES_FOR_ANDROID_STACKING_ANIMATION)
     public void testAddMultipleSingleActionMessage() {
         MessageContainer container = new MessageContainer(sActivity, null);
         PropertyModel m1 = createBasicSingleActionMessageModel();
@@ -258,6 +204,8 @@ public class SingleActionMessageTest {
     @Test
     @MediumTest
     public void testAddAndRemoveSingleActionMessage_withStacking() {
+        mFeatureMap.put(MessageFeatureList.MESSAGES_FOR_ANDROID_STACKING_ANIMATION, true);
+        FeatureList.setTestFeatures(mFeatureMap);
         MessageContainer container = new MessageContainer(sActivity, null);
         PropertyModel m1 = createBasicSingleActionMessageModel();
         PropertyModel m2 = createBasicSingleActionMessageModel();
@@ -287,6 +235,8 @@ public class SingleActionMessageTest {
     @Test(expected = IllegalStateException.class)
     @MediumTest
     public void testAddMultipleSingleActionMessage_withStacking() {
+        mFeatureMap.put(MessageFeatureList.MESSAGES_FOR_ANDROID_STACKING_ANIMATION, true);
+        FeatureList.setTestFeatures(mFeatureMap);
         MessageContainer container = new MessageContainer(sActivity, null);
         PropertyModel m1 = createBasicSingleActionMessageModel();
         PropertyModel m2 = createBasicSingleActionMessageModel();
@@ -322,18 +272,15 @@ public class SingleActionMessageTest {
     @Test
     @MediumTest
     public void testOnFullyVisible() {
+        mFeatureMap.put(MessageFeatureList.MESSAGES_FOR_ANDROID_STACKING_ANIMATION, true);
+        FeatureList.setTestFeatures(mFeatureMap);
         MessageContainer container = new MessageContainer(sActivity, null);
-        PropertyModel m1 = createBasicSingleActionMessageModel(1);
-        PropertyModel m2 = createBasicSingleActionMessageModel(2);
+        PropertyModel m1 = createBasicSingleActionMessageModel();
+        PropertyModel m2 = createBasicSingleActionMessageModel();
         Callback<Boolean> callback1 = Mockito.mock(Callback.class);
         m1.set(MessageBannerProperties.ON_FULLY_VISIBLE, callback1);
         Callback<Boolean> callback2 = Mockito.mock(Callback.class);
         m2.set(MessageBannerProperties.ON_FULLY_VISIBLE, callback2);
-
-        var fullyVisible =
-                HistogramWatcher.newBuilder()
-                        .expectIntRecords("Android.Messages.FullyVisible", 1, 2)
-                        .build();
 
         final MessageBannerView view1 = createMessageBannerView(container);
         final MessageBannerView view2 = createMessageBannerView(container);
@@ -352,58 +299,6 @@ public class SingleActionMessageTest {
 
         sam2.show(Position.BACK, Position.FRONT);
         verify(callback2).onResult(true);
-        fullyVisible.assertExpected("Messages should have been fully visible before");
-    }
-
-    @Test
-    @MediumTest
-    public void testOnFullyVisibleNotCalled() {
-        MessageContainer container = new MessageContainer(sActivity, null);
-        PropertyModel m1 = createBasicSingleActionMessageModel(MessageIdentifier.SYNC_ERROR);
-        m1.set(MessageBannerProperties.ON_FULLY_VISIBLE, (unused) -> {});
-
-        final var fullyVisible =
-                HistogramWatcher.newBuilder()
-                        .expectIntRecords(
-                                "Android.Messages.FullyVisible", MessageIdentifier.SYNC_ERROR)
-                        .build();
-
-        final var dismissal =
-                HistogramWatcher.newBuilder()
-                        .expectIntRecord("Android.Messages.TimeToFullyShow.SyncError", 1000)
-                        .expectIntRecord(
-                                "Android.Messages.Error.FullyVisibleNotInformed",
-                                MessageIdentifier.SYNC_ERROR)
-                        .build();
-
-        final MessageBannerView view1 = createMessageBannerView(container);
-        var sam1 =
-                new SingleActionMessage(
-                        container,
-                        m1,
-                        mEmptyDismissCallback,
-                        () -> 0,
-                        () -> 0,
-                        new MockDurationProvider(0L),
-                        mSwipeAnimationHandler) {
-                    @Override
-                    void notifyVisibilityChange(boolean fullyVisible) {
-                        // Do nothing
-                    }
-                };
-        view1.setId(R.id.message_banner);
-        PropertyModelChangeProcessor.create(m1, view1, MessageBannerViewBinder::bind);
-        sam1.setMessageBannerForTesting(mMessageBanner);
-        sam1.setViewForTesting(view1);
-
-        mFakeTime.advanceMillis(1000);
-        sam1.show(Position.INVISIBLE, Position.FRONT);
-
-        mFakeTime.advanceMillis(500);
-        sam1.dismiss(DismissReason.GESTURE);
-
-        fullyVisible.assertExpected("Messages should have been fully visible before");
-        dismissal.assertExpected("Incorrect histograms on dismiss");
     }
 
     private void executeAndVerifyRepeatedButtonClicks(
@@ -438,8 +333,12 @@ public class SingleActionMessageTest {
                 mSecondaryActionCallback.getCallCount());
     }
 
-    private SingleActionMessage createSingleActionMessage(
-            MessageContainer container, PropertyModel model, MessageBannerView view) {
+    private SingleActionMessage createAndShowSingleActionMessage(
+            MessageContainer container,
+            PropertyModel model,
+            MessageBannerView view,
+            @Position int from,
+            @Position int to) {
         SingleActionMessage message =
                 new SingleActionMessage(
                         container,
@@ -453,16 +352,6 @@ public class SingleActionMessageTest {
         PropertyModelChangeProcessor.create(model, view, MessageBannerViewBinder::bind);
         message.setMessageBannerForTesting(mMessageBanner);
         message.setViewForTesting(view);
-        return message;
-    }
-
-    private SingleActionMessage createAndShowSingleActionMessage(
-            MessageContainer container,
-            PropertyModel model,
-            MessageBannerView view,
-            @Position int from,
-            @Position int to) {
-        SingleActionMessage message = createSingleActionMessage(container, model, view);
         message.show(from, to);
         return message;
     }
@@ -479,9 +368,9 @@ public class SingleActionMessageTest {
                         .inflate(R.layout.message_banner_view, container, false);
     }
 
-    private PropertyModel createBasicSingleActionMessageModel(int id) {
+    private PropertyModel createBasicSingleActionMessageModel() {
         return new PropertyModel.Builder(MessageBannerProperties.ALL_KEYS)
-                .with(MessageBannerProperties.MESSAGE_IDENTIFIER, id)
+                .with(MessageBannerProperties.MESSAGE_IDENTIFIER, MessageIdentifier.TEST_MESSAGE)
                 .with(MessageBannerProperties.TITLE, "test")
                 .with(MessageBannerProperties.DESCRIPTION, "Description")
                 .with(
@@ -506,9 +395,5 @@ public class SingleActionMessageTest {
                             mDismissCallback.notifyCalled();
                         })
                 .build();
-    }
-
-    private PropertyModel createBasicSingleActionMessageModel() {
-        return createBasicSingleActionMessageModel(MessageIdentifier.TEST_MESSAGE);
     }
 }

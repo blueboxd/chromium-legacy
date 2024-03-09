@@ -274,8 +274,6 @@ Se a política for ativada, os usuários poderão usar o hardware de dispositivo
 <translation id="1198458955128279215">Usar o comportamento padrão do plano de lançamento de recursos.</translation>
 <translation id="119943715168319757">Configurações de MIDI</translation>
 <translation id="1202216683470826356">Exibir cards na página Nova guia</translation>
-<translation id="120314092766637918">Quando esta política for ativada ou não for definida, a proteção contra phishing do lado do cliente vai ser controlada pela política <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /> para o <ph name="PRODUCT_NAME" />. Se a política <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /> for definida como <ph name="SAFE_BROWSING_PROTECTION_LEVEL_VALUE_STANDARD" /> ou <ph name="SAFE_BROWSING_PROTECTION_LEVEL_VALUE_ENHANCED" />, a proteção contra phishing no lado do cliente vai executar um modelo local para verificar se uma página é de phishing. Se o modelo acreditar que a página é de phishing, o <ph name="PRODUCT_NAME" /> vai enviar uma solicitação ao Google para um veredito final.
-Quando esta política é desativada, a proteção contra phishing do lado do cliente não realiza nenhuma proteção nem envia dados ao Google para vereditos.</translation>
 <translation id="1204263402976895730">Impressoras empresariais ativadas</translation>
 <translation id="1207301487141109411">Impedir que o avatar do usuário seja selecionado de imagens no sistema de arquivos local, na câmera e no perfil do Google</translation>
 <translation id="1209065772997672966">Se a política for definida, será possível configurar uma lista de padrões de URL que especifica os sites que podem abrir pop-ups.
@@ -980,7 +978,6 @@ Esta política não vai ter efeito se a opção de manter os dados de navegaçã
       Se <ph name="DEVICE_FAMILY_LINK_ACCOUNTS_ALLOWED_POLICY_NAME" /> estiver ativada, contas de usuários do Family Link também poderão ser adicionadas ao dispositivo, além das contas já definidas nesta política.</translation>
 <translation id="18186215616223740">Ao navegar para documentos do Office gerenciados pelo <ph name="BASIC_EDITOR_NAME" />, o download deles é forçado</translation>
 <translation id="1819272352048746487">Ativar ou desativar vários recursos do teclado na tela</translation>
-<translation id="1822163547472114648">Configurações para criar temas com IA</translation>
 <translation id="1823974945066396306">Define a lista de usuários que têm permissão para fazer login no dispositivo. As entradas são feitas no formato <ph name="USER_ALLOWLIST_ENTRY_FORMAT" />, como <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />. Para permitir usuários arbitrários em um domínio, use entradas no formato <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
 
       Se esta política não for configurada, não haverá restrições quanto aos usuários autorizados a fazer login. Ainda assim, a criação de novos usuários exigirá que a política <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> seja configurada de forma adequada.
@@ -1140,6 +1137,7 @@ Se a política for definida como desativada, o <ph name="PRODUCT_NAME" /> fechar
 
       A API Managed Configuration é uma configuração de chave-valor que pode ser acessada pela chamada de navigator.managed.getManagedConfiguration() no JavaScript. Ela só está disponível em origens correspondentes a aplicativos da Web de instalação forçada via <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" />.
      </translation>
+<translation id="1918690415433353669">Permitir organização de guias, sem registrar os detalhes delas</translation>
 <translation id="1919802376548418720">Usar a política KDC para delegar credenciais.</translation>
 <translation id="1920046221095339924">Permite sessão gerenciada no dispositivo</translation>
 <translation id="1920772397574801429">Definir a política especifica o tipo de conta fornecido pelo app de autenticação do Android compatível com a autenticação <ph name="HTTP_NEGOTIATE" /> (como Kerberos). Essas informações devem estar disponíveis junto ao fornecedor do app de autenticação. Para saber detalhes, consulte a página The Chromium Projects (https://goo.gl/hajyfN)
@@ -1726,6 +1724,7 @@ política enquanto o navegador estiver em execução.</translation>
 Quando a política é desativada, ela impede que usuários ou variações do <ph name="PRODUCT_NAME" /> ativem o recurso NewBaseUrlInheritanceBehavior caso problemas de compatibilidade sejam descobertos. Quando ativada ou deixada sem definição, ela permite a ativação do recurso NewBaseUrlInheritanceBehavior.</translation>
 <translation id="2362469626417133796">Janela de tempo de reinicialização</translation>
 <translation id="2362539163677485510">Token de registro da política de nuvem</translation>
+<translation id="2362947328909044249">Permitir a organização de guias</translation>
 <translation id="2363928351203698966">Se a política for definida com um valor válido, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS anteriores à versão especificada. Valores não reconhecidos serão ignorados.
 
       Se esta política não for definida, o <ph name="PRODUCT_NAME" /> mostrará uma mensagem de erro para TLS 1.0 e TLS 1.1, mas o usuário poderá ignorá-la.
@@ -1919,7 +1918,6 @@ seleção padrão.</translation>
 <translation id="2506865562891982662">Permitir que os usuários selecionem dispositivos de transmissão com um código de acesso ou QR no menu do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2509748672176727116">O usuário poderá capturar pacotes de rede</translation>
 <translation id="2509919237512982967">Usar controles de formulários legados até a M84.</translation>
-<translation id="251050607781210155">Permitir a proteção contra phishing do lado do cliente na Navegação segura</translation>
 <translation id="2512972020817284317">Ativar a unificação das políticas da nuvem no nível do usuário.</translation>
 <translation id="2515699738406900920">Disponibilidade do seletor de perfil na inicialização</translation>
 <translation id="2517466659416174529">Permitir congelamento das guias em segundo plano</translation>
@@ -2086,6 +2084,7 @@ O sistema só consulta registros AAAA quando está acessível a um host IPv6 glo
 <translation id="2650049181907741121">Ação a ser realizada quando o usuário fecha a tampa</translation>
 <translation id="2656559539624760733">Não usar a Chrome Root Store.</translation>
 <translation id="2658653824183107970">Usar a implementação legada de <ph name="CORS" /> em vez do novo <ph name="CORS" /></translation>
+<translation id="2659064869547694451">Permitir o Compose</translation>
 <translation id="2660846099862559570">Nunca usar um proxy</translation>
 <translation id="2661628029848851543">Todos os usos de contas gerenciadas são permitidos</translation>
 <translation id="2664391398878045611">A página "Nova guia" não vai mostrar o aviso abaixo da caixa de pesquisa, mesmo se ele estiver disponível</translation>
@@ -2864,6 +2863,7 @@ Se a política for definida como "Desativada", os arquivos transferidos por down
 Essas restrições são aplicadas a downloads acionados em conteúdos de páginas da Web e na opção do menu "Fazer download do link". Essas restrições não se aplicam às opções de salvar ou fazer o download da página atualmente em exibição nem de salvar como PDF nas opções de impressão.
 
 No <ph name="MS_WIN_NAME" />, essa política só está disponível em instâncias associadas a um domínio do <ph name="MS_AD_NAME" />, associadas ao <ph name="MS_AAD_NAME" /> ou registradas em <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />.</translation>
+<translation id="3300322252167923819">Permitir a organização de guias</translation>
 <translation id="3300784749135986828">Ativar ou desativar a <ph name="USER_AGENT_REDUCTION_FEATURE_NAME" />.</translation>
 <translation id="3301698868852716692">Ativar extensão de insights</translation>
 <translation id="3302829897293005699">Se a política for definida como "Ativada" ou não for definida, as informações da sessão de quiosque ativa, como versão e ID do aplicativo, serão comunicadas pelos dispositivos registrados.
@@ -2977,17 +2977,6 @@ Se esta política for definida como desativada, o recurso de escrita preditiva n
 <translation id="3423703250826790403">Apps Android</translation>
 <translation id="3426434797050451264">Esta política também pode ser usada para especificar apps Android como gerenciadores de arquivos padrão.</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
-<translation id="3430198032663063246">O recurso "Quero ajuda para escrever" é um assistente de escrita baseado em IA para conteúdos curtos na Web. As sugestões são baseadas nos comandos inseridos pelo usuário e no conteúdo da página da Web.
-
-0 = ativa o recurso para usuários e envia dados relevantes ao Google para treinar ou melhorar os modelos de IA. Os dados relevantes podem incluir comandos, entradas, saídas e materiais de origem, dependendo do recurso. Eles podem ser analisados por humanos com o único propósito de melhorar os modelos de IA.
-
-O valor padrão é 0, exceto quando indicado de outra forma abaixo.
-
-1 = ativa o recurso para os usuários, mas não envia dados ao Google para treinar ou melhorar os modelos de IA. "1" é o valor padrão para usuários corporativos gerenciados pelo <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME" />.
-
-2 = desativa o recurso. "2" é o valor padrão para contas do Education gerenciadas pelo <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME" />.
-
-Para mais informações sobre como tratar dados de recursos de IA generativa, consulte https://support.google.com/chrome/a?p=generative_ai_settings.</translation>
 <translation id="3432863169147125747">Controla configurações de impressão.</translation>
 <translation id="3434053014926283175">Usar o botão direito do mouse como o principal na tela de login.
 
@@ -3503,6 +3492,7 @@ Esta política é uma solução temporária e vai ser removida em marcos futuros
 
           Se esta política não for definida, o ditado ficará inicialmente desativado na tela de login, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="3811562426301733860">Permitir anúncios em todos os sites</translation>
+<translation id="3816281648615435872">Desativar a organização de guias</translation>
 <translation id="3816312845600780067">Ativar atalho do teclado dp plano de salvação para login automático</translation>
 <translation id="3817323252437541502">Ativar mais proteções para usuários inscritos no Programa Proteção Avançada</translation>
 <translation id="3821861026311587684">Força a saída do usuário quando a conta perde a autenticação</translation>
@@ -3895,7 +3885,6 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 <translation id="4136603825567209889">Ativar relatórios sobre informações de identificação do usuário</translation>
 <translation id="4138655880188755661">Limite de tempo</translation>
 <translation id="4140646780789794190">Desativar o compartilhamento de dados de diagnósticos com o PluginVm</translation>
-<translation id="4144417751555442768">IA generativa</translation>
 <translation id="4145383150978634398">Disponibilizar o Modo área de trabalho unificada para o usuário</translation>
 <translation id="4147818922357566987">Ativar variações relativas apenas a correções críticas</translation>
 <translation id="4150201353443180367">Exibição</translation>
@@ -4075,6 +4064,7 @@ A desativação da política faz com que uma mensagem de erro apareça.</transla
 <translation id="428948795004445932">Frequência de amostragem e coleta de dados de rede. O mínimo permitido é de um minuto.
 
       Se deixada sem definição, a frequência padrão de 10 minutos será aplicada.</translation>
+<translation id="4289628882370719584">Esse recurso permite que os usuários organizem as guias.</translation>
 <translation id="4290231183305601970">Texto que será exibido ao usuário na Chrome Web Store se a instalação for bloqueada.</translation>
 <translation id="4293187705196369087">Permite ativar ou desativar uma notificação quando há pouco espaço em disco. Isso é válido para todos os usuários no dispositivo.
 
@@ -4383,6 +4373,7 @@ Esta política não vai ter efeito se for ativada, deixada vazia ou não for def
 <translation id="453031441196755904">Essa política está obsoleta.</translation>
 <translation id="4531706050939927436">Os apps Android podem ser instalados forçadamente a partir do Google Admin Console usando o Google Play. Eles não usam esta política.</translation>
 <translation id="4534500438517478692">Nome de restrição Android:</translation>
+<translation id="4537645230504195464">Permitir o Compose sem gerar registros</translation>
 <translation id="4541530620466526913">Contas locais de dispositivo</translation>
 <translation id="4542255783284620926">Bloqueia a adição de uma conta gerenciada como secundária no ChromeOS (na sessão)</translation>
 <translation id="4543502256674577024">Configurações de atualização do dispositivo</translation>
@@ -4592,6 +4583,7 @@ Após a configuração inicial, os usuários poderão ativar ou desativar os Ser
 <translation id="4674871290487541952">Permite algoritmos inseguros em verificações de integridade nas atualizações e instalações de extensão</translation>
 <translation id="4680961954980851756">Ativar Preenchimento automático</translation>
 <translation id="4685721728282448265">CECPQ2 de acordo de chave pós-quântico ativado para TLS</translation>
+<translation id="4688118315245991650">Desativar o Compose</translation>
 <translation id="468822697351680932">Usar a política de lista de sites do Internet Explorer como fonte de regras</translation>
 <translation id="4693190628432874457">Ativar relatórios de localização do dispositivo</translation>
 <translation id="4693779768620889402">Destinos baseados em extensões</translation>
@@ -5036,7 +5028,6 @@ Quando a política não está definida ou é desativada, os cookies e os dados p
 <translation id="5163889437570441600">Permite que o conteúdo seja transmitido usando o <ph name="PRODUCT_NAME" />.
 
           Se essa política for definida como falsa, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como verdadeira, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos ChromeOS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
-<translation id="5164141068091580679">Ativar o recurso e enviar dados para treinar os modelos de IA</translation>
 <translation id="516520353995300280">A definição da política desativa a aplicação dos requisitos de divulgação da Transparência dos certificados para uma lista de autoridades de certificação (CA, na sigla em inglês) antigas relacionadas a cadeias de certificado com um hash <ph name="SUBJECT_PUBLIC_KEY_INFO" /> especificado. Os hosts comerciais podem continuar usando certificados que, de outro modo, não seriam confiáveis, já que eles não foram divulgados publicamente de maneira adequada. Para desativar a aplicação, o hash <ph name="SUBJECT_PUBLIC_KEY_INFO" /> precisa aparecer em um certificado de uma CA reconhecida como antiga. Uma CA antiga é considerada confiável por um ou mais sistemas operacionais compatíveis com o <ph name="PRODUCT_NAME" />, mas não pelo Android Open Source Project ou pelo <ph name="PRODUCT_OS_NAME" />.
 
       Especifique um hash <ph name="SUBJECT_PUBLIC_KEY_INFO" /> vinculando o nome do algoritmo dele, uma barra e a codificação Base64 desse algoritmo de hash aplicado ao <ph name="SUBJECT_PUBLIC_KEY_INFO" /> codificado por DER do certificado especificado. O formato de codificação Base64 corresponde ao de uma impressão digital SPKI. O único algoritmo de hash reconhecido é sha256, enquanto os outros são ignorados.
@@ -5292,6 +5283,7 @@ Se a política for desativada, o histórico de navegação e o de downloads não
 <translation id="5340008866815063393">Ativar relatórios sobre dados de política</translation>
 <translation id="5345910753471481870">Não mostrar o botão do Google Lens na caixa de pesquisa da página "Nova guia".</translation>
 <translation id="5346587320074666194">Bloquear acesso a sensores nesses sites</translation>
+<translation id="5347809796754019202">Permitir o Compose</translation>
 <translation id="534836255587440809">Desativar o clique automático na tela de login</translation>
 <translation id="5348658899015174540">A API <ph name="GET_DISPLAY_MEDIA_SET_NAME" /> permite que aplicativos da Web capturem várias superfícies ao mesmo tempo.
       Esta política desbloqueia a propriedade <ph name="AUTO_SELECT_ALL_SCREENS_NAME" /> para aplicativos da Web em origens definidas.
@@ -5738,7 +5730,6 @@ Se a política for definida como desativada, o <ph name="PRODUCT_NAME" /> será 
           Se esta política for definida como ativada ou não for definida, o item do menu de contexto para o provedor de pesquisa padrão estará disponível.
 
           O valor da política só é aplicado quando a <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> está ativada. Caso contrário, ele não é aplicável.</translation>
-<translation id="5695907219125832836">Ativar o recurso, mas não enviar dados para treinar os modelos de IA</translation>
 <translation id="5697306356229823047">Reporta os usuários do dispositivo</translation>
 <translation id="569777361305162263">Desativar a exibição de conteúdo promocional na guia inteira</translation>
 <translation id="5698923148503075597">Se a política for ativada, a política de nuvem vai ter precedência caso haja um conflito com a política da plataforma.
@@ -6170,7 +6161,6 @@ política enquanto o navegador estiver em execução.</translation>
       4: bloqueia arquivos maliciosos sinalizados pelo servidor do Navegação segura, não bloqueia tipos de arquivo perigosos (recomendado).
 
       Observação: essas restrições são aplicadas a downloads acionados em conteúdos de páginas da Web e na opção do menu "Fazer download do link". Elas não se aplicam à opção de fazer o download da página atualmente mostrada nem de salvar como PDF nas opções de impressão. Leia mais sobre o Navegação segura (https://developers.google.com/safe-browsing).</translation>
-<translation id="6115254134376460539">Desativar o recurso</translation>
 <translation id="6118226055960302400">Restaurar o comportamento de permissões.</translation>
 <translation id="6119207979839638596">Essa política foi removida na versão M75 após a remoção da política de versão máxima do TLS do produto <ph name="PRODUCT_NAME" />.
 
@@ -6288,7 +6278,6 @@ Se a política não for definida, o valor padrão global será usado para todos 
 O sal precisa ser uma string que tenha entre 8 e 32 caracteres.
 
 Na versão 114 e mais recentes, esta política é opcional quando a <ph name="DOH_TEMPLATES_WITH_IDENTIFIERS_POLICY_NAME" /> está definida. Se esta política não for definida, os identificadores nos URIs de modelo configurados pela política <ph name="DOH_TEMPLATES_WITH_IDENTIFIERS_POLICY_NAME" /> serão criptografados com hash sem um sal.</translation>
-<translation id="622197575020133151">Configurar os recursos que usam a IA generativa.</translation>
 <translation id="6224070048795197148">Permitir que o usuário use o navegador sem fazer login</translation>
 <translation id="6224304369267200483">Os URLs/domínios permitidos automaticamente direcionam a declaração da chave de segurança</translation>
 <translation id="6225938950222983458">Essa política foi descontinuada e parou de ter suporte. Use a <ph name="NOTE_TAKING_APPS_LOCK_SCREEN_ALLOWLIST" />.</translation>
@@ -6324,7 +6313,6 @@ Na versão 114 e mais recentes, esta política é opcional quando a <ph name="DO
 <translation id="624818583115864448">porta 554 (pode ser desbloqueada até 15/10/2021)</translation>
 <translation id="6254498834449523938">Não permitir que o usuário ignore o aviso do recurso Navegação segura</translation>
 <translation id="625580680776945310">O modo de alta eficiência vai ser ativado.</translation>
-<translation id="6258314216623064461">Configurações do recurso "Quero ajuda para escrever"</translation>
 <translation id="6258658183356534534">Controlar o recurso de atualização do User-Agent Client Hints GREASE.</translation>
 <translation id="6261643884958898336">Reportar informações de identificação da máquina</translation>
 <translation id="6264247808139384018">Se a política for ativada ou não for definida, os usuários que autenticam com uma senha poderão bloquear a tela.
@@ -6804,7 +6792,6 @@ Observação: as senhas podem ser mais velhas do que o número especificado de d
 
 Se deixada sem definição, a frequência padrão de 15 minutos será usada.</translation>
 <translation id="6556586932263358975">Permitir o bloqueio da tela</translation>
-<translation id="6557178935482719861">Desativar a proteção contra phishing do lado do cliente na Navegação segura</translation>
 <translation id="6558013557780651644">Atraso antes de executar ações de inatividade</translation>
 <translation id="6558812160831988140">Relatórios de uso do app</translation>
 <translation id="6559057113164934677">Não permitir que nenhum site acesse minha câmera e meu microfone</translation>
@@ -7035,7 +7022,6 @@ Se esta política for definida como falsa, o encaminhamento de portas em contêi
       Se ela estiver ativada, as Respostas rápidas ficarão ativadas.
       Se ela estiver desativada, as Respostas rápidas ficarão desativadas.
       Se a política for deixada sem definição, os usuários poderão ativar ou desativar as Respostas rápidas.</translation>
-<translation id="670675748066383347">Configurações do organizador de guias</translation>
 <translation id="6712624291905573620">Esta política controla os relatórios de nuvem do <ph name="PRODUCT_NAME" />, que faz upload de informações sobre a operação do navegador para o <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME" />.
 
 Quando a política é deixada sem definição ou é desativada, os dados não são coletados nem enviados por upload.
@@ -8265,7 +8251,6 @@ Quando ela for deixada sem definição, o renderizador de PDF será escolhido pe
 
       Observação: veja uma lista com as variáveis que podem ser usadas: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês).</translation>
 <translation id="7719808201797990069">Exceções ao padrão de URL para descarte de guias</translation>
-<translation id="7721018062743758054">A proteção contra phishing do lado do cliente na Navegação segura é controlada pela política <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /></translation>
 <translation id="7721944091689270995">ID do usuário do <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7728486978686128364">Não usar letra maiúscula para os métodos de solicitação, exceto em DELETE/GET/HEAD/OPTIONS/POST/PUT</translation>
 <translation id="7731026922044991970">Reverter para o comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> legado para os cookies em todos os sites</translation>
@@ -8858,17 +8843,6 @@ Esta política é válida para o modo de navegação anônima. Isso significa qu
       Se você definir a política, os usuários não poderão mudá-la.</translation>
 <translation id="8225579382697740712">Controlar o uso da API WebHID</translation>
 <translation id="8229912067600517877">Ativar as Ferramentas para desenvolvedores</translation>
-<translation id="8234565689501421293">A criação de temas com IA permite que os usuários criem temas/planos de fundo personalizados pré-selecionando em uma lista de opções.
-
-0 = ativa o recurso para usuários e envia dados relevantes ao Google para treinar ou melhorar os modelos de IA. Os dados relevantes podem incluir comandos, entradas, saídas e materiais de origem, dependendo do recurso. Eles podem ser analisados por humanos com o único propósito de melhorar os modelos de IA.
-
-O valor padrão é 0, exceto quando indicado de outra forma abaixo.
-
-1 = ativa o recurso para os usuários, mas não envia dados ao Google para treinar ou melhorar os modelos de IA. "1" é o valor padrão para usuários corporativos gerenciados pelo <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME" />.
-
-2 = desativa o recurso. "2" é o valor padrão para contas do Education gerenciadas pelo <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME" />.
-
-Para mais informações sobre como tratar dados de recursos de IA generativa, consulte https://support.google.com/chrome/a?p=generative_ai_settings.</translation>
 <translation id="8238421250255592181">Uma sinalização booleana indicando se o teclado na tela pode oferecer preenchimento automático.</translation>
 <translation id="8239109177194627162">Desativar o preenchimento automático de cartões de crédito</translation>
 <translation id="8239143983379015783">Forçar a ativação da cota persistente</translation>
@@ -10087,17 +10061,6 @@ O padrão é RollbackDisabled.</translation>
 <translation id="943865157632139008">Permite configurar o renderizador padrão de HTML quando o <ph name="PRODUCT_FRAME_NAME" /> estiver instalado.
 A configuração padrão é permitir que o navegador do host faça a renderização, mas você pode modificá-la, se quiser, e fazer com que o <ph name="PRODUCT_FRAME_NAME" /> renderize páginas HTML por padrão.</translation>
 <translation id="944817693306670849">Definir o tamanho do disco de cache</translation>
-<translation id="946458935955389273">O organizador de guias é uma ferramenta baseada em IA que cria automaticamente grupos de guias com base nas guias abertas do usuário. As sugestões são baseadas nas guias abertas, mas não no conteúdo da página.
-
-0 = ativa o recurso para usuários e envia dados relevantes ao Google para treinar ou melhorar os modelos de IA. Os dados relevantes podem incluir comandos, entradas, saídas e materiais de origem, dependendo do recurso. Eles podem ser analisados por humanos com o único propósito de melhorar os modelos de IA.
-
-O valor padrão é 0, exceto quando indicado de outra forma abaixo.
-
-1 = ativa o recurso para os usuários, mas não envia dados ao Google para treinar ou melhorar os modelos de IA. "1" é o valor padrão para usuários corporativos gerenciados pelo <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME" />.
-
-2 = desativa o recurso. "2" é o valor padrão para contas do Education gerenciadas pelo <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME" />.
-
-Para mais informações sobre como tratar dados de recursos de IA generativa, consulte https://support.google.com/chrome/a?p=generative_ai_settings.</translation>
 <translation id="957322141096206402">A resolução de DNS pode ser executada dentro ou fora do processo de rede, dependendo da configuração do sistema e das flags de recursos.</translation>
 <translation id="957778406002650056">O URL no qual o download da imagem do <ph name="PLUGIN_VM_NAME" /> pode ser feito.</translation>
 <translation id="957920984193041197">Permitir que as páginas mostrem pop-ups durante o descarregamento</translation>

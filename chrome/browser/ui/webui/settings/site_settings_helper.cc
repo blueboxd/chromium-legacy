@@ -311,9 +311,13 @@ SiteSettingSource CalculateSiteSettingSource(
   return SiteSettingSource::kPreference;
 }
 
-bool IsFromWebUIAllowlistSource(const ContentSettingPatternSource& pattern) {
-  return HostContentSettingsMap::GetProviderTypeFromSource(pattern.source) ==
-         HostContentSettingsMap::WEBUI_ALLOWLIST_PROVIDER;
+bool PatternAppliesToWebUISchemes(const ContentSettingPatternSource& pattern) {
+  return pattern.primary_pattern.GetScheme() ==
+             ContentSettingsPattern::SchemeType::SCHEME_CHROME ||
+         pattern.primary_pattern.GetScheme() ==
+             ContentSettingsPattern::SchemeType::SCHEME_CHROMEUNTRUSTED ||
+         pattern.primary_pattern.GetScheme() ==
+             ContentSettingsPattern::SchemeType::SCHEME_DEVTOOLS;
 }
 
 // If the given |pattern| represents an individual origin, Isolated Web App, or
@@ -844,8 +848,8 @@ void GetRawExceptionsForContentSettingsType(
       continue;
     }
 
-    // Don't add allowlisted settings.
-    if (IsFromWebUIAllowlistSource(setting)) {
+    // Don't add WebUI settings.
+    if (PatternAppliesToWebUISchemes(setting)) {
       continue;
     }
 
@@ -857,20 +861,15 @@ void GetRawExceptionsForContentSettingsType(
     }
 
     auto content_setting = setting.GetContentSetting();
-
+    // There is no user-facing concept of SESSION_ONLY cookie exceptions that
+    // use secondary patterns. These are instead presented as ALLOW.
+    // TODO(crbug.com/1404436): Perform a one time migration of the actual
+    // content settings when the extension API no-longer allows them to be
+    // created.
     if (type == ContentSettingsType::COOKIES &&
-        base::FeatureList::IsEnabled(
-            privacy_sandbox::kPrivacySandboxSettings4)) {
-      // With the changes to settings introduced in PrivacySandboxSettings4,
-      // there is no user-facing concept of SESSION_ONLY cookie exceptions that
-      // use secondary patterns. These are instead presented as ALLOW.
-      // TODO(crbug.com/1404436): Perform a one time migration of the actual
-      // content settings when the extension API no-longer allows them to be
-      // created.
-      if (content_setting == ContentSetting::CONTENT_SETTING_SESSION_ONLY &&
-          setting.secondary_pattern != ContentSettingsPattern::Wildcard()) {
-        content_setting = ContentSetting::CONTENT_SETTING_ALLOW;
-      }
+        content_setting == ContentSetting::CONTENT_SETTING_SESSION_ONLY &&
+        setting.secondary_pattern != ContentSettingsPattern::Wildcard()) {
+      content_setting = ContentSetting::CONTENT_SETTING_ALLOW;
     }
 
     all_patterns_settings[{setting.primary_pattern, setting.source}][{
@@ -1068,7 +1067,7 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
       permissions::PermissionDecisionAutoBlocker* auto_blocker =
           permissions::PermissionsClient::Get()
               ->GetPermissionDecisionAutoBlocker(profile);
-      absl::optional<content::PermissionResult> embargo_result =
+      std::optional<content::PermissionResult> embargo_result =
           auto_blocker->GetEmbargoResult(origin, content_type);
       if (embargo_result) {
         result = embargo_result.value();
@@ -1095,12 +1094,11 @@ std::vector<ContentSettingPatternSource>
 GetSingleOriginExceptionsForContentType(HostContentSettingsMap* map,
                                         ContentSettingsType content_type) {
   ContentSettingsForOneType entries = map->GetSettingsForOneType(content_type);
-  // Exclude any entries that are allowlisted or don't represent a single
-  // top-frame origin.
+  // Exclude any entries that don't represent a single webby top-frame origin.
   base::EraseIf(entries, [](const ContentSettingPatternSource& e) {
     return !content_settings::PatternAppliesToSingleOrigin(
                e.primary_pattern, e.secondary_pattern) ||
-           IsFromWebUIAllowlistSource(e);
+           PatternAppliesToWebUISchemes(e);
   });
   return entries;
 }

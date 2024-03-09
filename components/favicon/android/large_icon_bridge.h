@@ -8,9 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/favicon_base/favicon_types.h"
 
 namespace favicon {
 
@@ -46,15 +44,7 @@ class LargeIconBridge {
  private:
   virtual ~LargeIconBridge();
 
-  void OnGoogleFaviconServerResponse(
-      const base::android::JavaRef<jobject>& j_callback,
-      favicon_base::GoogleFaviconServerRequestStatus status) const;
-
-  // TODO(crbug.com/1513063): Remove this when LargeIconService no longer relies
-  //                          on CancelableTaskTracker.
   base::CancelableTaskTracker cancelable_task_tracker_;
-
-  base::WeakPtrFactory<LargeIconBridge> weak_factory_{this};
 };
 
 }  // namespace favicon

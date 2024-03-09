@@ -219,6 +219,7 @@ class Range;
 
 namespace mojo {
 class MessageFilter;
+class UrgentMessageScope;
 }
 
 namespace network {
@@ -497,6 +498,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::mojom::MediaPlayerAction& action) override;
   void RequestVideoFrameAt(
       const gfx::Point& viewport_position,
+      const gfx::Size& max_size,
+      int max_area,
       base::OnceCallback<void(const gfx::ImageSkia&)> callback) override;
   bool CreateNetworkServiceDefaultFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
@@ -3137,6 +3140,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, LastCommittedOrigin);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CloseWithPendingWhileUnresponsive);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
+                           CloseWithPendingWhileUnresponsiveWithDevTools);
   FRIEND_TEST_ALL_PREFIXES(
       RenderFrameHostManagerUnloadBrowserTest,
       PendingDeleteRFHProcessShutdownDoesNotRemoveSubframes);
@@ -3284,7 +3289,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override;
   void CreateChildFrame(
-      int new_routing_id,
+      const blink::LocalFrameToken& frame_token,
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
@@ -4073,6 +4078,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Notifies when the renderer side Widget instance has been created and mojo
   // interfaces to it can be bound.
   void RendererWidgetCreated();
+
+  // Returns an `UrgentMessageScope` if the feature to prioritize navigation
+  // IPCs is enabled and this is a main frame on a visible page.
+  absl::optional<mojo::UrgentMessageScope> MakeUrgentMessageScopeIfNeeded();
 
 #if BUILDFLAG(IS_ANDROID)
   // These functions are called after a WebAuthn relying party check has

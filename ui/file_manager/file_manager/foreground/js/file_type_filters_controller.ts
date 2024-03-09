@@ -8,11 +8,11 @@ import {createChild} from '../../common/js/dom_utils.js';
 import {isSameEntry} from '../../common/js/entry_utils.js';
 import {recordEnum} from '../../common/js/metrics.js';
 import {str, strf} from '../../common/js/translations.js';
-import type {DirectoryChangeEvent} from '../../definitions/directory_change_event.js';
 import {FakeEntry} from '../../externs/files_app_entry_interfaces.js';
 import {State} from '../../externs/ts/state.js';
 import {getStore} from '../../state/store.js';
 
+import type {DirectoryChangeEvent} from './directory_model.js';
 import {DirectoryModel} from './directory_model.js';
 import {A11yAnnounce} from './ui/a11y_announce.js';
 
@@ -21,28 +21,29 @@ import {A11yAnnounce} from './ui/a11y_announce.js';
  * Recents view.
  */
 export class FileTypeFiltersController {
-  private readonly filterTypeToTranslationKeyMap_ = new Map([
-    [
-      chrome.fileManagerPrivate.FileCategory.ALL,
-      'MEDIA_VIEW_ALL_ROOT_LABEL',
-    ],
-    [
-      chrome.fileManagerPrivate.FileCategory.AUDIO,
-      'MEDIA_VIEW_AUDIO_ROOT_LABEL',
-    ],
-    [
-      chrome.fileManagerPrivate.FileCategory.IMAGE,
-      'MEDIA_VIEW_IMAGES_ROOT_LABEL',
-    ],
-    [
-      chrome.fileManagerPrivate.FileCategory.VIDEO,
-      'MEDIA_VIEW_VIDEOS_ROOT_LABEL',
-    ],
-    [
-      chrome.fileManagerPrivate.FileCategory.DOCUMENT,
-      'MEDIA_VIEW_DOCUMENTS_ROOT_LABEL',
-    ],
-  ]);
+  private readonly filterTypeToTranslationKeyMap_ =
+      new Map<chrome.fileManagerPrivate.FileCategory, string>([
+        [
+          chrome.fileManagerPrivate.FileCategory.ALL,
+          'MEDIA_VIEW_ALL_ROOT_LABEL',
+        ],
+        [
+          chrome.fileManagerPrivate.FileCategory.AUDIO,
+          'MEDIA_VIEW_AUDIO_ROOT_LABEL',
+        ],
+        [
+          chrome.fileManagerPrivate.FileCategory.IMAGE,
+          'MEDIA_VIEW_IMAGES_ROOT_LABEL',
+        ],
+        [
+          chrome.fileManagerPrivate.FileCategory.VIDEO,
+          'MEDIA_VIEW_VIDEOS_ROOT_LABEL',
+        ],
+        [
+          chrome.fileManagerPrivate.FileCategory.DOCUMENT,
+          'MEDIA_VIEW_DOCUMENTS_ROOT_LABEL',
+        ],
+      ]);
   private readonly allFilterButton_: CrButtonElement;
   private readonly audioFilterButton_: CrButtonElement;
   private readonly documentFilterButton_: CrButtonElement;
@@ -97,7 +98,7 @@ export class FileTypeFiltersController {
      * The array indices will be recorded in UMA as enum values. The index for
      * each filter type should never be renumbered nor reused in this array.
      */
-    const FileTypeFiltersForUMA = ([
+    const FileTypeFiltersForUMA: chrome.fileManagerPrivate.FileCategory[] = ([
       chrome.fileManagerPrivate.FileCategory.ALL,       // 0
       chrome.fileManagerPrivate.FileCategory.AUDIO,     // 1
       chrome.fileManagerPrivate.FileCategory.IMAGE,     // 2
@@ -172,8 +173,8 @@ export class FileTypeFiltersController {
    * Updates the UI when the current directory changes.
    * @param event Event.
    */
-  private onCurrentDirectoryChanged_(event: Event) {
-    const directoryChangeEvent = event as DirectoryChangeEvent;
+  private onCurrentDirectoryChanged_(event: DirectoryChangeEvent) {
+    const directoryChangeEvent = event;
     const isEnteringRecentEntry =
         isSameEntry(directoryChangeEvent.detail.newDirEntry, this.recentEntry_);
     const isLeavingRecentEntry = !isEnteringRecentEntry &&

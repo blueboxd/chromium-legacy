@@ -154,11 +154,9 @@ std::u16string GetChromeCounterTextFromResult(
     // Determines whether or not to show the count with exception message.
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
     int del_cookie_counter_msg_id =
-        ShouldShowCookieException(profile) ||
-                (identity_manager &&
-                 identity_manager->HasPrimaryAccount(
-                     signin::ConsentLevel::kSignin) &&
-                 base::FeatureList::IsEnabled(switches::kUnoDesktop))
+        (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin) &&
+         base::FeatureList::IsEnabled(switches::kUnoDesktop)) ||
+                ShouldShowCookieException(profile)
             ? IDS_DEL_COOKIES_COUNTER_ADVANCED_WITH_SIGNED_IN_EXCEPTION
             : IDS_DEL_COOKIES_COUNTER_ADVANCED;
 

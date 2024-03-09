@@ -191,28 +191,15 @@ void ScreenAIInstallState::SetComponentFolder(
 }
 
 void ScreenAIInstallState::SetState(State state) {
-  // TODO(crbug.com/1508404): Remove after crash root cause is found.
-  if ((state == State::kDownloaded || state == State::kReady) &&
-      !IsComponentAvailable()) {
-    state = State::kFailed;
-  }
-
   if (state == state_) {
     // Failed and ready state can be repeated as they come from different
     // profiles. Downloading can be repeated in ChromeOS tests that call
     // LoginManagerTest::AddUser() and reset UserSessionInitializer.
-    // TODO(crbug.com/1443341): While the case is highly unexpected, add more
+    // TODO(crbug.com/1278249): While the case is highly unexpected, add more
     // control logic if state is changed from failed to ready or vice versa.
     DCHECK(state == State::kReady || state == State::kFailed ||
            state == State::kDownloading);
     return;
-  }
-
-  // Switching state from `Ready` to `Fail` is unexpected and requires
-  // investigation.
-  // TODO(crbug.com/1443345): Remove after verifying this case does not happen.
-  if (state == State::kFailed && state_ == State::kReady) {
-    base::debug::DumpWithoutCrashing();
   }
 
   state_ = state;
@@ -256,9 +243,6 @@ void ScreenAIInstallState::ResetForTesting() {
 
 void ScreenAIInstallState::SetStateForTesting(State state) {
   state_ = state;
-  for (ScreenAIInstallState::Observer* observer : observers_) {
-    observer->StateChanged(state_);
-  }
 }
 
 }  // namespace screen_ai

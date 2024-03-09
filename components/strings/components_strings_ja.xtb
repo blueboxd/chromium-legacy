@@ -258,7 +258,6 @@
 <translation id="1455413310270022028">消しゴム</translation>
 <translation id="1458140305240870199">下着</translation>
 <translation id="1459693405370120464">天気</translation>
-<translation id="1461041542809785877">パフォーマンス</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1462951478840426066">パソコンのフォントを使用して高品質のコンテンツを作成できます</translation>
 <translation id="1467432559032391204">左</translation>
@@ -620,7 +619,7 @@
 <translation id="2166378884831602661">このサイトは安全に接続できません</translation>
 <translation id="2168151236314517198">このコンテンツの印刷は管理者が設定したポリシーによってブロックされています</translation>
 <translation id="2175630235841878061">100 MB を超えるファイルはダウンロードできません</translation>
-<translation id="2176974405772725904">アカウントに住所を保存</translation>
+<translation id="2176974405772725904">アカウントに住所を保存する</translation>
 <translation id="2178665390943006934">[Chrome を更新] ボタンです。実行すると、Chrome の設定で Chrome を更新できます</translation>
 <translation id="2181821976797666341">ポリシー</translation>
 <translation id="2182170103603703676">食器洗い機</translation>
@@ -829,6 +828,7 @@
             <ph name="LIST_ITEM" />Cookie とサイトデータ
             <ph name="LIST_ITEM" />フォームに入力した情報
           <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">挿入</translation>
 <translation id="2625385379895617796">時計が進んでいます</translation>
 <translation id="262745152991669301">USB デバイスへの接続を要求できる</translation>
 <translation id="2629325967560697240">Chrome の最高レベルのセキュリティで保護するには、<ph name="BEGIN_ENHANCED_PROTECTION_LINK" />保護強化機能を有効にしてください<ph name="END_ENHANCED_PROTECTION_LINK" />。</translation>
@@ -1417,7 +1417,7 @@
 <translation id="3793574014653384240">最近発生した問題の件数と原因</translation>
 <translation id="3795344968043407227">インディーズ音楽、オルタナティブ ミュージック</translation>
 <translation id="3799805948399000906">リクエストされたフォント</translation>
-<translation id="3801265110651850478">閲覧トラフィックと一緒に「Do Not Track」リクエストを送信する</translation>
+<translation id="3801265110651850478">閲覧トラフィックと一緒に「トラッキング拒否」リクエストを送信する</translation>
 <translation id="380329542618494757">名前</translation>
 <translation id="3806932344025766608">アクセスしようとしているサイトでは、攻撃者がユーザーを騙してソフトウェアをインストールさせたり、パスワード、電話番号、クレジット カード番号などを開示させたりする可能性があります。安全なページに戻ることを強くおすすめします。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3807270098669886186">電話回線サービス</translation>
@@ -1590,6 +1590,7 @@
 <translation id="4177501066905053472">広告のトピック</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">価格トラッキングを停止</translation>
+<translation id="4191334393248735295">長さ</translation>
 <translation id="4195459680867822611">[Chrome のヒントを表示] ボタンです。実行すると、Chrome の機能を確認できます</translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
@@ -1628,7 +1629,7 @@
 <translation id="422722221769396062">出前、デリバリー サービス</translation>
 <translation id="4230204356098880324">カメラの使用と移動を要求できる</translation>
 <translation id="4231448684371260244">8x13 インチ</translation>
-<translation id="4233220688695460165">Chrome では、30 日以内に複数の広告を提案するトピックおよびウェブサイトは自動削除されます。また、提案してほしくないトピックやウェブサイトをユーザーがブロックすることもできます。</translation>
+<translation id="4233220688695460165">Chrome では、30 日以上経過していないトピックや広告を提案した広告主のウェブサイトが自動削除されます。また、提案してほしくないトピックやウェブサイトをユーザーがブロックすることもできます。</translation>
 <translation id="4235360514405112390">有効</translation>
 <translation id="4239799716689808527">ラベル</translation>
 <translation id="4242380780309416996">封筒（重量）</translation>
@@ -1658,7 +1659,7 @@
 <translation id="4282346679996504092">この商品のアラートをオフにし、ブックマークを削除しました</translation>
 <translation id="4285498937028063278">固定を解除</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{このカードを Google アカウントに保存しました}other{これらのカードを Google アカウントに保存しました}}</translation>
-<translation id="4287495839370498922">Chrome で表示される広告に対するプライバシー強化について</translation>
+<translation id="4287495839370498922">Chrome で表示される広告プライバシーの強化について</translation>
 <translation id="4290920330097335010">許可しない</translation>
 <translation id="4296207570293932800">新しい広告のプライバシー機能をご利用いただけるようになりました</translation>
 <translation id="4297502707443874121"><ph name="THUMBNAIL_PAGE" /> ページのサムネイル</translation>
@@ -2606,7 +2607,6 @@
 <translation id="6232271601416750929">クリーン ビューティー</translation>
 <translation id="6234122620015464377">トリミング（ドキュメント単位）</translation>
 <translation id="6236290670123303279">設定を管理</translation>
-<translation id="623825323736974198">常にアクティブでメモリが解放されないサイトを管理します</translation>
 <translation id="6240447795304464094">Google Pay ロゴ</translation>
 <translation id="6241121617266208201">候補を非表示にする</translation>
 <translation id="624499991300733384">印刷コンポジター サービス</translation>

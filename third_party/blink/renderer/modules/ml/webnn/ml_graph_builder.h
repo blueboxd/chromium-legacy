@@ -33,7 +33,10 @@ class MLEluOptions;
 class MLGatherOptions;
 class MLGemmOptions;
 class MLGraph;
+class MLInstanceNormalizationOptions;
+class MLLayerNormalizationOptions;
 class MLLeakyReluOptions;
+class MLLinearOptions;
 class MLPadOptions;
 class MLPool2dOptions;
 class MLReduceOptions;
@@ -125,6 +128,15 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
   MLOperand* pow(const MLOperand* a,
                  const MLOperand* b,
                  ExceptionState& exception_state);
+  MLOperand* equal(const MLOperand* a,
+                   const MLOperand* b,
+                   ExceptionState& exception_state);
+  MLOperand* greater(const MLOperand* a,
+                     const MLOperand* b,
+                     ExceptionState& exception_state);
+  MLOperand* lesser(const MLOperand* a,
+                    const MLOperand* b,
+                    ExceptionState& exception_state);
 
   // Element-wise unary operations
   MLOperand* abs(const MLOperand* input, ExceptionState& exception_state);
@@ -171,11 +183,26 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
   MLOperand* hardSwish(const MLOperand* input, ExceptionState& exception_state);
   MLActivation* hardSwish(ExceptionState& exception_state);
 
+  MLOperand* instanceNormalization(
+      const MLOperand* input,
+      const MLInstanceNormalizationOptions* options,
+      ExceptionState& exception_state);
+
+  MLOperand* layerNormalization(const MLOperand* input,
+                                const MLLayerNormalizationOptions* options,
+                                ExceptionState& exception_state);
+
   MLOperand* leakyRelu(const MLOperand* input,
                        const MLLeakyReluOptions* options,
                        ExceptionState& exception_state);
   MLActivation* leakyRelu(const MLLeakyReluOptions* options,
                           ExceptionState& exception_state);
+
+  MLOperand* linear(const MLOperand* input,
+                    const MLLinearOptions* options,
+                    ExceptionState& exception_state);
+  MLActivation* linear(const MLLinearOptions* options,
+                       ExceptionState& exception_state);
 
   MLOperand* matmul(const MLOperand* a,
                     const MLOperand* b,

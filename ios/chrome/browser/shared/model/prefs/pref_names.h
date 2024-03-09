@@ -109,8 +109,6 @@ extern const char kNetworkPredictionSetting[];
 extern const char kNtpShownBookmarksFolder[];
 extern const char kShowMemoryDebuggingTools[];
 
-extern const char kSigninLastAccounts[];
-extern const char kSigninLastAccountsMigrated[];
 extern const char kSigninShouldPromptForSigninAgain[];
 extern const char kSigninWebSignDismissalCount[];
 
@@ -132,6 +130,11 @@ extern const char kAutofillBrandingIconDisplayCount[];
 extern const char kPriceNotificationsHasBeenShown[];
 
 extern const char kPasswordSharingFlowHasBeenEntered[];
+
+extern const char kNotificationsPromoLastDismissed[];
+extern const char kNotificationsPromoLastShown[];
+extern const char kNotificationsPromoTimesShown[];
+extern const char kNotificationsPromoTimesDismissed[];
 
 }  // namespace prefs
 

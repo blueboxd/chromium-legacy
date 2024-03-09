@@ -10,7 +10,6 @@ source_set("model") {
     "photos_service_configuration.mm",
   ]
   public_deps = [
-    ":metrics",
     "//base",
     "//components/keyed_service/core",
   ]

@@ -447,6 +447,7 @@
 <translation id="2914580577416829331">സ്ക്രീൻ ക്യാപ്‌ചറുകൾ</translation>
 <translation id="2924416280450782352">ഇനങ്ങൾ കാണിക്കാനാകുന്നില്ല. ഈ പാനൽ വീണ്ടും തുറന്ന് നോക്കുക.</translation>
 <translation id="2931572158271115754">ചെയ്യാനുള്ള കാര്യങ്ങളുടെ ലിസ്റ്റിൽ ഒന്നുമില്ല.</translation>
+<translation id="2935225303485967257">പ്രൊഫൈലുകൾ മാനേജ് ചെയ്യുക</translation>
 <translation id="2941112035454246133">താഴ്ന്ന</translation>
 <translation id="2942350706960889382">ഡോക്ക് ചെയ്‌ത മാഗ്നിഫയർ</translation>
 <translation id="2942516765047364088">ഷെൽഫ് സ്ഥാനം</translation>
@@ -624,7 +625,6 @@
 <translation id="3593646411856133110">തുറന്നിരിക്കുന്ന ആപ്പുകൾ കാണാൻ മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്ത് പിടിക്കുക</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="3596012367874587041">ആപ്പ് ക്രമീകരണം</translation>
-<translation id="3598452309062311481">search+h</translation>
 <translation id="3600061223661453002">ഓഫാണ്</translation>
 <translation id="3604801046548457007">ഡെസ്‌ക് <ph name="DESK_TITILE" /> സൃഷ്‌ടിച്ചു</translation>
 <translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റ് ചെയ്‌തു.</translation>
@@ -776,7 +776,6 @@
 <translation id="4190780880566297084">നിങ്ങളുടെ ഫോണിലെ പുതിയ ഫോട്ടോകളും മീഡിയയും ആപ്പുകളും കാണുന്നത് സജ്ജീകരിക്കുന്നത് ഡിസ്‌മിസ് ചെയ്യുക</translation>
 <translation id="4192112279662688596">അല്ലെങ്കിൽ</translation>
 <translation id="4193857202545160520">ക്ലിക്കുകളും കീകളും കാണിക്കുക</translation>
-<translation id="4193969623755915875">"<ph name="NEW_SHORTCUT" />" ഉപയോഗിച്ച് Explore ആപ്പിൽ "സഹായം" തുറക്കുക.</translation>
 <translation id="4195579532193195633">നിലവിലെ പതിപ്പ് <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">നിങ്ങൾ അവസാനിപ്പിച്ചയിടത്ത് നിന്ന് തുടരുക</translation>
 <translation id="4195877955194704651">സ്വയമേവയുള്ള ക്ലിക്ക് ബട്ടൺ</translation>
@@ -959,7 +958,6 @@
 <translation id="4889868803215848840">നിർദ്ദേശങ്ങൾ മെച്ചപ്പെടുത്തുന്നതിന് ഓപ്ഷണൽ ഫീഡ്ബാക്ക് നൽകുക:</translation>
 <translation id="4890187583552566966">Google സഹായിയെ നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="4890408602550914571">നിങ്ങളുടെ ഫോൺ സമീപത്തുണ്ടെന്നും Bluetooth ഓണാക്കിയിട്ടുണ്ടെന്നും ഉറപ്പാക്കുക.</translation>
-<translation id="4892981359753171125">ഫെയ്സ് കൺട്രോൾ</translation>
 <translation id="4895488851634969361">ബാറ്ററി ചാർജുചെയ്യൽ പൂർണ്ണമായി.</translation>
 <translation id="490375751687810070">ലംബം</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% ബാറ്ററി</translation>
@@ -1925,7 +1923,7 @@
 <translation id="888982883502837004">നിങ്ങളുടെ ഉപകരണത്തിന് ഫേം‌വെയർ അപ്ഡേറ്റുകൾ ലഭ്യമാണ്. അവലോകനം ചെയ്ത് അപ്ഡേറ്റ് ചെയ്യാൻ ക്ലിക്ക് ചെയ്യുക.</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> ശാശ്വതമായി ഇല്ലാതാക്കും</translation>
 <translation id="889790758758811533"><ph name="PERCENTAGE" />% ബാറ്ററി ചാർജ് ശേഷിക്കുന്നു (ഏകദേശം <ph name="TIME_LEFT" />). നിങ്ങളുടെ ഉപകരണം പവറിലേക്ക് കണക്റ്റ് ചെയ്യുക.</translation>
-<translation id="8897940060812808966"><ph name="PERIPHERAL_NAME" /> കണക്റ്റ് ചെയ്തു, അത് ഇനി ഉപയോഗിക്കാം. നിങ്ങൾക്ക് ക്രമീകരണത്തിൽ ഗ്രാഫിക്‌സ് ടാബ്‌ലെറ്റ് ഇഷ്ടാനുസൃതമാക്കാം.</translation>
+<translation id="8897940060812808966"><ph name="PERIPHERAL_NAME" /> കണക്റ്റ് ചെയ്തു, അത് ഇനി ഉപയോഗിക്കാം. നിങ്ങൾക്ക് ക്രമീകരണത്തിൽ ഗ്രാഫിക്‌സ് ഇഷ്ടാനുസൃതമാക്കാം.</translation>
 <translation id="88986195241502842">Page down</translation>
 <translation id="8905919797434099235">(പേരില്ല)</translation>
 <translation id="890616557918890486">ഉറവിടം മാറ്റുക</translation>

@@ -29,7 +29,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -747,7 +746,7 @@ public class StripLayoutHelperTest {
         when(ntb.isIncognito()).thenReturn(true);
         int defaultNTBHoverBackgroundIncognitoTint =
                 ColorUtils.setAlphaComponent(
-                        mContext.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        mContext.getColor(R.color.tab_strip_button_hover_bg_color),
                         (int) (0.08 * 255));
         assertEquals(
                 "New tab button hover highlight default tint is not as expected",
@@ -760,7 +759,7 @@ public class StripLayoutHelperTest {
         when(ntb.isPressedFromMouse()).thenReturn(true);
         int hoverBackgroundPressedIncognitoColor =
                 ColorUtils.setAlphaComponent(
-                        mContext.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        mContext.getColor(R.color.tab_strip_button_hover_bg_color),
                         (int) (0.12 * 255));
         assertEquals(
                 "New tab button hover highlight pressed tint is not as expected",
@@ -860,7 +859,7 @@ public class StripLayoutHelperTest {
         when(closeButton.isHovered()).thenReturn(true);
         int defaultNTBHoverBackgroundIncognitoTint =
                 ColorUtils.setAlphaComponent(
-                        mContext.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        mContext.getColor(R.color.tab_strip_button_hover_bg_color),
                         (int) (0.08 * 255));
         assertEquals(
                 "Close button hover highlight default tint is not as expected",
@@ -873,7 +872,7 @@ public class StripLayoutHelperTest {
         when(closeButton.isPressedFromMouse()).thenReturn(true);
         int hoverBackgroundPressedIncognitoColor =
                 ColorUtils.setAlphaComponent(
-                        mContext.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        mContext.getColor(R.color.tab_strip_button_hover_bg_color),
                         (int) (0.12 * 255));
         assertEquals(
                 "Close button hover highlight pressed tint is not as expected",
@@ -1099,7 +1098,7 @@ public class StripLayoutHelperTest {
     }
 
     @Test
-    public void testTabCreated_NonRestoredTab_DoesNotSkipAutoscroll() {
+    public void testTabCreated_NonRestoredTab_SkipsAutoscroll() {
         initializeTest(false, true, 3);
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_MEDIUM);
         mStripLayoutHelper.setStripLayoutTabsForTesting(tabs);
@@ -1107,13 +1106,13 @@ public class StripLayoutHelperTest {
         // Set initial scroller position to 1200.
         mStripLayoutHelper.getScrollerForTesting().setFinalX((int) SCREEN_WIDTH_LANDSCAPE);
 
-        // Act: Tab was restored after undoing a tab closure.
+        // Act: Tab was not restored after undoing a tab closure.
         boolean closureCancelled = false;
         mModel.addTab("new tab");
         mStripLayoutHelper.tabCreated(TIMESTAMP, 5, 3, false, closureCancelled, false);
 
-        // Assert: scroller position is modified.
-        assertNotEquals(1200, mStripLayoutHelper.getScrollerForTesting().getFinalX());
+        // Assert: scroller position is not modified.
+        assertEquals(1200, mStripLayoutHelper.getScrollerForTesting().getFinalX());
     }
 
     @Test
@@ -2222,7 +2221,7 @@ public class StripLayoutHelperTest {
         MockTabModel tabModel = new MockTabModel(mProfile, null);
         tabModel.addTab(expectedActiveTabId);
         tabModel.setIndex(0, TabSelectionType.FROM_NEW, true);
-        tabModel.setAsActiveModelForTesting();
+        tabModel.setActive(true);
         mStripLayoutHelper.setTabModel(tabModel, null, false);
 
         // Verify that the real and placeholder strip tabs were generated in the correct indices.
@@ -2247,7 +2246,7 @@ public class StripLayoutHelperTest {
         MockTabModel tabModel = new MockTabModel(mProfile, null);
         tabModel.addTab(expectedActiveTabId);
         tabModel.setIndex(0, TabSelectionType.FROM_NEW, true);
-        tabModel.setAsActiveModelForTesting();
+        tabModel.setActive(true);
         mStripLayoutHelper = createStripLayoutHelper(false, false);
         mStripLayoutHelper.setTabModel(tabModel, null, false);
 
@@ -2286,7 +2285,7 @@ public class StripLayoutHelperTest {
         MockTabModel tabModel = new MockTabModel(mProfile, null);
         tabModel.addTab(expectedActiveTabId);
         tabModel.setIndex(0, TabSelectionType.FROM_NEW, true);
-        tabModel.setAsActiveModelForTesting();
+        tabModel.setActive(true);
         mStripLayoutHelper.setTabModel(tabModel, null, false);
 
         // Mark that a tab was restored.
@@ -2328,7 +2327,7 @@ public class StripLayoutHelperTest {
 
         // Mock a tab model and set it in the StripLayoutHelper.
         MockTabModel tabModel = new MockTabModel(mProfile, null);
-        tabModel.setAsActiveModelForTesting();
+        tabModel.setActive(true);
         mStripLayoutHelper.setTabModel(tabModel, null, false);
 
         // Verify there are placeholders.
@@ -2372,7 +2371,7 @@ public class StripLayoutHelperTest {
 
         // Mock a tab model and set it in the StripLayoutHelper.
         MockTabModel tabModel = new MockTabModel(mProfile, null);
-        tabModel.setAsActiveModelForTesting();
+        tabModel.setActive(true);
         mStripLayoutHelper.setTabModel(tabModel, null, false);
         assertEquals("Offset should be 0.", 0, mStripLayoutHelper.getScrollOffset(), EPSILON);
 
@@ -2395,7 +2394,7 @@ public class StripLayoutHelperTest {
         MockTabModel tabModel = new MockTabModel(mProfile, null);
         tabModel.addTab(expectedCreatedTabId);
         tabModel.setIndex(0, TabSelectionType.FROM_NEW, true);
-        tabModel.setAsActiveModelForTesting();
+        tabModel.setActive(true);
         mStripLayoutHelper.setTabModel(tabModel, null, false);
 
         // Verify that the fifth (tab created from "intent") is real.
@@ -2605,12 +2604,7 @@ public class StripLayoutHelperTest {
 
     private void setTabDragSourceMock() {
         when(mTabDragSource.startTabDragAction(any(), any(), any())).thenReturn(true);
-
-        try {
-            MultiWindowTestUtils.enableMultiInstance();
-        } catch (NameNotFoundException nameNotFoundException) {
-            assertTrue("setTabDragSourceMock failed - NameNotFoundException thrown .", false);
-        }
+        MultiWindowTestUtils.enableMultiInstance();
     }
 
     @Test

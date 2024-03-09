@@ -579,8 +579,8 @@
       'chrome_all_tast_tests': {
         'tast_expr': 'STUB_STRING_TO_RUN_TAST_TESTS',
         'test_level_retries': 2,
-        'timeout_sec': 21600,
-        'shards': 10,
+        'timeout_sec': 14400,
+        'shards': 15,
       },
     },
 
@@ -608,9 +608,6 @@
 
     'chromeos_device_only_gtests': {
       'base_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter',
-        ],
       },
     },
 
@@ -1524,7 +1521,6 @@
           'crashtest',
           'print-reftest',
         ],
-        'ci_only': True,
         'swarming': {
           'shards': 15,
         },
@@ -3537,6 +3533,45 @@
       },
     },
 
+    'gpu_webcodecs_gl_passthrough_ganesh_telemetry_test': {
+      'webcodecs_gl_passthrough_ganesh_tests': {
+        'telemetry_test_name': 'webcodecs',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle --use-angle=gl --disable-features=SkiaGraphite',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
+        ],
+      },
+    },
+
+    'gpu_webcodecs_metal_passthrough_ganesh_telemetry_test': {
+      'webcodecs_metal_passthrough_ganesh_tests': {
+        'telemetry_test_name': 'webcodecs',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle --use-angle=metal --disable-features=SkiaGraphite',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
+        ],
+      },
+    },
+
+    'gpu_webcodecs_metal_passthrough_graphite_telemetry_test': {
+      'webcodecs_metal_passthrough_graphite_tests': {
+        'telemetry_test_name': 'webcodecs',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle --use-angle=metal --enable-features=SkiaGraphite',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
+        ],
+      },
+    },
+
     'gpu_webcodecs_telemetry_test': {
       'webcodecs_tests': {
         'telemetry_test_name': 'webcodecs',
@@ -3606,6 +3641,37 @@
       },
     },
 
+    'gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests': {
+      'webgl2_conformance_gl_passthrough_ganesh_tests': {
+        'telemetry_test_name': 'webgl2_conformance',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--webgl-conformance-version=2.0.1',
+          '$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile',
+          '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu --disable-features=SkiaGraphite',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
+        ],
+        'android_args': [
+          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'lacros_args': [
+          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
+          '--xvfb',
+          '--no-xvfb',
+          '--use-weston',
+          '--weston-use-gl',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+      },
+    },
+
     'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
       'webgl2_conformance_gl_passthrough_tests': {
         'telemetry_test_name': 'webgl2_conformance',
@@ -3661,8 +3727,8 @@
       },
     },
 
-    'gpu_webgl2_conformance_metal_passthrough_telemetry_tests': {
-      'webgl2_conformance_metal_passthrough_tests': {
+    'gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests': {
+      'webgl2_conformance_metal_passthrough_graphite_tests': {
         'telemetry_test_name': 'webgl2_conformance',
         'mixins': [
           'has_native_resultdb_integration',
@@ -3670,7 +3736,7 @@
         'args': [
           '--webgl-conformance-version=2.0.1',
           '$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile',
-          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL',
+          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL,SkiaGraphite',
           '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
           '--enable-metal-debug-layers',
         ],
@@ -3745,6 +3811,36 @@
       },
     },
 
+    'gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests': {
+      'webgl_conformance_gl_passthrough_ganesh_tests': {
+        'telemetry_test_name': 'webgl1_conformance',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu --disable-features=SkiaGraphite',
+          '$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
+        ],
+        'android_args': [
+          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'lacros_args': [
+          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
+          '--xvfb',
+          '--no-xvfb',
+          '--use-weston',
+          '--weston-use-gl',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+      },
+    },
+
     'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
       'webgl_conformance_gl_passthrough_tests': {
         'telemetry_test_name': 'webgl1_conformance',
@@ -3805,14 +3901,29 @@
       },
     },
 
-    'gpu_webgl_conformance_metal_passthrough_telemetry_tests': {
-      'webgl_conformance_metal_passthrough_tests': {
+    'gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests': {
+      'webgl_conformance_metal_passthrough_ganesh_tests': {
         'telemetry_test_name': 'webgl1_conformance',
         'mixins': [
           'has_native_resultdb_integration',
         ],
         'args': [
-          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL',
+          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL --disable-features=SkiaGraphite',
+          '$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
+          '--enable-metal-debug-layers',
+        ],
+      },
+    },
+
+    'gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests': {
+      'webgl_conformance_metal_passthrough_graphite_tests': {
+        'telemetry_test_name': 'webgl1_conformance',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL,SkiaGraphite',
           '$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile',
           '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
           '--enable-metal-debug-layers',
@@ -3988,7 +4099,13 @@
           'hard_timeout': 14400,
         },
       },
-      'content_unittests': {},
+      'content_unittests': {
+        'test': 'content_unittests',
+        'args': [
+          '--test-launcher-bot-mode',
+          '--test-launcher-filter-file=testing/buildbot/filters/ios.content_unittests.filter',
+        ],
+      },
       'crashpad_tests': {},
       'crypto_unittests': {},
       'device_unittests': {},
@@ -4028,9 +4145,11 @@
       },
       'midi_unittests': {},
       'mojo_unittests': {},
+      'native_theme_unittests': {},
       'net_unittests': {},
       'perfetto_unittests': {},
       'printing_unittests': {},
+      'sandbox_unittests': {},
       'services_unittests': {},
       'shell_dialogs_unittests': {},
       'skia_unittests': {},
@@ -4162,17 +4281,6 @@
       },
     },
 
-    'lacros_all_tast_tests_informational': {
-      'lacros_all_tast_tests_informational': {
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'swarming': {
-          'idempotent': False,
-        },
-      },
-    },
-
     'lacros_cq_tast_tests_eve': {
       'lacros_cq_tast_tests_eve': {
         'mixins': [
@@ -4202,40 +4310,6 @@
       },
     },
 
-    'lacros_fyi_tast_tests': {
-      'lacros_fyi_tast_tests': {
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'swarming': {
-          'idempotent': False,
-        },
-      },
-    },
-
-    'lacros_skylab_amd64_fyi': {
-      'lacros_fyi_tast_tests': {
-        'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
-        'timeout_sec': 10800,
-      },
-      'ozone_unittests': {
-        'timeout_sec': 3600,
-      },
-    },
-
-    'lacros_skylab_arm_tests_fyi': {
-      'lacros_all_tast_tests': {
-        'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
-        'timeout_sec': 10800,
-      },
-      'ozone_unittests': {
-        'timeout_sec': 3600,
-      },
-      'viz_unittests': {
-        'timeout_sec': 3600,
-      },
-    },
-
     'lacros_skylab_tests': {
       'lacros_all_tast_tests': {
         'tast_expr': '("group:mainline" && ("dep:lacros_stable" || "dep:lacros") && !informational)',
@@ -4262,6 +4336,10 @@
     },
 
     'lacros_skylab_tests_with_gtests': {
+      'chromeos_integration_tests': {},
+    },
+
+    'lacros_skylab_tests_with_gtests_version_skew': {
       'chromeos_integration_tests': {},
     },
 
@@ -4577,7 +4655,7 @@
         ],
         'swarming': {
           'dimensions': {
-            'os': 'Ubuntu-22.04',
+            'os': 'Ubuntu-18.04',
             'cpu': 'x86-64',
             'device_os': None,
             'device_os_flavor': None,
@@ -5273,19 +5351,6 @@
 
     'upload_perfetto': {
       'upload_trace_processor': {},
-    },
-
-    'variations_smoke_tests': {
-      'variations_smoke_tests': {
-        'test': 'variations_smoke_tests',
-        'mixins': [
-          'skia_gold_test',
-        ],
-        'resultdb': {
-          'enable': True,
-          'result_format': 'single',
-        },
-      },
     },
 
     'vr_android_specific_chromium_tests': {
@@ -6238,10 +6303,11 @@
 
     'gpu_angle_mac_telemetry_tests': [
       'gpu_info_collection_telemetry_tests',
-      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests',
+      'gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
@@ -6266,7 +6332,7 @@
     'gpu_common_gl_passthrough_ganesh_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_gl_passthrough_ganesh_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests',
     ],
 
     'gpu_common_linux_telemetry_tests': [
@@ -6275,10 +6341,10 @@
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    'gpu_common_metal_passthrough_ganesh_telemetry_tests': [
+    'gpu_common_metal_passthrough_graphite_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_metal_passthrough_ganesh_telemetry_tests',
-      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
+      'gpu_metal_passthrough_graphite_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests',
     ],
 
     'gpu_common_win_telemetry_tests': [
@@ -6349,12 +6415,6 @@
 
     'gpu_dawn_tsan_gtests': [
       'gpu_dawn_gtests',
-    ],
-
-    'gpu_desktop_mac_gtests': [
-      'gpu_angle_unit_gtests',
-      'gpu_common_gtests_passthrough',
-      'gpu_desktop_specific_gtests',
     ],
 
     'gpu_desktop_passthrough_gtests': [
@@ -6458,17 +6518,17 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_gl_passthrough_ganesh_telemetry_tests',
       'gpu_mediapipe_passthrough_telemetry_tests',
-      'gpu_webcodecs_telemetry_test',
-      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webcodecs_gl_passthrough_ganesh_telemetry_test',
+      'gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
     'gpu_fyi_mac_pro_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_metal_passthrough_graphite_telemetry_tests',
-      'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests',
     ],
 
     'gpu_fyi_mac_release_gtests': [
@@ -6483,11 +6543,14 @@
     'gpu_fyi_mac_release_telemetry_tests': [
       'gpu_gl_passthrough_ganesh_telemetry_tests',
       'gpu_mediapipe_passthrough_telemetry_tests',
-      'gpu_metal_passthrough_graphite_telemetry_tests',
-      'gpu_webcodecs_telemetry_test',
-      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_metal_passthrough_ganesh_telemetry_tests',
+      'gpu_webcodecs_gl_passthrough_ganesh_telemetry_test',
+      'gpu_webcodecs_metal_passthrough_ganesh_telemetry_test',
+      'gpu_webcodecs_metal_passthrough_graphite_telemetry_test',
+      'gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests',
+      'gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
@@ -6497,11 +6560,14 @@
       'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_metal_passthrough_ganesh_telemetry_tests',
       'gpu_metal_passthrough_graphite_telemetry_tests',
-      'gpu_webcodecs_telemetry_test',
-      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
+      'gpu_webcodecs_gl_passthrough_ganesh_telemetry_test',
+      'gpu_webcodecs_metal_passthrough_ganesh_telemetry_test',
+      'gpu_webcodecs_metal_passthrough_graphite_telemetry_test',
+      'gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests',
+      'gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
@@ -6845,6 +6911,9 @@
 
     'chromeos_jacuzzi_rel_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
+        'mixins': [
+          'chromeos-jacuzzi-skylab-chrome-all-tast-tests',
+        ],
         'variants': [
           'CROS_JACUZZI_CQ_PUBLIC_LKGM',
         ],
@@ -6863,6 +6932,9 @@
 
     'chromeos_jacuzzi_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
+        'mixins': [
+          'chromeos-jacuzzi-skylab-chrome-all-tast-tests',
+        ],
         'variants': [
           'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
         ],
@@ -6902,6 +6974,9 @@
 
     'chromeos_trogdor_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
+        'mixins': [
+          'chromeos-trogdor-skylab-chrome-all-tast-tests',
+        ],
         'variants': [
           'CROS_TROGDOR_RELEASE_ASH_LKGM',
         ],
@@ -7560,50 +7635,14 @@
       },
     },
 
-    'lacros_amd64_generic_rel_skylab_fyi': {
-      'lacros_skylab_tests': {
-        'variants': [
-          'CROS_EVE_PUBLIC_LKGM',
-          'CROS_OCTOPUS_PUBLIC_LKGM',
-        ],
-      },
-    },
-
     'lacros_arm64_generic_rel_skylab': {
-      'lacros_skylab_tests': {
+      'chromeos_integration_tests': {
         'variants': [
           'CROS_TROGDOR_PUBLIC_LKGM',
         ],
       },
-    },
-
-    'lacros_arm64_generic_rel_skylab_fyi': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_JACUZZI_CQ_PUBLIC_LKGM',
-          'CROS_JACUZZI_PUBLIC_LKGM',
-          'CROS_TROGDOR_PUBLIC_LKGM',
-        ],
-      },
-    },
-
-    'lacros_arm_generic_rel_skylab': {
-      'lacros_skylab_tests': {
-        'variants': [
-          'CROS_JACUZZI_PUBLIC_LKGM',
-        ],
-      },
-      'lacros_skylab_tests_with_gtests': {
-        'variants': [
-          'CROS_JACUZZI_PUBLIC_LKGM',
-        ],
-      },
-    },
-
-    'lacros_arm_generic_rel_skylab_fyi': {
-      'lacros_skylab_tests': {
-        'variants': [
-          'CROS_JACUZZI_PUBLIC_LKGM',
           'CROS_TROGDOR_PUBLIC_LKGM',
         ],
       },
@@ -7640,56 +7679,15 @@
       },
     },
 
-    'lacros_device_or_vm_tests_fyi': {
-      'lacros_all_tast_tests_informational': {
-        'variants': [
-          'LACROS_AMD64_GENERIC',
-          'LACROS_EVE',
-        ],
-      },
-      'lacros_device_or_vm_gtests': {
-        'variants': [
-          'LACROS_AMD64_GENERIC',
-          'LACROS_EVE',
-        ],
-      },
-      'lacros_fyi_tast_tests': {
-        'variants': [
-          'LACROS_AMD64_GENERIC',
-          'LACROS_EVE',
-        ],
-      },
-    },
-
-    'lacros_skylab_arm': {
-      'lacros_skylab_tests_version_skew': {
-        'variants': [
-          'CROS_JACUZZI_RELEASE_BETA',
-          'CROS_JACUZZI_RELEASE_DEV',
-          'CROS_JACUZZI_RELEASE_STABLE',
-        ],
-      },
-    },
-
     'lacros_skylab_arm64': {
+      'chromeos_integration_tests': {
+        'variants': [
+          'CROS_STRONGBAD_RELEASE_LKGM',
+        ],
+      },
       'lacros_skylab_tests': {
         'variants': [
           'CROS_STRONGBAD_RELEASE_LKGM',
-        ],
-      },
-    },
-
-    'lacros_skylab_arm_fyi': {
-      'lacros_skylab_arm_tests_fyi': {
-        'variants': [
-          'CROS_HANA_RELEASE_BETA',
-          'CROS_HANA_RELEASE_DEV',
-          'CROS_HANA_RELEASE_LKGM',
-          'CROS_HANA_RELEASE_STABLE',
-          'CROS_STRONGBAD_RELEASE_BETA',
-          'CROS_STRONGBAD_RELEASE_DEV',
-          'CROS_STRONGBAD_RELEASE_LKGM',
-          'CROS_STRONGBAD_RELEASE_STABLE',
         ],
       },
     },
@@ -7732,15 +7730,23 @@
           'CROS_PUFF_RELEASE_LKGM',
         ],
       },
-    },
-
-    'lacros_skylab_tests_amd64_generic_fyi': {
-      'lacros_skylab_amd64_fyi': {
+      'lacros_skylab_tests_with_gtests_version_skew': {
         'variants': [
-          'CROS_OCTOPUS_RELEASE_BETA',
-          'CROS_OCTOPUS_RELEASE_DEV',
-          'CROS_OCTOPUS_RELEASE_LKGM',
-          'CROS_OCTOPUS_RELEASE_STABLE',
+          'CROS_BRYA_RELEASE_BETA',
+          'CROS_BRYA_RELEASE_DEV',
+          'CROS_BRYA_RELEASE_STABLE',
+          'CROS_DEDEDE_RELEASE_BETA',
+          'CROS_DEDEDE_RELEASE_DEV',
+          'CROS_DEDEDE_RELEASE_STABLE',
+          'CROS_FIZZ_RELEASE_BETA',
+          'CROS_FIZZ_RELEASE_DEV',
+          'CROS_FIZZ_RELEASE_STABLE',
+          'CROS_GUYBRUSH_RELEASE_BETA',
+          'CROS_GUYBRUSH_RELEASE_DEV',
+          'CROS_GUYBRUSH_RELEASE_STABLE',
+          'CROS_PUFF_RELEASE_BETA',
+          'CROS_PUFF_RELEASE_DEV',
+          'CROS_PUFF_RELEASE_STABLE',
         ],
       },
     },
@@ -7861,26 +7867,44 @@
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
-      'gpu_metal_passthrough_graphite_telemetry_tests': {
+      'gpu_metal_passthrough_ganesh_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
-      'gpu_webcodecs_telemetry_test': {
+      'gpu_webcodecs_gl_passthrough_ganesh_telemetry_test': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
-      'gpu_webgl2_conformance_metal_passthrough_telemetry_tests': {
+      'gpu_webcodecs_metal_passthrough_ganesh_telemetry_test': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
+      'gpu_webcodecs_metal_passthrough_graphite_telemetry_test': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',

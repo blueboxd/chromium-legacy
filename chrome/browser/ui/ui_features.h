@@ -85,8 +85,6 @@ BASE_DECLARE_FEATURE(kSidePanelCompanionDefaultPinned);
 
 BASE_DECLARE_FEATURE(kSidePanelPinning);
 
-bool IsSidePanelPinningEnabled();
-
 BASE_DECLARE_FEATURE(kSidePanelMinimumWidth);
 extern const base::FeatureParam<int> kSidePanelMinimumWidthParameter;
 int GetSidePanelMinimumWidth();
@@ -144,16 +142,6 @@ extern const base::FeatureParam<double> kTabOrganizationTriggerBackoffBase;
 
 // The minimum score threshold for proactive nudge triggering to occur.
 extern const base::FeatureParam<double> kTabOrganizationTriggerThreshold;
-
-// The maximum sensitivity score for a tab to contribute to trigger scoring.
-extern const base::FeatureParam<double>
-    kTabOrganizationTriggerSensitivityThreshold;
-
-// Enable 'demo mode' for Tab Organization triggering, which triggers much more
-// predictably and frequently.
-extern const base::FeatureParam<bool> KTabOrganizationTriggerDemoMode;
-
-BASE_DECLARE_FEATURE(kTabOrganizationRefreshButton);
 
 BASE_DECLARE_FEATURE(kTabSearchChevronIcon);
 

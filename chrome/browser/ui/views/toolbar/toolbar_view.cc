@@ -397,7 +397,7 @@ void ToolbarView::Init() {
                   GetLayoutConstant(TOOLBAR_DIVIDER_HEIGHT)));
   }
 
-  if (features::IsSidePanelPinningEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
     pinned_toolbar_actions_container_ = container_view_->AddChildView(
         std::make_unique<PinnedToolbarActionsContainer>(browser_view_));
   }
@@ -443,7 +443,7 @@ void ToolbarView::Init() {
     send_tab_to_self_button_ =
         container_view_->AddChildView(std::move(send_tab_to_self_button));
 
-  if (!features::IsSidePanelPinningEnabled()) {
+  if (!base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
     if (companion::IsCompanionFeatureEnabled()) {
       side_panel_container_ = container_view_->AddChildView(
           std::make_unique<SidePanelToolbarContainer>(browser_view_));
@@ -624,7 +624,7 @@ void ToolbarView::ShowIntentPickerBubble(
     bool show_stay_in_chrome,
     bool show_remember_selection,
     IntentPickerBubbleView::BubbleType bubble_type,
-    const absl::optional<url::Origin>& initiating_origin,
+    const std::optional<url::Origin>& initiating_origin,
     IntentPickerResponse callback) {
   views::Button* highlighted_button = nullptr;
   if (bubble_type == IntentPickerBubbleView::BubbleType::kClickToCall) {
@@ -952,8 +952,7 @@ void ToolbarView::InitLayout() {
   if (pinned_toolbar_actions_container_) {
     const views::FlexSpecification toolbar_actions_flex_rule =
         views::FlexSpecification(
-            static_cast<views::FlexLayout*>(
-                pinned_toolbar_actions_container_->GetLayoutManager())
+            pinned_toolbar_actions_container_->GetAnimatingLayoutManager()
                 ->GetDefaultFlexRule())
             .WithOrder(kToolbarActionsFlexOrder);
 
@@ -981,9 +980,9 @@ void ToolbarView::InitLayout() {
 
     // TODO(crbug.com/1479588): Ignore containers till issue addressed.
     toolbar_controller_ = std::make_unique<ToolbarController>(
-        ToolbarController::GetDefaultResponsiveElements(browser_),
+        ToolbarController::GetDefaultResponsiveElements(),
         ToolbarController::GetDefaultOverflowOrder(), kToolbarFlexOrderStart,
-        container_view_, overflow_button_, pinned_toolbar_actions_container_);
+        container_view_, overflow_button_);
 
     overflow_button_->set_create_menu_model_callback(
         base::BindRepeating(&ToolbarController::CreateOverflowMenuModel,

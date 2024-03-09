@@ -258,7 +258,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1455413310270022028">Borracha</translation>
 <translation id="1458140305240870199">Roupa interior</translation>
 <translation id="1459693405370120464">Meteorologia</translation>
-<translation id="1461041542809785877">Desempenho</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1462951478840426066">Usar os tipos de letra presentes no computador para que possa criar conteúdo de alta-fidelidade.</translation>
 <translation id="1467432559032391204">Esquerda</translation>
@@ -829,6 +828,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
             <ph name="LIST_ITEM" />Os cookies e os dados de sites
             <ph name="LIST_ITEM" />As informações introduzidas em formulários
           <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">Inserir</translation>
 <translation id="2625385379895617796">O seu relógio está adiantado</translation>
 <translation id="262745152991669301">Pode solicitar a ligação a dispositivos USB</translation>
 <translation id="2629325967560697240">Para obter o nível de segurança mais elevado do Chrome, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />ative a proteção melhorada<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -1590,6 +1590,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4177501066905053472">Tópicos de anúncios</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">Desativar acompanhamento de preços</translation>
+<translation id="4191334393248735295">Comprimento</translation>
 <translation id="4195459680867822611">Botão Ver sugestões do Chrome; ative para saber mais acerca das funcionalidades do Chrome</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="4196861286325780578">&amp;Refazer movimentação</translation>
@@ -1910,7 +1911,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4809079943450490359">Instruções do administrador do dispositivo:</translation>
 <translation id="4811450222531576619">Saiba mais sobre a respetiva origem e tópico</translation>
-<translation id="4812751092864334025">Tecnologia em wearable</translation>
+<translation id="4812751092864334025">Tecnologia em dispositivos de vestir</translation>
 <translation id="4813512666221746211">Erro de rede</translation>
 <translation id="4816492930507672669">Ajustar à página</translation>
 <translation id="4819347708020428563">Quer editar anotações na vista predefinida?</translation>
@@ -2606,7 +2607,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6232271601416750929">Beleza consciente</translation>
 <translation id="6234122620015464377">Cortar no fim de cada documento</translation>
 <translation id="6236290670123303279">Gerir definições</translation>
-<translation id="623825323736974198">Gerir sites que permanecem sempre ativos e não são removidos da memória</translation>
 <translation id="6240447795304464094">Logótipo do Google Pay</translation>
 <translation id="6241121617266208201">Ocultar sugestões</translation>
 <translation id="624499991300733384">Serviço do compositor de impressão</translation>

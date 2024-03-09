@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_dice_reauth_provider.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 
+#include <optional>
 #include <set>
 
 #include "base/barrier_closure.h"
@@ -110,7 +111,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/test/test_url_loader_factory.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ui_base_features.h"
@@ -915,7 +915,7 @@ IN_PROC_BROWSER_TEST_F(ForceSigninProfilePickerCreationFlowBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ForceSigninProfilePickerCreationFlowBrowserTest,
-                       ForceSigninAbortedBySyncDeclined) {
+                       ForceSigninAbortedBySyncDeclined_ThenSigninAgain) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // Only the default profile exists at this point.
   size_t initial_profile_count = 1u;
@@ -960,6 +960,27 @@ IN_PROC_BROWSER_TEST_F(ForceSigninProfilePickerCreationFlowBrowserTest,
   // Makes sure that the only profile that exist is the default one and not the
   // one we attempted to create.
   EXPECT_EQ(profile_manager->GetNumberOfProfiles(), initial_profile_count);
+
+  // ---------------------------------------------------------------------------
+  // This part of the test is to make sure we can safely instantiate a new sign
+  // in flow after declining the first one.
+  // ---------------------------------------------------------------------------
+
+  size_t initial_browser_count = BrowserList::GetInstance()->size();
+
+  // Create a second signin flow as part of the same session.
+  Profile* force_sign_in_profile_2 =
+      SignInForNewProfile(GetSyncConfirmationURL(), "joe.consumer1@gmail.com",
+                          "Joe", kNoHostedDomainFound, true);
+
+  LoginUIServiceFactory::GetForProfile(force_sign_in_profile_2)
+      ->SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
+
+  Browser* new_browser = BrowserAddedWaiter(initial_browser_count + 1u).Wait();
+  WaitForPickerClosed();
+
+  // The browser is for the newly created profile.
+  EXPECT_EQ(new_browser->profile(), force_sign_in_profile_2);
 }
 
 IN_PROC_BROWSER_TEST_F(ForceSigninProfilePickerCreationFlowBrowserTest,
@@ -2768,7 +2789,7 @@ class ProfilePickerLacrosFirstRunBrowserTestBase
   // Helper to walk through the FRE. Performs a few assertions, and performs the
   // specified choices when prompted.
   void GoThroughFirstRunFlow(bool quit_on_welcome,
-                             absl::optional<bool> quit_on_sync) {
+                             std::optional<bool> quit_on_sync) {
     Profile* profile = GetPrimaryProfile();
     EXPECT_TRUE(ShouldOpenFirstRun(profile));
 
@@ -2839,7 +2860,7 @@ class ProfilePickerLacrosFirstRunBrowserTestBase
   // TODO(https://crbug.com/1324886): Find a better way to safely work around
   // the sync service stalling issue.
   testing::ScopedSyncStartupTimeoutOverride sync_startup_timeout_{
-      absl::optional<base::TimeDelta>()};
+      std::optional<base::TimeDelta>()};
 };
 
 class ProfilePickerLacrosFirstRunBrowserTest
@@ -2860,7 +2881,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest,
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitEarly) {
   GoThroughFirstRunFlow(
       /*quit_on_welcome=*/true,
-      /*quit_on_sync=*/absl::nullopt);
+      /*quit_on_sync=*/std::nullopt);
 
   // No browser window should open because we closed the FRE UI early.
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
@@ -2995,7 +3016,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosManagedFirstRunBrowserTest,
 
   GoThroughFirstRunFlow(
       /*quit_on_welcome=*/true,
-      /*quit_on_sync=*/absl::nullopt);
+      /*quit_on_sync=*/std::nullopt);
 
   // No browser window should open because we closed the FRE UI early.
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
@@ -3023,7 +3044,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosManagedFirstRunBrowserTest,
   // reopen it.
   GoThroughFirstRunFlow(
       /*quit_on_welcome=*/true,
-      /*quit_on_sync=*/absl::nullopt);
+      /*quit_on_sync=*/std::nullopt);
 }
 
 // Overall sequence for QuitAtEnd:

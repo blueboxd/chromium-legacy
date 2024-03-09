@@ -12,7 +12,6 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/embedder_support/switches.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "content/public/test/browser_test.h"
@@ -241,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(WebAppDarkModeOriginTrialBrowserTest, OriginTrial) {
     UpdateAwaiter update_awaiter(provider.install_manager());
 
     serve_token = false;
-    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kTestWebAppUrl)));
+    NavigateToURLAndWait(browser(), GURL(kTestWebAppUrl));
 
     update_awaiter.AwaitUpdate();
   }
@@ -250,11 +249,11 @@ IN_PROC_BROWSER_TEST_F(WebAppDarkModeOriginTrialBrowserTest, OriginTrial) {
   // the origin trial.
   EXPECT_EQ(
       provider.registrar_unsafe().GetAppById(app_id)->dark_mode_theme_color(),
-      absl::nullopt);
+      std::nullopt);
   EXPECT_EQ(provider.registrar_unsafe()
                 .GetAppById(app_id)
                 ->dark_mode_background_color(),
-            absl::nullopt);
+            std::nullopt);
 }
 
 }  // namespace web_app

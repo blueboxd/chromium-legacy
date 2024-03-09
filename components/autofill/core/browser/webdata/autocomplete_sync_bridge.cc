@@ -259,8 +259,7 @@ class SyncDifferenceTracker {
       return false;
     }
 
-    unique_to_local_ =
-        std::set<AutocompleteEntry>(vector.begin(), vector.end());
+    unique_to_local_ = AutocompleteEntrySet(vector.begin(), vector.end());
     initialized_ = true;
     return true;
   }
@@ -272,13 +271,21 @@ class SyncDifferenceTracker {
   // |unique_to_local_| should typically be done through ReadEntry().
   bool initialized_ = false;
 
-  // Important to note that because AutocompleteEntry's operator < simply
-  // compares contained AutocompleteKeys, this acts as a map<AutocompleteKey,
-  // AutocompleteEntry>. Shouldn't be accessed until either ReadEntry() or
-  // InitializeIfNeeded() is called, afterward it will start with all the local
-  // data. As sync data is encountered entries are removed from here, leaving
-  // only entries that exist solely on the local client.
-  std::set<AutocompleteEntry> unique_to_local_;
+  // Because we use a custom comparison function for `AutocompleteEntry` that
+  // only compares `AutocompleteKey`s, this acts as a map<AutocompleteKey,
+  // AutocompleteEntry>. It should not be accessed until either ReadEntry() or
+  // InitializeIfNeeded() is called.  Afterwards, it will start with all the
+  // local data. As sync data is encountered entries are removed from here,
+  // leaving only entries that exist solely on the local client.
+  struct AutocompleteEntryComparison {
+    bool operator()(const AutocompleteEntry& lhs,
+                    const AutocompleteEntry& rhs) const {
+      return lhs.key() < rhs.key();
+    }
+  };
+  using AutocompleteEntrySet =
+      std::set<AutocompleteEntry, AutocompleteEntryComparison>;
+  AutocompleteEntrySet unique_to_local_;
 
   std::set<AutocompleteKey> delete_from_local_;
   std::vector<AutocompleteEntry> save_to_local_;
@@ -432,19 +439,15 @@ void AutocompleteSyncBridge::ActOnLocalChanges(
     switch (change.type()) {
       case AutocompleteChange::ADD:
       case AutocompleteChange::UPDATE: {
-        base::Time date_created, date_last_used;
-        bool success = GetAutofillTable()->GetAutofillTimestamps(
-            change.key().name(), change.key().value(), &date_created,
-            &date_last_used);
-        if (!success) {
+        std::optional<AutocompleteEntry> entry =
+            GetAutofillTable()->GetAutocompleteEntry(change.key().name(),
+                                                     change.key().value());
+        if (!entry) {
           change_processor()->ReportError(
               {FROM_HERE, "Failed reading autofill entry from WebDatabase."});
           return;
         }
-
-        const AutocompleteEntry entry(change.key(), date_created,
-                                      date_last_used);
-        change_processor()->Put(storage_key, CreateEntityData(entry),
+        change_processor()->Put(storage_key, CreateEntityData(*entry),
                                 metadata_change_list.get());
         break;
       }

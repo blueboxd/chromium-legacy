@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">Mund të ndryshosh pamjen e parazgjedhur të sajtit në desktop te "Cilësimet" dhe më pas te "Cilësimet e përmbajtjes"</translation>
 <translation id="1054745118061919935">Duke vazhduar, ti pranon <ph name="BEGIN_LINK" />Kushtet e shërbimit<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Menaxho sinkronizimin</translation>
-<translation id="1066101356081285416">Chrome do të zbulojë numrat e gjurmimit në sajtet që viziton ti dhe do të të shfaqë përditësime për pakot në faqen e skedës së re. Numri i gjurmimit i pakos dhe emri i uebsajtit do të dërgohen te Google për të ofruar këtë veçori dhe për të përmirësuar veçoritë e blerjeve të Google për të gjithë. Mund ta përditësosh këtë në çdo kohë te <ph name="BEGIN_LINK" />Cilësimet e gjurmimit të pakove<ph name="END_LINK" />.</translation>
 <translation id="1069154182096085577">Fjalëkalimi ekziston tashmë</translation>
 <translation id="1076421457278169141">Kodi u skanua</translation>
 <translation id="1076785341346483463">Sinkronizo me një llogari të menaxhuar</translation>
@@ -143,7 +142,6 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="165877110639533037">Nuk ka skeda të hapura</translation>
 <translation id="1674504678466460478">Nga <ph name="SOURCE_LANGUAGE" /> në <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Kërko sajtin për celular</translation>
-<translation id="168715261339224929">Për të marrë faqeshënuesit e tu në të gjitha pajisjet e tua, aktivizo sinkronizimin.</translation>
 <translation id="1687475363370981210">Shëno të gjitha si të lexuara</translation>
 <translation id="1689333818294560261">Pseudonimi</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> u zgjodhën</translation>
@@ -839,7 +837,6 @@ Shiko udhëzimet e motorit të kërkimit për fshirjen e historikut të kërkimi
 <translation id="5457226814769348910">Hap versionin offline</translation>
 <translation id="5475069061743940393">Gjurmimi i pakos</translation>
 <translation id="5478327362747197944">Krijo drejtpërdrejt ngjarje të "Kalendarit" duke klikuar në një datë në një faqe uebi.</translation>
-<translation id="5482922178977937393">Dëshiron të marrësh njoftime për lajmet, sportet etj. bazuar në interesat e tu?</translation>
 <translation id="5489208564673669003">Për të menaxhuar kukit për të gjitha sajtet, shiko <ph name="BEGIN_LINK" />Cilësimet e kukive<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Blloko të gjitha kukit (nuk rekomandohet)</translation>
 <translation id="5497202150450073388">Dërgesa u provua. Do të riprovohet</translation>
@@ -1049,7 +1046,6 @@ Sajtet nuk mund t'i përdorin kukit për të parë aktivitetin tënd të shfleti
 <translation id="6476253015009698798">Monitorimi i çmimeve nuk ofrohet për këtë faqe.</translation>
 <translation id="6476800141292307438">Po përkthen faqen në <ph name="LANGUAGE" />. Opsionet që ofrohen janë pranë fundit të ekranit.</translation>
 <translation id="648164694371393720">Gabim i vërtetimit</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementë u fshinë</translation>
 <translation id="6484712497741564393">Identifikuar si <ph name="EMAIL" />.
 
 Të dhënat e tua janë të enkriptuara me frazën tënde të kalimit. Fute atë për të përdorur dhe ruajtur të dhënat e Chrome në "Llogarinë tënde të Google".</translation>
@@ -1136,6 +1132,7 @@ Në modalitetin "e fshehtë", sajtet nuk mund t'i përdorin kukit për të parë
 <translation id="6869389390665537774">Mund të shikosh faqet që ke vizituar ose pastroji ato nga historiku yt</translation>
 <translation id="687135068089457384">Shfaq cilësimet</translation>
 <translation id="6873263987691478642">Pamja e ndarë</translation>
+<translation id="687586529977635009">Chrome do të zbulojë numrat e gjurmimit në sajtet që viziton ti dhe do të të shfaqë përditësime për pakot në faqen e skedës së re. Të dhënat e tua do të ndahen me Google për të ofruar këtë veçori dhe për të përmirësuar "Blerjet" për të gjithë. Mund ta ndryshosh këtë te <ph name="BEGIN_LINK" />Cilësimet e gjurmimit të pakove<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Mbrojtje standarde kundër faqeve të internetit, shkarkimeve dhe shtesave që njihen si të rrezikshme.</translation>
 <translation id="6888009575607455378">Je i sigurt që dëshiron t'i heqësh ndryshimet e tua?</translation>
 <translation id="6896758677409633944">Kopjo</translation>
@@ -1388,7 +1385,7 @@ Sajtet mund t'i përdorin kukit për të parë aktivitetin tënd të shfletimit 
 <translation id="8271720166617117963">Pranoje dhe identifikohu</translation>
 <translation id="8273982424131314219">Do të plotësosh informacionet në <ph name="URL" /></translation>
 <translation id="8281781826761538115">Parazgjedhja - <ph name="DEFAULT_LOCALE" /></translation>
-<translation id="8281886186245836920">Kapërce</translation>
+<translation id="8281886186245836920">Kapërceje</translation>
 <translation id="8283172974887967105">Cakto…</translation>
 <translation id="8286036467436129157">Identifikohu</translation>
 <translation id="8299417921174340354">Për të përdorur fjalëkalimet, duhet të vendosësh në fillim një kod në pajisjen tënde.</translation>
@@ -1416,7 +1413,6 @@ Sajtet mund t'i përdorin kukit për të parë aktivitetin tënd të shfletimit 
 <translation id="8428634594422941299">E kuptova</translation>
 <translation id="8446884382197647889">Mëso më shumë</translation>
 <translation id="8449347986464073209">Fshi dhe dil</translation>
-<translation id="8458397775385147834">1 element u fshi</translation>
 <translation id="8459333855531264009">Jo e sigurt</translation>
 <translation id="8487667956631253959">Aktivizo</translation>
 <translation id="8487700953926739672">Mundësohet offline</translation>
@@ -1482,7 +1478,6 @@ Të dhënat e tua janë enkriptuar me frazën tënde të kalimit më <ph name="T
 <translation id="8766790350274092814">Fjalëkalimet për <ph name="WEBSITE" /> dhe <ph name="SECOND_WEBSITE" /> do të fshihen. Llogaritë e tua nuk do të fshihen.</translation>
 <translation id="8775144690796719618">URL-ja është e pavlefshme</translation>
 <translation id="8780076847684176174">{count,plural, =1{Rishiko skedën...}other{Rishiko të gjitha skedat...}}</translation>
-<translation id="8782570580170191813">Gjurmo gjithmonë pakot</translation>
 <translation id="8787968206789828143">Kërko në ueb</translation>
 <translation id="8792626944327216835">mikrofoni</translation>
 <translation id="8803639129939845298">E sigurt</translation>

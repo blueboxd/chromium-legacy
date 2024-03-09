@@ -131,11 +131,14 @@ public class TabGroupUiCoordinator
         assert mTabGridDialogControllerSupplier != null;
         if (mTabGridDialogCoordinator != null) return;
 
+        var currentTabModelFilterSupplier =
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilterSupplier();
         mTabGridDialogCoordinator =
                 new TabGridDialogCoordinator(
                         mActivity,
                         mBrowserControlsStateProvider,
-                        mTabModelSelector,
+                        currentTabModelFilterSupplier,
+                        () -> mTabModelSelector.getModel(false),
                         mTabContentManager,
                         mTabCreatorManager,
                         mActivity.findViewById(R.id.coordinator),
@@ -154,13 +157,16 @@ public class TabGroupUiCoordinator
             Activity activity,
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
             Callback<Object> onModelTokenChange) {
+        var currentTabModelFilterSupplier =
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilterSupplier();
         try (TraceEvent e = TraceEvent.scoped("TabGroupUiCoordinator.initializeWithNative")) {
             mTabStripCoordinator =
                     new TabListCoordinator(
                             TabListCoordinator.TabListMode.STRIP,
                             mContext,
                             mBrowserControlsStateProvider,
-                            mTabModelSelector,
+                            currentTabModelFilterSupplier,
+                            () -> mTabModelSelector.getModel(false),
                             null,
                             null,
                             false,

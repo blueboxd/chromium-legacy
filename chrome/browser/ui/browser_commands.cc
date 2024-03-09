@@ -1070,7 +1070,7 @@ bool CanMoveTabsToNewWindow(Browser* browser,
 
 void MoveTabsToNewWindow(Browser* browser,
                          const std::vector<int>& tab_indices,
-                         absl::optional<tab_groups::TabGroupId> group) {
+                         std::optional<tab_groups::TabGroupId> group) {
   if (tab_indices.empty()) {
     return;
   }
@@ -1515,10 +1515,7 @@ void ShowVirtualCardEnrollBubble(Browser* browser) {
 void StartTabOrganizationRequest(Browser* browser) {
   TabOrganizationService* service =
       TabOrganizationServiceFactory::GetForProfile(browser->profile());
-  UMA_HISTOGRAM_BOOLEAN("Tab.Organization.AllEntrypoints.Clicked", true);
-  UMA_HISTOGRAM_BOOLEAN("Tab.Organization.ThreeDotMenu.Clicked", true);
-
-  service->RestartSessionAndShowUI(browser);
+  service->StartRequest(browser);
 }
 
 void ShowTranslateBubble(Browser* browser) {
@@ -1757,8 +1754,7 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
 }
 
 void ShowTabSearch(Browser* browser) {
-  const int tab_search_tab_index = 0;
-  browser->window()->CreateTabSearchBubble(tab_search_tab_index);
+  browser->window()->CreateTabSearchBubble();
 }
 
 void CloseTabSearch(Browser* browser) {
@@ -2126,8 +2122,8 @@ void ToggleCommander(Browser* browser) {
 }
 
 #if !defined(TOOLKIT_VIEWS)
-absl::optional<int> GetKeyboardFocusedTabIndex(const Browser* browser) {
-  return absl::nullopt;
+std::optional<int> GetKeyboardFocusedTabIndex(const Browser* browser) {
+  return std::nullopt;
 }
 #endif
 

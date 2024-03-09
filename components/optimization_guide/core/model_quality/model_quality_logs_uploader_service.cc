@@ -8,10 +8,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "components/optimization_guide/core/access_token_helper.h"
-#include "components/optimization_guide/core/model_quality/feature_type_map.h"
 #include "components/optimization_guide/core/model_quality/model_quality_log_entry.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
-#include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
@@ -29,23 +27,6 @@
 namespace optimization_guide {
 
 namespace {
-
-void RecordUploadStatusHistogram(proto::ModelExecutionFeature feature,
-                                 ModelQualityLogsUploadStatus status) {
-  base::UmaHistogramEnumeration(
-      base::StrCat(
-          {"OptimizationGuide.ModelQualityLogsUploaderService.UploadStatus.",
-           GetStringNameForModelExecutionFeature(feature)}),
-      status);
-}
-
-void RecordUserFeedbackHistogram(proto::ModelExecutionFeature feature,
-                                 proto::UserFeedback user_feedback) {
-  base::UmaHistogramEnumeration(
-      base::StrCat({"OptimizationGuide.ModelQuality.UserFeedback.",
-                    GetStringNameForModelExecutionFeature(feature)}),
-      static_cast<ModelQualityUserFeedback>(user_feedback));
-}
 
 // Returns the URL endpoint for the model quality service along with the needed
 // API key.
@@ -78,51 +59,9 @@ proto::ModelExecutionFeature GetModelExecutionFeature(
   }
 }
 
-// Sets user feedback for the ModelExecutionFeature corresponding to the
-// `log_entry`.
-void RecordUserFeedbackHistogram(ModelQualityLogEntry* log_entry) {
-  proto::UserFeedback user_feedback =
-      proto::UserFeedback::USER_FEEDBACK_UNSPECIFIED;
-  proto::ModelExecutionFeature feature =
-      proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED;
-  switch (log_entry->log_ai_data_request()->feature_case()) {
-    case proto::LogAiDataRequest::FeatureCase::kCompose:
-      feature = proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE;
-      user_feedback =
-          log_entry->quality_data<ComposeFeatureTypeMap>()->user_feedback();
-      break;
-    case proto::LogAiDataRequest::FeatureCase::kTabOrganization:
-      feature = proto::ModelExecutionFeature::
-          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION;
-      // If there is no tab organization, we don't have any user_feedback.
-      if (log_entry->quality_data<TabOrganizationFeatureTypeMap>()
-              ->organizations_size() != 0) {
-        // We assume there is only one tab organizations when we upload the
-        // model quality data for this version.
-        // TODO(b/323300127): Fix this to consider logging feedback for all
-        // organizations.
-        user_feedback = log_entry->quality_data<TabOrganizationFeatureTypeMap>()
-                            ->mutable_organizations(0)
-                            ->user_feedback();
-      }
-      break;
-    case proto::LogAiDataRequest::FeatureCase::kWallpaperSearch:
-      feature = proto::ModelExecutionFeature::
-          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH;
-      user_feedback = log_entry->quality_data<WallpaperSearchFeatureTypeMap>()
-                          ->user_feedback();
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  RecordUserFeedbackHistogram(feature, user_feedback);
-}
-
 // URL load completion callback.
 void OnURLLoadComplete(
     std::unique_ptr<network::SimpleURLLoader> active_url_loader,
-    proto::ModelExecutionFeature feature,
     std::unique_ptr<std::string> response_body) {
   CHECK(active_url_loader) << "loader shouldn't be null\n";
   auto net_error = active_url_loader->NetError();
@@ -130,26 +69,16 @@ void OnURLLoadComplete(
   if (active_url_loader->ResponseInfo() &&
       active_url_loader->ResponseInfo()->headers) {
     response_code = active_url_loader->ResponseInfo()->headers->response_code();
-
-    // Only record response code when there are headers.
-    base::UmaHistogramEnumeration(
-        "OptimizationGuide.ModelQualityLogsUploaderService.Status",
-        static_cast<net::HttpStatusCode>(response_code),
-        net::HTTP_VERSION_NOT_SUPPORTED);
   }
 
+  base::UmaHistogramEnumeration(
+      "OptimizationGuide.ModelQualityLogsUploaderService.Status",
+      static_cast<net::HttpStatusCode>(response_code),
+      net::HTTP_VERSION_NOT_SUPPORTED);
   // Net error codes are negative but histogram enums must be positive.
   base::UmaHistogramSparse(
       "OptimizationGuide.ModelQualityLogsUploaderService.NetErrorCode",
       -net_error);
-
-  if (net_error != net::OK || response_code != net::HTTP_OK) {
-    RecordUploadStatusHistogram(feature,
-                                ModelQualityLogsUploadStatus::kNetError);
-    return;
-  }
-  RecordUploadStatusHistogram(feature,
-                              ModelQualityLogsUploadStatus::kUploadSuccessful);
 }
 
 }  // namespace
@@ -171,14 +100,7 @@ ModelQualityLogsUploaderService::~ModelQualityLogsUploaderService() = default;
 
 void ModelQualityLogsUploaderService::UploadModelQualityLogs(
     std::unique_ptr<ModelQualityLogEntry> log_entry) {
-  if (!log_entry) {
-    return;
-  }
-
-  // Log User Feedback Histogram corresponding to the log entry.
-  RecordUserFeedbackHistogram(log_entry.get());
-
-  UploadModelQualityLogs(std::move(log_entry->log_ai_data_request_));
+  UploadModelQualityLogs(std::move(log_entry.get()->log_ai_data_request_));
 }
 
 void ModelQualityLogsUploaderService::UploadModelQualityLogs(
@@ -196,18 +118,18 @@ void ModelQualityLogsUploaderService::UploadModelQualityLogs(
   // Don't do anything if logging is disabled for the feature. Nothing to
   // upload.
   if (!features::IsModelQualityLoggingEnabledForFeature(feature)) {
-    RecordUploadStatusHistogram(
-        feature, ModelQualityLogsUploadStatus::kLoggingNotEnabled);
     return;
   }
 
+  // TODO(b/301301447): Set LoggingMetadata fields during upload.
   // Set the client id for logging if non-zero.
-  proto::LoggingMetadata* logging_metadata =
-      log_ai_data_request->mutable_logging_metadata();
+  proto::LoggingMetadata logging_metadata;
   int64_t client_id = GetOrCreateModelQualityClientId(feature, pref_service_);
   if (client_id != 0) {
-    logging_metadata->set_client_id(client_id);
+    logging_metadata.set_client_id(client_id);
   }
+
+  *(log_ai_data_request->mutable_logging_metadata()) = logging_metadata;
 
   std::string serialized_logs;
   log_ai_data_request->SerializeToString(&serialized_logs);
@@ -217,68 +139,6 @@ void ModelQualityLogsUploaderService::UploadModelQualityLogs(
   resource_request->method = "POST";
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("model_quality_logging",
-                                          R"(
-        semantics {
-          sender: "Optimization Guide Model Quality Logger"
-          description:
-            "Sends logging data about machine learning model requests, "
-            "responses and user interaction with the feature using the "
-            "machine learning model. Google may use this data to improve "
-            "Google products, including the machine learning models "
-            "themselves, or to develop new models."
-          trigger:
-            "Sent after the feature using the machine learning model "
-            "is no longer using the model response, and the user is "
-            "done interacting with the feature."
-          data: "The machine learning model request, response and "
-            "usage statistics, feedback data and device information "
-            "(platform, chrome version, etc.)."
-          internal {
-            contacts {
-              email: "chrome-intelligence-core@google.com"
-            }
-          }
-          user_data {
-            type: SENSITIVE_URL
-            type: WEB_CONTENT
-            type: USER_AGENT
-            type: USER_CONTENT
-            type: HW_OS_INFO
-          }
-          last_reviewed: "2024-01-12"
-          destination: GOOGLE_OWNED_SERVICE
-        }
-         policy {
-          cookies_allowed: NO
-          setting:
-            "Users can disable this by signing out of Chrome or by "
-            "disabling each feature using a machine learning model."
-          chrome_policy {
-            CreateThemesSettings {
-              CreateThemesSettings: 1
-            }
-            TabOrganizerSettings {
-              TabOrganizerSettings: 1
-            }
-            HelpMeWriteSettings {
-              HelpMeWriteSettings: 1
-            }
-          }
-          chrome_policy {
-            CreateThemesSettings {
-              CreateThemesSettings: 2
-            }
-            TabOrganizerSettings {
-              TabOrganizerSettings: 2
-            }
-            HelpMeWriteSettings {
-              HelpMeWriteSettings: 2
-            }
-          }
-        })");
-
   // Holds the currently active url request.
   std::unique_ptr<network::SimpleURLLoader> active_url_loader;
   active_url_loader = variations::CreateSimpleURLLoaderWithVariationsHeader(
@@ -286,7 +146,9 @@ void ModelQualityLogsUploaderService::UploadModelQualityLogs(
       // This is always InIncognito::kNo as model quality logs upload is not
       // enabled on incognito sessions and is rechecked before each upload.
       variations::InIncognito::kNo, variations::SignedIn::kNo,
-      traffic_annotation);
+      // TODO(crbug/1485313): Update the traffic annotations with more details
+      // about the features.
+      MISSING_TRAFFIC_ANNOTATION);
 
   active_url_loader->AttachStringForUpload(serialized_logs,
                                            "application/x-protobuf");
@@ -294,8 +156,7 @@ void ModelQualityLogsUploaderService::UploadModelQualityLogs(
   auto* active_url_loader_ptr = active_url_loader.get();
   active_url_loader_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
-      base::BindOnce(&OnURLLoadComplete, std::move(active_url_loader),
-                     feature));
+      base::BindOnce(&OnURLLoadComplete, std::move(active_url_loader)));
 }
 
 }  // namespace optimization_guide

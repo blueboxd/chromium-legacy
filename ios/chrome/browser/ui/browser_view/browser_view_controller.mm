@@ -17,7 +17,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
-#import "ios/chrome/browser/discover_feed/feed_constants.h"
+#import "ios/chrome/browser/discover_feed/model/feed_constants.h"
 #import "ios/chrome/browser/find_in_page/model/util.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/metrics/model/tab_usage_recorder_browser_agent.h"
@@ -36,7 +36,6 @@
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
-#import "ios/chrome/browser/shared/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
@@ -64,7 +63,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_mediator.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/coordinator/tab_strip_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/foreground_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
@@ -1511,12 +1510,10 @@ enum HeaderBehaviour {
                                  .secondaryToolbarViewController.view
                 aboveSubview:primaryToolbarView];
 
-    // Create the NamedGuides and add them to the browser view.
-    NSArray<GuideName*>* guideNames = @[
-      // TODO(crbug.com/1450600): Migrate kContentAreaGuide to LayoutGuideCenter
-      kContentAreaGuide,
-    ];
-    AddNamedGuidesToView(guideNames, self.view);
+    // TODO(crbug.com/1450600): Migrate kContentAreaGuide to LayoutGuideCenter.
+    // Add guide kContentAreaGuide to the browser view.
+    [self.view
+        addLayoutGuide:[[NamedGuide alloc] initWithName:kContentAreaGuide]];
 
     // Configure the content area guide.
     NamedGuide* contentAreaGuide = [NamedGuide guideWithName:kContentAreaGuide

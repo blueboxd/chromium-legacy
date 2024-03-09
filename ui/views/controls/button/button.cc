@@ -30,7 +30,6 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -396,15 +395,10 @@ void Button::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
 }
 
 void Button::SetHighlighted(bool highlighted) {
-  // Do nothing if the ink drop's target state matches what we are trying to set
-  // since same state transitions may restart animations.
-  InkDropState state = highlighted ? views::InkDropState::ACTIVATED
-                                   : views::InkDropState::DEACTIVATED;
-  if (InkDrop::Get(ink_drop_view_)->GetInkDrop()->GetTargetInkDropState() ==
-      state) {
-    return;
-  }
-  InkDrop::Get(ink_drop_view_)->AnimateToState(state, nullptr);
+  InkDrop::Get(ink_drop_view_)
+      ->AnimateToState(highlighted ? views::InkDropState::ACTIVATED
+                                   : views::InkDropState::DEACTIVATED,
+                       nullptr);
 }
 
 Button::ScopedAnchorHighlight Button::AddAnchorHighlight() {
@@ -591,12 +585,8 @@ void Button::OnDragDone() {
   if (state_ != STATE_DISABLED) {
     SetState(STATE_NORMAL);
   }
-  if (anchor_count_ > 0) {
-    SetHighlighted(true);
-  } else {
-    InkDrop::Get(ink_drop_view_)
-        ->AnimateToState(InkDropState::HIDDEN, nullptr /* event */);
-  }
+  InkDrop::Get(ink_drop_view_)
+      ->AnimateToState(InkDropState::HIDDEN, nullptr /* event */);
 }
 
 void Button::OnPaint(gfx::Canvas* canvas) {
@@ -637,9 +627,6 @@ void Button::VisibilityChanged(View* starting_from, bool visible) {
     return;
   }
   SetState(visible && ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
-  if (visible && anchor_count_ > 0) {
-    SetHighlighted(true);
-  }
 }
 
 void Button::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
@@ -822,7 +809,10 @@ ButtonActionViewInterface::ButtonActionViewInterface(Button* action_view)
 void ButtonActionViewInterface::ActionItemChangedImpl(
     actions::ActionItem* action_item) {
   BaseActionViewInterface::ActionItemChangedImpl(action_item);
-  action_view_->SetTooltipText(action_item->GetTooltipText());
+  std::u16string tooltip_text = action_item->GetTooltipText();
+  if (!tooltip_text.empty()) {
+    action_view_->SetTooltipText(tooltip_text);
+  }
 }
 
 void ButtonActionViewInterface::LinkActionTriggerToView(

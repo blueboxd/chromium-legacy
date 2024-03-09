@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/ash/settings/pages/a11y/pdf_ocr_handler.h"
+
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
@@ -129,7 +130,7 @@ class PdfOcrHandlerTest : public testing::Test {
   }
 
   void SimulateSetState(screen_ai::ScreenAIInstallState::State state) {
-    test_screen_ai_install_state_->SetStateForTesting(state);
+    test_screen_ai_install_state_->SetState(state);
   }
 
   content::TestWebUI* test_web_ui() const { return test_web_ui_.get(); }

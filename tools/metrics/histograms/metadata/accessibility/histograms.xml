@@ -444,6 +444,28 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Accessibility.AriaLabelledBy.HadMultipleIds.TotalIds"
+    units="count" expires_after="2024-04-28">
+  <owner>mschillaci@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Whenever the OnIntListAttributeChanged method detects a change in
+    kLabelledbyIds, and that node has multiple ids, tracks the total number of
+    ids in that list.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.AriaLabelledBy.HasMultipleIds" units="Boolean"
+    expires_after="2024-04-28">
+  <owner>mschillaci@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks whether or not a node has multiple ids for the aria-labelledby
+    property whenever the OnIntListAttributeChanged method detects a change in
+    kLabelledbyIds.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.ATK-APIs" enum="AccessibilityATKAPIEnum"
     expires_after="2024-05-12">
   <owner>jdiggs@chromium.org</owner>
@@ -721,7 +743,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Accessibility.CrosDictation.ListeningDuration.OnDeviceRecognition"
-    units="ms" expires_after="2024-03-31">
+    units="ms" expires_after="2024-06-02">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -753,7 +775,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosDictation.PumpkinSucceeded"
-    enum="BooleanUsage" expires_after="2024-03-31">
+    enum="BooleanUsage" expires_after="2024-06-02">
   <owner>akihiroota@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -771,7 +793,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosDictation.UsedOnDeviceSpeech"
-    enum="BooleanUsage" expires_after="2024-03-31">
+    enum="BooleanUsage" expires_after="2024-06-02">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -935,7 +957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosSelectToSpeak.SentenceNavigationMethod"
-    enum="CrosSelectToSpeakActivationMethod" expires_after="2024-03-31">
+    enum="CrosSelectToSpeakActivationMethod" expires_after="2024-06-02">
   <owner>ajitnarayanan@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1833,10 +1855,12 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Accessibility.Performance.AXTree.Destroy" units="ms"
-    expires_after="2024-04-28">
+<histogram name="Accessibility.Performance.AXTree.Destroy2"
+    units="microseconds" expires_after="2024-04-28">
+  <owner>mschillaci@google.com</owner>
   <owner>agarwaltushar@google.com</owner>
   <owner>olivierli@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Tracks time spent in AXTree::Destroy.
 
@@ -1844,12 +1868,19 @@ chromium-metrics-reviews@google.com.
     which updates AXTree to internally use a std::map instead of a
     base::flat_map. Please see the CL description for more context and a
     performance profile.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
   </summary>
 </histogram>
 
 <histogram
-    name="Accessibility.Performance.BrowserAccessibilityManager::OnAccessibilityEvents"
-    units="ms" expires_after="2024-04-28">
+    name="Accessibility.Performance.BrowserAccessibilityManager::OnAccessibilityEvents2"
+    units="microseconds" expires_after="2024-04-28">
+  <owner>mschillaci@google.com</owner>
   <owner>aleventhal@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1862,22 +1893,36 @@ chromium-metrics-reviews@google.com.
     histogram only measures events which are processed by
     BrowserAccessibilityManager and thus should have a better histogram to
     understand the cost of doing so, and be used to meaure optimizations.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
   </summary>
 </histogram>
 
-<histogram name="Accessibility.Performance.HandleAXEvents" units="ms"
-    expires_after="2024-04-28">
+<histogram name="Accessibility.Performance.HandleAXEvents2"
+    units="microseconds" expires_after="2024-04-28">
+  <owner>mschillaci@google.com</owner>
   <owner>aleventhal@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Tracks time spent on the browser main thread handling accessibility events
     sent from the renderer process. Logged each time the method is run without
     returning early.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
   </summary>
 </histogram>
 
-<histogram name="Accessibility.Performance.ProcessDeferredAccessibilityEvents"
-    units="ms" expires_after="2024-04-28">
+<histogram name="Accessibility.Performance.ProcessDeferredAccessibilityEvents2"
+    units="microseconds" expires_after="2024-04-28">
+  <owner>mschillaci@google.com</owner>
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1885,23 +1930,19 @@ chromium-metrics-reviews@google.com.
     Tracks time spent on the render process processing deferred accessibility
     events. Logged each time the method is run during the accessbility document
     lifecycle.
-  </summary>
-</histogram>
 
-<histogram name="Accessibility.Performance.SendPendingAccessibilityEvents"
-    units="ms" expires_after="2024-04-28">
-  <owner>aleventhal@chromium.org</owner>
-  <owner>janewman@microsoft.com</owner>
-  <owner>chrome-a11y-core@google.com</owner>
-  <summary>
-    Tracks time spent on the render process sending pending accessibility
-    events. Logged each time the method is run without returning early.
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
   </summary>
 </histogram>
 
 <histogram
-    name="Accessibility.Performance.SendPendingAccessibilityEvents.PostLoad"
-    units="ms" expires_after="2024-05-12">
+    name="Accessibility.Performance.SendPendingAccessibilityEvents.PostLoad2"
+    units="microseconds" expires_after="2024-05-12">
+  <owner>mschillaci@google.com</owner>
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1909,17 +1950,47 @@ chromium-metrics-reviews@google.com.
     Tracks time spent on the render process sending pending accessibility
     events. Logging commences after loading is complete and triggered each time
     the method is run without returning early.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
   </summary>
 </histogram>
 
-<histogram name="Accessibility.Performance.Tree.Unserialize" units="ms"
-    expires_after="2024-04-28">
+<histogram name="Accessibility.Performance.SendPendingAccessibilityEvents2"
+    units="microseconds" expires_after="2024-04-28">
+  <owner>mschillaci@google.com</owner>
+  <owner>aleventhal@chromium.org</owner>
+  <owner>janewman@microsoft.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks time spent on the render process sending pending accessibility
+    events. Logged each time the method is run without returning early.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.Performance.Tree.Unserialize2"
+    units="microseconds" expires_after="2024-04-28">
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Tracks time spent on the browser process unserializing accessibility
     updates. Logged each time the method is run without returning early.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
   </summary>
 </histogram>
 

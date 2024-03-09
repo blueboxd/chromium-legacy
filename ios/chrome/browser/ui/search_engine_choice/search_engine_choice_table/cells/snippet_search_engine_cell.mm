@@ -193,11 +193,6 @@ constexpr NSTimeInterval kSnippetAnimationDurationInSecond = .3;
     return;
   }
   _checked = checked;
-  if (_checked) {
-    self.accessibilityTraits |= UIAccessibilityTraitSelected;
-  } else {
-    self.accessibilityTraits &= ~UIAccessibilityTraitSelected;
-  }
   [self updateCircleImageView];
 }
 

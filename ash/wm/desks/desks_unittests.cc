@@ -46,9 +46,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_widget_builder.h"
-#include "ash/wm/desks/cros_next_default_desk_button.h"
-#include "ash/wm/desks/cros_next_desk_button_base.h"
-#include "ash/wm/desks/cros_next_desk_icon_button.h"
+#include "ash/wm/desks/default_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_action_context_menu.h"
 #include "ash/wm/desks/desk_action_view.h"
@@ -56,6 +54,8 @@
 #include "ash/wm/desks/desk_bar_controller.h"
 #include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_button/desk_button.h"
+#include "ash/wm/desks/desk_button_base.h"
+#include "ash/wm/desks/desk_icon_button.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
@@ -82,6 +82,7 @@
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_types.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
@@ -448,9 +449,8 @@ class DesksTest : public AshTestBase,
   void VerifyZeroStateNewDeskButtonVisibility(const DeskBarViewBase* bar_view,
                                               bool expected_visibility) {
     const auto state = bar_view->new_desk_button()->state();
-    EXPECT_TRUE(expected_visibility
-                    ? state == CrOSNextDeskIconButton::State::kZero
-                    : state != CrOSNextDeskIconButton::State::kZero);
+    EXPECT_TRUE(expected_visibility ? state == DeskIconButton::State::kZero
+                                    : state != DeskIconButton::State::kZero);
   }
 
   void VerifyExpandedStateNewDeskButtonVisibility(
@@ -458,8 +458,8 @@ class DesksTest : public AshTestBase,
       bool expected_visibility) {
     const auto state = bar_view->new_desk_button()->state();
     EXPECT_TRUE(expected_visibility
-                    ? state == CrOSNextDeskIconButton::State::kExpanded
-                    : state != CrOSNextDeskIconButton::State::kExpanded);
+                    ? state == DeskIconButton::State::kExpanded
+                    : state != DeskIconButton::State::kExpanded);
   }
 
   void SendKey(ui::KeyboardCode key_code, int flags = ui::EF_NONE) {
@@ -1921,7 +1921,7 @@ TEST_P(DesksTest, DragWindowAtZeroState) {
                   event_generator, /*by_touch_gestures=*/false,
                   /*drop=*/false);
   WaitForMilliseconds(200);
-  EXPECT_EQ(CrOSNextDeskIconButton::State::kExpanded, new_desk_button->state());
+  EXPECT_EQ(DeskIconButton::State::kExpanded, new_desk_button->state());
   EXPECT_FALSE(desks_bar_view->new_desk_button_label()->GetVisible());
   // Now fire the timer directly to skip the wait time. Verify that the new desk
   // button is scaled up and at the active state and the new desk label is shown
@@ -1930,7 +1930,7 @@ TEST_P(DesksTest, DragWindowAtZeroState) {
       ->window_drag_controller()
       ->new_desk_button_scale_up_timer_for_test()
       ->FireNow();
-  EXPECT_EQ(CrOSNextDeskIconButton::State::kActive, new_desk_button->state());
+  EXPECT_EQ(DeskIconButton::State::kActive, new_desk_button->state());
   EXPECT_TRUE(desks_bar_view->new_desk_button_label()->GetVisible());
 
   // Keep dragging `overview_item1` to the center of the new desk button to make
@@ -1992,7 +1992,7 @@ TEST_P(DesksTest, DragWindowAtZeroStateWithoutDroppingItOnTheNewDesk) {
       event_generator,
       /*by_touch_gestures=*/false, /*drop=*/false);
   EXPECT_FALSE(desks_bar_view->IsZeroState());
-  EXPECT_EQ(CrOSNextDeskIconButton::State::kExpanded, new_desk_button->state());
+  EXPECT_EQ(DeskIconButton::State::kExpanded, new_desk_button->state());
   EXPECT_FALSE(desks_bar_view->new_desk_button_label()->GetVisible());
 
   // Keep dragging `overview_item1` to hover on the new desk button, immediately
@@ -2009,7 +2009,7 @@ TEST_P(DesksTest, DragWindowAtZeroStateWithoutDroppingItOnTheNewDesk) {
       ->window_drag_controller()
       ->new_desk_button_scale_up_timer_for_test()
       ->FireNow();
-  EXPECT_EQ(CrOSNextDeskIconButton::State::kActive, new_desk_button->state());
+  EXPECT_EQ(DeskIconButton::State::kActive, new_desk_button->state());
   EXPECT_TRUE(desks_bar_view->new_desk_button_label()->GetVisible());
 
   // Now keep dragging `overview_item1` and make it not able to be dropped on
@@ -3297,10 +3297,8 @@ TEST_P(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
 
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win1.get(), SplitViewController::SnapPosition::kPrimary);
-  split_view_controller()->SnapWindow(
-      win2.get(), SplitViewController::SnapPosition::kSecondary);
+  split_view_controller()->SnapWindow(win1.get(), SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win2.get(), SnapPosition::kSecondary);
   EXPECT_EQ(win1.get(), split_view_controller()->primary_window());
   EXPECT_EQ(win2.get(), split_view_controller()->secondary_window());
 
@@ -3316,10 +3314,8 @@ TEST_P(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
   // Snap two other windows in desk 2.
   auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win3.get(), SplitViewController::SnapPosition::kPrimary);
-  split_view_controller()->SnapWindow(
-      win4.get(), SplitViewController::SnapPosition::kSecondary);
+  split_view_controller()->SnapWindow(win3.get(), SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win4.get(), SnapPosition::kSecondary);
   EXPECT_EQ(win3.get(), split_view_controller()->primary_window());
   EXPECT_EQ(win4.get(), split_view_controller()->secondary_window());
 
@@ -3337,10 +3333,8 @@ TEST_P(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   ASSERT_EQ(2u, desks_controller->desks().size());
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win1.get(), SplitViewController::SnapPosition::kPrimary);
-  split_view_controller()->SnapWindow(
-      win2.get(), SplitViewController::SnapPosition::kSecondary);
+  split_view_controller()->SnapWindow(win1.get(), SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win2.get(), SnapPosition::kSecondary);
   EXPECT_EQ(win1.get(), split_view_controller()->primary_window());
   EXPECT_EQ(win2.get(), split_view_controller()->secondary_window());
 
@@ -3369,10 +3363,8 @@ TEST_P(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   // destination desks.
   auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win3.get(), SplitViewController::SnapPosition::kPrimary);
-  split_view_controller()->SnapWindow(
-      win4.get(), SplitViewController::SnapPosition::kSecondary);
+  split_view_controller()->SnapWindow(win3.get(), SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win4.get(), SnapPosition::kSecondary);
   EXPECT_EQ(win3.get(), split_view_controller()->primary_window());
   EXPECT_EQ(win4.get(), split_view_controller()->secondary_window());
   EnterOverview();
@@ -3416,8 +3408,7 @@ TEST_P(
       &win3_delegate, /*id=*/-1, gfx::Rect(big)));
   OverviewController* overview_controller = OverviewController::Get();
   EXPECT_TRUE(EnterOverview());
-  split_view_controller()->SnapWindow(
-      win1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win1.get(), SnapPosition::kPrimary);
   EXPECT_EQ(win1.get(), split_view_controller()->primary_window());
   EXPECT_FALSE(split_view_controller()->CanSnapWindow(win2.get()));
   EXPECT_FALSE(split_view_controller()->CanSnapWindow(win3.get()));
@@ -3470,10 +3461,8 @@ TEST_P(TabletModeDesksTest, OverviewStateOnSwitchToDeskWithSplitView) {
   Desk* desk_2 = desks_controller->GetDeskAtIndex(1);
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win1.get(), SplitViewController::SnapPosition::kPrimary);
-  split_view_controller()->SnapWindow(
-      win2.get(), SplitViewController::SnapPosition::kSecondary);
+  split_view_controller()->SnapWindow(win1.get(), SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win2.get(), SnapPosition::kSecondary);
   EXPECT_EQ(win1.get(), split_view_controller()->primary_window());
   EXPECT_EQ(win2.get(), split_view_controller()->secondary_window());
   auto* overview_controller = OverviewController::Get();
@@ -3481,8 +3470,7 @@ TEST_P(TabletModeDesksTest, OverviewStateOnSwitchToDeskWithSplitView) {
   ActivateDesk(desk_2);
   EXPECT_FALSE(overview_controller->InOverviewSession());
   auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win3.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win3.get(), SnapPosition::kPrimary);
   EXPECT_EQ(win3.get(), split_view_controller()->primary_window());
   EXPECT_EQ(nullptr, split_view_controller()->secondary_window());
 
@@ -3503,14 +3491,12 @@ TEST_P(TabletModeDesksTest, RemovingDesksWithSplitView) {
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_2 = desks_controller->GetDeskAtIndex(1);
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win1.get(), SnapPosition::kPrimary);
   EXPECT_EQ(win1.get(), split_view_controller()->primary_window());
   EXPECT_EQ(nullptr, split_view_controller()->secondary_window());
   ActivateDesk(desk_2);
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win2.get(), SplitViewController::SnapPosition::kSecondary);
+  split_view_controller()->SnapWindow(win2.get(), SnapPosition::kSecondary);
   EXPECT_EQ(nullptr, split_view_controller()->primary_window());
   EXPECT_EQ(win2.get(), split_view_controller()->secondary_window());
 
@@ -3528,8 +3514,7 @@ TEST_P(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_2 = desks_controller->GetDeskAtIndex(1);
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win1.get(), SnapPosition::kPrimary);
   EXPECT_EQ(win1.get(), split_view_controller()->primary_window());
   EXPECT_EQ(nullptr, split_view_controller()->secondary_window());
   ActivateDesk(desk_2);
@@ -3575,10 +3560,8 @@ TEST_P(TabletModeDesksTest, BackdropsStacking) {
 
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win1.get(), SplitViewController::SnapPosition::kPrimary);
-  split_view_controller()->SnapWindow(
-      win2.get(), SplitViewController::SnapPosition::kSecondary);
+  split_view_controller()->SnapWindow(win1.get(), SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win2.get(), SnapPosition::kSecondary);
   auto* desk_1_backdrop_controller =
       GetDeskBackdropController(desk_1, Shell::GetPrimaryRootWindow());
   auto* desk_2_backdrop_controller =
@@ -3603,10 +3586,8 @@ TEST_P(TabletModeDesksTest, BackdropsStacking) {
   // but should not affect desk_1.
   auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller()->SnapWindow(
-      win3.get(), SplitViewController::SnapPosition::kPrimary);
-  split_view_controller()->SnapWindow(
-      win4.get(), SplitViewController::SnapPosition::kSecondary);
+  split_view_controller()->SnapWindow(win3.get(), SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(win4.get(), SnapPosition::kSecondary);
   ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
   ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
   auto* desk_2_backdrop = desk_2_backdrop_controller->backdrop_window();
@@ -3700,8 +3681,7 @@ TEST_P(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
   EXPECT_TRUE(split_view_controller()->CanSnapWindow(window.get()));
 
   // Snap the window in this orientation.
-  split_view_controller()->SnapWindow(
-      window.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(window.get(), SnapPosition::kPrimary);
   EXPECT_EQ(window.get(), split_view_controller()->primary_window());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
@@ -6244,7 +6224,7 @@ TEST_P(DesksTest, ScrollButtonsVisibility) {
   // overview mode.
   auto* root_window = Shell::GetPrimaryRootWindow();
   SplitViewController::Get(root_window)
-      ->SnapWindow(window.get(), SplitViewController::SnapPosition::kPrimary);
+      ->SnapWindow(window.get(), SnapPosition::kPrimary);
   EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   auto* desks_bar = GetOverviewGridForRoot(root_window)->desks_bar_view();
   auto* event_generator = GetEventGenerator();
@@ -6526,7 +6506,7 @@ TEST_P(DesksTest, FocusedMiniViewIsVisible) {
   // overview mode.
   auto* root_window = Shell::GetPrimaryRootWindow();
   SplitViewController::Get(root_window)
-      ->SnapWindow(window.get(), SplitViewController::SnapPosition::kPrimary);
+      ->SnapWindow(window.get(), SnapPosition::kPrimary);
   EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   auto* desks_bar = GetOverviewGridForRoot(root_window)->desks_bar_view();
   auto mini_views = desks_bar->mini_views();
@@ -9638,8 +9618,8 @@ TEST_P(DeskBarTest, Basic) {
     auto* new_desk_button = desk_bar_view->new_desk_button();
     const auto expected_button_state =
         bar_type_ == DeskBarViewBase::Type::kOverview && test.desks.size() == 1
-            ? CrOSNextDeskIconButton::State::kZero
-            : CrOSNextDeskIconButton::State::kExpanded;
+            ? DeskIconButton::State::kZero
+            : DeskIconButton::State::kExpanded;
     EXPECT_THAT(new_desk_button->state(), expected_button_state);
     EXPECT_TRUE(new_desk_button->GetVisible());
     EXPECT_THAT(new_desk_button->GetEnabled(),

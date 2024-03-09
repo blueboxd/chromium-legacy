@@ -113,13 +113,13 @@ BatteryLevelProviderMac::GetBatteryStateImpl() {
   }
 
   absl::optional<SInt64> current_capacity =
-      GetValueAsSInt64(dict.get(), CFSTR("AppleRawCurrentCapacity"));
+      GetValueAsSInt64(dict.get(), capacity_key);
   if (!current_capacity.has_value()) {
     return absl::nullopt;
   }
 
   absl::optional<SInt64> max_capacity =
-      GetValueAsSInt64(dict.get(), CFSTR("AppleRawMaxCapacity"));
+      GetValueAsSInt64(dict.get(), capacity_key);
   if (!max_capacity.has_value()) {
     return absl::nullopt;
   }

@@ -93,8 +93,9 @@ void FutureBase::Wait() {
 }
 
 void FutureBase::DispatchNow() {
-  CHECK(impl_);
-  impl_->DispatchNow();
+  if (impl_) {
+    impl_->DispatchNow();
+  }
 }
 
 bool FutureBase::AfterEvent(const Event& event) const {

@@ -173,29 +173,22 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     /** The network handle to be used for requests that do not explicitly specify one. **/
     private long mNetworkHandle = DEFAULT_NETWORK_HANDLE;
 
-    private final int mCronetEngineId;
-
-    /** Whether Cronet Telemetry should be enabled or not. */
-    private final boolean mEnableTelemetry;
+    /** The ID of this CronetEngine for CronetLogger purposes. */
+    private final long mLogId;
 
     /** The logger to be used for logging. */
     private final CronetLogger mLogger;
 
-    int getCronetEngineId() {
-        return mCronetEngineId;
+    long getLogId() {
+        return mLogId;
     }
 
     CronetLogger getCronetLogger() {
         return mLogger;
     }
 
-    public boolean getEnableTelemetryForTesting() {
-        return mEnableTelemetry;
-    }
-
     @UsedByReflection("CronetEngine.java")
     public CronetUrlRequestContext(final CronetEngineBuilderImpl builder) {
-        mCronetEngineId = hashCode();
         mRttListenerList.disableThreadAsserts();
         mThroughputListenerList.disableThreadAsserts();
         mNetworkQualityEstimatorEnabled = builder.networkQualityEstimatorEnabled();
@@ -218,20 +211,12 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             if (mUrlRequestContextAdapter == 0) {
                 throw new NullPointerException("Context Adapter creation failed.");
             }
-            mEnableTelemetry =
-                    CronetUrlRequestContextJni.get()
-                            .getEnableTelemetry(
-                                    mUrlRequestContextAdapter, CronetUrlRequestContext.this);
         }
-
-        if (mEnableTelemetry) {
-            mLogger = CronetLoggerFactory.createLogger(builder.getContext(), getCronetSource());
-        } else {
-            mLogger = CronetLoggerFactory.createNoOpLogger();
-        }
+        mLogger = CronetLoggerFactory.createLogger(builder.getContext(), getCronetSource());
+        mLogId = mLogger.generateId();
         try {
             mLogger.logCronetEngineCreation(
-                    getCronetEngineId(),
+                    getLogId(),
                     new CronetEngineBuilderInfo(builder),
                     buildCronetVersion(),
                     getCronetSource());
@@ -984,8 +969,5 @@ public class CronetUrlRequestContext extends CronetEngineBase {
         @NativeClassQualifiedName("CronetContextAdapter")
         void provideThroughputObservations(
                 long nativePtr, CronetUrlRequestContext caller, boolean should);
-
-        @NativeClassQualifiedName("CronetContextAdapter")
-        boolean getEnableTelemetry(long nativePtr, CronetUrlRequestContext caller);
     }
 }

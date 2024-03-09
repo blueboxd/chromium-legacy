@@ -3,22 +3,22 @@
 // found in the LICENSE file.
 
 import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
-import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 import {assert} from 'chrome://resources/js/assert.js';
 
+import type {SpliceEvent} from '../../common/js/array_data_model.js';
 import {Aggregator, AsyncQueue} from '../../common/js/async_util.js';
 import {isModal} from '../../common/js/dialog_type.js';
 import {convertURLsToEntries, entriesToURLs, getRootType, isFakeEntry, isGuestOs, isNativeEntry, isOneDriveId, isRecentRootType, isSameEntry, urlToEntry} from '../../common/js/entry_utils.js';
 import type {GuestOsPlaceholder} from '../../common/js/files_app_entry_types.js';
+import {CustomEventMap, FilesEventTarget} from '../../common/js/files_event_target.js';
 import {isDlpEnabled, isDriveFsBulkPinningEnabled} from '../../common/js/flags.js';
 import {recordMediumCount, recordUserAction} from '../../common/js/metrics.js';
 import {getEntryLabel} from '../../common/js/translations.js';
 import {testSendMessage} from '../../common/js/util.js';
 import {FileSystemType, getVolumeTypeFromRootType, isNative, RootType, Source, VolumeType} from '../../common/js/volume_manager_types.js';
-import type {ArrayDataModelSpliceEvent} from '../../definitions/array_data_model_events.js';
 import type {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {PropStatus, SearchLocation, SearchOptions, State, Volume, VolumeId} from '../../externs/ts/state.js';
 import type {SearchData} from '../../externs/ts/state.js';
+import {PropStatus, SearchLocation, SearchOptions, State, Volume, VolumeId} from '../../externs/ts/state.js';
 import type {Store} from '../../externs/ts/store.js';
 import type {VolumeInfo} from '../../externs/volume_info.js';
 import type {VolumeManager} from '../../externs/volume_manager.js';
@@ -100,10 +100,20 @@ function getFileCategory(
   return entry.fileCategory;
 }
 
+export type DirectoryChangeEvent = CustomEvent<{
+  previousDirEntry: DirectoryEntry | FilesAppDirEntry | FakeEntry,
+  newDirEntry: DirectoryEntry | FilesAppDirEntry | FakeEntry,
+  volumeChanged: boolean,
+}>;
+
+interface DirectoryModelEventMap extends CustomEventMap {
+  'directory-changed': DirectoryChangeEvent;
+}
+
 /**
  * Data model of the file manager.
  */
-export class DirectoryModel extends EventTarget {
+export class DirectoryModel extends FilesEventTarget<DirectoryModelEventMap> {
   private fileListSelection_: FileListSingleSelectionModel|
       FileListSelectionModel;
   private runningScan_: DirectoryContents|null = null;
@@ -581,11 +591,11 @@ export class DirectoryModel extends EventTarget {
   /**
    * @return Array of selected entries.
    */
-  private getSelectedEntries_(): Entry[] {
+  private getSelectedEntries_(): Array<Entry|FilesAppEntry> {
     const indexes = this.fileListSelection_.selectedIndexes;
     const fileList = this.getFileList();
     if (fileList) {
-      return indexes.map(i => fileList.item(i));
+      return indexes.map(i => fileList.item(i)!);
     }
     return [];
   }
@@ -593,13 +603,13 @@ export class DirectoryModel extends EventTarget {
   /**
    * @param value List of selected entries.
    */
-  private setSelectedEntries_(value: Entry[]) {
+  private setSelectedEntries_(value: Array<Entry|FilesAppEntry>) {
     const indexes = [];
     const fileList = this.getFileList();
     const urls = entriesToURLs(value);
 
     for (let i = 0; i < fileList.length; i++) {
-      if (urls.indexOf(fileList.item(i).toURL()) !== -1) {
+      if (urls.indexOf(fileList.item(i)!.toURL()) !== -1) {
         indexes.push(i);
       }
     }
@@ -609,15 +619,15 @@ export class DirectoryModel extends EventTarget {
   /**
    * @return Lead entry.
    */
-  private getLeadEntry_(): Entry {
+  private getLeadEntry_(): Entry|FilesAppEntry|null {
     const index = this.fileListSelection_.leadIndex;
-    return index >= 0 ? this.getFileList().item(index) : null;
+    return index >= 0 ? this.getFileList().item(index)! : null;
   }
 
   /**
    * @param value The new lead entry.
    */
-  private setLeadEntry_(value: Entry) {
+  private setLeadEntry_(value: Entry|FilesAppEntry|null) {
     const fileList = this.getFileList();
     for (let i = 0; i < fileList.length; i++) {
       if (isSameEntry(fileList.item(i), value)) {
@@ -812,7 +822,7 @@ export class DirectoryModel extends EventTarget {
     const fileList = this.getFileList();
     const removedUrls = [];
     for (let i = 0; i < fileList.length; i++) {
-      removedUrls.push(fileList.item(i).toURL());
+      removedUrls.push(fileList.item(i)!.toURL());
     }
     this.metadataModel_.notifyEntriesRemoved(removedUrls);
 
@@ -854,7 +864,7 @@ export class DirectoryModel extends EventTarget {
         callback();
         return;
       }
-      const currentDirEntry = this.getCurrentDirEntry();
+      const currentDirEntry = this.getCurrentDirEntry()!;
       assert(currentDirEntry);
       const newDirContents = this.createDirectoryContents_(
           this.currentFileListContext_, currentDirEntry, this.lastSearchQuery_);
@@ -1097,7 +1107,7 @@ export class DirectoryModel extends EventTarget {
         const newEntryUrl = newEntry.toURL();
 
         for (let i = 0; i < list.length; i++) {
-          const item = list.item(i);
+          const item = list.item(i)!;
           const url = item.toURL();
           if (url === oldEntryUrl) {
             list.replaceItem(item, newEntry);
@@ -1334,7 +1344,7 @@ export class DirectoryModel extends EventTarget {
   selectEntry(entry: Entry) {
     const fileList = this.getFileList();
     for (let i = 0; i < fileList.length; i++) {
-      if (fileList.item(i).toURL() === entry.toURL()) {
+      if (fileList.item(i)!.toURL() === entry.toURL()) {
         this.selectIndex(i);
         return;
       }
@@ -1351,7 +1361,7 @@ export class DirectoryModel extends EventTarget {
     this.fileListSelection_.beginChange();
     this.fileListSelection_.unselectAll();
     for (let i = 0; i < fileList.length; i++) {
-      if (urls.indexOf(fileList.item(i).toURL()) >= 0) {
+      if (urls.indexOf(fileList.item(i)!.toURL()) >= 0) {
         this.fileListSelection_.setIndexSelected(i, true);
       }
     }
@@ -1374,7 +1384,7 @@ export class DirectoryModel extends EventTarget {
    * Handles update of VolumeInfoList.
    * @param event Event of VolumeInfoList's 'splice'.
    */
-  private onVolumeInfoListUpdated_(event: ArrayDataModelSpliceEvent) {
+  private onVolumeInfoListUpdated_(event: SpliceEvent) {
     const spliceEventDetail = event.detail;
     // Fallback to the default volume's root if the current volume is unmounted.
     if (this.hasCurrentDirEntryBeenUnmounted_(spliceEventDetail.removed)) {

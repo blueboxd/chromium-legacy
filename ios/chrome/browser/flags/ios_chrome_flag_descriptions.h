@@ -263,11 +263,6 @@ extern const char kDynamicBackgroundColorDescription[];
 extern const char kDynamicThemeColorName[];
 extern const char kDynamicThemeColorDescription[];
 
-// Title and description for the flag to enable the bookmarks account storage
-// and related UI features.
-extern const char kEnableBookmarksAccountStorageName[];
-extern const char kEnableBookmarksAccountStorageDescription[];
-
 // Title and description for the flag to enable the muting of compromised
 // passwords in the Password Manager.
 extern const char kEnableCompromisedPasswordsMutingName[];
@@ -477,11 +472,6 @@ extern const char kIOSPasswordAuthOnEntryV2Description[];
 extern const char kIOSPasswordBottomSheetName[];
 extern const char kIOSPasswordBottomSheetDescription[];
 
-// Title and description for the flag to enable password bottom sheet triggering
-// on autofocus on IOS.
-extern const char kIOSPasswordBottomSheetAutofocusName[];
-extern const char kIOSPasswordBottomSheetAutofocusDescription[];
-
 // Title and description for the flag to enable bulk uploading local passwords
 // for eligible users on the iOS password settings.
 extern const char kIOSPasswordSettingsBulkUploadLocalPasswordsName[];
@@ -647,14 +637,6 @@ extern const char kOmniboxOnDeviceTailSuggestionsDescription[];
 // Title and description for storing query/match in the shortcuts database.
 extern const char kOmniboxPopulateShortcutsDatabaseName[];
 extern const char kOmniboxPopulateShortcutsDatabaseDescription[];
-
-// Title and description for assisted query stats param reporting.
-extern const char kOmniboxReportAssistedQueryStatsName[];
-extern const char kOmniboxReportAssistedQueryStatsDescription[];
-
-// Title and description for searchbox stats flag.
-extern const char kOmniboxReportSearchboxStatsName[];
-extern const char kOmniboxReportSearchboxStatsDescription[];
 
 // Title and description for improved RTL layout of suggestions.
 extern const char kOmniboxSuggestionsRTLImprovementsName[];
@@ -869,11 +851,6 @@ extern const char kEnableLensInOmniboxCopiedImageDescription[];
 // optimizations (go/bling-session-restoration).
 extern const char kEnableSessionSerializationOptimizationsName[];
 extern const char kEnableSessionSerializationOptimizationsDescription[];
-
-// Title and description for the flag to let the Tab Grid always bounce (even
-// when the content fits the screen already).
-extern const char kTabGridAlwaysBounceName[];
-extern const char kTabGridAlwaysBounceDescription[];
 
 // Title and description for the tab grid new compositional layout.
 extern const char kTabGridCompositionalLayoutName[];

@@ -717,7 +717,7 @@ BASE_FEATURE(kEstablishGpuChannelAsync,
 // Enables reporting Event Timing with matching presentation promise index only.
 BASE_FEATURE(kEventTimingMatchPresentationIndex,
              "EventTimingMatchPresentationIndex",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables reporting Event Timing entries with a smaller presentation index on
 // resolved painted presentation.
@@ -1104,6 +1104,11 @@ const base::FeatureParam<LcppResourceLoadPriority>
 const base::FeatureParam<bool>
     kLCPCriticalPathPredictorEnableElementLocatorPerformanceImprovements{
         &kLCPCriticalPathPredictor, "lcpp_enable_perf_improvements", false};
+
+const base::FeatureParam<bool>
+    kLCPCriticalPathPredictorImageLoadPriorityEnabledForHTMLImageElement{
+        &kLCPCriticalPathPredictor,
+        "lcpp_enable_image_load_priority_for_htmlimageelement", false};
 
 BASE_FEATURE(kLCPScriptObserver,
              "LCPScriptObserver",
@@ -2037,6 +2042,10 @@ BASE_FEATURE(kUseBlinkSchedulerTaskRunnerWithCustomDeleter,
              "UseBlinkSchedulerTaskRunnerWithCustomDeleter",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kBlinkSchedulerPrioritizeNavigationIPCs,
+             "BlinkSchedulerPrioritizeNavigationIPCs",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kEnableFileBackedBlobFactory,
              "EnableFileBackedBlobFactory",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -2178,10 +2187,6 @@ BASE_FEATURE(kWebRtcIgnoreUnspecifiedColorSpace,
 
 BASE_FEATURE(kWebRtcInitializeEncoderOnFirstFrame,
              "WebRtcInitializeEncoderOnFirstFrame",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kWebRtcMetronome,
-             "WebRtcMetronome",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables negotiation of experimental multiplex codec in SDP.

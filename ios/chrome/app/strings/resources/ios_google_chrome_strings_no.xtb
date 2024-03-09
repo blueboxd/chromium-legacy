@@ -170,6 +170,7 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 <translation id="7124339256045485976">Hold Chrome oppdatert</translation>
 <translation id="7161390184744336561">Google Chrome er utdatert</translation>
 <translation id="7165736900384873061">Begynn å bruke Google Chrome QR-skanneren</translation>
+<translation id="7173660919484573146">Chrome bruker Face ID til å sikre at bare godkjente personer får tilgang til passordene dine.</translation>
 <translation id="7187993566681480880">Holder deg trygg i Chrome og kan brukes til å øke sikkerheten din i andre Google-apper når du er pålogget.</translation>
 <translation id="7200524487407690471">Chrome kjører sikkerhetssjekken automatisk hver dag for å beskytte deg mot databrudd, utrygge nettsteder med mer. Du kan finne ut mer om sikkerhetssjekken i innstillingene.</translation>
 <translation id="72119412072970160">Du kan bruke passordene du har lagret i Google Passordlagring, i andre apper på iPaden din.</translation>
@@ -189,7 +190,6 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 <translation id="7698568245838009292">Chrome vil ha tilgang til kameraet</translation>
 <translation id="7754633291442704733">Organisasjonen din, <ph name="DOMAIN" />, får tilgang til data, bokmerker, logg, passord og andre innstillinger for Chrome som du lagrer i denne kontoen. Når du logger av, slettes dataene dine fra denne enheten.  Dataene forblir imidlertid lagret i den administrerte Google-kontoen og er tilgjengelige for organisasjonen din. Organisasjonen din kan også angi spesifikke brukerinnstillinger for den aktuelle kontoen. Disse kan endre virkemåten til Chrome.</translation>
 <translation id="7780154209050837198">For å få mest mulig ut av Chrome, logg på Chrome med Google-kontoen din.</translation>
-<translation id="7792140019572081272">Chrome beskytter de sensitive dataene dine med Face ID.</translation>
 <translation id="7855730255114109580">Google Chrome er oppdatert</translation>
 <translation id="7897703007638178753">Se nylige faner fra Chrome</translation>
 <translation id="7925119591961387184">Velg «Chrome».</translation>
@@ -229,7 +229,7 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 For å endre denne innstillingen, <ph name="BEGIN_LINK" />slett Chrome-dataene i kontoen din<ph name="END_LINK" />.</translation>
 <translation id="8857676124663337448">Google Passordlagring kunne ikke sjekke alle passordene. Prøv på nytt i morgen.</translation>
 <translation id="8897749957032330183">Passord lagres i Google Passordlagring på denne enheten.</translation>
-<translation id="8949681853939555434">Bruk Chrome som standardnettleser</translation>
+<translation id="8949681853939555434">Bruk Chrome som standard nettleser</translation>
 <translation id="8969290730818637510">Når du gir samtykke
 <ph name="BEGIN_INDENT" />  • bidrar du til å gjøre Chrome bedre for folk som bruker nettleseren på samme måte som deg<ph name="END_INDENT" />
 

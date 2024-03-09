@@ -21,14 +21,13 @@ bool IOSFamilyLinkUserMetricsProvider::ProvideHistograms() {
       GetApplicationContext()
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
-  std::vector<supervised_user::LogSegment> log_segments;
+  std::vector<AccountInfo> primary_accounts;
   for (ChromeBrowserState* browser_state : browser_state_list) {
-    absl::optional<supervised_user::LogSegment> log_segment =
-        supervised_user::SupervisionStatusForUser(
-            IdentityManagerFactory::GetForBrowserState(browser_state));
-    if (log_segment.has_value()) {
-      log_segments.push_back(log_segment.value());
-    }
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForBrowserState(browser_state);
+    AccountInfo account_info = identity_manager->FindExtendedAccountInfo(
+        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
+    primary_accounts.push_back(std::move(account_info));
   }
-  return supervised_user::EmitLogSegmentHistogram(log_segments);
+  return supervised_user::EmitLogSegmentHistogram(primary_accounts);
 }

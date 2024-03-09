@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 import {getFocusedTreeItem} from '../../common/js/dom_utils.js';
+import {getTreeItemEntry} from '../../common/js/entry_utils.js';
 import {isNewDirectoryTreeEnabled} from '../../common/js/flags.js';
+import type {ShowEvent} from '../../definitions/context_menu_handler_events.js';
+import type {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import type {VolumeManager} from '../../externs/volume_manager.js';
 import {XfTree} from '../../widgets/xf_tree.js';
 
 import {Action, ActionsModel} from './actions_model.js';
-import {DirectoryModel} from './directory_model.js';
 import {EventType, FileSelectionHandler} from './file_selection.js';
 import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.js';
 import {MetadataSetEvent} from './metadata/metadata_cache_set.js';
@@ -32,7 +34,6 @@ export class ActionsController {
   constructor(
       private readonly volumeManager_: VolumeManager,
       private readonly metadataModel_: MetadataModel,
-      _directoryModel: DirectoryModel,
       private readonly shortcutsModel_: FolderShortcutsDataModel,
       private readonly selectionHandler_: FileSelectionHandler,
       private readonly ui_: FileManagerUI) {
@@ -52,7 +53,7 @@ export class ActionsController {
     // Attach listeners to events based on user action to show the menu, which
     // updates the DOM.
     contextMenuHandler.addEventListener(
-        'show', this.onContextMenuShow_.bind(this));
+        'show', this.onContextMenuShow_.bind(this) as EventListener);
     this.ui_.selectionMenuButton.addEventListener(
         'menushow', this.onMenuShow_.bind(this));
     this.ui_.gearButton.addEventListener(
@@ -62,7 +63,7 @@ export class ActionsController {
         'update', this.onMetadataUpdated_.bind(this));
   }
 
-  private getEntriesFor_(element: Element): Array<Entry|FileEntry> {
+  private getEntriesFor_(element: Element): Array<Entry|FilesAppEntry> {
     // Element can be null, eg. when invoking a command via a keyboard shortcut.
     if (!element) {
       return [];
@@ -91,8 +92,8 @@ export class ActionsController {
       }
       // DirectoryTree has the focused item.
       const focusedItem = getFocusedTreeItem(element);
-      if (focusedItem && 'entry' in focusedItem) {
-        const focusedEntry = focusedItem.entry as unknown as FileEntry;
+      const focusedEntry = getTreeItemEntry(focusedItem);
+      if (focusedEntry) {
         return [focusedEntry];
       }
     }
@@ -100,7 +101,7 @@ export class ActionsController {
     return [];
   }
 
-  private getEntriesKey_(entries: Array<Entry|FileEntry>): string {
+  private getEntriesKey_(entries: Array<Entry|FilesAppEntry>): string {
     return entries.map(entry => entry.toURL()).join(';');
   }
 
@@ -112,7 +113,7 @@ export class ActionsController {
     this.initializingModels_.delete(key);
   }
 
-  private updateView_(element: Element) {
+  private updateView_(element: HTMLElement) {
     const entries = this.getEntriesFor_(element);
 
     // Try to update synchronously.
@@ -134,12 +135,12 @@ export class ActionsController {
     });
   }
 
-  private onContextMenuShow_(event: Event) {
-    this.updateView_((event as any).element);
+  private onContextMenuShow_(event: ShowEvent) {
+    this.updateView_(event.detail.element);
   }
 
   private onMenuShow_(event: Event) {
-    this.updateView_(event.target as Element);
+    this.updateView_(event.target as HTMLElement);
   }
 
   private onSelectionChanged_() {
@@ -195,13 +196,13 @@ export class ActionsController {
     }
   }
 
-  getInitializedActionsForEntries(entries: Array<Entry|FileEntry>): null
+  getInitializedActionsForEntries(entries: Array<Entry|FilesAppEntry>): null
       |ActionsModel {
     const key = this.getEntriesKey_(entries);
     return this.readyModels_.get(key) || null;
   }
 
-  getActionsForEntries(entries: Array<Entry|FileEntry>):
+  getActionsForEntries(entries: Array<Entry|FilesAppEntry>):
       Promise<ActionsModel|void> {
     const key = this.getEntriesKey_(entries);
     if (!key) {

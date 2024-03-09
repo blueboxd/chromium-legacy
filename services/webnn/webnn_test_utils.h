@@ -83,6 +83,13 @@ class GraphInfoBuilder final {
     }
   }
 
+  void BuildArgMinMax(mojom::ArgMinMax::Kind kind,
+                      uint64_t input_operand_id,
+                      uint64_t output_operand_id,
+                      std::vector<uint32_t> axes,
+                      bool keep_dimensions,
+                      bool select_last_index);
+
   // A `BatchNormalizationAttributes` type should have the following members:
   // struct BatchNormalizationAttributes {
   //  absl::optional<uint64_t> scale_operand_id;
@@ -226,6 +233,31 @@ class GraphInfoBuilder final {
 
     graph_info_->operations.push_back(
         mojom::Operation::NewGemm(std::move(gemm)));
+  }
+
+  // A `LayerNormalizationAttributes` type should have the following members:
+  // struct LayerNormalizationAttributes {
+  //  absl::optional<uint64_t> scale_operand_id;
+  //  absl::optional<uint64_t> bias_operand_id;
+  //  std::vector<uint32_t> axes;
+  //  float epsilon = 1e-5;
+  // };
+  template <typename LayerNormalizationAttributes>
+  void BuildLayerNormalization(uint64_t input_operand_id,
+                               uint64_t output_operand_id,
+                               const LayerNormalizationAttributes& attributes) {
+    mojom::LayerNormalizationPtr layer_normalization =
+        mojom::LayerNormalization::New();
+    layer_normalization->input_operand_id = input_operand_id;
+    layer_normalization->output_operand_id = output_operand_id;
+
+    layer_normalization->scale_operand_id = attributes.scale_operand_id;
+    layer_normalization->bias_operand_id = attributes.bias_operand_id;
+    layer_normalization->axes = attributes.axes;
+    layer_normalization->epsilon = attributes.epsilon;
+
+    graph_info_->operations.push_back(mojom::Operation::NewLayerNormalization(
+        std::move(layer_normalization)));
   }
 
   void BuildLeakyRelu(uint64_t input_operand_id,

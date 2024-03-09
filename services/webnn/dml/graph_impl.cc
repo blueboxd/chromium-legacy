@@ -25,6 +25,7 @@
 #include "services/webnn/dml/tensor_desc.h"
 #include "services/webnn/dml/utils.h"
 #include "services/webnn/error.h"
+#include "services/webnn/webnn_utils.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/gl/gl_angle_util_win.h"
 
@@ -71,58 +72,6 @@ DML_TENSOR_DATA_TYPE GetTensorDataType(Operand::DataType type) {
   }
 }
 
-std::string OpKindToString(mojom::ElementWiseBinary::Kind kind) {
-  switch (kind) {
-    case mojom::ElementWiseBinary::Kind::kAdd:
-      return "add";
-    case mojom::ElementWiseBinary::Kind::kSub:
-      return "sub";
-    case mojom::ElementWiseBinary::Kind::kMul:
-      return "mul";
-    case mojom::ElementWiseBinary::Kind::kDiv:
-      return "div";
-    case mojom::ElementWiseBinary::Kind::kMax:
-      return "max";
-    case mojom::ElementWiseBinary::Kind::kMin:
-      return "min";
-    case mojom::ElementWiseBinary::Kind::kPow:
-      return "pow";
-    case mojom::ElementWiseBinary::Kind::kEqual:
-      return "equal";
-    case mojom::ElementWiseBinary::Kind::kGreater:
-      return "greater";
-    case mojom::ElementWiseBinary::Kind::kLesser:
-      return "lesser";
-  }
-  NOTREACHED_NORETURN();
-}
-
-std::string ReduceOpKindToString(mojom::Reduce::Kind kind) {
-  switch (kind) {
-    case mojom::Reduce::Kind::kL1:
-      return "ReduceL1";
-    case mojom::Reduce::Kind::kL2:
-      return "ReduceL2";
-    case mojom::Reduce::Kind::kLogSum:
-      return "ReduceLogSum";
-    case mojom::Reduce::Kind::kLogSumExp:
-      return "ReduceLogSumExp";
-    case mojom::Reduce::Kind::kMax:
-      return "ReduceMax";
-    case mojom::Reduce::Kind::kMean:
-      return "ReduceMean";
-    case mojom::Reduce::Kind::kMin:
-      return "ReduceMin";
-    case mojom::Reduce::Kind::kProduct:
-      return "ReduceProduct";
-    case mojom::Reduce::Kind::kSum:
-      return "ReduceSum";
-    case mojom::Reduce::Kind::kSumSquare:
-      return "ReduceSumSquare";
-  }
-  NOTREACHED_NORETURN();
-}
-
 DML_REDUCE_FUNCTION MapReduceKindToReduceFuntion(mojom::Reduce::Kind kind) {
   switch (kind) {
     case mojom::Reduce::Kind::kL1:
@@ -145,63 +94,6 @@ DML_REDUCE_FUNCTION MapReduceKindToReduceFuntion(mojom::Reduce::Kind kind) {
       return DML_REDUCE_FUNCTION_SUM;
     case mojom::Reduce::Kind::kSumSquare:
       return DML_REDUCE_FUNCTION_SUM_SQUARE;
-  }
-  NOTREACHED_NORETURN();
-}
-std::string OpTagToString(Operation::Tag tag) {
-  switch (tag) {
-    case Operation::Tag::kBatchNormalization:
-      return "batchNormalization";
-    case Operation::Tag::kClamp:
-      return "clamp";
-    case Operation::Tag::kConcat:
-      return "concat";
-    case Operation::Tag::kConv2d:
-      return "conv2d";
-    case Operation::Tag::kElementWiseBinary:
-      return "element-wise binary";
-    case Operation::Tag::kElu:
-      return "elu";
-    case Operation::Tag::kElementWiseUnary:
-      return "element-wise unary";
-    case Operation::Tag::kExpand:
-      return "expand";
-    case Operation::Tag::kGather:
-      return "gather";
-    case Operation::Tag::kGemm:
-      return "gemm";
-    case Operation::Tag::kLeakyRelu:
-      return "leakyRelu";
-    case Operation::Tag::kMatmul:
-      return "matmul";
-    case Operation::Tag::kPad:
-      return "pad";
-    case Operation::Tag::kPool2d:
-      return "pool2d";
-    case Operation::Tag::kPrelu:
-      return "prelu";
-    case Operation::Tag::kReduce:
-      return "reduce";
-    case Operation::Tag::kRelu:
-      return "relu";
-    case Operation::Tag::kResample2d:
-      return "resample2d";
-    case Operation::Tag::kReshape:
-      return "reshape";
-    case Operation::Tag::kSigmoid:
-      return "sigmoid";
-    case Operation::Tag::kSlice:
-      return "slice";
-    case Operation::Tag::kSoftmax:
-      return "softmax";
-    case Operation::Tag::kSplit:
-      return "split";
-    case Operation::Tag::kTanh:
-      return "tanh";
-    case Operation::Tag::kTranspose:
-      return "transpose";
-    case Operation::Tag::kWhere:
-      return "where";
   }
   NOTREACHED_NORETURN();
 }
@@ -325,6 +217,266 @@ const TensorDesc CreateOutputTensorDesc(const IdToOperandMap& id_to_operand_map,
                     output_operand->dimensions);
 }
 
+base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForArgMinMax(
+    const IdToOperandMap& id_to_operand_map,
+    const mojom::ArgMinMaxPtr& arg_min_max,
+    GraphBuilder& graph_builder,
+    IdToNodeOutputMap& id_to_node_output_map) {
+  const NodeOutput* input = GetNodeOutputForOperand(
+      id_to_node_output_map, arg_min_max->input_operand_id);
+  const auto& input_tensor_desc = input->GetTensorDesc();
+  const uint64_t output_id = arg_min_max->output_operand_id;
+  const auto& output_tensor_desc =
+      CreateOutputTensorDesc(id_to_operand_map, output_id);
+  const auto axes = arg_min_max->axes;
+  // Determine output sizes. Ignore output_desc->dimensions for the dimensions,
+  // since DirectML expects the output dimensions to have the same rank as the
+  // input, and output_desc->dimensions may have removed dimensions if
+  // keepDimensions was false.
+  std::vector<uint32_t> output_dimensions = input_tensor_desc.GetDimensions();
+  for (uint32_t axis : axes) {
+    CHECK_LT(axis, output_dimensions.size());
+    output_dimensions[axis] = 1u;
+  }
+
+  TensorDesc new_output_tensor_desc(output_tensor_desc.GetDataType(),
+                                    std::move(output_dimensions));
+
+  std::array<const NodeOutput*, 1> inputs = {input};
+  DML_ARGMAX_OPERATOR_DESC operator_desc = {};
+  operator_desc.InputTensor = &input_tensor_desc.GetDMLTensorDesc(),
+  operator_desc.OutputTensor = &new_output_tensor_desc.GetDMLTensorDesc(),
+  operator_desc.AxisCount = axes.size();
+  operator_desc.Axes = axes.data();
+  operator_desc.AxisDirection =
+      arg_min_max->select_last_index
+          ? DML_AXIS_DIRECTION::DML_AXIS_DIRECTION_DECREASING
+          : DML_AXIS_DIRECTION::DML_AXIS_DIRECTION_INCREASING;
+  DML_OPERATOR_TYPE operator_type;
+  switch (arg_min_max->kind) {
+    case mojom::ArgMinMax_Kind::kMin: {
+      operator_type = DML_OPERATOR_ARGMIN;
+      break;
+    }
+    case mojom::ArgMinMax_Kind::kMax: {
+      operator_type = DML_OPERATOR_ARGMAX;
+      break;
+    }
+  }
+  const OperatorNode* arg_min_max_node =
+      graph_builder.CreateOperatorNode(operator_type, &operator_desc, inputs);
+  if (!arg_min_max_node) {
+    return base::unexpected(mojom::Error::New(
+        mojom::Error::Code::kUnknownError,
+        "Failed to create " + OpKindToString(arg_min_max->kind) +
+            " operator."));
+  }
+
+  const NodeOutput* output =
+      graph_builder.CreateNodeOutput(arg_min_max_node, output_tensor_desc);
+  // The output id must be unique in the map.
+  CHECK(id_to_node_output_map.try_emplace(output_id, output).second);
+
+  return base::ok();
+}
+
+struct ActivationOperatorDesc {
+  absl::variant<DML_ACTIVATION_ELU_OPERATOR_DESC,
+                DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC,
+                DML_ACTIVATION_RELU_OPERATOR_DESC,
+                DML_ACTIVATION_SIGMOID_OPERATOR_DESC,
+                DML_ACTIVATION_TANH_OPERATOR_DESC>
+      desc;
+
+  DML_OPERATOR_DESC GetActivationDmlDesc() const {
+    if (absl::holds_alternative<DML_ACTIVATION_ELU_OPERATOR_DESC>(desc)) {
+      return {DML_OPERATOR_ACTIVATION_ELU,
+              &absl::get<DML_ACTIVATION_ELU_OPERATOR_DESC>(desc)};
+    } else if (absl::holds_alternative<DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC>(
+                   desc)) {
+      return {DML_OPERATOR_ACTIVATION_LEAKY_RELU,
+              &absl::get<DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC>(desc)};
+    } else if (absl::holds_alternative<DML_ACTIVATION_RELU_OPERATOR_DESC>(
+                   desc)) {
+      return {DML_OPERATOR_ACTIVATION_RELU,
+              &absl::get<DML_ACTIVATION_RELU_OPERATOR_DESC>(desc)};
+    } else if (absl::holds_alternative<DML_ACTIVATION_SIGMOID_OPERATOR_DESC>(
+                   desc)) {
+      return {DML_OPERATOR_ACTIVATION_SIGMOID,
+              &absl::get<DML_ACTIVATION_SIGMOID_OPERATOR_DESC>(desc)};
+    } else if (absl::holds_alternative<DML_ACTIVATION_TANH_OPERATOR_DESC>(
+                   desc)) {
+      return {DML_OPERATOR_ACTIVATION_TANH,
+              &absl::get<DML_ACTIVATION_TANH_OPERATOR_DESC>(desc)};
+    } else {
+      NOTREACHED_NORETURN() << "The activation type is not supported.";
+    }
+  }
+};
+
+// DML_OPERATOR_ELEMENT_WISE_CLIP will be supported after the DirectML version
+// upper than DML_FEATURE_LEVEL_6_0.
+// https://learn.microsoft.com/en-us/windows/ai/directml/dml-feature-level-history#dml_feature_level_6_0
+base::expected<ActivationOperatorDesc, mojom::ErrorPtr>
+CreateActivationOperatorDesc(const mojom::ActivationPtr& activation) {
+  CHECK(activation);
+  switch (activation->which()) {
+    case mojom::Activation::Tag::kElu:
+      return ActivationOperatorDesc{.desc = DML_ACTIVATION_ELU_OPERATOR_DESC{
+                                        .Alpha = activation->get_elu()->alpha}};
+    case mojom::Activation::Tag::kLeakyRelu:
+      return ActivationOperatorDesc{
+          .desc = DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC{
+              .Alpha = activation->get_leaky_relu()->alpha}};
+    case mojom::Activation::Tag::kRelu:
+      return ActivationOperatorDesc{.desc =
+                                        DML_ACTIVATION_RELU_OPERATOR_DESC{}};
+    case mojom::Activation::Tag::kSigmoid:
+      return ActivationOperatorDesc{.desc =
+                                        DML_ACTIVATION_SIGMOID_OPERATOR_DESC{}};
+    case mojom::Activation::Tag::kTanh:
+      return ActivationOperatorDesc{.desc =
+                                        DML_ACTIVATION_TANH_OPERATOR_DESC{}};
+    default:
+      return base::unexpected(
+          CreateError(mojom::Error::Code::kNotSupportedError,
+                      "The fused activation type is not supported."));
+  }
+}
+
+base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForBatchNormalization(
+    const IdToOperandMap& id_to_operand_map,
+    const mojom::BatchNormalizationPtr& batch_normalization,
+    GraphBuilder& graph_builder,
+    IdToNodeOutputMap& id_to_node_output_map) {
+  const NodeOutput* input = GetNodeOutputForOperand(
+      id_to_node_output_map, batch_normalization->input_operand_id);
+  const TensorDesc& input_tensor_desc = input->GetTensorDesc();
+  const auto input_rank = input_tensor_desc.GetDimensions().size();
+
+  const NodeOutput* mean = GetNodeOutputForOperand(
+      id_to_node_output_map, batch_normalization->mean_operand_id);
+  auto mean_tensor_desc = mean->GetTensorDesc();
+  auto mean_rank = mean_tensor_desc.GetDimensions().size();
+  CHECK_EQ(mean_rank, 1U);
+
+  auto axis = batch_normalization->axis;
+  uint32_t axes[1] = {axis};
+
+  // In WebNN spec, mean operand is specified as a 1-D tensor and its size equal
+  // to the size of the input dimension denoted by axis. But for DML,
+  // InputTensor and MeanTensor must have the same DimensionCount -
+  // https://learn.microsoft.com/en-us/windows/win32/api/directml/ns-directml-dml_batch_normalization_operator_desc.
+  mean_tensor_desc.MakeBroadcastCompatible(input_rank, axes);
+
+  const NodeOutput* variance = GetNodeOutputForOperand(
+      id_to_node_output_map, batch_normalization->variance_operand_id);
+  auto variance_tensor_desc = variance->GetTensorDesc();
+  auto variance_rank = variance_tensor_desc.GetDimensions().size();
+  CHECK_EQ(variance_rank, 1U);
+
+  // In WebNN spec, variance operand is specified as a 1-D tensor and its size
+  // equal to the size of the input dimension denoted by axis. But for DML,
+  // InputTensor and VarianceTensor must have the same DimensionCount -
+  // https://learn.microsoft.com/en-us/windows/win32/api/directml/ns-directml-dml_batch_normalization_operator_desc.
+  variance_tensor_desc.MakeBroadcastCompatible(input_rank, axes);
+
+  auto& scale_operand_id = batch_normalization->scale_operand_id;
+  if (!scale_operand_id) {
+    return base::unexpected(CreateError(mojom::Error::Code::kNotSupportedError,
+                                        "scale can't be nullptr."));
+  }
+
+  const auto scale_node_output_iterator =
+      id_to_node_output_map.find(scale_operand_id.value());
+  CHECK(scale_node_output_iterator != id_to_node_output_map.end());
+  const NodeOutput* scale = scale_node_output_iterator->second;
+  CHECK(scale);
+  auto scale_tensor_desc = scale->GetTensorDesc();
+  auto scale_rank = scale_tensor_desc.GetDimensions().size();
+  CHECK_EQ(scale_rank, 1U);
+
+  // In WebNN spec, scale operand is specified as a 1-D tensor and its size
+  // equal to the size of the input dimension denoted by axis. But for DML,
+  // InputTensor and ScaleTensor must have the same DimensionCount -
+  // https://learn.microsoft.com/en-us/windows/win32/api/directml/ns-directml-dml_batch_normalization_operator_desc.
+  scale_tensor_desc.MakeBroadcastCompatible(input_rank, axes);
+
+  auto& bias_operand_id = batch_normalization->bias_operand_id;
+  if (!bias_operand_id) {
+    return base::unexpected(CreateError(mojom::Error::Code::kNotSupportedError,
+                                        "bias can't be nullptr."));
+  }
+
+  const auto bias_node_output_iterator =
+      id_to_node_output_map.find(bias_operand_id.value());
+  CHECK(bias_node_output_iterator != id_to_node_output_map.end());
+  const NodeOutput* bias = bias_node_output_iterator->second;
+  CHECK(bias);
+  auto bias_tensor_desc = bias->GetTensorDesc();
+  auto bias_rank = bias_tensor_desc.GetDimensions().size();
+  CHECK_EQ(bias_rank, 1U);
+
+  // In WebNN spec, bias operand is specified as a 1-D tensor and its size
+  // equal to the size of the input dimension denoted by axis. But for DML,
+  // InputTensor and BiasTensor must have the same DimensionCount -
+  // https://learn.microsoft.com/en-us/windows/win32/api/directml/ns-directml-dml_batch_normalization_operator_desc.
+  bias_tensor_desc.MakeBroadcastCompatible(input_rank, axes);
+
+  std::array<const NodeOutput*, 5> inputs = {input, mean, variance, scale,
+                                             bias};
+
+  absl::optional<ActivationOperatorDesc> activation_operator_desc;
+  absl::optional<DML_OPERATOR_DESC> activation_dml_desc;
+  if (batch_normalization->activation) {
+    auto create_activation_result =
+        CreateActivationOperatorDesc(batch_normalization->activation);
+    if (!create_activation_result.has_value()) {
+      return base::unexpected(std::move(create_activation_result.error()));
+    }
+
+    activation_operator_desc = std::move(create_activation_result.value());
+    activation_dml_desc = activation_operator_desc->GetActivationDmlDesc();
+  }
+
+  uint64_t output_id = batch_normalization->output_operand_id;
+  const TensorDesc& output_tensor_desc =
+      CreateOutputTensorDesc(id_to_operand_map, output_id);
+
+  DML_BATCH_NORMALIZATION_OPERATOR_DESC batch_normalization_operator_desc{
+      .InputTensor = &input_tensor_desc.GetDMLTensorDesc(),
+      .MeanTensor = &mean_tensor_desc.GetDMLTensorDesc(),
+      .VarianceTensor = &variance_tensor_desc.GetDMLTensorDesc(),
+      .ScaleTensor = &scale_tensor_desc.GetDMLTensorDesc(),
+      .BiasTensor = &bias_tensor_desc.GetDMLTensorDesc(),
+      .OutputTensor = &output_tensor_desc.GetDMLTensorDesc(),
+      // Spatial is used to specify whether locations are spatial.
+      // This parameter was deprecated in DML_FEATURE_LEVEL_4_0, and has no
+      // effect.
+      .Spatial = true,
+      .Epsilon = batch_normalization->epsilon,
+      .FusedActivation =
+          activation_dml_desc ? &activation_dml_desc.value() : nullptr,
+  };
+
+  const OperatorNode* batch_normalization_node =
+      graph_builder.CreateOperatorNode(DML_OPERATOR_BATCH_NORMALIZATION,
+                                       &batch_normalization_operator_desc,
+                                       inputs);
+  if (!batch_normalization_node) {
+    return base::unexpected(
+        mojom::Error::New(mojom::Error::Code::kUnknownError,
+                          "Failed to create batch normalization operator."));
+  }
+
+  const NodeOutput* output = graph_builder.CreateNodeOutput(
+      batch_normalization_node, std::move(output_tensor_desc), 0);
+  // The output id must be unique in the map.
+  CHECK(id_to_node_output_map.try_emplace(output_id, output).second);
+
+  return base::ok();
+}
+
 base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForClamp(
     const IdToOperandMap& id_to_operand_map,
     const mojom::ClampPtr& clamp,
@@ -404,70 +556,6 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForConcat(
   CHECK(id_to_node_output_map.try_emplace(output_id, output).second);
 
   return base::ok();
-}
-
-struct ActivationOperatorDesc {
-  absl::variant<DML_ACTIVATION_ELU_OPERATOR_DESC,
-                DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC,
-                DML_ACTIVATION_RELU_OPERATOR_DESC,
-                DML_ACTIVATION_SIGMOID_OPERATOR_DESC,
-                DML_ACTIVATION_TANH_OPERATOR_DESC>
-      desc;
-
-  DML_OPERATOR_DESC GetActivationDmlDesc() const {
-    if (absl::holds_alternative<DML_ACTIVATION_ELU_OPERATOR_DESC>(desc)) {
-      return {DML_OPERATOR_ACTIVATION_ELU,
-              &absl::get<DML_ACTIVATION_ELU_OPERATOR_DESC>(desc)};
-    } else if (absl::holds_alternative<DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC>(
-                   desc)) {
-      return {DML_OPERATOR_ACTIVATION_LEAKY_RELU,
-              &absl::get<DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC>(desc)};
-    } else if (absl::holds_alternative<DML_ACTIVATION_RELU_OPERATOR_DESC>(
-                   desc)) {
-      return {DML_OPERATOR_ACTIVATION_RELU,
-              &absl::get<DML_ACTIVATION_RELU_OPERATOR_DESC>(desc)};
-    } else if (absl::holds_alternative<DML_ACTIVATION_SIGMOID_OPERATOR_DESC>(
-                   desc)) {
-      return {DML_OPERATOR_ACTIVATION_SIGMOID,
-              &absl::get<DML_ACTIVATION_SIGMOID_OPERATOR_DESC>(desc)};
-    } else if (absl::holds_alternative<DML_ACTIVATION_TANH_OPERATOR_DESC>(
-                   desc)) {
-      return {DML_OPERATOR_ACTIVATION_TANH,
-              &absl::get<DML_ACTIVATION_TANH_OPERATOR_DESC>(desc)};
-    } else {
-      NOTREACHED_NORETURN() << "The activation type is not supported.";
-    }
-  }
-};
-
-// DML_OPERATOR_ELEMENT_WISE_CLIP will be supported after the DirectML version
-// upper than DML_FEATURE_LEVEL_6_0.
-// https://learn.microsoft.com/en-us/windows/ai/directml/dml-feature-level-history#dml_feature_level_6_0
-base::expected<ActivationOperatorDesc, mojom::ErrorPtr>
-CreateActivationOperatorDesc(const mojom::ActivationPtr& activation) {
-  CHECK(activation);
-  switch (activation->which()) {
-    case mojom::Activation::Tag::kElu:
-      return ActivationOperatorDesc{.desc = DML_ACTIVATION_ELU_OPERATOR_DESC{
-                                        .Alpha = activation->get_elu()->alpha}};
-    case mojom::Activation::Tag::kLeakyRelu:
-      return ActivationOperatorDesc{
-          .desc = DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC{
-              .Alpha = activation->get_leaky_relu()->alpha}};
-    case mojom::Activation::Tag::kRelu:
-      return ActivationOperatorDesc{.desc =
-                                        DML_ACTIVATION_RELU_OPERATOR_DESC{}};
-    case mojom::Activation::Tag::kSigmoid:
-      return ActivationOperatorDesc{.desc =
-                                        DML_ACTIVATION_SIGMOID_OPERATOR_DESC{}};
-    case mojom::Activation::Tag::kTanh:
-      return ActivationOperatorDesc{.desc =
-                                        DML_ACTIVATION_TANH_OPERATOR_DESC{}};
-    default:
-      return base::unexpected(
-          CreateError(mojom::Error::Code::kNotSupportedError,
-                      "The fused activation type is not supported."));
-  }
 }
 
 base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForConv2d(
@@ -724,11 +812,27 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForBinary(
           inputs);
       break;
     }
+    case mojom::ElementWiseBinary::Kind::kGreaterOrEqual: {
+      binary_node = CreateBinaryOperator<
+          DML_ELEMENT_WISE_LOGICAL_GREATER_THAN_OR_EQUAL_OPERATOR_DESC>(
+          input_a_tensor_desc, input_b_tensor_desc, output_tensor_desc,
+          graph_builder,
+          DML_OPERATOR_ELEMENT_WISE_LOGICAL_GREATER_THAN_OR_EQUAL, inputs);
+      break;
+    }
     case mojom::ElementWiseBinary::Kind::kLesser: {
       binary_node = CreateBinaryOperator<
           DML_ELEMENT_WISE_LOGICAL_LESS_THAN_OPERATOR_DESC>(
           input_a_tensor_desc, input_b_tensor_desc, output_tensor_desc,
           graph_builder, DML_OPERATOR_ELEMENT_WISE_LOGICAL_LESS_THAN, inputs);
+      break;
+    }
+    case mojom::ElementWiseBinary::Kind::kLesserOrEqual: {
+      binary_node = CreateBinaryOperator<
+          DML_ELEMENT_WISE_LOGICAL_LESS_THAN_OR_EQUAL_OPERATOR_DESC>(
+          input_a_tensor_desc, input_b_tensor_desc, output_tensor_desc,
+          graph_builder, DML_OPERATOR_ELEMENT_WISE_LOGICAL_LESS_THAN_OR_EQUAL,
+          inputs);
       break;
     }
   }
@@ -1356,7 +1460,7 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForReduce(
       DML_OPERATOR_REDUCE, &operator_desc, inputs);
   if (!reduce_node) {
     std::string error_message =
-        "Failed to create " + ReduceOpKindToString(reduce->kind) + " operator.";
+        "Failed to create " + OpKindToString(reduce->kind) + " operator.";
     return base::unexpected(CreateError(mojom::Error::Code::kUnknownError,
                                         std::move(error_message)));
   }
@@ -2264,6 +2368,18 @@ void GraphImpl::CreateAndBuild(
     // message.
     base::expected<void, mojom::ErrorPtr> create_operator_result;
     switch (operation->which()) {
+      case Operation::Tag::kArgMinMax: {
+        create_operator_result = CreateOperatorNodeForArgMinMax(
+            id_to_operand_map, operation->get_arg_min_max(), graph_builder,
+            id_to_node_output_map);
+        break;
+      }
+      case mojom::Operation::Tag::kBatchNormalization: {
+        create_operator_result = CreateOperatorNodeForBatchNormalization(
+            id_to_operand_map, operation->get_batch_normalization(),
+            graph_builder, id_to_node_output_map);
+        break;
+      }
       case Operation::Tag::kClamp: {
         create_operator_result = CreateOperatorNodeForClamp(
             id_to_operand_map, operation->get_clamp(), graph_builder,

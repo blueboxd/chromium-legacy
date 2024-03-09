@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">Vous pouvez changer l'affichage du site par défaut pour le mode Bureau dans Paramètres, puis Paramètres de contenu</translation>
 <translation id="1054745118061919935">En continuant, vous acceptez les <ph name="BEGIN_LINK" />conditions d'utilisation<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Gérer la synchronisation</translation>
-<translation id="1066101356081285416">Chrome détectera les numéros de suivi sur les sites que vous visitez et vous montrera les mises à jour des colis sur la page Nouvel onglet. Le numéro de suivi du colis et le nom du site Web seront envoyés à Google pour fournir cette fonctionnalité et améliorer les fonctionnalités d'achat Google pour tous. Vous pouvez mettre à jour cette option à tout moment dans les <ph name="BEGIN_LINK" />paramètres de suivi des colis<ph name="END_LINK" />.</translation>
 <translation id="1069154182096085577">Le mot de passe existe déjà</translation>
 <translation id="1076421457278169141">Code numérisé</translation>
 <translation id="1076785341346483463">Synchroniser avec un compte géré</translation>
@@ -143,7 +142,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />effacez les données Chrome
 <translation id="165877110639533037">Aucun onglet ouvert</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> en <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Voir la version pour appareil mobile</translation>
-<translation id="168715261339224929">Pour synchroniser vos favoris sur tous vos appareils, activez la synchronisation.</translation>
 <translation id="1687475363370981210">Tout marquer comme lu</translation>
 <translation id="1689333818294560261">Pseudo</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> sélectionnés</translation>
@@ -839,7 +837,6 @@ Consultez les instructions de votre moteur de recherche pour supprimer votre his
 <translation id="5457226814769348910">Ouvrir la version hors ligne</translation>
 <translation id="5475069061743940393">Suivi de livraison</translation>
 <translation id="5478327362747197944">Créez des événements d'agenda directement en cliquant sur une date dans une page Web.</translation>
-<translation id="5482922178977937393">Souhaitez-vous recevoir des notifications sur les actualités, les sports et bien plus encore en fonction de vos centres d'intérêt?</translation>
 <translation id="5489208564673669003">Pour gérer les témoins pour tous les sites, reportez-vous à <ph name="BEGIN_LINK" />Paramètres des témoins<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Bloquer tous les témoins (non recommandé)</translation>
 <translation id="5497202150450073388">Tentative de livraison effectuée. Nouvel essai à venir</translation>
@@ -1049,7 +1046,6 @@ Les sites ne peuvent pas utiliser de témoins pour voir votre activité de navig
 <translation id="6476253015009698798">Le suivi des prix n'est pas offert sur cette page.</translation>
 <translation id="6476800141292307438">Traduction de la page en <ph name="LANGUAGE" /> en cours… Les options sont affichées dans le bas de l'écran.</translation>
 <translation id="648164694371393720">Erreur d'authentification</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments supprimés</translation>
 <translation id="6484712497741564393">Connecté en tant que <ph name="EMAIL" />.
 
 Vos données sont chiffrées avec votre phrase de passe. Saisissez-la pour utiliser et enregistrer les données Chrome dans votre compte Google.</translation>
@@ -1136,6 +1132,7 @@ Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utili
 <translation id="6869389390665537774">Vous pouvez voir les pages que vous avez visitées ou les effacer de votre historique</translation>
 <translation id="687135068089457384">Afficher les paramètres</translation>
 <translation id="6873263987691478642">Vue partagée</translation>
+<translation id="687586529977635009">Chrome détectera les numéros de suivi sur les sites que vous visitez et vous montrera les mises à jour des colis sur la page Nouvel onglet. Vos données seront partagées avec Google pour fournir cette fonctionnalité et améliorer Shopping pour tous. Vous pouvez modifier cette option dans les <ph name="BEGIN_LINK" />paramètres de suivi des colis<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Protection standard contre les sites Web, les téléchargements et les extensions qui sont réputés être dangereux.</translation>
 <translation id="6888009575607455378">Voulez-vous vraiment supprimer les modifications?</translation>
 <translation id="6896758677409633944">Copier</translation>
@@ -1228,7 +1225,7 @@ Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utili
 <translation id="7466693328838535498">Dans le champ Widgets de recherche, entrez Chrome</translation>
 <translation id="746684838091935575">3. Sélectionnez Chrome</translation>
 <translation id="7472734401283673885">Nom d'entreprise</translation>
-<translation id="7473891865547856676">Non, merci</translation>
+<translation id="7473891865547856676">Non merci</translation>
 <translation id="7488874549363591659">Livré</translation>
 <translation id="7491131399623468277">Accédez au menu Paramètres…</translation>
 <translation id="7492574581995589075">Votre organisation a désactivé la possibilité d'utiliser et d'enregistrer des données Chrome dans votre compte Google. Les nouveaux favoris, mots de passe et plus ne seront enregistrés que sur cet appareil.</translation>
@@ -1416,7 +1413,6 @@ Les sites peuvent utiliser des témoins afin de voir votre activité de navigati
 <translation id="8428634594422941299">OK</translation>
 <translation id="8446884382197647889">En savoir plus</translation>
 <translation id="8449347986464073209">Supprimer et se déconnecter</translation>
-<translation id="8458397775385147834">1 élément supprimé</translation>
 <translation id="8459333855531264009">Pas sécuritaire</translation>
 <translation id="8487667956631253959">Activée</translation>
 <translation id="8487700953926739672">Offert en ligne</translation>
@@ -1482,7 +1478,6 @@ Vos données ont été chiffrées avec votre phrase de passe sur <ph name="TIME"
 <translation id="8766790350274092814">Les mots de passe de <ph name="WEBSITE" /> et <ph name="SECOND_WEBSITE" /> seront supprimés. Vos comptes ne seront pas supprimés.</translation>
 <translation id="8775144690796719618">URL non valide</translation>
 <translation id="8780076847684176174">{count,plural, =1{Vérifier l'onglet…}one{Vérifier l'onglet…}other{Vérifier tous les onglets…}}</translation>
-<translation id="8782570580170191813">Toujours suivre les colis</translation>
 <translation id="8787968206789828143">Recherchez sur le Web</translation>
 <translation id="8792626944327216835">Microphone</translation>
 <translation id="8803639129939845298">Sécuritaire</translation>

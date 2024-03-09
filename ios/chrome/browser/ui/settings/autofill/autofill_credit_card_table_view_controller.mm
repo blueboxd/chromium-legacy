@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller+toolbar_add.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
-#import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
@@ -69,7 +68,6 @@ enum ItemType : NSInteger {
 }  // namespace
 
 using autofill::autofill_metrics::LogMandatoryReauthOptInOrOutUpdateEvent;
-using autofill::autofill_metrics::LogMandatoryReauthSettingsPageEditCardEvent;
 using autofill::autofill_metrics::MandatoryReauthAuthenticationFlowEvent;
 using autofill::autofill_metrics::MandatoryReauthOptInOrOutSource;
 
@@ -607,23 +605,15 @@ using autofill::autofill_metrics::MandatoryReauthOptInOrOutSource;
   if (autofill::IsCreditCardLocal(selectedCard) &&
       _personalDataManager->IsPaymentMethodsMandatoryReauthEnabled() &&
       [self.reauthenticationModule canAttemptReauth]) {
-    [self attemptReauthenticationForEditCard:selectedCard];
+    [self attemptReauthentication:selectedCard];
   } else {
     [self openCreditCardDetails:selectedCard];
   }
 }
 
 // Attempt reauthentication, if all goes well proceed to card details page.
-- (void)attemptReauthenticationForEditCard:(autofill::CreditCard)selectedCard {
-  LogMandatoryReauthSettingsPageEditCardEvent(
-      MandatoryReauthAuthenticationFlowEvent::kFlowStarted);
+- (void)attemptReauthentication:(autofill::CreditCard)selectedCard {
   auto completionHandler = ^(ReauthenticationResult result) {
-    MandatoryReauthAuthenticationFlowEvent event =
-        result == ReauthenticationResult::kFailure
-            ? MandatoryReauthAuthenticationFlowEvent::kFlowFailed
-            : MandatoryReauthAuthenticationFlowEvent::kFlowSucceeded;
-    LogMandatoryReauthSettingsPageEditCardEvent(event);
-
     if (result != ReauthenticationResult::kFailure) {
       [self openCreditCardDetails:selectedCard];
     }

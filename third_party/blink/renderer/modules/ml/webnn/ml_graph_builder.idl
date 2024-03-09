@@ -64,8 +64,20 @@ dictionary MLGemmOptions {
   boolean bTranspose = false;
 };
 
+dictionary MLLayerNormalizationOptions {
+  MLOperand scale;
+  MLOperand bias;
+  sequence<[EnforceRange] unsigned long> axes;
+  float epsilon = 1e-5;
+};
+
 dictionary MLLeakyReluOptions {
   float alpha = 0.01;
+};
+
+dictionary MLLinearOptions {
+  float alpha = 1.0;
+  float beta = 0;
 };
 
 enum MLPaddingMode {
@@ -103,6 +115,13 @@ dictionary MLClampOptions {
 
 dictionary MLEluOptions {
   float alpha = 1;
+};
+
+dictionary MLInstanceNormalizationOptions {
+  MLOperand scale;
+  MLOperand bias;
+  float epsilon = 1e-5;
+  MLInputOperandLayout layout = "nchw";
 };
 
 dictionary MLReduceOptions {
@@ -155,6 +174,9 @@ dictionary MLSplitOptions {
   [RaisesException] MLOperand max(MLOperand a, MLOperand b);
   [RaisesException] MLOperand min(MLOperand a, MLOperand b);
   [RaisesException] MLOperand pow(MLOperand a, MLOperand b);
+  [RaisesException] MLOperand equal(MLOperand a, MLOperand b);
+  [RaisesException] MLOperand greater(MLOperand a, MLOperand b);
+  [RaisesException] MLOperand lesser(MLOperand a, MLOperand b);
 
   // Element-wise unary operations
   [RaisesException] MLOperand abs(MLOperand x);
@@ -186,10 +208,17 @@ dictionary MLSplitOptions {
   [RaisesException] MLOperand hardSwish(MLOperand x);
   [RaisesException] MLActivation hardSwish();
 
+  [RaisesException] MLOperand instanceNormalization(MLOperand input, optional MLInstanceNormalizationOptions options = {});
+
   [RaisesException] MLOperand matmul(MLOperand a, MLOperand b);
+
+  [RaisesException] MLOperand layerNormalization(MLOperand input, optional MLLayerNormalizationOptions options = {});
 
   [RaisesException] MLOperand leakyRelu(MLOperand x, optional MLLeakyReluOptions options = {});
   [RaisesException] MLActivation leakyRelu(optional MLLeakyReluOptions options = {});
+
+  [RaisesException] MLOperand linear(MLOperand input, optional MLLinearOptions options = {});
+  [RaisesException] MLActivation linear(optional MLLinearOptions options = {});
 
   [RaisesException] MLOperand pad(MLOperand input, sequence<[EnforceRange] unsigned long> beginningPadding,
                 sequence<[EnforceRange] unsigned long> endingPadding, optional MLPadOptions options = {});

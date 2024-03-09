@@ -23,14 +23,14 @@ struct TabOrganizationResponse {
     explicit Organization(
         std::u16string label_,
         std::vector<TabData::TabID> tab_ids_,
-        absl::optional<TabOrganization::ID> organization_id_ = absl::nullopt);
+        std::optional<TabOrganization::ID> organization_id_ = std::nullopt);
     Organization(const Organization& organization);
     Organization(Organization&& organization);
     ~Organization();
 
     const std::u16string label;
     const std::vector<TabData::TabID> tab_ids;
-    absl::optional<TabOrganization::ID> organization_id;
+    std::optional<TabOrganization::ID> organization_id;
   };
 
   explicit TabOrganizationResponse(
@@ -38,8 +38,6 @@ struct TabOrganizationResponse {
       std::u16string feedback_id_ = u"",
       LogResultsCallback log_results_callback_ = base::DoNothing());
   ~TabOrganizationResponse();
-
-  int GetTabCount();
 
   std::vector<Organization> organizations;
   const std::u16string feedback_id;
@@ -72,14 +70,12 @@ class TabOrganizationRequest {
 
   State state() const { return state_; }
   const TabDatas& tab_datas() const { return tab_datas_; }
-  const absl::optional<TabData::TabID> base_tab_id() const {
+  const std::optional<TabData::TabID> base_tab_id() const {
     return base_tab_id_;
   }
   const TabOrganizationResponse* response() const {
     return response_ ? response_.get() : nullptr;
   }
-
-  void SetBaseTabID(TabData::TabID base_tab_id) { base_tab_id_ = base_tab_id; }
 
   void SetResponseCallback(OnResponseCallback callback);
   TabData* AddTabData(std::unique_ptr<TabData> tab_data);
@@ -98,12 +94,7 @@ class TabOrganizationRequest {
 
   State state_ = State::NOT_STARTED;
   TabDatas tab_datas_;
-  absl::optional<TabData::TabID> base_tab_id_ = absl::nullopt;
-
-  // Time measurements for the request, used to log latency metrics.
-  absl::optional<base::Time> request_start_time_ = absl::nullopt;
-  absl::optional<base::Time> request_end_time_ = absl::nullopt;
-
+  std::optional<TabData::TabID> base_tab_id_ = std::nullopt;
   std::unique_ptr<TabOrganizationResponse> response_;
   OnResponseCallback response_callback_;
 

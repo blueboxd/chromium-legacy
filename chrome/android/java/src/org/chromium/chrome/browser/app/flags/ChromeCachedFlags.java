@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.back_press.MinimizeAppAndCloseTabBackPressHan
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
-import org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedFeatureUtils;
 import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
@@ -115,13 +114,11 @@ public class ChromeCachedFlags {
                         StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS,
                         StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS,
                         StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL,
-                        StartSurfaceConfiguration.SHOW_TABS_IN_MRU_ORDER,
                         StartSurfaceConfiguration.SIGNIN_PROMO_NTP_COUNT_LIMIT,
                         StartSurfaceConfiguration
                                 .SIGNIN_PROMO_NTP_SINCE_FIRST_TIME_SHOWN_LIMIT_HOURS,
                         StartSurfaceConfiguration.SIGNIN_PROMO_NTP_RESET_AFTER_HOURS,
                         StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB,
-                        StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY,
                         StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
                         StartSurfaceConfiguration.START_SURFACE_OPEN_START_AS_HOMEPAGE,
                         StartSurfaceConfiguration.SURFACE_POLISH_OMNIBOX_COLOR,
@@ -135,7 +132,6 @@ public class ChromeCachedFlags {
                         TabManagementFieldTrial.DELAY_TEMP_STRIP_TIMEOUT_MS,
                         VersionNumberGetter.MIN_SDK_VERSION,
                         MinimizeAppAndCloseTabBackPressHandler.SYSTEM_BACK,
-                        MinimizedFeatureUtils.ICON_VARIANT,
                         BackPressManager.TAB_HISTORY_RECOVER,
                         BackPressManager.START_UP_MOVE_TO_BACK);
 

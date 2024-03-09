@@ -404,7 +404,11 @@
       // If enabled, lazy loaded images can be auto sized if the sizes
       // attribute is missing or set to auto.
       name: "AutoSizeLazyLoadedImages",
-      status: "experimental",
+      status: "stable",
+    },
+    {
+      name: "AvoidCaretVisibleSelectionAdjuster",
+      status: "stable",
     },
     {
       name: "BackdropInheritOriginating",
@@ -658,7 +662,7 @@
     },
     {
       name: "ClipboardUnsanitizedContent",
-      status: "experimental",
+      status: "stable",
       base_feature: "none",
     },
     {
@@ -682,7 +686,7 @@
     {
       // https://html.spec.whatwg.org/multipage/interaction.html#close-requests-and-close-watchers
       name: "CloseWatcher",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CoepReflection",
@@ -715,10 +719,6 @@
         "Android": "stable",
         "default": "",
       }
-    },
-    {
-      name: "CompositionUpdateBeforeBeforeInput",
-      status: "stable",
     },
     {
       name: "CompressionDictionaryTransport",
@@ -793,10 +793,6 @@
     {
       name: "CorsRFC1918",
       base_feature: "none",
-    },
-    {
-      name: "CounterStyleChangeShouleCollectInlines",
-      status: "stable",
     },
     {
       name: "CrossFramePerformanceTimeline",
@@ -1144,7 +1140,7 @@
     },
     {
       name: "CSSSupportsForImportRules",
-      status: "experimental",
+      status: "stable",
     },
     {
       // The AccentColor And AccentColorText CSS system color keywords
@@ -1513,6 +1509,10 @@
       status: "stable",
     },
     {
+      name: "EmptyClipboardRead",
+      status: "stable",
+    },
+    {
       name: "EnforceAnonymityExposure",
       status: "stable",
     },
@@ -1606,6 +1606,13 @@
       depends_on: ["FedCm"],
       public: true,
       status: "stable",
+      base_feature: "none",
+    },
+    {
+      name: "FedCmButtonMode",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "test",
       base_feature: "none",
     },
     {
@@ -1821,6 +1828,10 @@
       settable_from_internals: true,
     },
     {
+      name: "FocusStyleInvalidationOnPageActivation",
+      status: "stable",
+    },
+    {
       name: "FontAccess",
       status: {"Android": "", "default": "stable"},
     },
@@ -1985,7 +1996,7 @@
     },
     {
       name: "HighlightInheritance",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "HighlightPointerEvents",
@@ -2263,6 +2274,10 @@
     {
       // Use LongAnimationFrameMonitor to emit longtask entries
       name: "LongTaskFromLongAnimationFrame"
+    },
+    {
+      name: "MacFontsDeprecateFontTraitsWorkaround",
+      status: "stable",
     },
     {
       name: "MachineLearningCommon",
@@ -3166,6 +3181,11 @@
       base_feature: "none",
     },
     {
+      // New behavior when line breaker rewinds floats. crbug.com/1499290
+      name: "RewindFloats",
+      status: "stable",
+    },
+    {
       name: "RtcAudioJitterBufferMaxPackets",
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
@@ -3225,6 +3245,12 @@
     },
     {
       name: "RubySimplePairing",
+      status: "stable",
+    },
+    {
+      // Runs a microtask checkpoint before creating custom elements in
+      // XMLDocumentParser. Should be safe to remove after M125
+      name: "RunMicrotaskBeforeXmlCustomElement",
       status: "stable",
     },
     {
@@ -3861,7 +3887,7 @@
     },
     {
       name: "URLPatternHasRegExpGroups",
-      status: "experimental",
+      status: "stable",
       base_feature: "none",
     },
     {

@@ -35,7 +35,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.ActioniOS" enum="NewTabPageActioniOS"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>justincohen@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -1057,7 +1057,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Disabled{Interaction}" enum="NtpModules"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>romanarora@chromium.org</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1110,7 +1110,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Enabled{Interaction}" enum="NtpModules"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>romanarora@chromium.org</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1405,7 +1405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.MostVisitedMigratedDefaultAppType"
-    enum="TypeOfDeletedMostVisitedApp" expires_after="2024-03-31">
+    enum="TypeOfDeletedMostVisitedApp" expires_after="2024-06-02">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1416,7 +1416,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfTiles" units="units"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>tiborg@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1433,7 +1433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.OneGoogleBar.RequestLatency" units="ms"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>tiborg@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1444,7 +1444,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.OneGoogleBar.ShownTime" units="ms"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>tiborg@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1781,7 +1781,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.TimeSinceLastNTP" units="ms"
-    expires_after="2024-03-24">
+    expires_after="2024-06-02">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1881,21 +1881,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="NewTabPage.WallpaperSearch.SetInspirationThemeProcessingLatency"
-    units="ms" expires_after="2024-06-28">
-  <owner>tiborg@chromium.org</owner>
-  <owner>rtatum@google.com</owner>
-  <owner>chrome-desktop-ntp@google.com</owner>
-  <summary>
-    Histogram of the time, in milliseconds, it took to set an inspiration
-    Wallpaper Search theme as the current theme. This tracks how long the image
-    processing takes from the time image processing starts for setting an
-    inspiration Wallpaper Search theme to when the profile preference is set to
-    change the background image.
-  </summary>
-</histogram>
-
 <histogram name="NewTabPage.WallpaperSearch.SetRecentThemeProcessingLatency"
     units="ms" expires_after="2024-04-28">
   <owner>tiborg@chromium.org</owner>
@@ -1920,18 +1905,6 @@ chromium-metrics-reviews@google.com.
     result as the current theme. This tracks how long the image processing takes
     from the time image processing starts for setting a Wallpaper Search result
     theme to when the profile preference is set to change the background image.
-  </summary>
-</histogram>
-
-<histogram name="NewTabPage.WallpaperSearch.Status"
-    enum="NtpWallpaperSearchStatus" expires_after="2024-04-28">
-  <owner>tiborg@chromium.org</owner>
-  <owner>rtatum@google.com</owner>
-  <owner>chrome-desktop-ntp@google.com</owner>
-  <summary>
-    Histogram of the statuses shown for Wallpaper Search within the Customize
-    Chrome Side Panel. This records the status is of Wallpaper Search's UI
-    whenever it loads, a search is triggered, or a search completes.
   </summary>
 </histogram>
 

@@ -12,13 +12,10 @@
 #include <tuple>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "base/types/strong_alias.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/signatures.h"
@@ -103,9 +100,24 @@ class AutofillCrowdsourcingManager {
                                  net::IsolationInfo isolation_info,
                                  base::WeakPtr<Observer> observer);
 
-  // Starts an upload request for the given |form|.
-  // |available_field_types| should contain the types for which we have data
-  // stored on the local client.
+  // Starts an upload request for `upload_contents`. If `upload_contents` has
+  // more than one element, then `upload_contents[0]` is expected to correspond
+  // to the browser form and `upload_contents[i]` with `i>0` are expected to
+  // correspond to the renderer forms that constitute the browser form.
+  // See `autofill::FormForest` for more information on browser vs renderer
+  // forms.
+  virtual bool StartUploadRequest(
+      std::vector<AutofillUploadContents> upload_contents,
+      mojom::SubmissionSource form_submission_source,
+      int form_active_field_count,
+      PrefService* prefs,
+      base::WeakPtr<Observer> observer);
+
+  // DEPRECATED (crbug.com/1505969): Use the version that expect
+  // `AutofillUploadContents` instead of `FormStructure` instead.
+  //
+  // Starts an upload request for the given |form|. |available_field_types|
+  // should contain the types for which we have data stored on the local client.
   // |login_form_signature| may be empty. It is non-empty when the user fills
   // and submits a login form using a generated password. In this case,
   // |login_form_signature| should be set to the submitted form's signature.
@@ -131,10 +143,13 @@ class AutofillCrowdsourcingManager {
   // pair.
   static void ClearUploadHistory(PrefService* pref_service);
 
+  // Returns the maximum number of attempts for a given autofill server request.
+  static int GetMaxServerAttempts();
+
  protected:
   AutofillCrowdsourcingManager(AutofillClient* client,
-                          const std::string& api_key,
-                          LogManager* log_manager);
+                               const std::string& api_key,
+                               LogManager* log_manager);
 
   // Gets the length of the payload from request data. Used to simulate
   // different payload sizes when testing without the need for data. Do not use
@@ -142,17 +157,12 @@ class AutofillCrowdsourcingManager {
   virtual size_t GetPayloadLength(base::StringPiece payload) const;
 
  private:
-  friend class AutofillCrowdsourcingManagerTest;
+  friend class AutofillCrowdsourcingManagerTestApi;
   friend struct ScopedActiveAutofillExperiments;
-  FRIEND_TEST_ALL_PREFIXES(AutofillCrowdsourcingManagerTest, QueryAndUploadTest);
-  FRIEND_TEST_ALL_PREFIXES(AutofillCrowdsourcingManagerTest, BackoffLogic_Upload);
-  FRIEND_TEST_ALL_PREFIXES(AutofillCrowdsourcingManagerTest, BackoffLogic_Query);
-  FRIEND_TEST_ALL_PREFIXES(AutofillCrowdsourcingManagerTest, RetryLimit_Upload);
-  FRIEND_TEST_ALL_PREFIXES(AutofillCrowdsourcingManagerTest, RetryLimit_Query);
 
   struct FormRequestData;
-  typedef std::list<std::pair<std::vector<FormSignature>, std::string>>
-      QueryRequestCache;
+  using QueryRequestCache =
+      std::list<std::pair<std::vector<FormSignature>, std::string>>;
 
   // Returns the URL and request method to use when issuing the request
   // described by |request_data|. If the returned method is GET, the URL
@@ -167,13 +177,6 @@ class AutofillCrowdsourcingManager {
   // Note: |request_data| takes ownership of request_data, call with std::move.
   bool StartRequest(FormRequestData request_data);
 
-  // Each request is page visited. We store last |max_form_cache_size|
-  // request, to avoid going over the wire. Set to 16 in constructor. Warning:
-  // the search is linear (newest first), so do not make the constant very big.
-  void set_max_form_cache_size(size_t max_form_cache_size) {
-    max_form_cache_size_ = max_form_cache_size;
-  }
-
   // Caches query request. |forms_in_query| is a vector of form signatures in
   // the query. |query_data| is the successful data returned over the wire.
   void CacheQueryRequest(const std::vector<FormSignature>& forms_in_query,
@@ -186,9 +189,6 @@ class AutofillCrowdsourcingManager {
   // Concatenates |forms_in_query| into one signature.
   std::string GetCombinedSignature(
       const std::vector<std::string>& forms_in_query) const;
-
-  // Returns the maximum number of attempts for a given autofill server request.
-  static int GetMaxServerAttempts();
 
   void OnSimpleLoaderComplete(
       std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,

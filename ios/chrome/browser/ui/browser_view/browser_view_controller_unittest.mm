@@ -61,7 +61,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_mediator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/coordinator/tab_strip_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/foreground_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
@@ -128,9 +128,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         chrome_browser_state_.get(),
         std::make_unique<FakeAuthenticationServiceDelegate>());
-    id passKitController =
-        [OCMockObject niceMockForClass:[PKAddPassesViewController class]];
-    passKitViewController_ = passKitController;
 
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
                                              scene_state_);
@@ -404,9 +401,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<Browser> browser_;
   KeyCommandsProvider* key_commands_provider_;
-  PKAddPassesViewController* passKitViewController_;
-  OCMockObject* dependencyFactory_;
-  CommandDispatcher* command_dispatcher_;
   BubblePresenter* bubble_presenter_;
   BrowserContainerViewController* container_;
   BrowserViewController* bvc_;

@@ -184,6 +184,8 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   NSMutableArray<SetUpListItemView*>* _compactedSetUpListViews;
   TabResumptionView* _tabResumptionView;
   NSMutableArray<MagicStackModuleContainer*>* _parcelTrackingModuleContainers;
+  NSLayoutConstraint* _mostVisitedTilesStackviewHeightAnchor;
+  NSLayoutConstraint* _shortcutsStackviewHeightAnchor;
 }
 
 - (instancetype)init {
@@ -262,10 +264,11 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
       CGFloat height =
           MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory)
               .height;
+      _shortcutsStackviewHeightAnchor = [self.shortcutsStackView.heightAnchor
+          constraintGreaterThanOrEqualToConstant:height];
       [NSLayoutConstraint activateConstraints:@[
         [self.shortcutsStackView.widthAnchor constraintEqualToConstant:width],
-        [self.shortcutsStackView.heightAnchor
-            constraintGreaterThanOrEqualToConstant:height]
+        _shortcutsStackviewHeightAnchor
       ]];
     }
   }
@@ -619,16 +622,14 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
         [self insertModuleIntoMagicStack:setUpListModule];
       }
     }
-    if (shouldShowCompactedSetUpListModule) {
+    if (_magicStackRankReceived && shouldShowCompactedSetUpListModule) {
       MultiRowContainerView* multiRowContainer = [[MultiRowContainerView alloc]
           initWithViews:_compactedSetUpListViews];
       _setUpListCompactedModule = [[MagicStackModuleContainer alloc]
           initWithContentView:multiRowContainer
                          type:ContentSuggestionsModuleType::kCompactedSetUpList
                      delegate:self];
-      if (_magicStackRankReceived) {
-        [self insertModuleIntoMagicStack:_setUpListCompactedModule];
-      }
+      [self insertModuleIntoMagicStack:_setUpListCompactedModule];
     }
   } else {
     SetUpListView* setUpListView =
@@ -780,34 +781,6 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
 
     [self insertModuleIntoMagicStack:self.safetyCheckModuleContainer];
   }
-}
-
-- (CGFloat)contentSuggestionsHeight {
-  CGFloat height = 0;
-  if ([self.mostVisitedViews count] > 0 &&
-      !ShouldPutMostVisitedSitesInMagicStack()) {
-    height += MostVisitedCellSize(
-                  UIApplication.sharedApplication.preferredContentSizeCategory)
-                  .height +
-              kMostVisitedBottomMargin;
-  }
-  if (IsMagicStackEnabled()) {
-    height += _magicStackScrollView.contentSize.height;
-  } else {
-    if ([self.shortcutsViews count] > 0) {
-      height +=
-          MostVisitedCellSize(
-              UIApplication.sharedApplication.preferredContentSizeCategory)
-              .height;
-    }
-  }
-  if (self.returnToRecentTabTile) {
-    height += ReturnToRecentTabHeight();
-  }
-  if (self.setUpListView && !self.setUpListView.isHidden) {
-    height += self.setUpListView.frame.size.height;
-  }
-  return height;
 }
 
 - (void)showTabResumptionWithItem:(TabResumptionItem*)item {
@@ -966,6 +939,17 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+
+  if (previousTraitCollection.preferredContentSizeCategory !=
+          self.traitCollection.preferredContentSizeCategory &&
+      !IsMagicStackEnabled()) {
+    CGFloat height =
+        MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory)
+            .height;
+    _mostVisitedTilesStackviewHeightAnchor.constant = height;
+    _shortcutsStackviewHeightAnchor.constant = height;
+  }
+
   if (content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
                                                           self.view.window)) {
     if (_returnToRecentTabWidthAnchor) {
@@ -1144,10 +1128,12 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
         MostVisitedTilesContentHorizontalSpace(self.traitCollection);
     CGSize size =
         MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
+    _mostVisitedTilesStackviewHeightAnchor =
+        [self.mostVisitedStackView.heightAnchor
+            constraintEqualToConstant:size.height];
     [NSLayoutConstraint activateConstraints:@[
       [self.mostVisitedStackView.widthAnchor constraintEqualToConstant:width],
-      [self.mostVisitedStackView.heightAnchor
-          constraintEqualToConstant:size.height]
+      _mostVisitedTilesStackviewHeightAnchor
     ]];
   }
 }

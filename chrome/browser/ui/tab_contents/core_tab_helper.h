@@ -53,11 +53,13 @@ class CoreTabHelper : public content::WebContentsObserver,
 
   void UpdateContentRestrictions(int content_restrictions);
 
-  // Encodes the given image to proper image format and adds to |search_args|
-  // thumbnail image content data. Returns the format the image was encoded to.
+  // Encodes the given image to proper image format, adds to |search_args|
+  // thumbnail image content data, and emits the image bytes size. Also
+  // returns the format the image was encoded to.
   // Public for testing.
   static lens::mojom::ImageFormat EncodeImageIntoSearchArgs(
       const gfx::Image& image,
+      size_t& encoded_size_bytes,
       TemplateURLRef::SearchTermsArgs& search_args);
 
   // Downscales and encodes the image and sets the content type for the result
@@ -229,7 +231,7 @@ class CoreTabHelper : public content::WebContentsObserver,
 
   // If sequential Lens pinging is enabled, this stores the Lens search settings
   // if a Lens search is ready before the Lens ping response was received.
-  absl::optional<LensSearchSettings> stored_lens_search_settings_;
+  std::optional<LensSearchSettings> stored_lens_search_settings_;
 
   // The time that the last Lens ping request was initiated.
   base::TimeTicks lens_ping_start_time_;

@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs.features.minimizedcustomtab;
 
-import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.SAVED_INSTANCE_SUPPLIER;
-
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -14,7 +11,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
@@ -25,18 +21,14 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 /** Class that holds the {@link CustomTabMinimizationManager}. */
 @ActivityScope
 public class CustomTabMinimizationManagerHolder implements DestroyObserver {
-
     private final AppCompatActivity mActivity;
     private final CustomTabActivityNavigationController mNavigationController;
     private final ActivityTabProvider mActivityTabProvider;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
-    private final ActivityLifecycleDispatcher mLifecycleDispatcher;
-    private final Supplier<Bundle> mSavedInstanceStateSupplier;
 
     private @Nullable MinimizedCustomTabIPHController mIPHController;
     private @Nullable CustomTabMinimizationManager mMinimizationManager;
@@ -47,14 +39,11 @@ public class CustomTabMinimizationManagerHolder implements DestroyObserver {
             CustomTabActivityNavigationController navigationController,
             ActivityTabProvider activityTabProvider,
             BrowserServicesIntentDataProvider intentDataProvider,
-            ActivityLifecycleDispatcher lifecycleDispatcher,
-            @Named(SAVED_INSTANCE_SUPPLIER) Supplier<Bundle> savedInstanceStateSupplier) {
+            ActivityLifecycleDispatcher lifecycleDispatcher) {
         mActivity = activity;
         mNavigationController = navigationController;
         mActivityTabProvider = activityTabProvider;
         mIntentDataProvider = intentDataProvider;
-        mSavedInstanceStateSupplier = savedInstanceStateSupplier;
-        mLifecycleDispatcher = lifecycleDispatcher;
 
         lifecycleDispatcher.register(this);
     }
@@ -82,9 +71,7 @@ public class CustomTabMinimizationManagerHolder implements DestroyObserver {
                             mActivityTabProvider,
                             mIPHController,
                             closeTabRunnable,
-                            mIntentDataProvider,
-                            mLifecycleDispatcher,
-                            mSavedInstanceStateSupplier);
+                            mIntentDataProvider);
         }
     }
 

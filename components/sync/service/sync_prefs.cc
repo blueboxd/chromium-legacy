@@ -130,6 +130,8 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kPasswordsPerAccountPrefMigrationDone, false);
 #endif  // BUILDFLAG(IS_IOS)
   registry->RegisterIntegerPref(kSyncToSigninMigrationState, kNotMigrated);
+  registry->RegisterBooleanPref(
+      prefs::internal::kMigrateReadingListFromLocalToAccount, false);
 
   // The passphrase type, determined upon the first engine initialization.
   registry->RegisterIntegerPref(
@@ -231,9 +233,17 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypesForAccount(
         type_enabled = base::FeatureList::IsEnabled(switches::kUnoDesktop) &&
                        pref_service_->GetBoolean(prefs::kExplicitBrowserSignin);
 #endif
+      } else if (type == UserSelectableType::kBookmarks ||
+                 type == UserSelectableType::kReadingList) {
+        type_enabled = true;
+#if !BUILDFLAG(IS_IOS)
+        if (!base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos)) {
+          // Consider kBookmarks and kReadingList off by default.
+          type_enabled = false;
+        }
+#endif
       } else {
-        // All types except for History, Tabs and Password are always enabled by
-        // default.
+        // All other types are always enabled by default.
         type_enabled = true;
       }
 
@@ -603,7 +613,12 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
   // Features to be enabled.
   switch (type) {
     case UserSelectableType::kBookmarks:
-      return base::FeatureList::IsEnabled(kEnableBookmarksAccountStorage);
+#if BUILDFLAG(IS_IOS)
+      return true;
+#else
+      return base::FeatureList::IsEnabled(
+          kEnableBookmarkFoldersForAccountStorage);
+#endif
     case UserSelectableType::kReadingList:
       return base::FeatureList::IsEnabled(
                  kReadingListEnableSyncTransportModeUponSignIn);

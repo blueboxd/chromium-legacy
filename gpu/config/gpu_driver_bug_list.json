@@ -59,24 +59,6 @@
       ]
     },
     {
-      "id": 20,
-      "description": "Disable EXT_draw_buffers on GeForce GT 650M on Mac OS X due to driver bugs",
-      "cr_bugs": [180397, 779991],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.12"
-        }
-      },
-      "vendor_id": "0x10de",
-      "device_id": ["0x0fd5"],
-      "multi_gpu_category": "any",
-      "features": [
-        "disable_ext_draw_buffers"
-      ]
-    },
-    {
       "id": 21,
       "description": "Vivante GPUs are buggy with context switching",
       "cr_bugs": [179250, 235935],
@@ -124,20 +106,6 @@
       "gl_renderer": ".*Mali-4.*",
       "features": [
         "use_non_zero_size_for_client_side_stream_buffers"
-      ]
-    },
-    {
-      "id": 26,
-      "description": "Disable use of Direct3D 11 on Windows Vista and lower",
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "<=",
-          "value": "6.0"
-        }
-      },
-      "features": [
-        "disable_d3d11"
       ]
     },
     {
@@ -208,21 +176,6 @@
       ]
     },
     {
-      "id": 39,
-      "cr_bugs": [290391],
-      "description": "Multisampled renderbuffer allocation must be validated on some Macs",
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.10"
-        }
-      },
-      "features": [
-        "validate_multisample_buffer_allocation"
-      ]
-    },
-    {
       "id": 42,
       "cr_bugs": [290876, 488463],
       "description": "Framebuffer discarding causes flickering on older IMG drivers",
@@ -290,21 +243,6 @@
       "gl_vendor": "Qualcomm.*",
       "features": [
         "wake_up_gpu_before_drawing"
-      ]
-    },
-    {
-      "id": 54,
-      "cr_bugs": [124764, 349137],
-      "description": "Clear uniforms before first program use on all platforms",
-      "exceptions": [
-        {
-          "os": {
-            "type": "macosx"
-          }
-        }
-      ],
-      "features": [
-        "clear_uniforms_before_first_program_use"
       ]
     },
     {
@@ -469,27 +407,6 @@
       ]
     },
     {
-      "id": 94,
-      "description": "Disable EGL_KHR_wait_sync on NVIDIA with GLES 3.1",
-      "cr_bugs": [433057],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "5.0.2"
-        }
-      },
-      "gl_vendor": "NVIDIA.*",
-      "gl_type": "gles",
-      "gl_version": {
-        "op": "=",
-        "value": "3.1"
-      },
-      "disabled_extensions": [
-        "EGL_KHR_wait_sync"
-      ]
-    },
-    {
       "id": 95,
       "cr_bugs": [421271],
       "description": "glClear does not always work on these drivers",
@@ -533,36 +450,11 @@
       ]
     },
     {
-      "id": 100,
-      "description": "Disable Direct3D11 on systems with AMD switchable graphics",
-      "cr_bugs": [451420, 721121, 755722],
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "<",
-          "value": "10"
-        }
-      },
-      "vendor_id": "0x1002",
-      "driver_version": {
-        "op": "<",
-        "value": "20.19.0.32837"
-      },
-      "multi_gpu_style": "amd_switchable",
-      "features": [
-        "disable_d3d11"
-      ]
-    },
-    {
       "id": 102,
       "description": "Adreno 420 driver loses FBO attachment contents on bound FBO deletion",
       "cr_bugs": [457027],
       "os": {
-        "type": "android",
-        "version": {
-          "op": ">",
-          "value": "5.0.2"
-        }
+        "type": "android"
       },
       "gl_renderer": "Adreno \\(TM\\) 4.*",
       "features": [
@@ -603,29 +495,6 @@
       "gl_renderer": "PowerVR SGX 544",
       "disabled_extensions": [
         "GL_EXT_occlusion_query_boolean"
-      ]
-    },
-    {
-      "id": 107,
-      "description": "Workaround IMG PowerVR G6xxx drivers bugs",
-      "cr_bugs": [480992],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "between",
-          "value": "5.0.0",
-          "value2": "5.1.99"
-        }
-      },
-      "gl_vendor": ".*Imagination.*",
-      "gl_renderer": ".*PowerVR Rogue.*",
-      "driver_version": {
-        "op": "between",
-        "value": "1.3",
-        "value2": "1.4"
-      },
-      "disabled_extensions": [
-        "EGL_KHR_wait_sync"
       ]
     },
     {
@@ -729,26 +598,6 @@
       },
       "disabled_extensions": [
         "GL_EXT_disjoint_timer_query"
-      ]
-    },
-    {
-      "id": 116,
-      "description": "Adreno 420 support for EXT_multisampled_render_to_texture is buggy on Android < 5.1",
-      "comment": "Corresponds to software rendering list #149",
-      "cr_bugs": [490379, 767913],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "5.1"
-        }
-      },
-      "gl_renderer": "Adreno \\(TM\\) 4.*",
-      "disabled_extensions": [
-        "GL_EXT_multisampled_render_to_texture"
-      ],
-      "features": [
-        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
@@ -980,21 +829,6 @@
       ]
     },
     {
-      "id": 149,
-      "description": "Direct composition flashes black initially on Win <10",
-      "cr_bugs": [588588],
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "<",
-          "value": "10.0"
-        }
-      },
-      "features": [
-        "disable_direct_composition"
-      ]
-    },
-    {
       "id": 153,
       "cr_bugs": [594016],
       "description": "Vivante GC1000 with EXT_multisampled_render_to_texture fails glReadPixels",
@@ -1166,22 +1000,6 @@
       ]
     },
     {
-      "id": 182,
-      "cr_bugs": [638691],
-      "description": "Frequent hang in glClear on old android versions on Mali-T7xx",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "6.0"
-        }
-      },
-      "gl_renderer": ".*Mali-T7.*",
-      "features": [
-        "gl_clear_broken"
-      ]
-    },
-    {
       "id": 185,
       "description": "Zero-copy NV12 video displays incorrect colors on NVIDIA drivers.",
       "cr_bugs": [635319],
@@ -1207,52 +1025,6 @@
       "vendor_id": "0x8086",
       "features": [
         "add_and_true_to_loop_condition"
-      ]
-    },
-    {
-      "id": 187,
-      "description": "Rewrite do-while loops to simpler constructs on Mac",
-      "cr_bugs": [644669],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.11"
-        }
-      },
-      "features": [
-        "rewrite_do_while_loops"
-      ]
-    },
-    {
-      "id": 188,
-      "description": "AVSampleBufferDisplayLayer leaks IOSurfaces on 10.9.",
-      "cr_bugs": [632178],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<=",
-          "value": "10.10"
-        }
-      },
-      "features": [
-        "disable_av_sample_buffer_display_layer"
-      ]
-    },
-    {
-      "id": 189,
-      "description": "Do TexImage2D first before CopyTexImage2D for cube map texture on Intel Mac 10.11",
-      "cr_bugs": [648197],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<=",
-          "value": "10.11"
-        }
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "init_one_cube_map_level_before_copyteximage"
       ]
     },
     {
@@ -1569,22 +1341,6 @@
       ]
     },
     {
-      "id": 242,
-      "description": "Code produced by local variable initialization often triggers crashes in Marshmallow Adreno driver",
-      "cr_bugs": [728271],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "7.0"
-        }
-      },
-      "gl_renderer": "Adreno \\(TM\\) 4.*",
-      "features": [
-        "dont_initialize_uninitialized_locals"
-      ]
-    },
-    {
       "id": 243,
       "description": "Program binaries don't contain transform feedback varyings on Mali GPUs",
       "cr_bugs": [778871],
@@ -1655,25 +1411,6 @@
       ]
     },
     {
-      "id": 250,
-      "description": "Depth/stencil renderbuffers can't be resized on NVIDIA on early macOS 10.13",
-      "cr_bugs": [775202],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "between",
-          "value": "10.13.0",
-          "value2": "10.13.3",
-          "comment": "Fixed in 10.13.4."
-        }
-      },
-      "vendor_id": "0x10de",
-      "multi_gpu_category": "any",
-      "features": [
-        "depth_stencil_renderbuffer_resize_emulation"
-      ]
-    },
-    {
       "id": 251,
       "description": "Vivante GPUs shader cache breaks rendering",
       "cr_bugs": [780498],
@@ -1710,21 +1447,6 @@
       "features": [
         "max_msaa_sample_count_4",
         "use_eqaa_storage_samples_2"
-      ]
-    },
-    {
-      "id": 255,
-      "description": "Fullscreen video crashes macOS 10.11 WindowServer.",
-      "cr_bugs": [806506],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.12"
-        }
-      },
-      "features": [
-        "disable_av_sample_buffer_display_layer"
       ]
     },
     {
@@ -2368,22 +2090,6 @@
       "multi_gpu_category": "any",
       "features": [
         "force_low_power_gpu"
-      ]
-    },
-    {
-      "id": 327,
-      "cr_bugs": [1027981],
-      "description": "Disable dual source blending support",
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.14"
-        }
-      },
-      "gl_vendor": "Intel.*",
-      "features": [
-        "disable_dual_source_blending_support"
       ]
     },
     {
@@ -3114,21 +2820,6 @@
       ]
     },
     {
-      "id": 392,
-      "cr_bugs": [1305679],
-      "description": "OOPR Canvas is unreliable on MacOS 10.12 and older.",
-      "os": {
-        "type" : "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.13"
-        }
-      },
-      "features": [
-        "disable_canvas_oop_rasterization"
-      ]
-    },
-    {
       "id": 393,
       "description": "GL Contexts heavy / exhaust resources",
       "os": {
@@ -3619,23 +3310,6 @@
       },
       "features": [
         "disable_svc_encoding"
-      ]
-    },
-    {
-      "id": 426,
-      "cr_bugs": [1508379],
-      "description": "Disable VP9 k-SVC video decoding on non-Intel GPUs",
-      "os": {
-        "type": "win"
-      },
-      "exceptions": [
-        {
-          "multi_gpu_category": "active",
-          "vendor_id": "0x8086"
-        }
-      ],
-      "features": [
-        "disable_d3d11_vp9_ksvc_decoding"
       ]
     }
   ]

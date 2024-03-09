@@ -349,10 +349,9 @@ export class DirectoryItem extends FilesTreeItem {
    * The DirectoryEntry corresponding to this DirectoryItem. This may be
    * a dummy DirectoryEntry.
    * @type {DirectoryEntry|null}
+   * @override
    */
   get entry() {
-    // @ts-ignore: error TS2322: Type 'null' is not assignable to type 'Object |
-    // FileSystemDirectoryEntry'.
     return null;
   }
 
@@ -1193,9 +1192,9 @@ export class EntryListItem extends DirectoryItem {
         // FilesAppEntry'.
         this.parentTree_.volumeManager_.getLocationInfo(entries[0]);
     const compareFunction = compareLabelAndGroupBottomEntries(
-        // @ts-ignore: error TS2339: Property 'getUIChildren' does not exist on
+        // @ts-ignore: error TS2339: Property 'getUiChildren' does not exist on
         // type 'FileSystemDirectoryEntry'.
-        locationInfo, this.entry.getUIChildren());
+        locationInfo, this.entry.getUiChildren());
 
     const filter = this.fileFilter_.filter.bind(this.fileFilter_);
     return entries.filter(filter).sort(compareFunction);
@@ -2052,6 +2051,7 @@ export class ShortcutItem extends FilesTreeItem {
 
   /**
    * The DirectoryEntry corresponding to this DirectoryItem.
+   * @override
    */
   get entry() {
     return this.dirEntry_;
@@ -2270,6 +2270,7 @@ export class FakeItem extends FilesTreeItem {
 
   /**
    * The DirectoryEntry corresponding to this DirectoryItem.
+   * @override
    */
   get entry() {
     return this.dirEntry_;
@@ -2847,7 +2848,7 @@ export class DirectoryTree extends Tree {
   async onCurrentDirectoryChanged_(event) {
     const
         customEvent = /**
-                         @type {import('../../../definitions/directory_change_event.js').DirectoryChangeEvent}
+                         @type {import('../directory_model.js').DirectoryChangeEvent}
                            */
         (event);
     // Clear last active item; this is set by search temporarily disabling

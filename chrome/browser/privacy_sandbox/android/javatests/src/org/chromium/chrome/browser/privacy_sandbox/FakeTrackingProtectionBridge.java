@@ -8,15 +8,10 @@ package org.chromium.chrome.browser.privacy_sandbox;
 public class FakeTrackingProtectionBridge implements TrackingProtectionBridge.Natives {
     private Integer mLastNoticeAction;
     private boolean mNoticeShown;
-    private boolean mNoticeRequested;
+
     private boolean mIsOffboarded;
 
     private @NoticeType int mNoticeType;
-
-    @Override
-    public void noticeRequested(int noticeType) {
-        mNoticeRequested = true;
-    }
 
     @Override
     public void noticeShown(int noticeType) {
@@ -40,10 +35,6 @@ public class FakeTrackingProtectionBridge implements TrackingProtectionBridge.Na
 
     public void setRequiredNotice(@NoticeType int noticeType) {
         mNoticeType = noticeType;
-    }
-
-    public boolean wasNoticeRequested() {
-        return mNoticeRequested;
     }
 
     public boolean wasNoticeShown() {

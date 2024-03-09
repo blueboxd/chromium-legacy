@@ -275,13 +275,10 @@ bool AwAutofillClient::IsAutocompleteEnabled() const {
 }
 
 bool AwAutofillClient::IsPasswordManagerEnabled() {
-  // Android O+ relies on the AndroidAutofillManager, which does not call this
-  // function. If it ever does, the function needs to be implemented in a
-  // meaningful way.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-      base::android::SDK_VERSION_OREO) {
-    NOTREACHED();
-  }
+  // Android WebView (since Android O+) relies on the AndroidAutofillManager,
+  // which does not call this function. If it ever does, the function needs to
+  // be implemented in a meaningful way.
+  NOTREACHED();
   // This is behavior preserving: For pre-O versions, AwAutofill did rely on a
   // BrowserAutofillManager, which now calls the function. But pre-O only
   // offered an autocomplete feature that restored values of specific input
@@ -337,9 +334,7 @@ void AwAutofillClient::SuggestionSelected(JNIEnv* env,
                                           const JavaParamRef<jobject>& object,
                                           jint position) {
   if (delegate_) {
-    delegate_->DidAcceptSuggestion(
-        suggestions_[position], {.row = position},
-        autofill::AutofillSuggestionTriggerSource::kAndroidWebView);
+    delegate_->DidAcceptSuggestion(suggestions_[position], {.row = position});
   }
 }
 

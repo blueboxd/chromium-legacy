@@ -211,8 +211,9 @@ std::unique_ptr<PopupRowContentView> CreatePopupRowContentView(
       popup_cell_utils::CreateMainTextLabel(
           suggestion.main_text,
           GetMainTextStyleForPopupItemId(suggestion.popup_item_id));
-  popup_cell_utils::FormatLabel(*main_text_label, suggestion.main_text,
-                                popup_type);
+  popup_cell_utils::FormatLabel(
+      *main_text_label, suggestion.main_text, popup_type,
+      popup_cell_utils::GetMaxPopupAddressProfileWidth());
   popup_cell_utils::AddSuggestionContentToView(
       suggestion, std::move(main_text_label),
       popup_cell_utils::CreateMinorTextLabel(suggestion.minor_text),
@@ -236,8 +237,9 @@ std::unique_ptr<PopupRowWithButtonView> CreateAutocompleteRowWithDeleteButton(
       popup_cell_utils::CreateMainTextLabel(
           kSuggestion.main_text,
           GetMainTextStyleForPopupItemId(kSuggestion.popup_item_id));
-  popup_cell_utils::FormatLabel(*main_text_label, kSuggestion.main_text,
-                                controller->GetPopupType());
+  popup_cell_utils::FormatLabel(
+      *main_text_label, kSuggestion.main_text, controller->GetPopupType(),
+      popup_cell_utils::GetMaxPopupAddressProfileWidth());
   popup_cell_utils::AddSuggestionContentToView(
       kSuggestion, std::move(main_text_label),
       popup_cell_utils::CreateMinorTextLabel(kSuggestion.minor_text),
@@ -256,14 +258,9 @@ std::unique_ptr<PopupRowWithButtonView> CreateAutocompleteRowWithDeleteButton(
   // The closure that actually attempts to delete an entry and record metrics
   // for it.
   base::RepeatingClosure deletion_action = base::BindRepeating(
-      [](base::WeakPtr<AutofillPopupController> controller, int line_number) {
-        if (controller && controller->RemoveSuggestion(line_number)) {
-          AutofillMetrics::OnAutocompleteSuggestionDeleted(
-              AutofillMetrics::AutocompleteSingleEntryRemovalMethod::
-                  kDeleteButtonClicked);
-        }
-      },
-      controller, line_number);
+      base::IgnoreResult(&AutofillPopupController::RemoveSuggestion),
+      controller, line_number,
+      AutofillMetrics::SingleEntryRemovalMethod::kDeleteButtonClicked);
   std::unique_ptr<views::ImageButton> button =
       views::CreateVectorImageButtonWithNativeTheme(
           CreateExecuteSoonWrapper(std::move(deletion_action)),
@@ -338,7 +335,7 @@ std::unique_ptr<PopupRowView> CreatePopupRowView(
           controller->GetWebContents()->GetBrowserContext());
       const bool show_new_badge = tracker->TryShowNewBadge(
           feature_engagement::kIPHComposeNewBadgeFeature,
-          &compose::features::kEnableCompose);
+          &compose::features::kEnableComposeNudge);
       auto new_badge_tracker =
           PopupRowView::ScopedNewBadgeTrackerWithAcceptAction(
               std::move(tracker),

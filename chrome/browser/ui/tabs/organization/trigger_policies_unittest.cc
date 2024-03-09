@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/tabs/organization/trigger_policies.h"
 
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,10 +67,9 @@ class TargetFrequencyTriggerTest : public testing::Test {
   TargetFrequencyTriggerTest() {
     auto clock = std::make_unique<base::SimpleTestTickClock>();
     clock_ = clock.get();
-    backoff_level_provider_ = std::make_unique<FakeBackoffLevelProvider>();
     policy_ = std::make_unique<TargetFrequencyTriggerPolicy>(
         std::move(clock), base::Days(1.0f), 2.0f,
-        backoff_level_provider_.get());
+        std::make_unique<FakeBackoffLevelProvider>());
 
     // Start 10% into the period so +1 period doesn't put us exactly on the
     // rollover instant.
@@ -84,7 +82,6 @@ class TargetFrequencyTriggerTest : public testing::Test {
   TargetFrequencyTriggerPolicy* policy() { return policy_.get(); }
 
  private:
-  std::unique_ptr<BackoffLevelProvider> backoff_level_provider_;
   std::unique_ptr<TargetFrequencyTriggerPolicy> policy_;
   raw_ptr<base::SimpleTestTickClock> clock_;
 };
@@ -161,32 +158,4 @@ TEST_F(TargetFrequencyTriggerTest, PeriodClampedToBasePeriod) {
 
   advance_to_next_phase();
   EXPECT_TRUE(policy()->ShouldTrigger(2.0f));
-}
-
-TEST_F(TargetFrequencyTriggerTest,
-       HistogramLoggedOnShouldTriggerAfterPeriodExpiration) {
-  base::HistogramTester histogram_tester;
-
-  // Observation phase 1
-  EXPECT_FALSE(policy()->ShouldTrigger(1.0f));
-  advance_to_next_phase();
-
-  // trigger phase 1
-  EXPECT_TRUE(policy()->ShouldTrigger(2.0f));
-  advance_to_next_phase();
-
-  // observation phase 2. should log the results of triggering from phase 1.
-  EXPECT_FALSE(policy()->ShouldTrigger(1.0f));
-  histogram_tester.ExpectBucketCount(
-      "Tab.Organization.Trigger.TriggeredInPeriod", true, 1);
-  advance_to_next_phase();
-
-  // trigger phase 2
-  EXPECT_FALSE(policy()->ShouldTrigger(0.0f));
-  advance_to_next_phase();
-
-  // observation phase 3. should log the results of triggering from phase 2.
-  EXPECT_FALSE(policy()->ShouldTrigger(1.0f));
-  histogram_tester.ExpectBucketCount(
-      "Tab.Organization.Trigger.TriggeredInPeriod", false, 1);
 }

@@ -363,11 +363,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         int apsBackgroundIncognitoHoveredTint =
                 ColorUtils.setAlphaComponent(
-                        context.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        context.getColor(R.color.tab_strip_button_hover_bg_color),
                         (int) (NEW_TAB_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY * 255));
         int apsBackgroundIncognitoPressedTint =
                 ColorUtils.setAlphaComponent(
-                        context.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        context.getColor(R.color.tab_strip_button_hover_bg_color),
                         (int) (NEW_TAB_BUTTON_HOVER_BACKGROUND_PRESSED_OPACITY * 255));
 
         // Primary container for default bg color.
@@ -381,11 +381,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // Surface-2 baseline for incognito bg color.
         int BackgroundIncognitoDefaultTint =
-                context.getResources().getColor(R.color.default_bg_color_dark_elev_2_baseline);
+                context.getColor(R.color.default_bg_color_dark_elev_2_baseline);
 
         // Surface-5 baseline for incognito pressed bg color
         int BackgroundIncognitoPressedTint =
-                context.getResources().getColor(R.color.default_bg_color_dark_elev_5_baseline);
+                context.getColor(R.color.default_bg_color_dark_elev_5_baseline);
 
         // Tab strip redesign new tab button night mode bg color.
         if (ColorUtils.inNightMode(context)) {
@@ -515,7 +515,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
      *
      * @return Whether the tab strip is full.
      */
-    protected boolean isTabStripFull() {
+    private boolean isTabStripFull() {
         return mCachedTabWidth < TabUiThemeUtil.getMaxTabStripTabWidthDp();
     }
 
@@ -984,7 +984,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 3. Scroll the strip to bring the selected tab to view and ensure that the active tab
         // container is visible.
-        if (mActiveTabIndexOnStartup != Tab.INVALID_TAB_ID) {
+        if (mActiveTabIndexOnStartup != TabModel.INVALID_TAB_INDEX) {
             bringSelectedTabToVisibleArea(LayoutManagerImpl.time(), false);
 
             mStripTabs[mActiveTabIndexOnStartup].setContainerOpacity(
@@ -1712,16 +1712,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         mMultiStepTabCloseAnimRunning = false;
         finishAnimationsAndPushTabUpdates();
 
-        // Find out if we're closing the last tab to determine if we resize immediately.
-        boolean lastTab =
-                mStripTabs.length == 0 || mStripTabs[mStripTabs.length - 1].getId() == tab.getId();
-
         // When a tab is closed #resizeStripOnTabClose will run animations for the new tab offset
         // and tab x offsets. When there is only 1 tab remaining, we do not need to run those
         // animations, so #resizeTabStrip() is used instead.
         boolean runImprovedTabAnimations = mStripTabs.length > 1;
-
-        Tab nextTab = mModel.getNextTabIfClosed(tab.getId(), /* uponExit= */ false);
 
         // 1. Set the dying state of the tab.
         tab.setIsDying(true);
@@ -1734,20 +1728,15 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                         if (runImprovedTabAnimations) {
                             // This removes any closed tabs from the tabModel.
                             finishAnimationsAndPushTabUpdates();
-                            resizeStripOnTabClose(tab.getId(), nextTab);
+                            resizeStripOnTabClose();
                         } else {
                             mMultiStepTabCloseAnimRunning = false;
                             // Resize the tabs appropriately.
-                            resizeTabStrip(!lastTab, false);
+                            resizeTabStrip(false, false);
                         }
                     }
                 };
         runTabRemovalAnimation(tab, listener);
-
-        // 3. Fake a selection on the next tab now.
-        if (!runImprovedTabAnimations && nextTab != null) {
-            tabSelected(time, nextTab.getId(), tab.getId(), false);
-        }
     }
 
     private void runTabRemovalAnimation(StripLayoutTab tab, AnimatorListener listener) {
@@ -1767,7 +1756,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         startAnimationList(tabClosingAnimators, listener);
     }
 
-    private void resizeStripOnTabClose(int tabId, Tab nextTab) {
+    private void resizeStripOnTabClose() {
         List<Animator> tabStripAnimators = new ArrayList<>();
 
         // 1. Add tabs expanding animators to expand remaining tabs to fill scrollable area.
@@ -1806,15 +1795,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                         mMultiStepTabCloseAnimRunning = false;
                     }
                 });
-
-        // 6. Schedule next tab selection. Skip auto scroll so users don't lose track of their
-        // location in the tab strip after closing a tab.
-        if (nextTab != null) {
-            PostTask.postDelayedTask(
-                    TaskTraits.UI_DEFAULT,
-                    () -> tabSelected(SystemClock.uptimeMillis(), nextTab.getId(), tabId, true),
-                    ANIM_TAB_SELECTION_DELAY);
-        }
     }
 
     @Override
@@ -2395,6 +2375,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         // This will result in the tab being at either the start or end of the strip.
         final float deltaToOptimalStart = optimalStart - mScrollOffset;
         final float deltaToOptimalEnd = optimalEnd - mScrollOffset;
+
+        // 3. If the delta to the optimal start is negative and the delta to the optimal end is
+        // positive, the given index is already completely in the visible area of the strip.
+        if ((deltaToOptimalStart < 0) && (deltaToOptimalEnd > 0)) return 0.f;
 
         return Math.abs(deltaToOptimalStart) < Math.abs(deltaToOptimalEnd)
                 ? deltaToOptimalStart
@@ -3575,7 +3559,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                     public void onAnimationEnd(Animator animation) {
                         mDraggedTabOffStrip = true;
                         draggedTab.setDrawX(draggedTab.getIdealX());
-                        resizeStripOnTabClose(draggedTab.getId(), null);
+                        resizeStripOnTabClose();
                     }
                 });
     }

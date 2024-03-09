@@ -208,7 +208,7 @@ class CellularESimProfileHandlerImplTest : public testing::Test {
     return inhibit_lock;
   }
 
-  absl::optional<CellularInhibitor::InhibitReason> GetInhibitReason() {
+  std::optional<CellularInhibitor::InhibitReason> GetInhibitReason() {
     return cellular_inhibitor_.GetInhibitReason();
   }
 
@@ -318,8 +318,7 @@ class CellularESimProfileHandlerImplTest_SmdsSupportDisabled
   CellularESimProfileHandlerImplTest_SmdsSupportDisabled()
       : CellularESimProfileHandlerImplTest(
             /*enabled_features=*/{},
-            /*disabled_features=*/{ash::features::kSmdsSupport,
-                                   ash::features::kSmdsSupportEuiccUpload}) {}
+            /*disabled_features=*/{ash::features::kSmdsSupport}) {}
   ~CellularESimProfileHandlerImplTest_SmdsSupportDisabled() override = default;
 };
 
@@ -334,8 +333,7 @@ class CellularESimProfileHandlerImplTest_SmdsSupportEnabled
  protected:
   CellularESimProfileHandlerImplTest_SmdsSupportEnabled()
       : CellularESimProfileHandlerImplTest(
-            /*enabled_features=*/{ash::features::kSmdsSupport,
-                                  ash::features::kSmdsSupportEuiccUpload},
+            /*enabled_features=*/{ash::features::kSmdsSupport},
             /*disabled_features=*/{}) {}
   ~CellularESimProfileHandlerImplTest_SmdsSupportEnabled() override = default;
 };
@@ -354,7 +352,6 @@ class CellularESimProfileHandlerImplTest_SmdsSupportAndStorkEnabled
   CellularESimProfileHandlerImplTest_SmdsSupportAndStorkEnabled()
       : CellularESimProfileHandlerImplTest(
             /*enabled_features=*/{ash::features::kSmdsSupport,
-                                  ash::features::kSmdsSupportEuiccUpload,
                                   ash::features::kUseStorkSmdsServerAddress},
             /*disabled_features=*/{}) {}
   ~CellularESimProfileHandlerImplTest_SmdsSupportAndStorkEnabled() override =
@@ -1102,8 +1099,8 @@ TEST_F(CellularESimProfileHandlerImplTest_SmdsSupportEnabled,
   HermesEuiccClient::Get()->GetTestInterface()->SetInteractiveDelay(
       kInteractiveDelay);
 
-  absl::optional<ESimOperationResult> result;
-  absl::optional<std::vector<CellularESimProfile>> profile_list;
+  std::optional<ESimOperationResult> result;
+  std::optional<std::vector<CellularESimProfile>> profile_list;
 
   cellular_metrics::ESimSmdsScanHistogramState histogram_state;
   histogram_state.Check(histogram_tester());
@@ -1124,7 +1121,7 @@ TEST_F(CellularESimProfileHandlerImplTest_SmdsSupportEnabled,
 
   task_environment()->FastForwardBy(kInteractiveDelay);
 
-  const absl::optional<CellularInhibitor::InhibitReason> inhibit_reason =
+  const std::optional<CellularInhibitor::InhibitReason> inhibit_reason =
       GetInhibitReason();
   ASSERT_TRUE(inhibit_reason);
   EXPECT_EQ(inhibit_reason,
@@ -1178,8 +1175,8 @@ TEST_F(CellularESimProfileHandlerImplTest_SmdsSupportEnabled,
   HermesEuiccClient::Get()->GetTestInterface()->SetInteractiveDelay(
       kInteractiveDelay);
 
-  absl::optional<ESimOperationResult> result;
-  absl::optional<std::vector<CellularESimProfile>> profile_list;
+  std::optional<ESimOperationResult> result;
+  std::optional<std::vector<CellularESimProfile>> profile_list;
 
   cellular_metrics::ESimSmdsScanHistogramState histogram_state;
   histogram_state.Check(histogram_tester());
@@ -1271,8 +1268,8 @@ TEST_F(CellularESimProfileHandlerImplTest_SmdsSupportEnabled,
     profile_paths.push_back(profile_path);
   }
 
-  absl::optional<ESimOperationResult> result;
-  absl::optional<std::vector<CellularESimProfile>> profile_list;
+  std::optional<ESimOperationResult> result;
+  std::optional<std::vector<CellularESimProfile>> profile_list;
 
   base::RunLoop run_loop;
   RequestAvailableProfiles(
@@ -1335,8 +1332,8 @@ TEST_F(CellularESimProfileHandlerImplTest_SmdsSupportEnabled,
   cellular_metrics::ESimSmdsScanHistogramState histogram_state;
   histogram_state.Check(histogram_tester());
 
-  absl::optional<ESimOperationResult> result;
-  absl::optional<std::vector<CellularESimProfile>> profile_list;
+  std::optional<ESimOperationResult> result;
+  std::optional<std::vector<CellularESimProfile>> profile_list;
 
   ExpectScanDurationMetricsCount(/*other_count=*/0, /*android_count=*/0,
                                  /*gsma_counts=*/0, /*success=*/true);
@@ -1416,8 +1413,8 @@ TEST_F(CellularESimProfileHandlerImplTest_SmdsSupportAndStorkEnabled,
   Init();
   SetDevicePrefs();
 
-  absl::optional<ESimOperationResult> result;
-  absl::optional<std::vector<CellularESimProfile>> profile_list;
+  std::optional<ESimOperationResult> result;
+  std::optional<std::vector<CellularESimProfile>> profile_list;
 
   cellular_metrics::ESimSmdsScanHistogramState histogram_state;
   histogram_state.Check(histogram_tester());
@@ -1471,8 +1468,8 @@ TEST_F(CellularESimProfileHandlerImplTest_SmdsSupportAndStorkEnabled,
   Init();
   SetDevicePrefs();
 
-  absl::optional<ESimOperationResult> result;
-  absl::optional<std::vector<CellularESimProfile>> profile_list;
+  std::optional<ESimOperationResult> result;
+  std::optional<std::vector<CellularESimProfile>> profile_list;
 
   cellular_metrics::ESimSmdsScanHistogramState histogram_state;
   histogram_state.Check(histogram_tester());

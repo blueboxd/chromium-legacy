@@ -238,10 +238,369 @@ void WebNNGraphDMLImplTest::SetUp() {
   SKIP_TEST_IF(!adapter_->IsDMLDeviceCompileGraphSupportedForTesting());
 }
 
+template <typename T>
+struct ArgMinMaxTester {
+  OperandInfo<T> input;
+  std::vector<uint32_t> axes;
+  bool keep_dimensions = false;
+  bool select_last_index = false;
+  mojom::ArgMinMax::Kind kind;
+  OperandInfo<int64_t> output;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+    builder.BuildArgMinMax(kind, input_operand_id, output_operand_id, axes,
+                           keep_dimensions, select_last_index);
+
+    base::flat_map<std::string, mojo_base::BigBuffer> named_inputs;
+    named_inputs.insert({"input", VectorToBigBuffer(input.values)});
+    base::flat_map<std::string, mojo_base::BigBuffer> named_outputs;
+
+    BuildAndCompute(builder.CloneGraphInfo(), std::move(named_inputs),
+                    named_outputs);
+
+    VerifyIsEqual<int64_t>(std::move(named_outputs["output"]), output);
+  }
+};
+
+// Test building and computing a DML graph with single operator ArgMinMax.
+TEST_F(WebNNGraphDMLImplTest, BuildAndComputeSingleOperatorArgMinMax) {
+  // Test argMax with axes = {0} and select_last_index = false.
+  {
+    ArgMinMaxTester<float>{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                     .dimensions = {2, 3},
+                                     .values = {1, 2, 3, 4, 5, 6}},
+                           .axes = {0},
+                           .keep_dimensions = true,
+                           .select_last_index = false,
+                           .kind = mojom::ArgMinMax::Kind::kMax,
+                           .output = {.type = mojom::Operand::DataType::kInt64,
+                                      .dimensions = {1, 3},
+                                      .values = {1, 1, 1}}}
+        .Test();
+  }
+  // Test argMax with axes = {0, 1} and select_last_index = false. The index is
+  // into the flattened array: [1, 2, 3, 4, 5, 6].
+  {
+    ArgMinMaxTester<float>{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                     .dimensions = {2, 3},
+                                     .values = {1, 2, 3, 4, 5, 6}},
+                           .axes = {0, 1},
+                           .keep_dimensions = true,
+                           .select_last_index = false,
+                           .kind = mojom::ArgMinMax::Kind::kMax,
+                           .output = {.type = mojom::Operand::DataType::kInt64,
+                                      .dimensions = {1, 1},
+                                      .values = {5}}}
+        .Test();
+  }
+  // Test argMax with axes = {1} and select_last_index = false.
+  {
+    ArgMinMaxTester<float>{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                     .dimensions = {3, 3},
+                                     .values = {1, 2, 3, 4, 3, 4, 3, 2, 1}},
+                           .axes = {1},
+                           .keep_dimensions = true,
+                           .select_last_index = false,
+                           .kind = mojom::ArgMinMax::Kind::kMax,
+                           .output = {.type = mojom::Operand::DataType::kInt64,
+                                      .dimensions = {3, 1},
+                                      .values = {2, 0, 0}}}
+        .Test();
+  }
+  // Test argMax with axes = {1}, keep_dimensions = false and select_last_index
+  // = true.
+  {
+    ArgMinMaxTester<float>{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                     .dimensions = {3, 3},
+                                     .values = {1, 2, 3, 4, 3, 4, 3, 2, 1}},
+                           .axes = {1},
+                           .keep_dimensions = false,
+                           .select_last_index = true,
+                           .kind = mojom::ArgMinMax::Kind::kMax,
+                           .output = {.type = mojom::Operand::DataType::kInt64,
+                                      .dimensions = {3},
+                                      .values = {2, 2, 0}}}
+        .Test();
+  }
+  // Test argMin with axes = {1} and select_last_index = false.
+  {
+    ArgMinMaxTester<float>{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                     .dimensions = {3, 3},
+                                     .values = {1, 2, 3, 4, 3, 4, 3, 2, 1}},
+                           .axes = {1},
+                           .keep_dimensions = true,
+                           .select_last_index = false,
+                           .kind = mojom::ArgMinMax::Kind::kMin,
+                           .output = {.type = mojom::Operand::DataType::kInt64,
+                                      .dimensions = {3, 1},
+                                      .values = {0, 1, 2}}}
+        .Test();
+  }
+  // Test argMin with axes = {1, 2} and select_last_index = false. The indexes
+  // are into the partially flattened array: [[ 1, 2, 3, 4] ], [1, 2, 3, 4]].
+  {
+    ArgMinMaxTester<float>{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                     .dimensions = {2, 2, 2},
+                                     .values = {1, 2, 3, 4, 1, 2, 3, 4}},
+                           .axes = {1, 2},
+                           .keep_dimensions = true,
+                           .select_last_index = false,
+                           .kind = mojom::ArgMinMax::Kind::kMin,
+                           .output = {.type = mojom::Operand::DataType::kInt64,
+                                      .dimensions = {2, 1, 1},
+                                      .values = {0, 0}}}
+        .Test();
+  }
+  // Test argMin with axes = {0, 2} and select_last_index = true. The indexes
+  // are into the partially flattened array: [[1, 2, 1, 2], [3, 4, 3, 4]].
+  {
+    ArgMinMaxTester<float>{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                     .dimensions = {2, 2, 2},
+                                     .values = {1, 2, 3, 4, 1, 2, 3, 4}},
+                           .axes = {0, 2},
+                           .keep_dimensions = false,
+                           .select_last_index = true,
+                           .kind = mojom::ArgMinMax::Kind::kMin,
+                           .output = {.type = mojom::Operand::DataType::kInt64,
+                                      .dimensions = {2},
+                                      .values = {2, 2}}}
+        .Test();
+  }
+  // Test argMin with axes = {0}, keep_dimensions = false and select_last_index
+  // = true.
+  {
+    ArgMinMaxTester<float16>{
+        .input = {.type = mojom::Operand::DataType::kFloat16,
+                  .dimensions = {3, 3},
+                  .values = {1, 2, 3, 4, 3, 4, 3, 2, 1}},
+        .axes = {0},
+        .keep_dimensions = false,
+        .select_last_index = true,
+        .kind = mojom::ArgMinMax::Kind::kMin,
+        .output = {.type = mojom::Operand::DataType::kInt64,
+                   .dimensions = {3},
+                   .values = {0, 2, 2}}}
+        .Test();
+  }
+}
+
 struct ClampAttributes {
   float min_value;
   float max_value;
 };
+
+template <typename T>
+struct BatchNormalizationTester {
+  OperandInfo<T> input;
+  OperandInfo<T> mean;
+  OperandInfo<T> variance;
+  absl::optional<OperandInfo<T>> scale;
+  absl::optional<OperandInfo<T>> bias;
+  struct BatchNormalizationAttributes {
+    absl::optional<uint64_t> scale_operand_id;
+    absl::optional<uint64_t> bias_operand_id;
+    uint32_t axis = 1;
+    float epsilon = 1e-5;
+    absl::optional<mojom::Activation::Tag> activation;
+    absl::optional<ClampAttributes> clamp_attributes;
+    absl::optional<float> elu_alpha;
+    absl::optional<float> leaky_relu_alpha;
+  };
+  BatchNormalizationAttributes attributes;
+  OperandInfo<float> output;
+
+  void Test(BuildAndComputeExpectation expectation =
+                BuildAndComputeExpectation::kSuccess) {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+    uint64_t mean_operand_id =
+        builder.BuildInput("mean", mean.dimensions, mean.type);
+    uint64_t variance_operand_id =
+        builder.BuildInput("variance", variance.dimensions, variance.type);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+    if (scale.has_value()) {
+      attributes.scale_operand_id =
+          builder.BuildInput("scale", scale->dimensions, scale->type);
+    }
+    if (bias.has_value()) {
+      attributes.bias_operand_id =
+          builder.BuildInput("bias", bias->dimensions, bias->type);
+    }
+
+    builder.BuildBatchNormalization(input_operand_id, mean_operand_id,
+                                    variance_operand_id, output_operand_id,
+                                    std::move(attributes));
+
+    base::flat_map<std::string, mojo_base::BigBuffer> named_inputs;
+    named_inputs.insert({"input", VectorToBigBuffer(input.values)});
+    named_inputs.insert({"mean", VectorToBigBuffer(mean.values)});
+    named_inputs.insert({"variance", VectorToBigBuffer(variance.values)});
+    if (scale.has_value()) {
+      named_inputs.insert({"scale", VectorToBigBuffer(scale->values)});
+    }
+    if (bias.has_value()) {
+      named_inputs.insert({"bias", VectorToBigBuffer(bias->values)});
+    }
+    base::flat_map<std::string, mojo_base::BigBuffer> named_outputs;
+
+    BuildAndCompute(builder.CloneGraphInfo(), std::move(named_inputs),
+                    named_outputs, expectation);
+
+    if (expectation == BuildAndComputeExpectation::kSuccess) {
+      VerifyFloatDataIsEqual(
+          GetFloatOutputData(std::move(named_outputs["output"]), output.type),
+          output.values);
+    }
+  }
+};
+
+// Test building and computing a DML graph with single operator
+// batchNormalization.
+TEST_F(WebNNGraphDMLImplTest, BuildSingleOperatorBatchNormalization) {
+  // DML_BATCHNORMALIZATION_OPERATOR_DESC support for 1~8 dimension counts was
+  // introduced in DML_FEATURE_LEVEL_3_1.
+  SKIP_TEST_IF(!adapter_->IsDMLFeatureLevelSupported(DML_FEATURE_LEVEL_3_1));
+
+  {
+    // Test batchNormalization with 4-D input with default axis.
+    BatchNormalizationTester<float>{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 1, 3},
+                  .values = {-1, 0, 1, 2, 3, 4}},
+        .mean = {.type = mojom::Operand::DataType::kFloat32,
+                 .dimensions = {2},
+                 .values = {0, 3}},
+        .variance = {.type = mojom::Operand::DataType::kFloat32,
+                     .dimensions = {2},
+                     .values = {1.0, 1.5}},
+        .scale = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                    .dimensions = {2},
+                                    .values = {1.0, 1.5}},
+        .bias = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                   .dimensions = {2},
+                                   .values = {0, 1}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 1, 3},
+                   .values = {-0.9999950000374997, 0, 0.9999950000374997,
+                              -0.22474078892909666, 1, 2.224740788929097}}}
+        .Test();
+  }
+  {
+    // Test batchNormalization with 4-D input with activation = relu.
+    BatchNormalizationTester<float>{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 1, 3},
+                  .values = {-1, 0, 1, 2, 3, 4}},
+        .mean = {.type = mojom::Operand::DataType::kFloat32,
+                 .dimensions = {2},
+                 .values = {0, 3}},
+        .variance = {.type = mojom::Operand::DataType::kFloat32,
+                     .dimensions = {2},
+                     .values = {1.0, 1.5}},
+        .scale = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                    .dimensions = {2},
+                                    .values = {1.0, 1.5}},
+        .bias = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                   .dimensions = {2},
+                                   .values = {0, 1}},
+        .attributes = {.activation = mojom::Activation::Tag::kRelu},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 1, 3},
+                   .values = {0, 0, 0.9999950000374997, 0, 1,
+                              2.224740788929097}}}
+        .Test();
+  }
+  {
+    // Test batchNormalization with 4-D input with axis = 3.
+    BatchNormalizationTester<float>{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 3, 2},
+                  .values = {-1, 2, 0, 3, 1, 4}},
+        .mean = {.type = mojom::Operand::DataType::kFloat32,
+                 .dimensions = {2},
+                 .values = {0, 3}},
+        .variance = {.type = mojom::Operand::DataType::kFloat32,
+                     .dimensions = {2},
+                     .values = {1.0, 1.5}},
+        .scale = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                    .dimensions = {2},
+                                    .values = {1.0, 1.5}},
+        .bias = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                   .dimensions = {2},
+                                   .values = {0, 1}},
+        .attributes = {.axis = 3},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 2},
+                   .values = {-0.9999950000374997, -0.22474078892909666, 0, 1,
+                              0.9999950000374997, 2.224740788929097}}}
+        .Test();
+  }
+  {
+    // Test batchNormalization with 1-D input with axis = 0.
+    BatchNormalizationTester<float>{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {2},
+                  .values = {-1, 1}},
+        .mean = {.type = mojom::Operand::DataType::kFloat32,
+                 .dimensions = {2},
+                 .values = {-1, 1}},
+        .variance = {.type = mojom::Operand::DataType::kFloat32,
+                     .dimensions = {2},
+                     .values = {1.0, 1.5}},
+        .scale = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                    .dimensions = {2},
+                                    .values = {1.0, 1.5}},
+        .bias = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                   .dimensions = {2},
+                                   .values = {0, 1}},
+        .attributes = {.axis = 0},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {2},
+                   .values = {0, 1}}}
+        .Test();
+  }
+  {
+    // Test batchNormalization with 3-D input with axis = 2, epsilon = 1e-3.
+    BatchNormalizationTester<float>{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {2, 1, 3},
+                  .values = {-1, 0, 1, 2, 3, 4}},
+        .mean = {.type = mojom::Operand::DataType::kFloat32,
+                 .dimensions = {3},
+                 .values = {0, 3, 6}},
+        .variance = {.type = mojom::Operand::DataType::kFloat32,
+                     .dimensions = {3},
+                     .values = {1.0, 1.5, 2.0}},
+        .scale = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                    .dimensions = {3},
+                                    .values = {1.0, 1.5, 2.0}},
+        .bias = OperandInfo<float>{.type = mojom::Operand::DataType::kFloat32,
+                                   .dimensions = {3},
+                                   .values = {0, 1, 2}},
+        .attributes = {.axis = 2, .epsilon = 1e-3},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {2, 1, 3},
+                   .values =
+                       {
+                           -0.9995003746877732,
+                           -2.6730104813358024,
+                           -5.069300707549023,
+                           1.9990007493755464,
+                           1,
+                           -0.8277202830196093,
+                       }}}
+        .Test();
+  }
+}
 
 template <typename T>
 struct Conv2dTester {
@@ -1059,24 +1418,25 @@ TEST_F(WebNNGraphDMLImplTest, BuildAndComputeSingleOperatorElementWiseBinary) {
     ElementWiseBinaryTester<float, uint8_t>{
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 2, 3, 1},
-                .values = {1, 2, 3, 4, 5, 6}},
+                .values = {-1, 2, -3, 4, 5,
+                           std::numeric_limits<float>::infinity()}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 2, 3, 1},
                 .values = {6, 5, 3, 4, 2, 1}},
         .kind = mojom::ElementWiseBinary::Kind::kEqual,
         .output = {.type = mojom::Operand::DataType::kUint8,
                    .dimensions = {1, 2, 3, 1},
-                   .values = {0, 0, 1, 1, 0, 0}}}
+                   .values = {0, 0, 0, 1, 0, 0}}}
         .Test();
   }
-
   // Test building and computing a DML graph with single operator equal using
   // broadcasting.
   {
     ElementWiseBinaryTester<float, uint8_t>{
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 2, 3, 1},
-                .values = {1, 2, 3, 4, 5, 6}},
+                .values = {-1, 2, 3, 4, 5,
+                           std::numeric_limits<float>::infinity()}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 1, 1, 1},
                 .values = {2}},
@@ -1086,30 +1446,30 @@ TEST_F(WebNNGraphDMLImplTest, BuildAndComputeSingleOperatorElementWiseBinary) {
                    .values = {0, 1, 0, 0, 0, 0}}}
         .Test();
   }
-
   // Test building and computing a DML graph with single operator greater.
   {
     ElementWiseBinaryTester<float, uint8_t>{
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 2, 3, 1},
-                .values = {1, 2, 3, 4, 5, 6}},
+                .values = {-1, -2, 3, 4, 5,
+                           std::numeric_limits<float>::infinity()}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 2, 3, 1},
-                .values = {6, 5, 3, 4, 2, 1}},
+                .values = {6, -5, 3, 4, 2, 1}},
         .kind = mojom::ElementWiseBinary::Kind::kGreater,
         .output = {.type = mojom::Operand::DataType::kUint8,
                    .dimensions = {1, 2, 3, 1},
-                   .values = {0, 0, 0, 0, 1, 1}}}
+                   .values = {0, 1, 0, 0, 1, 1}}}
         .Test();
   }
-
   // Test building and computing a DML graph with single operator greater using
   // broadcasting.
   {
     ElementWiseBinaryTester<float, uint8_t>{
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 2, 3, 1},
-                .values = {1, 2, 3, 4, 5, 6}},
+                .values = {-1, 2, 3, 4, 5,
+                           std::numeric_limits<float>::infinity()}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 1, 1, 1},
                 .values = {2}},
@@ -1119,37 +1479,103 @@ TEST_F(WebNNGraphDMLImplTest, BuildAndComputeSingleOperatorElementWiseBinary) {
                    .values = {0, 0, 1, 1, 1, 1}}}
         .Test();
   }
-
+  // Test building and computing DML graph with single operator greaterOrEqual.
+  {
+    ElementWiseBinaryTester<float, uint8_t>{
+        .lhs = {.type = mojom::Operand::DataType::kFloat32,
+                .dimensions = {1, 2, 3, 1},
+                .values = {-1, 2, -3, 4, 5,
+                           std::numeric_limits<float>::infinity()}},
+        .rhs = {.type = mojom::Operand::DataType::kFloat32,
+                .dimensions = {1, 2, 3, 1},
+                .values = {6, 5, 3, 4, 2, 1}},
+        .kind = mojom::ElementWiseBinary::Kind::kGreaterOrEqual,
+        .output = {.type = mojom::Operand::DataType::kUint8,
+                   .dimensions = {1, 2, 3, 1},
+                   .values = {0, 0, 0, 1, 1, 1}}}
+        .Test();
+  }
+  // Test building and computing a DML graph with single operator
+  // greaterOrEqual using broadcasting.
+  {
+    ElementWiseBinaryTester<float, uint8_t>{
+        .lhs = {.type = mojom::Operand::DataType::kFloat32,
+                .dimensions = {1, 2, 3, 1},
+                .values = {-1, 2, -3, 4, 5,
+                           std::numeric_limits<float>::infinity()}},
+        .rhs = {.type = mojom::Operand::DataType::kFloat32,
+                .dimensions = {1, 1, 1, 1},
+                .values = {2}},
+        .kind = mojom::ElementWiseBinary::Kind::kGreaterOrEqual,
+        .output = {.type = mojom::Operand::DataType::kUint8,
+                   .dimensions = {1, 2, 3, 1},
+                   .values = {0, 1, 0, 1, 1, 1}}}
+        .Test();
+  }
   // Test building and computing a DML graph with single operator lesser.
   {
     ElementWiseBinaryTester<float, uint8_t>{
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 2, 3, 1},
-                .values = {1, 2, 3, 4, 5, 6}},
+                .values = {-1, 2, 3, -4, 5,
+                           std::numeric_limits<float>::infinity()}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 2, 3, 1},
-                .values = {6, 5, 3, 4, 2, 1}},
+                .values = {6, 5, 3, 3, 2, 1}},
         .kind = mojom::ElementWiseBinary::Kind::kLesser,
         .output = {.type = mojom::Operand::DataType::kUint8,
                    .dimensions = {1, 2, 3, 1},
-                   .values = {1, 1, 0, 0, 0, 0}}}
+                   .values = {1, 1, 0, 1, 0, 0}}}
         .Test();
   }
-
   // Test building and computing a DML graph with single operator lesser using
   // broadcasting.
   {
     ElementWiseBinaryTester<float, uint8_t>{
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 2, 3, 1},
-                .values = {1, 2, 3, 4, 5, 6}},
+                .values = {-1, 2, -3, 4, 5,
+                           std::numeric_limits<float>::infinity()}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {1, 1, 1, 1},
                 .values = {2}},
         .kind = mojom::ElementWiseBinary::Kind::kLesser,
         .output = {.type = mojom::Operand::DataType::kUint8,
                    .dimensions = {1, 2, 3, 1},
-                   .values = {1, 0, 0, 0, 0, 0}}}
+                   .values = {1, 0, 1, 0, 0, 0}}}
+        .Test();
+  }
+  // Test building and computing a DML graph with single operator lesserOrEqual.
+  {
+    ElementWiseBinaryTester<float, uint8_t>{
+        .lhs = {.type = mojom::Operand::DataType::kFloat32,
+                .dimensions = {1, 2, 3, 1},
+                .values = {-1, 2, 3, 4, 5,
+                           std::numeric_limits<float>::infinity()}},
+        .rhs = {.type = mojom::Operand::DataType::kFloat32,
+                .dimensions = {1, 2, 3, 1},
+                .values = {6, 5, -3, 4, 2, 1}},
+        .kind = mojom::ElementWiseBinary::Kind::kLesserOrEqual,
+        .output = {.type = mojom::Operand::DataType::kUint8,
+                   .dimensions = {1, 2, 3, 1},
+                   .values = {1, 1, 0, 1, 0, 0}}}
+        .Test();
+  }
+  // Test building and computing a DML graph with single operator lesserOrEqual
+  // using broadcasting.
+  {
+    ElementWiseBinaryTester<float, uint8_t>{
+        .lhs = {.type = mojom::Operand::DataType::kFloat32,
+                .dimensions = {1, 2, 3, 1},
+                .values = {-1, 2, -2, -4, 5,
+                           std::numeric_limits<float>::infinity()}},
+        .rhs = {.type = mojom::Operand::DataType::kFloat32,
+                .dimensions = {1, 1, 1, 1},
+                .values = {2}},
+        .kind = mojom::ElementWiseBinary::Kind::kLesserOrEqual,
+        .output = {.type = mojom::Operand::DataType::kUint8,
+                   .dimensions = {1, 2, 3, 1},
+                   .values = {1, 1, 1, 1, 0, 0}}}
         .Test();
   }
 }
@@ -1159,8 +1585,7 @@ struct ElementWiseUnaryTester {
   OperandInfo<T> input;
   mojom::ElementWiseUnary::Kind kind;
   OperandInfo<O> output;
-  void Test(BuildAndComputeExpectation expectation =
-                BuildAndComputeExpectation::kSuccess) {
+  void Test() {
     GraphInfoBuilder builder;
     uint64_t input_operand_id =
         builder.BuildInput("input", input.dimensions, input.type);
@@ -1173,10 +1598,8 @@ struct ElementWiseUnaryTester {
     base::flat_map<std::string, mojo_base::BigBuffer> named_outputs;
 
     BuildAndCompute(builder.CloneGraphInfo(), std::move(named_inputs),
-                    named_outputs, expectation);
-    if (expectation == BuildAndComputeExpectation::kSuccess) {
-      VerifyIsEqual(std::move(named_outputs["output"]), output);
-    }
+                    named_outputs);
+    VerifyIsEqual(std::move(named_outputs["output"]), output);
   }
 };
 
@@ -1206,34 +1629,6 @@ TEST_F(WebNNGraphDMLImplTest, BuildAndComputeSingleOperatorElementWiseUnary) {
       .type = mojom::Operand::DataType::kUint8,
       .dimensions = {1, 2, 3, 1},
       .values = {0, 2, 0, 4, 5, 120}};
-  {
-    ElementWiseUnaryTester<float_t>{
-        .input = test_operand_info_float32,
-        .kind = mojom::ElementWiseUnary::Kind::kLogicalNot,
-        .output = test_operand_info_float32}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
-    ElementWiseUnaryTester<float16>{
-        .input = test_operand_info_float16,
-        .kind = mojom::ElementWiseUnary::Kind::kLogicalNot,
-        .output = test_operand_info_float16}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
-    ElementWiseUnaryTester<int32_t>{
-        .input = test_operand_info_int32,
-        .kind = mojom::ElementWiseUnary::Kind::kLogicalNot,
-        .output = test_operand_info_int32}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
-    ElementWiseUnaryTester<int8_t>{
-        .input = test_operand_info_int8,
-        .kind = mojom::ElementWiseUnary::Kind::kLogicalNot,
-        .output = test_operand_info_int8}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
   {
     ElementWiseUnaryTester<uint8_t>{
         .input = {.type = mojom::Operand::DataType::kUint8,
@@ -1322,26 +1717,6 @@ TEST_F(WebNNGraphDMLImplTest, BuildAndComputeSingleOperatorElementWiseUnary) {
         .Test();
   }
   {
-    ElementWiseUnaryTester<int32_t>{
-        .input = test_operand_info_int32,
-        .kind = mojom::ElementWiseUnary::Kind::kSqrt,
-        .output = test_operand_info_int32}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
-    ElementWiseUnaryTester<int8_t>{.input = test_operand_info_int8,
-                                   .kind = mojom::ElementWiseUnary::Kind::kSqrt,
-                                   .output = test_operand_info_int8}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
-    ElementWiseUnaryTester<uint8_t>{
-        .input = test_operand_info_uint8,
-        .kind = mojom::ElementWiseUnary::Kind::kSqrt,
-        .output = test_operand_info_uint8}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
     ElementWiseUnaryTester<float>{
         .input = {.type = mojom::Operand::DataType::kFloat32,
                   .dimensions = {1, 2, 3, 1},
@@ -1362,24 +1737,6 @@ TEST_F(WebNNGraphDMLImplTest, BuildAndComputeSingleOperatorElementWiseUnary) {
                    .dimensions = {1, 2, 3, 1},
                    .values = Float16FromFloat32({0, 1, 0, 1, 1, -1})}}
         .Test();
-  }
-  {
-    ElementWiseUnaryTester<int32_t>{.input = test_operand_info_int32,
-                                    .kind = mojom::ElementWiseUnary::Kind::kErf,
-                                    .output = test_operand_info_int32}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
-    ElementWiseUnaryTester<int8_t>{.input = test_operand_info_int8,
-                                   .kind = mojom::ElementWiseUnary::Kind::kErf,
-                                   .output = test_operand_info_int8}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
-    ElementWiseUnaryTester<uint8_t>{.input = test_operand_info_uint8,
-                                    .kind = mojom::ElementWiseUnary::Kind::kErf,
-                                    .output = test_operand_info_uint8}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
   }
   {
     ElementWiseUnaryTester<float>{
@@ -1405,27 +1762,6 @@ TEST_F(WebNNGraphDMLImplTest, BuildAndComputeSingleOperatorElementWiseUnary) {
                        {1, 0.25, 0.5, 0.0625, 0.015625,
                         std::numeric_limits<float>::infinity()})}}
         .Test();
-  }
-  {
-    ElementWiseUnaryTester<int32_t>{
-        .input = test_operand_info_int32,
-        .kind = mojom::ElementWiseUnary::Kind::kReciprocal,
-        .output = test_operand_info_int32}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
-    ElementWiseUnaryTester<int8_t>{
-        .input = test_operand_info_int8,
-        .kind = mojom::ElementWiseUnary::Kind::kReciprocal,
-        .output = test_operand_info_int8}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
-  }
-  {
-    ElementWiseUnaryTester<uint8_t>{
-        .input = test_operand_info_uint8,
-        .kind = mojom::ElementWiseUnary::Kind::kReciprocal,
-        .output = test_operand_info_uint8}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
   }
   {
     ElementWiseUnaryTester<float>{
@@ -1925,18 +2261,6 @@ TEST_F(WebNNGraphDMLImplTest, BuildAndComputeSingleOperatorCast) {
           .output = test_operand_info_int8}
           .Test();
     }
-  }
-  // Test case where dimensions dont match
-  {
-    OperandInfo<int8_t> test_operand_info_int8_wrong_dimension{
-        .type = mojom::Operand::DataType::kInt8,
-        .dimensions = {1, 2, 3, 2},
-        .values = {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}};
-    ElementWiseUnaryTester<uint8_t, int8_t>{
-        .input = test_operand_info_uint8,
-        .kind = mojom::ElementWiseUnary::Kind::kCast,
-        .output = test_operand_info_int8_wrong_dimension}
-        .Test(BuildAndComputeExpectation::kCreateGraphFailure);
   }
 }
 

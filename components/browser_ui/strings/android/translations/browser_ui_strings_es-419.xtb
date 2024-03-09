@@ -13,7 +13,7 @@
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1289742167380433257">Para ahorrar datos, Google optimizó las imágenes de esta página.</translation>
 <translation id="129382876167171263">Aquí se mostrarán los archivos que guarden los sitios web</translation>
-<translation id="131112695174432497">Se borran los datos que afectan la personalización de anuncios</translation>
+<translation id="131112695174432497">Se borran los datos que afectan la personalización de anuncios.</translation>
 <translation id="1317194122196776028">Olvidar este sitio</translation>
 <translation id="1343356790768851700">Este sitio determina lo que te gusta y, luego, sugiere anuncios a otros sitios</translation>
 <translation id="1369915414381695676">Se agregó el sitio <ph name="SITE_NAME" />.</translation>
@@ -85,7 +85,7 @@
 <translation id="244264527810019436">Es posible que las funciones de algunos sitios no funcionen en el modo Incógnito</translation>
 <translation id="2442870161001914531">Solicitar siempre el sitio para computadoras</translation>
 <translation id="2469312991797799607">Esta acción borrará todos los datos y cookies de <ph name="ORIGIN" /> y de todos sus sitios secundarios</translation>
-<translation id="2479148705183875116">Configurar</translation>
+<translation id="2479148705183875116">Ir a Configuración</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="2490684707762498678">Administradas por <ph name="APP_NAME" /></translation>
@@ -318,7 +318,7 @@
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="6304434827459067558"><ph name="SITE" /> no puede utilizar tu información en</translation>
 <translation id="6320088164292336938">Vibrar</translation>
-<translation id="6344622098450209924">Protección contra seguimiento</translation>
+<translation id="6344622098450209924">Protección contra el seguimiento</translation>
 <translation id="6367753977865761591">Bloquea el acceso de terceros a un sitio específico.</translation>
 <translation id="6398765197997659313">Salir de pantalla completa</translation>
 <translation id="640163077447496506">Vence hoy</translation>
@@ -473,7 +473,6 @@
 <translation id="8803526663383843427">Cuando está activada</translation>
 <translation id="8805385115381080995">La navegación es más rápida porque el sitio tiene menos probabilidades de pedirte que verifiques si eres una persona real.</translation>
 <translation id="8816026460808729765">Impedir que los sitios accedan a los sensores</translation>
-<translation id="8823559166155093873">Bloquear cookies</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8874790741333031443">Intenta permitir temporalmente cookies de terceros, lo que implica menos protección al navegar, pero aumenta las probabilidades de que las funciones del sitio funcionen como se espera.</translation>
 <translation id="8889294078294184559">A medida que navegas, los sitios pueden comprobar con Chrome y verificar con otro sitio que hayas visitado que eres una persona real.</translation>

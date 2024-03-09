@@ -22,9 +22,9 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "ash/wm/desks/cros_next_default_desk_button.h"
-#include "ash/wm/desks/cros_next_desk_icon_button.h"
+#include "ash/wm/desks/default_desk_button.h"
 #include "ash/wm/desks/desk_bar_view_base.h"
+#include "ash/wm/desks/desk_icon_button.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/desk_name_view.h"
@@ -72,7 +72,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/ui/base/window_properties.h"
-#include "components/app_restore/full_restore_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor_observer.h"
@@ -907,6 +906,7 @@ void OverviewGrid::RemoveItem(OverviewItemBase* overview_item,
             ? std::make_optional(
                   split_view_drag_indicators_->current_window_dragging_state())
             : std::nullopt,
+        /*divider_changed=*/false,
         /*account_for_hotseat=*/true);
     SetBoundsAndUpdatePositions(grid_bounds, ignored_items, /*animate=*/true);
   }
@@ -997,7 +997,7 @@ void OverviewGrid::RearrangeDuringDrag(
   // Update the grid's bounds.
   const gfx::Rect wanted_grid_bounds = GetGridBoundsInScreen(
       root_window_, std::make_optional(window_dragging_state),
-      /*account_for_hotseat=*/true);
+      /*divider_changed=*/false, /*account_for_hotseat=*/true);
   if (bounds_ != wanted_grid_bounds) {
     base::flat_set<OverviewItemBase*> ignored_items;
     if (dragged_item)
@@ -1591,7 +1591,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     // the window is dropped on an existing desk.
     desks_bar_view_->UpdateDeskIconButtonState(
         desks_bar_view_->new_desk_button(),
-        /*target_state=*/CrOSNextDeskIconButton::State::kExpanded);
+        /*target_state=*/DeskIconButton::State::kExpanded);
     return move_windows_to_target_desk(target_desk);
   }
 
@@ -1880,7 +1880,7 @@ void OverviewGrid::ShowSavedDeskLibrary() {
   } else {
     desks_bar_view_->UpdateDeskIconButtonState(
         desks_bar_view_->library_button(),
-        /*target_state=*/CrOSNextDeskIconButton::State::kActive);
+        /*target_state=*/DeskIconButton::State::kActive);
   }
 
   desks_bar_view_->UpdateButtonsForSavedDeskGrid();
@@ -1940,7 +1940,7 @@ void OverviewGrid::HideSavedDeskLibrary(bool exit_overview) {
   // button, thus to avoid the animation glitches, directly update the state
   // for the library button instead of applying the scale animation to it.
   desks_bar_view_->library_button()->UpdateState(
-      CrOSNextDeskIconButton::State::kExpanded);
+      DeskIconButton::State::kExpanded);
 }
 
 bool OverviewGrid::IsShowingSavedDeskLibrary() const {
@@ -2304,8 +2304,7 @@ void OverviewGrid::OnSplitViewStateChanged(
 }
 
 void OverviewGrid::OnSplitViewDividerPositionChanged() {
-  if (overview_session_->is_shutting_down() ||
-      window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
+  if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
     // If `IsFasterSplitScreenOrSnapGroupEnabledInClamshell()` is true,
     // `SplitViewOverviewSession` will manually update the bounds so we don't
     // need to update here.
@@ -2315,6 +2314,7 @@ void OverviewGrid::OnSplitViewDividerPositionChanged() {
   SetBoundsAndUpdatePositions(
       GetGridBoundsInScreen(root_window_,
                             /*window_dragging_state=*/std::nullopt,
+                            /*divider_changed=*/true,
                             /*account_for_hotseat=*/true),
       /*ignored_items=*/{}, /*animate=*/false);
 }
@@ -2719,7 +2719,7 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
   if (split_view_drag_indicators_ &&
       split_view_drag_indicators_->current_window_dragging_state() ==
           SplitViewDragIndicators::WindowDraggingState::kFromOverview &&
-      !SplitViewController::IsLayoutHorizontal(root_window_) &&
+      !IsLayoutHorizontal(root_window_) &&
       !SplitViewController::Get(root_window_)->InSplitViewMode()) {
     desks_widget_screen_bounds.Offset(
         0, split_view_drag_indicators_->GetLeftHighlightViewBounds().height() +
@@ -2793,25 +2793,10 @@ void OverviewGrid::UpdateNumSavedDeskUnsupportedWindows(
     } else if (IsIncognitoWindow(window)) {
       num_incognito_windows_ += addend;
     }
-
-    // TODO(b/319904368): Clean this up after we figure out which app changes
-    // its supported/incognito type and a proper fix is made.
-    if (num_unsupported_windows_ < 0) {
-      num_unsupported_windows_ = 0;
-      SCOPED_CRASH_KEY_NUMBER("OG_UNSDUW", "unsupported_app_type",
-                              window->GetProperty(aura::client::kAppType));
-      SCOPED_CRASH_KEY_STRING32("OG_UNSDUW", "unsupported_app_id",
-                                full_restore::GetAppId(window));
-      base::debug::DumpWithoutCrashing();
-    } else if (num_incognito_windows_ < 0) {
-      num_incognito_windows_ = 0;
-      SCOPED_CRASH_KEY_NUMBER("OG_UNSDUW", "incognito_app_type",
-                              window->GetProperty(aura::client::kAppType));
-      SCOPED_CRASH_KEY_STRING32("OG_UNSDUW", "incognito_app_id",
-                                full_restore::GetAppId(window));
-      base::debug::DumpWithoutCrashing();
-    }
   }
+
+  CHECK_GE(num_unsupported_windows_, 0);
+  CHECK_GE(num_incognito_windows_, 0);
 }
 
 int OverviewGrid::GetDesksBarHeight() const {

@@ -30,9 +30,6 @@ public class StartSurfaceConfiguration {
                             "hide_switch_when_no_incognito_tabs",
                             true);
 
-    public static final BooleanCachedFieldTrialParameter START_SURFACE_LAST_ACTIVE_TAB_ONLY =
-            new BooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.START_SURFACE_ANDROID, "show_last_active_tab_only", true);
     public static final BooleanCachedFieldTrialParameter START_SURFACE_OPEN_NTP_INSTEAD_OF_START =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "open_ntp_instead_of_start", true);
@@ -40,11 +37,6 @@ public class StartSurfaceConfiguration {
     public static final BooleanCachedFieldTrialParameter START_SURFACE_OPEN_START_AS_HOMEPAGE =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "open_start_as_homepage", false);
-
-    private static final String SHOW_TABS_IN_MRU_ORDER_PARAM = "show_tabs_in_mru_order";
-    public static final BooleanCachedFieldTrialParameter SHOW_TABS_IN_MRU_ORDER =
-            new BooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.START_SURFACE_ANDROID, SHOW_TABS_IN_MRU_ORDER_PARAM, false);
 
     private static final String SIGNIN_PROMO_NTP_COUNT_LIMIT_PARAM = "signin_promo_NTP_count_limit";
     public static final IntCachedFieldTrialParameter SIGNIN_PROMO_NTP_COUNT_LIMIT =

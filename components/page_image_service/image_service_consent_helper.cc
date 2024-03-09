@@ -103,19 +103,14 @@ void ImageServiceConsentHelper::OnStateChanged(
     return;
   }
 
-  request_processing_timer_.Stop();
-
-  // The request callbacks can modify the vector while running. Swap the vector
-  // onto the stack to prevent crashing. https://crbug.com/1472360.
-  std::vector<std::pair<base::OnceCallback<void(PageImageServiceConsentStatus)>,
-                        mojom::ClientId>>
-      callbacks;
-  std::swap(callbacks, enqueued_request_callbacks_);
-  for (auto& request_callback_with_client_id : callbacks) {
+  for (auto& request_callback_with_client_id : enqueued_request_callbacks_) {
     std::move(request_callback_with_client_id.first)
         .Run(*consent_status ? PageImageServiceConsentStatus::kSuccess
                              : PageImageServiceConsentStatus::kFailure);
   }
+
+  enqueued_request_callbacks_.clear();
+  request_processing_timer_.Stop();
 }
 
 void ImageServiceConsentHelper::OnSyncShutdown(
@@ -142,13 +137,7 @@ absl::optional<bool> ImageServiceConsentHelper::GetConsentStatus() {
 }
 
 void ImageServiceConsentHelper::OnTimeoutExpired() {
-  // The request callbacks can modify the vector while running. Swap the vector
-  // onto the stack to prevent crashing. https://crbug.com/1472360.
-  std::vector<std::pair<base::OnceCallback<void(PageImageServiceConsentStatus)>,
-                        mojom::ClientId>>
-      callbacks;
-  std::swap(callbacks, enqueued_request_callbacks_);
-  for (auto& request_callback_with_client_id : callbacks) {
+  for (auto& request_callback_with_client_id : enqueued_request_callbacks_) {
     // Report consent status on timeout for each request to compare against the
     // number of all requests.
     base::UmaHistogramEnumeration("PageImageService.ConsentStatusOnTimeout",
@@ -162,6 +151,7 @@ void ImageServiceConsentHelper::OnTimeoutExpired() {
     std::move(request_callback_with_client_id.first)
         .Run(PageImageServiceConsentStatus::kTimedOut);
   }
+  enqueued_request_callbacks_.clear();
 }
 
 }  // namespace page_image_service

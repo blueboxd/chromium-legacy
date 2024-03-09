@@ -389,7 +389,6 @@ class PLATFORM_EXPORT FontCache final {
   friend class FontFallbackList;
   friend class FontPlatformDataCache;
   FRIEND_TEST_ALL_PREFIXES(FontCacheAndroidTest, LocaleSpecificTypeface);
-  FRIEND_TEST_ALL_PREFIXES(FontCacheMacTest, SystemUISyntheticBoldCoreText);
 };
 
 class PLATFORM_EXPORT FontCachePurgePreventer {

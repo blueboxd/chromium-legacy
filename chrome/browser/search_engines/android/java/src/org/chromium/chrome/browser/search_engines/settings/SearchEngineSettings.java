@@ -104,8 +104,4 @@ public class SearchEngineSettings extends ListFragment implements ProfileDepende
     public void setProfile(Profile profile) {
         mProfile = profile;
     }
-
-    public void overrideSearchEngineAdapterForTesting(SearchEngineAdapter searchEngineAdapter) {
-        mSearchEngineAdapter = searchEngineAdapter;
-    }
 }

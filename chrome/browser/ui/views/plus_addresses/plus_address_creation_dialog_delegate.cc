@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/views/plus_addresses/plus_address_creation_dialog_delegate.h"
 
+#include <optional>
+
+#include "base/check_is_test.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/branding_buildflags.h"
 #include "chrome/browser/ui/plus_addresses/plus_address_creation_controller.h"
 #include "chrome/browser/ui/plus_addresses/plus_address_creation_controller_desktop.h"
 #include "chrome/browser/ui/plus_addresses/plus_address_creation_view.h"
@@ -21,14 +23,12 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/color/color_id.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/styled_label.h"
@@ -38,23 +38,12 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "components/plus_addresses/resources/vector_icons.h"
-#else
-#include "components/vector_icons/vector_icons.h"
-#endif
 
 namespace plus_addresses {
 
 namespace {
 const float kDescriptionWidthPercent = 0.8;
 const int kPlusAddressLabelVerticalMargin = 10;
-const int kPlusAddressLogoWidth = 100;
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-const gfx::VectorIcon& kLogoIcon = plus_addresses::kPlusAddressesLogoIcon;
-#else
-const gfx::VectorIcon& kLogoIcon = vector_icons::kProductIcon;
-#endif
 }  // namespace
 
 PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
@@ -81,10 +70,12 @@ PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
           .Build();
 
   // Create hero image.
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   primary_view->AddChildView(
       views::Builder<views::ImageView>()
-          .SetImage(ui::ImageModel::FromVectorIcon(kLogoIcon, ui::kColorIcon,
-                                                   kPlusAddressLogoWidth))
+          .SetImage(ui::ImageModel::FromImageSkia(
+              // TODO(crbug.com/1467623) - Replace this placeholder image.
+              *bundle.GetImageSkiaNamed(IDR_TAILORED_SECURITY_CONSENTED)))
           .Build());
 
   // Add title view.
@@ -275,7 +266,7 @@ void PlusAddressCreationDialogDelegate::ShowConfirmResult(
   CHECK(GetBubbleFrameView());
 
   // Stop indicating loading now that we have the server response.
-  GetBubbleFrameView()->SetProgress(absl::nullopt);
+  GetBubbleFrameView()->SetProgress(std::nullopt);
 
   if (maybe_plus_profile.has_value()) {
     GetWidget()->CloseWithReason(
@@ -366,6 +357,11 @@ void PlusAddressCreationDialogDelegate::WaitUntilResultShownForTesting() {
 
 void PlusAddressCreationDialogDelegate::MaybeBlockUntilResultShows() {
   if (blocking_until_result_shown_.has_value()) {
+    // This code path is intended to be run only for testing. Bail early if not.
+    // While all paths that set this variable are in `ForTesting` blocks and
+    // therefore excluded, this check should ensure a mistake isn't made in the
+    // future.
+    CHECK_IS_TEST();
     std::move(blocking_until_result_shown_.value()).Run();
     blocking_until_result_shown_.reset();
   }

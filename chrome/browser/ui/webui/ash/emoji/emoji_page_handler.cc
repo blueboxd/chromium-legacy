@@ -17,6 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
+#include "chrome/browser/ui/webui/ash/emoji/seal_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -299,6 +300,11 @@ void EmojiPageHandler::GetFeatureList(GetFeatureListCallback callback) {
         emoji_picker::mojom::Feature::EMOJI_PICKER_JELLY_SUPPORT);
   }
 
+  if (SealUtils::ShouldEnable()) {
+    enabled_features.push_back(
+        emoji_picker::mojom::Feature::EMOJI_PICKER_SEAL_SUPPORT);
+  }
+
   std::move(callback).Run(enabled_features);
 }
 
@@ -307,14 +313,14 @@ void EmojiPageHandler::GetCategories(GetCategoriesCallback callback) {
                                          url_loader_factory_);
 }
 
-void EmojiPageHandler::GetFeaturedGifs(const absl::optional<std::string>& pos,
+void EmojiPageHandler::GetFeaturedGifs(const std::optional<std::string>& pos,
                                        GetFeaturedGifsCallback callback) {
   gif_tenor_api_fetcher_.FetchFeaturedGifs(std::move(callback),
                                            url_loader_factory_, pos);
 }
 
 void EmojiPageHandler::SearchGifs(const std::string& query,
-                                  const absl::optional<std::string>& pos,
+                                  const std::optional<std::string>& pos,
                                   SearchGifsCallback callback) {
   gif_tenor_api_fetcher_.FetchGifSearch(std::move(callback),
                                         url_loader_factory_, query, pos);

@@ -8,7 +8,8 @@
 #include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#include <string>
+#include <istream>
+
 namespace privacy_sandbox {
 
 // Parse an `input` containing a serialized protobuf attestations list
@@ -18,8 +19,8 @@ namespace privacy_sandbox {
 // should never happen in normal use, but we should gracefully handle failure
 // just in case the list sent from the server (or the file stored on disk) gets
 // corrupted.
-absl::optional<PrivacySandboxAttestationsMap> ParseAttestationsFromString(
-    std::string& input);
+absl::optional<PrivacySandboxAttestationsMap> ParseAttestationsFromStream(
+    std::istream& input);
 
 }  // namespace privacy_sandbox
 

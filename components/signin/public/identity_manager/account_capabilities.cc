@@ -97,10 +97,6 @@ signin::Tribool AccountCapabilities::can_use_chrome_ip_protection() const {
   return GetCapabilityByName(kCanUseChromeIpProtectionName);
 }
 
-signin::Tribool AccountCapabilities::can_use_model_execution_features() const {
-  return GetCapabilityByName(kCanUseModelExecutionFeaturesName);
-}
-
 signin::Tribool AccountCapabilities::is_allowed_for_machine_learning() const {
   return GetCapabilityByName(kIsAllowedForMachineLearningCapabilityName);
 }

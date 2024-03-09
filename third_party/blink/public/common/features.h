@@ -167,6 +167,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBlinkHeapConcurrentSweeping);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBlinkHeapIncrementalMarking);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBlinkHeapIncrementalMarkingStress);
 
+// If enabled, navigation IPCs are prioritized in blink.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kBlinkSchedulerPrioritizeNavigationIPCs);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kBlockingDownloadsInAdFrameWithoutUserActivation);
 
@@ -622,6 +626,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<LcppResourceLoadPriority>
 // Enables LCPP ElementLocator performance improvements
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kLCPCriticalPathPredictorEnableElementLocatorPerformanceImprovements;
+
+// Enable ResourceLoadPriority changes for all HTMLImageElement loaded images.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLCPCriticalPathPredictorImageLoadPriorityEnabledForHTMLImageElement;
 
 // If enabled, script execution is observed to determine script dependencies of
 // the LCP element.
@@ -1420,7 +1428,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcHideLocalIpsWithMdns);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcIgnoreUnspecifiedColorSpace);
 // Initialize VideoEncodeAccelerator on the first encode.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcInitializeEncoderOnFirstFrame);
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcMetronome);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcMultiplexCodec);
 // Feature flag for batching sending of WebRTC RTP UDP packets.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcSendPacketBatch);

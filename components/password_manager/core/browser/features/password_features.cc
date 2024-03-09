@@ -19,6 +19,12 @@ BASE_FEATURE(kBiometricTouchToFill,
              "BiometricTouchToFill",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+BASE_FEATURE(kButterOnDesktopFollowup,
+             "ButterOnDesktopFollowup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 // Delete undecryptable passwords from the store when Sync is active.
 BASE_FEATURE(kClearUndecryptablePasswordsOnSync,
              "ClearUndecryptablePasswordsInSync",
@@ -127,7 +133,7 @@ BASE_FEATURE(kPasswordManagerLogToTerminal,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables "Needs access to keychain, restart chrome" bubble and banner.
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 BASE_FEATURE(kRestartToGainAccessToKeychain,
              "RestartToGainAccessToKeychain",
              base::FEATURE_DISABLED_BY_DEFAULT);

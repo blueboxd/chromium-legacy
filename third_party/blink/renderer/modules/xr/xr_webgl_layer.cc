@@ -193,10 +193,7 @@ bool XRWebGLLayer::antialias() const {
   if (drawing_buffer_) {
     return drawing_buffer_->antialias();
   }
-  if (!webgl_context_->isContextLost()) {
-    return webgl_context_->GetDrawingBuffer()->Multisample();
-  }
-  return false;
+  return webgl_context_->GetDrawingBuffer()->Multisample();
 }
 
 XRViewport* XRWebGLLayer::getViewport(XRView* view) {

@@ -17,7 +17,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_elu_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_gather_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_gemm_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_instance_normalization_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_layer_normalization_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_leaky_relu_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_linear_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pad_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pool_2d_options.h"
@@ -360,6 +363,34 @@ webnn::GemmAttributes ConvertToGemmAttributes(
   return attributes;
 }
 
+webnn::InstanceNormalizationAttributes ConvertToInstanceNormalizationAttributes(
+    const blink::MLInstanceNormalizationOptions* options) {
+  CHECK(options);
+  webnn::InstanceNormalizationAttributes attributes;
+  if (options->hasScale()) {
+    attributes.scale = ConvertToComponentOperand(options->scale());
+  }
+  if (options->hasBias()) {
+    attributes.bias = ConvertToComponentOperand(options->bias());
+  }
+  attributes.layout =
+      BlinkInputOperandLayoutToComponent(options->layout().AsEnum());
+  return attributes;
+}
+
+webnn::LayerNormalizationAttributes ConvertToLayerNormalizationAttributes(
+    const blink::MLLayerNormalizationOptions* options) {
+  CHECK(options);
+  webnn::LayerNormalizationAttributes attributes;
+  if (options->hasScale()) {
+    attributes.scale = ConvertToComponentOperand(options->scale());
+  }
+  if (options->hasBias()) {
+    attributes.bias = ConvertToComponentOperand(options->bias());
+  }
+  return attributes;
+}
+
 bool ValidateClampOptions(const MLClampOptions* options,
                           ExceptionState& exception_state) {
   // The generated code of MLClampOptions uses blink::ToRestrictedFloat to
@@ -390,6 +421,12 @@ absl::optional<Vector<uint32_t>> BroadcastShapes(
   return Vector<uint32_t>(output_shape.value());
 }
 
+constexpr bool IsLogicalBinaryOperator(MLOperator::OperatorKind kind) {
+  return kind == MLOperator::OperatorKind::kEqual ||
+         kind == MLOperator::OperatorKind::kGreater ||
+         kind == MLOperator::OperatorKind::kLesser;
+}
+
 MLOperand* BuildElementWiseBinary(MLGraphBuilder* builder,
                                   MLOperator::OperatorKind kind,
                                   const MLOperand* a,
@@ -409,8 +446,15 @@ MLOperand* BuildElementWiseBinary(MLGraphBuilder* builder,
         "The input shapes are not broadcastable.");
     return nullptr;
   }
+
+  // Logical operator outputs are bools, otherwise output operators are the same
+  // type as input operators.
+  V8MLOperandDataType::Enum data_type = IsLogicalBinaryOperator(kind)
+                                            ? V8MLOperandDataType::Enum::kUint8
+                                            : a->DataType();
+
   auto* binary = MakeGarbageCollected<MLOperator>(builder, kind);
-  auto output = MLOperand::ValidateAndCreateOutput(builder, a->DataType(),
+  auto output = MLOperand::ValidateAndCreateOutput(builder, data_type,
                                                    dims_output.value(), binary);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
@@ -767,6 +811,9 @@ BUILD_ELEMENTWISE_BINARY_OP(div, kDiv)
 BUILD_ELEMENTWISE_BINARY_OP(min, kMin)
 BUILD_ELEMENTWISE_BINARY_OP(max, kMax)
 BUILD_ELEMENTWISE_BINARY_OP(pow, kPow)
+BUILD_ELEMENTWISE_BINARY_OP(equal, kEqual)
+BUILD_ELEMENTWISE_BINARY_OP(greater, kGreater)
+BUILD_ELEMENTWISE_BINARY_OP(lesser, kLesser)
 
 #define BUILD_ELEMENTWISE_UNARY_OP(op, op_kind, data_type_constraint) \
   MLOperand* MLGraphBuilder::op(const MLOperand* input,               \
@@ -984,6 +1031,92 @@ MLActivation* MLGraphBuilder::hardSwish(ExceptionState& exception_state) {
       this, MLOperator::OperatorKind::kHardSwish);
 }
 
+MLOperand* MLGraphBuilder::instanceNormalization(
+    const MLOperand* input,
+    const MLInstanceNormalizationOptions* options,
+    ExceptionState& exception_state) {
+  const auto validated_output =
+      webnn::ValidateInstanceNormalizationAndInferOutput(
+          ConvertToComponentOperand(input),
+          ConvertToInstanceNormalizationAttributes(options));
+  if (!validated_output.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        String::FromUTF8(validated_output.error()));
+    return nullptr;
+  }
+
+  auto* instance_normalization = MakeGarbageCollected<MLOperator>(
+      this, MLOperator::OperatorKind::kInstanceNormalization, options);
+  HeapVector<Member<const MLOperand>> inputs = {input};
+  // Adding the optional operands into inputs ensures the graph traversal
+  // algorithm GetOperatorsInTopologicalOrder() works. For backends, the
+  // optional operands should be retrieved from the options instead of inputs.
+  if (options->hasScale()) {
+    inputs.push_back(options->scale());
+  }
+  if (options->hasBias()) {
+    inputs.push_back(options->bias());
+  }
+
+  auto output = MLOperand::ValidateAndCreateOutput(
+      this, ComponentOperandTypeToBlink(validated_output->data_type),
+      Vector<uint32_t>(validated_output->dimensions), instance_normalization);
+  if (!output.has_value()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      output.error());
+    return nullptr;
+  }
+
+  instance_normalization->Connect(std::move(inputs), {output.value()});
+  return output.value();
+}
+
+MLOperand* MLGraphBuilder::layerNormalization(
+    const MLOperand* input,
+    const MLLayerNormalizationOptions* options,
+    ExceptionState& exception_state) {
+  // TODO(crbug.com/1273291): Figure out whether the `axes` should be required,
+  // tracked by issue: https://github.com/webmachinelearning/webnn/issues/487
+  const Vector<uint32_t> axes = options->getAxesOr(
+      CreateLayerNormalizationDefaultAxes(input->Dimensions().size()));
+
+  const auto validated_output = webnn::ValidateLayerNormalizationAndInferOutput(
+      ConvertToComponentOperand(input), axes,
+      ConvertToLayerNormalizationAttributes(options));
+  if (!validated_output.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        String::FromUTF8(validated_output.error()));
+    return nullptr;
+  }
+
+  auto* layer_normalization = MakeGarbageCollected<MLOperator>(
+      this, MLOperator::OperatorKind::kLayerNormalization, options);
+  HeapVector<Member<const MLOperand>> inputs = {input};
+  // Adding the optional operands into inputs ensures the graph traversal
+  // algorithm GetOperatorsInTopologicalOrder() works. For backends, the
+  // optional operands should be retrieved from the options instead of inputs.
+  if (options->hasScale()) {
+    inputs.push_back(options->scale());
+  }
+  if (options->hasBias()) {
+    inputs.push_back(options->bias());
+  }
+
+  auto output = MLOperand::ValidateAndCreateOutput(
+      this, ComponentOperandTypeToBlink(validated_output->data_type),
+      Vector<uint32_t>(validated_output->dimensions), layer_normalization);
+  if (!output.has_value()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      output.error());
+    return nullptr;
+  }
+
+  layer_normalization->Connect(std::move(inputs), {output.value()});
+  return output.value();
+}
+
 MLOperand* MLGraphBuilder::leakyRelu(const MLOperand* input,
                                      const MLLeakyReluOptions* options,
                                      ExceptionState& exception_state) {
@@ -992,8 +1125,8 @@ MLOperand* MLGraphBuilder::leakyRelu(const MLOperand* input,
   // https://github.com/webmachinelearning/webnn/issues/283.
   //
   // According to WebNN spec
-  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-relu, the output tensor of
-  // relu has the same data type and dimensions as its input.
+  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-leakyrelu, the output
+  // tensor of leaky relu has the same type and dimensions as its input.
   return BuildUnaryOperator(this, exception_state,
                             MLOperator::OperatorKind::kLeakyRelu,
                             webnn::DataTypeConstraint::kFloat, input, options);
@@ -1005,6 +1138,29 @@ MLActivation* MLGraphBuilder::leakyRelu(const MLLeakyReluOptions* options,
   // function.
   return MakeGarbageCollected<MLActivation>(
       this, MLOperator::OperatorKind::kLeakyRelu, options);
+}
+
+MLOperand* MLGraphBuilder::linear(const MLOperand* input,
+                                  const MLLinearOptions* options,
+                                  ExceptionState& exception_state) {
+  // The current spec doesn't specify the operand data type constraints of
+  // linear. An issue has been filed to track it:
+  // https://github.com/webmachinelearning/webnn/issues/283.
+  //
+  // According to WebNN spec
+  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-linear, the output tensor
+  // of linear has the same type and dimensions as its input.
+  return BuildUnaryOperator(this, exception_state,
+                            MLOperator::OperatorKind::kLinear,
+                            webnn::DataTypeConstraint::kFloat, input, options);
+}
+
+MLActivation* MLGraphBuilder::linear(const MLLinearOptions* options,
+                                     ExceptionState& exception_state) {
+  // Create the linear operator that would be used as an activation
+  // function.
+  return MakeGarbageCollected<MLActivation>(
+      this, MLOperator::OperatorKind::kLinear, options);
 }
 
 MLOperand* MLGraphBuilder::matmul(const MLOperand* a,

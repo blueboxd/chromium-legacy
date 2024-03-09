@@ -260,6 +260,12 @@ struct timeval Buffer::GetTimeval() const {
   return time_val_;
 }
 
+uint64_t Buffer::GetTimeAsFrameID() const {
+  DCHECK_EQ(time_val_.tv_sec, 0);
+
+  return time_val_.tv_usec;
+}
+
 bool Buffer::CopyDataIn(const void* data, size_t length) {
   DVLOGF(4) << MappedAddress(0) << " : " << data << " : " << length;
 
@@ -434,7 +440,8 @@ std::vector<base::ScopedFD> Device::ExportAsDMABUF(int index,
 // VIDIOC_REQBUFS
 absl::optional<uint32_t> Device::RequestBuffers(BufferType type,
                                                 MemoryType memory,
-                                                size_t count) {
+                                                uint32_t count) {
+  DVLOGF(4);
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
 

@@ -16,7 +16,7 @@ namespace high_efficiency {
 bool IsURLSupported(GURL url);
 
 // Returns the discard reason if |contents| has been discarded
-absl::optional<::mojom::LifecycleUnitDiscardReason> GetDiscardReason(
+std::optional<::mojom::LifecycleUnitDiscardReason> GetDiscardReason(
     content::WebContents* contents);
 
 // Returns if the given site is in the discard exception list
@@ -25,9 +25,6 @@ bool IsSiteInExceptionsList(PrefService* pref_service, const std::string& site);
 // Adds the given site to the discard exception list
 void AddSiteToExceptionsList(PrefService* pref_service,
                              const std::string& site);
-
-// Clears all discard exception prefs.
-void ClearSiteExceptionsList(PrefService* pref_service);
 
 // Returns how much memory was saved through discarding `contents`
 uint64_t GetDiscardedMemorySavingsInBytes(content::WebContents* contents);

@@ -837,6 +837,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   enum class UpdateBehavior {
     kStyleAndLayout,
     kNoneForAccessibility,
+    kNoneForIsFocused,
   };
   // IsFocusable is true if the element SupportsFocus(), and is currently
   // focusable (using the mouse). This method can be called when layout is not
@@ -1020,6 +1021,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual bool IsPickerIndicatorElement() const { return false; }
 
   virtual bool IsFormControlElement() const { return false; }
+  virtual bool IsFormControlElementWithState() const { return false; }
   virtual bool IsSpinButtonElement() const { return false; }
   // This returns true for <textarea> and some types of <input>.
   virtual bool IsTextControl() const { return false; }

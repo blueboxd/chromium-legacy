@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -83,7 +82,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   void RemoveTabFromOrganization(int32_t session_id,
                                  int32_t organization_id,
                                  tab_search::mojom::TabPtr tab) override;
-  void RestartSession() override;
+  void ResetSession() override;
   void SaveRecentlyClosedExpandedPref(bool expanded) override;
   void SetTabIndex(int32_t index) override;
   void StartTabGroupTutorial() override;
@@ -138,7 +137,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   // results of GetProfileData. Tab url/group combinations that have been
   // previously added to the ProfileData will not be added more than once by
   // leveraging DedupKey comparisons.
-  typedef std::tuple<GURL, absl::optional<base::Token>> DedupKey;
+  typedef std::tuple<GURL, std::optional<base::Token>> DedupKey;
 
   // Encapsulates tab details to facilitate performing an action on a tab.
   struct TabDetails {
@@ -185,7 +184,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
       const base::Time& close_time);
 
   // Returns tab details required to perform an action on the tab.
-  absl::optional<TabDetails> GetTabDetails(int32_t tab_id);
+  std::optional<TabDetails> GetTabDetails(int32_t tab_id);
 
   // Schedule a timer to call TabsChanged() when it times out
   // in order to reduce numbers of RPC.
@@ -193,8 +192,6 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
 
   // Call TabsChanged() and stop the timer if it's running.
   void NotifyTabsChanged();
-
-  void NotifyTabIndexPrefChanged(const Profile* profile);
 
   mojo::Receiver<tab_search::mojom::PageHandler> receiver_;
   mojo::Remote<tab_search::mojom::Page> page_;
@@ -205,7 +202,6 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   BrowserTabStripTracker browser_tab_strip_tracker_{this, this};
   std::unique_ptr<base::RetainingOneShotTimer> debounce_timer_;
   raw_ptr<TabOrganizationService> organization_service_;
-  PrefChangeRegistrar pref_change_registrar_;
 
   // Tracks how many times |CloseTab()| has been evoked for the currently open
   // instance of Tab Search for logging in UMA.
@@ -218,9 +214,6 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   // Tracks whether the user has evoked |SwitchToTab()| for metric collection
   // purposes.
   bool called_switch_to_tab_ = false;
-
-  // Tracks whether a session restart is currently in progress.
-  bool restarting_ = false;
 
   // Listened TabOrganization sessions.
   std::vector<TabOrganizationSession*> listened_sessions_;

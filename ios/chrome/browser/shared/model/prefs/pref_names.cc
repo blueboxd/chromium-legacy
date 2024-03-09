@@ -413,13 +413,6 @@ const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
 // True if the memory debugging tools should be visible.
 const char kShowMemoryDebuggingTools[] = "ios.memory.show_debugging_tools";
 
-// List which contains the last known list of accounts.
-const char kSigninLastAccounts[] = "ios.signin.last_accounts";
-
-// Boolean which indicates if the pref which contains the last known list of
-// accounts was migrated to use account ids instead of emails.
-const char kSigninLastAccountsMigrated[] = "ios.signin.last_accounts_migrated";
-
 // Boolean which indicates if user should be prompted to sign in again
 // when a new tab is created.
 const char kSigninShouldPromptForSigninAgain[] =
@@ -479,5 +472,19 @@ const char kPriceNotificationsHasBeenShown[] =
 // from the first run experience screen.
 const char kPasswordSharingFlowHasBeenEntered[] =
     "ios.password_sharing.flow_entered";
+
+// A time object used to determine when the Notifications promo was last
+// dismissed.
+const char kNotificationsPromoLastDismissed[] =
+    "ios.content_notifications.promo_last_dismissed";
+// A time object used to determine when the Notifications promo was last shown.
+const char kNotificationsPromoLastShown[] =
+    "ios.content_notifications.promo_last_shown";
+// An int used to determine how many times the Notifications promo has been
+// shown to the user.
+const char kNotificationsPromoTimesShown[] =
+    "ios.content_notifications.promo_times_shown";
+const char kNotificationsPromoTimesDismissed[] =
+    "ios.content_notifications.promo_times_dismissed";
 
 }  // namespace prefs

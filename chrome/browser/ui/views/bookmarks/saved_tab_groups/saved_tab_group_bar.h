@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_BAR_H_
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_BAR_H_
 
+#include <optional>
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_button.h"
 #include "components/saved_tab_groups/saved_tab_group_model.h"
 #include "components/saved_tab_groups/saved_tab_group_model_observer.h"
 #include "content/public/browser/page.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -63,6 +64,7 @@ class SavedTabGroupBar : public views::AccessiblePaneView,
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
+  void OnDragDone() override;
   views::View::DropCallback GetDropCallback(
       const ui::DropTargetEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -74,7 +76,7 @@ class SavedTabGroupBar : public views::AccessiblePaneView,
   void SavedTabGroupLocalIdChanged(const base::Uuid& saved_group_id) override;
   void SavedTabGroupUpdatedLocally(
       const base::Uuid& group_guid,
-      const absl::optional<base::Uuid>& tab_guid = absl::nullopt) override;
+      const std::optional<base::Uuid>& tab_guid = std::nullopt) override;
   void SavedTabGroupReorderedLocally() override;
   void SavedTabGroupReorderedFromSync() override;
   void SavedTabGroupTabsReorderedLocally(const base::Uuid& group_guid) override;
@@ -83,7 +85,7 @@ class SavedTabGroupBar : public views::AccessiblePaneView,
       const SavedTabGroup* removed_group) override;
   void SavedTabGroupUpdatedFromSync(
       const base::Uuid& group_guid,
-      const absl::optional<base::Uuid>& tab_guid = absl::nullopt) override;
+      const std::optional<base::Uuid>& tab_guid = std::nullopt) override;
 
   // WidgetObserver
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -141,8 +143,8 @@ class SavedTabGroupBar : public views::AccessiblePaneView,
   // group into the tabstrip.
   void MaybeShowOverflowMenu();
 
-  // Updates the contents of the overflow menu if it is open.
-  void UpdateOverflowMenu();
+  // Hides the overflow menu if it is open.
+  void HideOverflowMenu();
 
   // TODO: Move implementation inside of STGOverflowButton.
   void HideOverflowButton();
@@ -171,7 +173,7 @@ class SavedTabGroupBar : public views::AccessiblePaneView,
   void UpdateDropIndex();
 
   // Returns the drop index for the current drag session, if any.
-  absl::optional<size_t> GetDropIndex() const;
+  std::optional<size_t> GetDropIndex() const;
 
   // Reorders the dragged group to its new index.
   void HandleDrop();
@@ -181,12 +183,12 @@ class SavedTabGroupBar : public views::AccessiblePaneView,
 
   // Calculates the index in the saved tab groups bar at which we should show a
   // drop indicator, or nullopt if we should not show an indicator in the bar.
-  absl::optional<int> CalculateDropIndicatorIndexInBar() const;
+  std::optional<int> CalculateDropIndicatorIndexInBar() const;
 
   // Calculates the index (in saved tab group model space, so across the bar and
   // the overflow menu) at which we should show a drop indicator, or nullopt if
   // we should not show an indicator anywhere at all.
-  absl::optional<int> CalculateDropIndicatorIndexInCombinedSpace() const;
+  std::optional<int> CalculateDropIndicatorIndexInCombinedSpace() const;
 
   // Provides a callback that returns the page navigator
   base::RepeatingCallback<content::PageNavigator*()> GetPageNavigatorGetter();

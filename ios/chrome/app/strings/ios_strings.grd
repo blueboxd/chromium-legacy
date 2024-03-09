@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--
-This file contains definition of resources that will be translated for each
-locale.  The strings in this file are specific to iOS.
--->
-
 <grit base_dir="." latest_public_release="0" current_release="1"
       output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
+  <!--
+  This file contains definition of resources that will be translated for each
+  locale.  The strings in this file are specific to iOS.
+  -->
   <outputs>
     <output filename="grit/ios_strings.h" type="rc_header">
       <emit emit_type="prepend"></emit>
@@ -518,17 +517,11 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_BOOKMARK_NEW_MOVE_BUTTON_LABEL" desc="Accessibility label for a button that allows the user to move the position of one or many bookmarks. [Length: 30em.]">
         Move
       </message>
-      <message name="IDS_IOS_BOOKMARK_NEW_MULTIPLE_BOOKMARK_DELETE" desc="A description presented to the user that they just deleted multiple bookmarks. [Length: 30em.] [iOS only]">
-        <ph name="NUMBER_OF_SELECTED_BOOKMARKS">$1<ex>2</ex></ph> items deleted
-      </message>
       <message name="IDS_IOS_BOOKMARK_NEW_MULTIPLE_BOOKMARK_MOVE" desc="A description presented to the user that they just moved multiple bookmarks. [Length: 30em.] [iOS only]">
         <ph name="NUMBER_OF_SELECTED_BOOKMARKS">$1<ex>2</ex></ph> items moved
       </message>
       <message name="IDS_IOS_BOOKMARK_NEW_ONE_ITEM_LABEL" desc="Text that indicates that a user has selected one bookmark for editing. [Length: 30em.]">
         1 selected
-      </message>
-      <message name="IDS_IOS_BOOKMARK_NEW_SINGLE_BOOKMARK_DELETE" desc="A description presented to the user that they just deleted 1 bookmark. [Length: 30em.] [iOS only]">
-        1 item deleted
       </message>
       <message name="IDS_IOS_BOOKMARK_NEW_SINGLE_BOOKMARK_MOVE" desc="A description presented to the user that they just moved 1 bookmark. [Length: 30em.] [iOS only]">
         1 item moved
@@ -2292,7 +2285,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         No Thanks
       </message>
       <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_SUBTITLE" desc="Text for the subtitle string of the parcel tracking opt-in half-sheet screen.">
-          Chrome will detect tracking numbers on sites you visit and show you package updates on the New Tab page. The package tracking number and website name will be sent to Google to provide this feature and to improve Google shopping features for everyone. You can update this anytime in <ph name="BEGIN_LINK">BEGIN_LINK</ph>Package Tracking Settings<ph name="END_LINK">END_LINK</ph>.
+        Chrome will detect tracking numbers on sites you visit and show you package updates on the New Tab page. Your data will be shared with Google to provide this feature and to improve Shopping for everyone. You can change this in <ph name="BEGIN_LINK">BEGIN_LINK</ph>Package Tracking Settings<ph name="END_LINK">END_LINK</ph>.
       </message>
       <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_TERTIARY_ACTION" desc="Text for the tertiary action string of the parcel tracking opt-in half-sheet screen.">
         Ask Me Every Time
@@ -2335,6 +2328,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_SELECT_PASSWORD" desc="This message is mentioned right after the title when the Password Bottom Sheet opens. For example, in English, it would say: 'Google Password Manager. Select a password to fill.'. This is spoken by VoiceOver. [iOS only]">
         Select a password to fill.
+      </message>
+      <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_MORE_PASSWORDS" desc="This message is mentioned on the first password suggestion of the Password Bottom Sheet if there are more than one suggestion available and all other suggestions are hidden, which is the case initially, until the user expands the list by double tapping on this suggestion. This is spoken by VoiceOver. [iOS only]">
+        Double tap for more passwords.
       </message>
       <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_SUBTITLE" desc="Shown on the password bottom sheet to inform users that, upon accepting the prompt, their username and password will be shared with the given website. [iOS only]" meaning="A string under the title logo of the password bottom sheet.">
         You'll sign in to <ph name="URL">$1<ex>chromium.org</ex></ph>
@@ -2380,6 +2376,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_CONTENT_NOTIFICATIONS_PROMO_PRIMARY_BUTTON" desc="Text for the Notifications promo primary button.">
           Yes, I'm in
+      </message>
+      <message name="IDS_IOS_CONTENT_NOTIFICATIONS_PROMO_SECONDARY_BUTTON" desc="Text for the Notifications promo secondary button.">
+          No Thanks
       </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_CHIP" desc="Acessibility label to describe the UI which displays a product's price in the Price Tracking Item UI.">
           Price
@@ -4134,15 +4133,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING" desc="The title for a list of sites where passwords will not be saved. These items are already saved by the browser and can only be deleted. [Length: one line] [iOS only]">
       Never Saved
       </message>
-      <message name="IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_OK_BUTTON" desc="The title of the OK button of the Signed In Accounts view [iOS only] [20em]">
-        OK, Got It
-      </message>
-      <message name="IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_SETTINGS_BUTTON" desc="The title of the Settings button of the Signed In Accounts view [iOS only] [20em]">
-        Settings
-      </message>
-      <message name="IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_TITLE" desc="The title of the Signed In Accounts view [iOS only] [30em]">
-        You're signed in
-      </message>
       <message name="IDS_IOS_SIGN_IN_AGAIN" desc="Title displayed when there is an authentication failure in sign-in and the user needs to attempt to sign in again. [Length: 20em] [iOS only]">
         Sign In Again
       </message>
@@ -5205,9 +5195,6 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_SIGNIN_PROMO_BOOKMARKS" desc="This string is on a promo intended to promote signing in to Chrome with the user's Google Account. It appears on the Bookmarks page when the user is not signed in. We want users to read this promo and click 'Continue as name' to sign in to their Google Account. The tone should be informative and lightweight. [Length: 90em]">
         Sign in to get your bookmarks on all your devices.
       </message>
-      <message name="IDS_IOS_SIGNIN_PROMO_BOOKMARKS_WITH_UNITY" desc="Text to inform the user that they can sign in and sync to get bookmarks shared between devices. [iOS only]">
-        To get your bookmarks on all your devices, turn on sync.
-      </message>
       <message name="IDS_IOS_SIGNIN_PROMO_CHANGE_ACCOUNT" desc="Button that the user can press if they are not the profile that Chrome found (opposite of 'Continue as Joe Doe'). The user will be able to choose another account and sign-in with it.">
         Choose Another Account
       </message>
@@ -5412,6 +5399,11 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
         {count, plural,
            =1 {{count} saved profile available above your keyboard.}
            other {{count} saved profiles available above your keyboard.}}
+      </message>
+      <message name="IDS_IOS_AUTOFILL_AUTOCOMPLETE_SUGGESTIONS_AVAILABLE_ACCESSIBILITY_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="The accessibility announcement to indicate the number of autocomplete suggestions available to the user above the keyboard. This announcement is triggered when the user enters edit mode in a form field that only has autocomplete suggestions available for autofill purposes. According to the number of available autocomplete suggestions, the string goes from singular to plural. [iOS only]">
+        {count, plural,
+           =1 {{count} saved autocomplete suggestion available above your keyboard.}
+           other {{count} saved autocomplete suggestions available above your keyboard.}}
       </message>
       <message name="IDS_IOS_ACCOUNT_TABLE_ERROR_ENTER_PASSPHRASE_BUTTON" desc="Label for the button to open the passphrase dialog from the accounts table. [iOS only]">
         Enter Passphrase…

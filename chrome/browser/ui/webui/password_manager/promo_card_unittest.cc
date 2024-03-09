@@ -495,4 +495,5 @@ TEST_F(PromoCardAccessAnyDeviceTest, PromoNotShownAfterDismiss) {
   histogram_tester.ExpectUniqueSample("PasswordManager.PromoCard.Dismissed", 3,
                                       1);
 }
+
 }  // namespace password_manager

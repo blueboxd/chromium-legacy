@@ -33,6 +33,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
@@ -72,7 +73,7 @@ public class TouchToFillCreditCardRenderTest {
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
-                    .setRevision(14)
+                    .setRevision(13)
                     .setBugComponent(Component.UI_BROWSER_AUTOFILL)
                     .build();
 
@@ -84,7 +85,7 @@ public class TouchToFillCreditCardRenderTest {
                     "Visa",
                     "4111111111111111",
                     "05",
-                    "2100",
+                    AutofillTestHelper.nextYear(),
                     true,
                     "Visa",
                     "• • • • 1111",
@@ -95,7 +96,7 @@ public class TouchToFillCreditCardRenderTest {
                     "MasterCard",
                     "5555555555554444",
                     "08",
-                    "2100",
+                    AutofillTestHelper.nextYear(),
                     true,
                     "Mastercard",
                     "• • • • 4444",
@@ -106,7 +107,7 @@ public class TouchToFillCreditCardRenderTest {
                     "MasterCard",
                     "5454545454545454",
                     "11",
-                    "2100",
+                    AutofillTestHelper.nextYear(),
                     false,
                     "MasterCard-GPay",
                     "• • • • 5454",
@@ -117,7 +118,7 @@ public class TouchToFillCreditCardRenderTest {
                     "Discover",
                     "6011111111111117",
                     "09",
-                    "2100",
+                    AutofillTestHelper.nextYear(),
                     true,
                     "Discover",
                     "• • • • 1117",
@@ -128,7 +129,7 @@ public class TouchToFillCreditCardRenderTest {
                     "American Express",
                     "378282246310005",
                     "10",
-                    "2100",
+                    AutofillTestHelper.nextYear(),
                     true,
                     "American Express",
                     "• • • • 0005",
@@ -139,7 +140,7 @@ public class TouchToFillCreditCardRenderTest {
                     /* name= */ "MasterCard-GPay",
                     /* number= */ "5454545454545454",
                     /* month= */ "11",
-                    /* year= */ "2100",
+                    /* year= */ AutofillTestHelper.nextYear(),
                     /* network= */ "Mastercard",
                     /* iconId= */ R.drawable.mc_metadata_card,
                     /* cardNameForAutofillDisplay= */ "MasterCard-GPay",

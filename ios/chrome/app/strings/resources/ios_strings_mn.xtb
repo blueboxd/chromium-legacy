@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">Та сайтын өгөгдмөл харагдах байдлыг Тохиргоо, дараа нь Контентын тохиргоо хэсэгт дэлгэц болгож өөрчлөх боломжтой</translation>
 <translation id="1054745118061919935">Үргэлжлүүлснээр та <ph name="BEGIN_LINK" />Үйлчилгээний нөхцөлийг<ph name="END_LINK" /> зөвшөөрнө.</translation>
 <translation id="1066060668811609597">Синкийг удирдах</translation>
-<translation id="1066101356081285416">Chrome таны зочилсон сайтууд дээрх хяналтын дугааруудыг илрүүлэх бөгөөд Шинэ таб хуудсанд танд илгээмжийн шинэчлэлтийг харуулна. Энэ онцлогоор хангах болон Google-н худалдан авалтын онцлогуудыг хүн бүрд сайжруулахын тулд илгээмж хяналтын дугаар болон вебсайтын нэрийг Google рүү илгээнэ. Та үүнийг <ph name="BEGIN_LINK" />Илгээмж хянах тохиргоонд<ph name="END_LINK" /> хүссэн үедээ шинэчлэх боломжтой.</translation>
 <translation id="1069154182096085577">Нууц үг аль хэдийн байна</translation>
 <translation id="1076421457278169141">Кодыг скан хийсэн</translation>
 <translation id="1076785341346483463">Тохиргоо хийгдсэн бүртгэлтэй синк хийх</translation>
@@ -143,7 +142,6 @@
 <translation id="165877110639533037">Нээлттэй цонх алга</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> -с <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Мобайл сайтын хүсэлт тавих</translation>
-<translation id="168715261339224929">Хавчуургаа бүх төхөөрөмждөө авах бол синкийг асаана уу.</translation>
 <translation id="1687475363370981210">Бүгдийг уншсан гэж тэмдэглэх</translation>
 <translation id="1689333818294560261">Хоч</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> сонгогдсон</translation>
@@ -1049,7 +1047,6 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="6476253015009698798">Энэ хуудсанд үнэ хянах боломжгүй байна.</translation>
 <translation id="6476800141292307438">Хуудсыг <ph name="LANGUAGE" /> руу орчуулж байна. Дэлгэцийн доод хэсгийн ойролцоо сонголт хийх боломжтой.</translation>
 <translation id="648164694371393720">Нотолгооны алдаа</translation>
-<translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> зүйлс сонгогдсон байна</translation>
 <translation id="6484712497741564393"><ph name="EMAIL" />-р нэвтэрсэн.
 
 Таны өгөгдлийг нэвтрэх үгээр тань шифрлэсэн. Google Бүртгэлдээ Chrome-н өгөгдлөө ашиглах болон хадгалахын тулд үүнийг оруулна уу.</translation>
@@ -1136,6 +1133,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="6869389390665537774">Та түүхээсээ зочилсон хуудаснуудаа харах эсвэл арилгах боломжтой</translation>
 <translation id="687135068089457384">Тохиргоог харуулах</translation>
 <translation id="6873263987691478642">Хувааж харах</translation>
+<translation id="687586529977635009">Chrome таны зочилсон сайтууд дээрх хяналтын дугааруудыг илрүүлэх бөгөөд Шинэ таб хуудсанд танд илгээмжийн шинэчлэлтийг харуулна. Энэ онцлогоор хангах болон хүн бүрд Shopping-г сайжруулахын тулд таны өгөгдлийг Google-тэй хуваалцана. Та үүнийг <ph name="BEGIN_LINK" />Илгээмж хянах тохиргоонд<ph name="END_LINK" /> өөрчлөх боломжтой.</translation>
 <translation id="6882836635272038266">Аюултай гэж мэдэгдсэн веб сайт, таталт болон өргөтгөлийн эсрэг стандарт хамгаалалт.</translation>
 <translation id="6888009575607455378">Та өөрчлөлт оруулахаа болихдоо итгэлтэй байна уу?</translation>
 <translation id="6896758677409633944">Хуулах</translation>
@@ -1416,7 +1414,6 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8428634594422941299">Ойлголоо</translation>
 <translation id="8446884382197647889">Дэлгэрэнгүй мэдээлэл</translation>
 <translation id="8449347986464073209">Устгаад, гарах</translation>
-<translation id="8458397775385147834">1 зүйл устгагдсан</translation>
 <translation id="8459333855531264009">Аюултай</translation>
 <translation id="8487667956631253959">Асаах</translation>
 <translation id="8487700953926739672">Сүлжээнд холбогдоогүй байна</translation>
@@ -1482,7 +1479,6 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8766790350274092814"><ph name="WEBSITE" /> болон <ph name="SECOND_WEBSITE" />-н нууц үгийг устгана. Таны бүртгэлүүдийг устгахгүй.</translation>
 <translation id="8775144690796719618">Хүчингүй URL</translation>
 <translation id="8780076847684176174">{count,plural, =1{Табыг шалгах...}other{Бүх табыг шалгах...}}</translation>
-<translation id="8782570580170191813">Илгээмжийг үргэлж хянах</translation>
 <translation id="8787968206789828143">Веб дээр хайх</translation>
 <translation id="8792626944327216835">микрофон</translation>
 <translation id="8803639129939845298">Аюулгүй</translation>

@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/color/chrome_color_provider_utils.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/compose/core/browser/compose_features.h"
+#include "components/compose/buildflags.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
@@ -93,10 +93,6 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorTabSearchCardBackground] = {ui::kColorSysSurface5};
   mixer[kColorTabSearchBackground] = {ui::kColorSysSurface};
   mixer[kColorTabSearchDivider] = {ui::kColorSysDivider};
-  mixer[kColorTabSearchImageTabContentBottom] = {ui::kColorSysHeaderContainer};
-  mixer[kColorTabSearchImageTabContentTop] = {ui::kColorSysOnPrimary};
-  mixer[kColorTabSearchImageTabText] = {ui::kColorSysStateRipplePrimary};
-  mixer[kColorTabSearchImageWindowFrame] = {ui::kColorSysInversePrimary};
   mixer[kColorTabSearchMediaIcon] = {ui::kColorSysOnSurfaceSubtle};
   mixer[kColorTabSearchMediaRecordingIcon] = {ui::kColorSysError};
   mixer[kColorTabSearchPrimaryForeground] = {ui::kColorSysOnSurface};
@@ -131,28 +127,28 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
       kColorFeaturePromoBubbleBackground};
   mixer[kColorFeaturePromoBubbleForeground] = {ui::kColorSysOnPrimary};
 
-  if (base::FeatureList::IsEnabled(compose::features::kEnableCompose)) {
-    // Compose colors.
-    mixer[kColorComposeDialogBackground] = {ui::kColorSysSurface};
-    mixer[kColorComposeDialogDivider] = {ui::kColorSysDivider};
-    mixer[kColorComposeDialogError] = {ui::kColorSysError};
-    mixer[kColorComposeDialogForegroundSubtle] = {ui::kColorSysOnSurfaceSubtle};
-    mixer[kColorComposeDialogLink] = {ui::kColorSysPrimary};
-    mixer[kColorComposeDialogScrollbarThumb] = {ui::kColorSysPrimary};
-    mixer[kColorComposeDialogResultBackground] = {ui::kColorSysSurface5};
-    mixer[kColorComposeDialogResultForeground] = {ui::kColorSysOnSurface};
-    mixer[kColorComposeDialogResultIcon] = {ui::kColorSysOnSurfaceSubtle};
-    mixer[kColorComposeDialogTitle] = {ui::kColorSysOnSurface};
-    mixer[kColorComposeDialogTextarea] = {ui::kColorSysOnSurface};
-    mixer[kColorComposeDialogTextareaOutline] = {ui::kColorSysNeutralOutline};
-    mixer[kColorComposeDialogTextareaPlaceholder] = {
-        ui::kColorSysOnSurfaceSubtle};
-    mixer[kColorComposeDialogTextareaReadonlyBackground] = {
-        ui::kColorSysNeutralContainer};
-    mixer[kColorComposeDialogTextareaReadonlyForeground] = {
-        ui::kColorSysOnSurface};
-    mixer[kColorComposeDialogTextareaIcon] = {ui::kColorSysOnSurfaceSubtle};
-  }
+#if BUILDFLAG(ENABLE_COMPOSE)
+  // Compose colors.
+  mixer[kColorComposeDialogBackground] = {ui::kColorSysSurface};
+  mixer[kColorComposeDialogDivider] = {ui::kColorSysDivider};
+  mixer[kColorComposeDialogError] = {ui::kColorSysError};
+  mixer[kColorComposeDialogForegroundSubtle] = {ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorComposeDialogLink] = {ui::kColorSysPrimary};
+  mixer[kColorComposeDialogScrollbarThumb] = {ui::kColorSysPrimary};
+  mixer[kColorComposeDialogResultBackground] = {ui::kColorSysSurface5};
+  mixer[kColorComposeDialogResultForeground] = {ui::kColorSysOnSurface};
+  mixer[kColorComposeDialogResultIcon] = {ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorComposeDialogTitle] = {ui::kColorSysOnSurface};
+  mixer[kColorComposeDialogTextarea] = {ui::kColorSysOnSurface};
+  mixer[kColorComposeDialogTextareaOutline] = {ui::kColorSysNeutralOutline};
+  mixer[kColorComposeDialogTextareaPlaceholder] = {
+      ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorComposeDialogTextareaReadonlyBackground] = {
+      ui::kColorSysNeutralContainer};
+  mixer[kColorComposeDialogTextareaReadonlyForeground] = {
+      ui::kColorSysOnSurface};
+  mixer[kColorComposeDialogTextareaIcon] = {ui::kColorSysOnSurfaceSubtle};
+#endif  // BUILDFLAG(ENABLE_COMPOSE)
 
   if (!ShouldApplyChromeMaterialOverrides(key)) {
     return;

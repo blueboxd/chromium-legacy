@@ -4,11 +4,25 @@
 
 #import "ios/chrome/browser/app_launcher/model/app_launcher_abuse_detector.h"
 
+#import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/app_launcher/model/app_launching_state.h"
 #import "url/gurl.h"
 
 const int kMaxAllowedConsecutiveExternalAppLaunches = 2;
+
+namespace {
+
+// Returns true iff `url`'s scheme is one that is used by other apps to launch
+// Chrome.
+bool HasChromeAppLaunchScheme(const GURL& url) {
+  return url.SchemeIs("googlechrome-x-callback") ||
+         url.SchemeIs("chromium-x-callback") || url.SchemeIs("googlechrome") ||
+         url.SchemeIs("chromium") || url.SchemeIs("googlechromes") ||
+         url.SchemeIs("chromiums");
+}
+
+}  // namespace
 
 @interface AppLauncherAbuseDetector ()
 // Maps between external application redirection key and state.
@@ -52,6 +66,14 @@ const int kMaxAllowedConsecutiveExternalAppLaunches = 2;
 
 - (ExternalAppLaunchPolicy)launchPolicyForURL:(const GURL&)URL
                             fromSourcePageURL:(const GURL&)sourcePageURL {
+  // Treat an attempt to launch Chrome from within Chrome as abuse.
+  bool isChromeLaunchAttempt = HasChromeAppLaunchScheme(URL);
+  UMA_HISTOGRAM_BOOLEAN("IOS.AppLauncher.AppURLHasChromeLaunchScheme",
+                        isChromeLaunchAttempt);
+  if (isChromeLaunchAttempt) {
+    return ExternalAppLaunchPolicyBlock;
+  }
+
   NSString* key = [[self class] stateKeyForAppURL:URL sourceURL:sourcePageURL];
   // Don't block apps that are not registered with the abuse detector.
   if (!_appLaunchingStates[key]) {

@@ -159,6 +159,9 @@ public final class ProductionSupportedFlagList {
                 GpuFeatures.AGGRESSIVE_SKIA_GPU_RESOURCE_PURGE,
                 "More aggressively purge skia GPU resources"),
         Flag.baseFeature(
+                GpuFeatures.PRUNE_OLD_TRANSFER_CACHE_ENTRIES,
+                "Prune old transfer cache entries and disable pruning from client"),
+        Flag.baseFeature(
                 VizFeatures.ALLOW_BYPASS_RENDER_PASS_QUADS,
                 "Enable bypass render pass for RenderPassDrawQuads"),
         Flag.baseFeature(
@@ -488,10 +491,6 @@ public final class ProductionSupportedFlagList {
                 BlinkFeatures.WEB_RTC_INITIALIZE_ENCODER_ON_FIRST_FRAME,
                 "Initialize VideoEncodeAccelerator on the first encode."),
         Flag.baseFeature(
-                BlinkFeatures.WEB_RTC_METRONOME,
-                "Inject a metronome into webrtc to allow task coalescing, "
-                        + " including synchronized decoding."),
-        Flag.baseFeature(
                 BlinkFeatures.THREADED_BODY_LOADER,
                 "If enabled, reads and decodes navigation body data off the main thread."),
         Flag.baseFeature(BlinkFeatures.SPARSE_OBJECT_PAINT_PROPERTIES),
@@ -671,6 +670,7 @@ public final class ProductionSupportedFlagList {
                         + "an existing pending commit navigation in progress."),
         Flag.baseFeature("NetworkServiceCookiesHighPriorityTaskRunner"),
         Flag.baseFeature("IncreaseCoookieAccesCacheSize"),
+        Flag.baseFeature("AvoidScheduleWorkDuringNativeEventProcessing"),
         Flag.baseFeature(
                 VizFeatures.ON_BEGIN_FRAME_THROTTLE_VIDEO,
                 "Enables throttling OnBeginFrame for video frame sinks"

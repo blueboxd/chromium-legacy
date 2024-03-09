@@ -113,7 +113,7 @@ MATCHER(AddressAndPaymentsFallbacksAdded, "") {
 
 // Generates a ContextMenuParams for the Autofill context menu options.
 content::ContextMenuParams CreateContextMenuParams(
-    absl::optional<autofill::FormRendererId> form_renderer_id = absl::nullopt,
+    std::optional<autofill::FormRendererId> form_renderer_id = std::nullopt,
     autofill::FieldRendererId field_render_id = autofill::FieldRendererId(0)) {
   content::ContextMenuParams rv;
   rv.is_editable = true;
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     AutocompleteUnrecognizedFieldsTest,
     AutocompleteUnrecognizedFormShown_NoSuitableData_FallbackOptionsNotPresent) {
-  AutofillProfile profile;
+  AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
   profile.SetRawInfo(COMPANY_NAME, u"company");
   AddAutofillProfile(profile);
   FormData form = CreateAndAttachAutocompleteUnrecognizedForm();

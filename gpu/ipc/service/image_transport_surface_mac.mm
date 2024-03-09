@@ -19,10 +19,10 @@ scoped_refptr<gl::Presenter> ImageTransportSurface::CreatePresenter(
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 ||
       gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
-    return base::MakeRefCounted<ImageTransportSurfaceOverlayMacEGL>(delegate);
+    return base::MakeRefCounted<ImageTransportSurfaceOverlayMacEGL>();
+  }
 
   return nullptr;
-  }
 }
 
 // static

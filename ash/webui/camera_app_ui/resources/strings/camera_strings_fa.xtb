@@ -5,7 +5,6 @@
 <translation id="1076394037877376434">حذف صفحه <ph name="PAGE_NUMBER" /></translation>
 <translation id="1113173431709655881">حالت دوربین</translation>
 <translation id="1153190633558910465">خطوط شطرنجی خاموش</translation>
-<translation id="1175958423215084756">پیوند شناسایی شد. <ph name="HOSTNAME" /></translation>
 <translation id="1197694886744716213">صفحه <ph name="PAGE_NUMBER" /> حذف شد</translation>
 <translation id="1258009455399840361">چرخش ۹۰ درجه ساعت‌گرد</translation>
 <translation id="1417314334557041815">ویرایش صفحه <ph name="INDEX" /></translation>
@@ -42,7 +41,7 @@
 <translation id="2599796128805996109">دوربین پشت</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> ثانیه</translation>
 <translation id="2761536921376153655">نوع اسکن</translation>
-<translation id="28682968802727151">پیش‌نمایش قرینه‌سازی</translation>
+<translation id="28682968802727151">پیش‌نمایش بازتاب</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> متصل شد.</translation>
 <translation id="3067436040345934772">حرکت دادن به راست</translation>
 <translation id="3081586908890909590">رفتن به حالت فیلم‌برداری</translation>
@@ -60,14 +59,12 @@
 <translation id="3642192109456033823">درحال پردازش ویدیو…</translation>
 <translation id="3789724198583203151">چرخش ۹۰ درجه پادساعت‌گرد</translation>
 <translation id="3810838688059735925">فیلم</translation>
-<translation id="3892148308691398805">کپی کردن نوشتار</translation>
 <translation id="4060608699153044055">نمی‌توانید ضبط کنید چون فضای ذخیره‌سازی دستگاه کافی نیست. برای شروع ضبط، باید فضای دستگاهتان را خالی کنید.</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> مگاپیکسل</translation>
 <translation id="4118525110028899586">توقف موقت ضبط</translation>
 <translation id="4121305183798804752">سند شناسایی شد</translation>
 <translation id="414641094616694804">نمی‌توان وضوح این دوربین را تغییر داد</translation>
 <translation id="4176463684765177261">غیرفعال شد</translation>
-<translation id="4269820728363426813">کپی نشانی پیوند</translation>
 <translation id="428234092390943511">تصویر کوچک صفحه</translation>
 <translation id="4349714250734879769">‏مقیاس‌بندی قاب‌ها توسط Chrome</translation>
 <translation id="4383571725254449280">چاپ گزارش‌های عملکرد</translation>
@@ -93,7 +90,6 @@
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5320594929574852403">درحال انتقال به‌سمت چپ</translation>
 <translation id="5374917190292010970">‏4K (۲۱۶۰ پیکسل)</translation>
-<translation id="539541037630043848">باز کردن <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">درحال اسکن کردن صفحه <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">مربع</translation>
 <translation id="574392208103952083">متوسط</translation>
@@ -116,7 +112,7 @@
 اگر بازخوردتان درباره کیفیت تصویر یا ویدیو است، لطفاً نمونه‌ای از عکس یا ویدیو را ضمیمه کنید و مشکل را توضیح دهید. (برای مثال، عکس خیلی تیره است یا روی سوژه موردنظر فوکوس نشده است.)</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="6617916774429601017">نمایش همه وضوح‌ها</translation>
-<translation id="6631515515009660915">قرینه‌سازی خاموش</translation>
+<translation id="6631515515009660915">بازتاب خاموش</translation>
 <translation id="6652737148136672975">موقعیت گوشه را بااستفاده از کلیدهای جهت‌نما تغییر دهید</translation>
 <translation id="667999046851023355">سند</translation>
 <translation id="6681668084120808868">عکسبرداری</translation>
@@ -145,7 +141,6 @@
 <translation id="7726641833034062494">ضبط ویدیو  معمولی</translation>
 <translation id="7748344063862150053">گوشه بالا سمت راست سند</translation>
 <translation id="7933675232020478311">درحال انتقال به‌سمت راست پایین</translation>
-<translation id="7983668134180549431">نوشتار شناسایی شد.</translation>
 <translation id="8079255378695216066">نمی‌توان ضبط را شروع کرد</translation>
 <translation id="8120146556401698679">حرکت دادن، کج کردن، بزرگ‌نمایی</translation>
 <translation id="8131740175452115882">تأیید</translation>
@@ -169,6 +164,6 @@
 <translation id="9045155556724273246">۱۰ ثانیه</translation>
 <translation id="906331135292332864">درحال پردازش تصویر…</translation>
 <translation id="9161584225258678723">زمان‌گریز</translation>
-<translation id="922762992951083513">قرینه‌سازی روشن</translation>
+<translation id="922762992951083513">بازتاب روشن</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>
 </translationbundle>

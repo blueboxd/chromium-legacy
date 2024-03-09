@@ -13,7 +13,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_elu_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_gather_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_gemm_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_instance_normalization_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_layer_normalization_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_leaky_relu_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_linear_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_data_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pad_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pool_2d_options.h"
@@ -76,7 +79,18 @@ MLOperand* BuildLeakyRelu(
     const MLOperand* input,
     const MLLeakyReluOptions* options = MLLeakyReluOptions::Create());
 
-enum class ElementWiseBinaryKind { kAdd, kSub, kMul, kDiv, kMin, kMax, kPow };
+enum class ElementWiseBinaryKind {
+  kAdd,
+  kSub,
+  kMul,
+  kDiv,
+  kMin,
+  kMax,
+  kPow,
+  kEqual,
+  kGreater,
+  kLesser
+};
 
 MLOperand* BuildElementWiseBinary(V8TestingScope& scope,
                                   MLGraphBuilder* builder,
@@ -122,6 +136,19 @@ MLOperand* BuildGemm(V8TestingScope& scope,
                      const MLOperand* a,
                      const MLOperand* b,
                      const MLGemmOptions* options = MLGemmOptions::Create());
+
+MLOperand* BuildInstanceNormalization(
+    V8TestingScope& scope,
+    MLGraphBuilder* builder,
+    const MLOperand* input,
+    const MLInstanceNormalizationOptions* options =
+        MLInstanceNormalizationOptions::Create());
+
+MLOperand* BuildLayerNormalization(V8TestingScope& scope,
+                                   MLGraphBuilder* builder,
+                                   const MLOperand* input,
+                                   const MLLayerNormalizationOptions* options =
+                                       MLLayerNormalizationOptions::Create());
 
 enum class ReduceKind {
   kL1,

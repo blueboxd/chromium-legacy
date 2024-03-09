@@ -25,6 +25,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/network_service_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/back_forward_cache_util.h"
@@ -400,6 +401,42 @@ IN_PROC_BROWSER_TEST_P(KeepAliveURLBrowserTest,
   EXPECT_EQ(watcher.WaitAndGetTitle(), kPromiseResolvedPageTitle);
   loaders_observer().WaitForTotalOnReceiveResponseForwarded(2);
   loaders_observer().WaitForTotalOnCompleteForwarded({net::OK, net::OK});
+  EXPECT_EQ(loader_service()->NumLoadersForTesting(), 0u);
+}
+
+IN_PROC_BROWSER_TEST_P(KeepAliveURLBrowserTest,
+                       RequestAfterNetworkServiceCrashes) {
+  // Can't test this on bots that use an in-process network service.
+  if (IsInProcessNetworkService()) {
+    return;
+  }
+
+  const std::string method = GetParam();
+  auto request_handler =
+      std::move(RegisterRequestHandlers({kKeepAliveEndpoint})[0]);
+  ASSERT_TRUE(server()->Start());
+
+  // Navigate to an empty page first without making any requests.
+  ASSERT_TRUE(NavigateToURL(web_contents(), server()->GetURL("/empty.html")));
+  // Crash the NetworkService process on the page.
+  SimulateNetworkServiceCrash();
+  // Make a fetch keepalive request, expected to succeed.
+  ASSERT_TRUE(ExecJs(web_contents(),
+                     JsReplace(R"(
+    fetch($1, {keepalive: true, method: $2});
+  )",
+                               kKeepAliveEndpoint, method),
+                     content::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
+
+  // Ensure the keepalive request is sent, but delay response.
+  request_handler->WaitForRequest();
+  ASSERT_EQ(loader_service()->NumLoadersForTesting(), 1u);
+  // End the keepalive request by sending back response.
+  request_handler->Send(k200TextResponse);
+  request_handler->Done();
+
+  loaders_observer().WaitForTotalOnReceiveResponseForwarded(1);
+  loaders_observer().WaitForTotalOnCompleteForwarded({net::OK});
   EXPECT_EQ(loader_service()->NumLoadersForTesting(), 0u);
 }
 
@@ -1360,13 +1397,11 @@ IN_PROC_BROWSER_TEST_F(FetchLaterNoActivationTimeoutBrowserTest,
   ExpectFetchLaterRequests(1, request_handlers);
 }
 
-// A pending FetchLater request should have been sent after its page gets
-// restored from BackForwardCache before getting evicted. It is because, by
-// default, pending requests are all flushed on BFCache no matter
-// BackgroundSync is on or not. See http://b/310541607#comment28.
+// A pending FetchLater request should not be sent after its page gets restored
+// from BackForwardCache before getting evicted.
 IN_PROC_BROWSER_TEST_F(
     FetchLaterNoActivationTimeoutBrowserTest,
-    FlushedWhenPageIsRestoredBeforeBeingEvictedFromBackForwardCache) {
+    NotSendWhenPageIsRestoredBeforeBeingEvictedFromBackForwardCache) {
   const std::string target_url = kFetchLaterEndpoint;
   auto request_handlers = RegisterRequestHandlers({target_url});
   ASSERT_TRUE(server()->Start());
@@ -1381,8 +1416,9 @@ IN_PROC_BROWSER_TEST_F(
 
   // The same page is still alive.
   ExpectRestored(FROM_HERE);
-  // The FetchLater requests should've been sent.
-  ExpectFetchLaterRequests(1, request_handlers);
+  // The loader should still exist, but the request should not be sent.
+  EXPECT_EQ(loader_service()->NumLoadersForTesting(), 1u);
+  EXPECT_EQ(loader_service()->NumDisconnectedLoadersForTesting(), 0u);
 }
 
 // Without an activateAfter set, a pending FetchLater request should not be

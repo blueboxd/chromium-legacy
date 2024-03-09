@@ -54,12 +54,13 @@ ScopedJavaLocalRef<jobject> ConvertToJavaIdentityProviderMetadata(
       ui::OptionalSkColorToJavaColor(metadata.brand_background_color),
       java_brand_icon_url,
       url::GURLAndroid::FromNativeGURL(env, metadata.config_url),
-      url::GURLAndroid::FromNativeGURL(env, metadata.idp_login_url));
+      url::GURLAndroid::FromNativeGURL(env, metadata.idp_login_url),
+      metadata.supports_add_account);
 }
 
 ScopedJavaLocalRef<jobject> ConvertToJavaIdentityCredentialTokenError(
     JNIEnv* env,
-    const absl::optional<TokenError>& error) {
+    const std::optional<TokenError>& error) {
   return Java_IdentityCredentialTokenError_Constructor(
       env,
       base::android::ConvertUTF8ToJavaString(env, error ? error->code : ""),
@@ -151,7 +152,7 @@ AccountSelectionViewAndroid::~AccountSelectionViewAndroid() {
 
 void AccountSelectionViewAndroid::Show(
     const std::string& top_frame_for_display,
-    const absl::optional<std::string>& iframe_for_display,
+    const std::optional<std::string>& iframe_for_display,
     const std::vector<content::IdentityProviderData>& identity_provider_data,
     Account::SignInMode sign_in_mode,
     bool show_auto_reauthn_checkbox) {
@@ -190,7 +191,7 @@ void AccountSelectionViewAndroid::Show(
 
 void AccountSelectionViewAndroid::ShowFailureDialog(
     const std::string& top_frame_for_display,
-    const absl::optional<std::string>& iframe_for_display,
+    const std::optional<std::string>& iframe_for_display,
     const std::string& idp_for_display,
     const blink::mojom::RpContext& rp_context,
     const content::IdentityProviderMetadata& idp_metadata) {
@@ -214,11 +215,11 @@ void AccountSelectionViewAndroid::ShowFailureDialog(
 
 void AccountSelectionViewAndroid::ShowErrorDialog(
     const std::string& top_frame_for_display,
-    const absl::optional<std::string>& iframe_for_display,
+    const std::optional<std::string>& iframe_for_display,
     const std::string& idp_for_display,
     const blink::mojom::RpContext& rp_context,
     const content::IdentityProviderMetadata& idp_metadata,
-    const absl::optional<TokenError>& error) {
+    const std::optional<TokenError>& error) {
   if (!MaybeCreateJavaObject()) {
     // It's possible that the constructor cannot access the bottom sheet clank
     // component. That case may be temporary but we can't let users in a
@@ -246,18 +247,25 @@ std::string AccountSelectionViewAndroid::GetTitle() const {
   return ConvertJavaStringToUTF8(title);
 }
 
-absl::optional<std::string> AccountSelectionViewAndroid::GetSubtitle() const {
+std::optional<std::string> AccountSelectionViewAndroid::GetSubtitle() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> subtitle =
       Java_AccountSelectionBridge_getSubtitle(env, java_object_internal_);
   if (!subtitle) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return ConvertJavaStringToUTF8(subtitle);
 }
 
 content::WebContents* AccountSelectionViewAndroid::ShowModalDialog(
     const GURL& url) {
+  if (!MaybeCreateJavaObject()) {
+    // The Java object is tied to the bottomsheet availability, so if we hadn't
+    // created one and the bottomsheet is not available then the CCT will not be
+    // opened.
+    delegate_->OnDismiss(DismissReason::kOther);
+    return nullptr;
+  }
   JNIEnv* env = AttachCurrentThread();
   return content::WebContents::FromJavaWebContents(
       Java_AccountSelectionBridge_showModalDialog(

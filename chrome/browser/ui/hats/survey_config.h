@@ -40,13 +40,7 @@ extern const char kHatsSurveyTriggerTrackingProtectionControlImmediate[];
 extern const char kHatsSurveyTriggerTrackingProtectionTreatmentImmediate[];
 extern const char kHatsSurveyTriggerTrackingProtectionControlDelayed[];
 extern const char kHatsSurveyTriggerTrackingProtectionTreatmentDelayed[];
-extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentAccept[];
 extern const char kHatsSurveyTriggerSettingsSecurity[];
-extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentDecline[];
-extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeDismiss[];
-extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeOk[];
-extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeSettings[];
-extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeLearnMore[];
 extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox4ConsentAccept[];
 extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox4ConsentDecline[];
 extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox4NoticeOk[];
@@ -69,7 +63,6 @@ extern const char kHatsSurveyTriggerTrustSafetyV2PrivacySandbox4NoticeOk[];
 extern const char
     kHatsSurveyTriggerTrustSafetyV2PrivacySandbox4NoticeSettings[];
 extern const char kHatsSurveyTriggerTrustSafetyV2SafeBrowsingInterstitial[];
-extern const char kHatsSurveyTriggerWallpaperSearch[];
 extern const char kHatsSurveyTriggerWhatsNew[];
 #else
 extern const char kHatsSurveyTriggerAndroidStartupSurvey[];
@@ -92,7 +85,7 @@ struct SurveyConfig {
   SurveyConfig(
       const base::Feature* feature,
       const std::string& trigger,
-      const absl::optional<std::string>& presupplied_trigger_id = absl::nullopt,
+      const std::optional<std::string>& presupplied_trigger_id = std::nullopt,
       const std::vector<std::string>& product_specific_bits_data_fields = {},
       const std::vector<std::string>& product_specific_string_data_fields = {});
 

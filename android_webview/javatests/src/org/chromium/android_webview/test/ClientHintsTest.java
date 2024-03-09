@@ -393,7 +393,7 @@ public class ClientHintsTest extends AwParameterizedTest {
         url =
                 server.getURL(
                         "/critical-client-hints-header?accept-ch=sec-ch-device-memory,device-memory&"
-                                + "critical-ch=sec-ch-device-memory");
+                            + "critical-ch=sec-ch-device-memory");
         loadUrlSync(contents, contentsClient.getOnPageFinishedHelper(), url);
         validateHeadersFromJSON(contents, contentsClient, "sec-ch-device-memory", true);
         validateHeadersFromJSON(contents, contentsClient, "device-memory", false);
@@ -1397,7 +1397,9 @@ public class ClientHintsTest extends AwParameterizedTest {
         String[] hintPairs = text.split(",\"");
         int userAgentClientHintsCount = 0;
         for (String hintPair : hintPairs) {
-            String[] hints = hintPair.split(":");
+            // Make sure we only split into two parts at the first occurrence for `:` in order to
+            // handle correctly for cases when the brand value can contains special char `:`.
+            String[] hints = hintPair.split(":", 2);
             if (hints.length < 2) {
                 continue;
             }

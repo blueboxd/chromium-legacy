@@ -37,6 +37,7 @@ data/av1-monochrome-I-frame-320x240-10bpp
 data/av1-monochrome-I-frame-320x240-12bpp
 data/av1-monochrome-I-frame-320x240-8bpp
 data/av1-show_existing_frame.ivf
+data/av1-svc-L1T2.ivf
 data/av1-svc-L2T2.ivf
 data/avc-bitstream-format-0.h264
 data/avc-bitstream-format-1.h264
@@ -361,6 +362,8 @@ data/four-colors.mp4
 data/four-colors.png
 data/four-colors.y4m
 data/frame_size_change-av_enc-v.webm
+data/glass-blowing2-dolby-vision-profile-5-frag.mp4
+data/glass-blowing2-dolby-vision-profile-8-1-frag.mp4
 data/green-a300hz.webm
 data/h264-320x180-frame-0
 data/h264-320x180-frame-1

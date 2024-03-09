@@ -872,11 +872,7 @@ void SkiaRenderer::DrawRPDQParams::ClearOutsideBackdropBounds(
 
   if (params->draw_region) {
     canvas->save();
-    if (bypass_geometry) {
-      // If there's a bypass geometry, the draw_region is relative to that
-      // coordinate space.
-      canvas->concat(bypass_geometry->transform);
-    }
+    canvas->concat(bypass_geometry->transform);
     canvas->clipPath(params->draw_region_in_path(), SkClipOp::kDifference, aa);
     canvas->clear(SK_ColorTRANSPARENT);
     canvas->restore();
@@ -1308,8 +1304,8 @@ void SkiaRenderer::BindFramebufferToTexture(
   RenderPassBacking& backing = iter->second;
   current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
       render_pass_id, backing.size, backing.format, backing.alpha_type,
-      backing.generate_mipmap, backing.scanout_dcomp_surface,
-      RenderPassBackingSkColorSpace(backing),
+      backing.generate_mipmap ? skgpu::Mipmapped::kYes : skgpu::Mipmapped::kNo,
+      backing.scanout_dcomp_surface, RenderPassBackingSkColorSpace(backing),
       /*is_overlay=*/is_root, backing.mailbox);
 
   if (is_root && debug_settings_->show_overdraw_feedback) {
@@ -3632,8 +3628,8 @@ void SkiaRenderer::PrepareRenderPassOverlay(
 
   absl::optional<gfx::Transform> quad_to_target_transform_inverse;
   // We cannot handle rotation with clip rect or mask filter.
-  if (!shared_quad_state->quad_to_target_transform.HasPerspective() &&
-      shared_quad_state->quad_to_target_transform.IsInvertible()) {
+  if ((shared_quad_state->clip_rect ||
+       !shared_quad_state->mask_filter_info.IsEmpty())) {
     quad_to_target_transform_inverse.emplace();
     // Flatten before inverting, since we're interested in how points
     // with z=0 in local space map to the clip rect, not in how the clip
@@ -3777,7 +3773,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
     current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
         quad->render_pass_id, dst_overlay_backing.size,
         dst_overlay_backing.format, dst_overlay_backing.alpha_type,
-        /*mipmap=*/false, /*scanout_dcomp_surface=*/false,
+        skgpu::Mipmapped::kNo, /*scanout_dcomp_surface=*/false,
         RenderPassBackingSkColorSpace(dst_overlay_backing),
         /*is_overlay=*/true, overlay->mailbox);
     if (!current_canvas_) {

@@ -102,8 +102,9 @@ class DanglingMouseMoveHandlerOnViewDestroyingChecker
 // their own announcements without changing their accessible name or description
 // is the reason this system exists at all).
 class AnnounceTextView : public View {
+  METADATA_HEADER(AnnounceTextView, View)
+
  public:
-  METADATA_HEADER(AnnounceTextView);
   ~AnnounceTextView() override = default;
 
   void AnnounceTextAs(const std::u16string& text,
@@ -148,7 +149,7 @@ class AnnounceTextView : public View {
   ax::mojom::Role announce_role_ = ax::mojom::Role::kNone;
 };
 
-BEGIN_METADATA(AnnounceTextView, View)
+BEGIN_METADATA(AnnounceTextView)
 END_METADATA
 
 // This event handler receives events in the pre-target phase and takes care of
@@ -597,8 +598,9 @@ void RootView::OnMouseExited(const ui::MouseEvent& event) {
     if (dispatch_details.dispatcher_destroyed)
       return;
     // The mouse_move_handler_ could have been destroyed in the context of the
-    // mouse exit event. b/312400341
-    if (!dispatch_details.target_destroyed && mouse_move_handler_) {
+    // mouse exit event.
+    if (!dispatch_details.target_destroyed) {
+      CHECK(mouse_move_handler_);
       dispatch_details = NotifyEnterExitOfDescendant(
           event, ui::ET_MOUSE_EXITED, mouse_move_handler_, nullptr);
       if (dispatch_details.dispatcher_destroyed)
@@ -944,6 +946,6 @@ ui::EventDispatchDetails RootView::PostDispatchEvent(ui::EventTarget* target,
   return details;
 }
 
-BEGIN_METADATA(RootView, View)
+BEGIN_METADATA(RootView)
 END_METADATA
 }  // namespace views::internal

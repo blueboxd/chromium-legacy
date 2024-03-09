@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -26,6 +27,7 @@
 #include "chromeos/ash/components/dbus/attestation/keystore.pb.h"
 #include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/ash/components/quick_start/logging.h"
+#include "chromeos/ash/components/quick_start/quick_start_metrics.h"
 #include "chromeos/ash/components/quick_start/types.h"
 #include "components/account_id/account_id.h"
 #include "components/endpoint_fetcher/endpoint_fetcher.h"
@@ -36,7 +38,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace ash::quick_start {
@@ -194,7 +195,7 @@ Base64UrlString GetChallengeBytesFromParsedResponse(
   // We need to convert the Base64 encoded challenge bytes from Gaia to
   // Base64Url encoded challenge bytes to send to Android. Android doesn't
   // handle the standard Base64 encoding.
-  absl::optional<Base64UrlString> challenge =
+  std::optional<Base64UrlString> challenge =
       Base64UrlTranscode(Base64String(*challenge_base64));
 
   return challenge ? *challenge : Base64UrlString();
@@ -256,32 +257,23 @@ void HandleFetchChallengeBytesErrorResponse(
   }
 }
 
-void RunAttestationCertificateCallback(
+void HandleAttestationNotAvailableError(
+    QuickStartMetrics& metrics,
+    SecondDeviceAuthBroker::AttestationCertificateCallback callback) {
+  metrics.RecordAttestationCertificateRequestEnded(
+      QuickStartMetrics::AttestationCertificateRequestErrorCode::
+          kAttestationNotSupportedOnDevice);
+  std::move(callback).Run(base::unexpected(
+      SecondDeviceAuthBroker::AttestationErrorType::kPermanentError));
+}
+
+void HandleAttestationUnknownError(
+    QuickStartMetrics& metrics,
     SecondDeviceAuthBroker::AttestationCertificateCallback callback,
-    attestation::AttestationStatus status,
-    const std::string& pem_certificate_chain) {
-  switch (status) {
-    case attestation::ATTESTATION_SUCCESS:
-      if (pem_certificate_chain.empty()) {
-        QS_LOG(ERROR)
-            << "Got an empty certificate chain with a success response "
-               "from attestation server";
-        std::move(callback).Run(base::unexpected(
-            SecondDeviceAuthBroker::AttestationErrorType::kPermanentError));
-        return;
-      }
-      std::move(callback).Run(PEMCertChain(pem_certificate_chain));
-      return;
-    case attestation::ATTESTATION_UNSPECIFIED_FAILURE:
-      std::move(callback).Run(base::unexpected(
-          SecondDeviceAuthBroker::AttestationErrorType::kTransientError));
-      return;
-    case attestation::ATTESTATION_SERVER_BAD_REQUEST_FAILURE:
-    case attestation::ATTESTATION_NOT_AVAILABLE:
-      std::move(callback).Run(base::unexpected(
-          SecondDeviceAuthBroker::AttestationErrorType::kPermanentError));
-      return;
-  }
+    const SecondDeviceAuthBroker::AttestationErrorType& error_type) {
+  metrics.RecordAttestationCertificateRequestEnded(
+      QuickStartMetrics::AttestationCertificateRequestErrorCode::kUnknownError);
+  std::move(callback).Run(base::unexpected(error_type));
 }
 
 std::string CreateStartSessionRequestData(
@@ -619,6 +611,7 @@ void SecondDeviceAuthBroker::OnChallengeBytesFetched(
 void SecondDeviceAuthBroker::FetchAttestationCertificate(
     const Base64UrlString& fido_credential_id,
     AttestationCertificateCallback certificate_callback) {
+  metrics_.RecordAttestationCertificateRequested();
   attestation::AttestationFeatures::GetFeatures(base::BindOnce(
       &SecondDeviceAuthBroker::FetchAttestationCertificateInternal,
       weak_ptr_factory_.GetWeakPtr(), fido_credential_id,
@@ -680,26 +673,24 @@ void SecondDeviceAuthBroker::FetchAttestationCertificateInternal(
     const attestation::AttestationFeatures* attestation_features) {
   if (!attestation_features) {
     QS_LOG(ERROR) << "Failed to get AttestationFeatures";
-    std::move(certificate_callback)
-        .Run(base::unexpected(
-            SecondDeviceAuthBroker::AttestationErrorType::kPermanentError));
+    HandleAttestationUnknownError(
+        metrics_, std::move(certificate_callback),
+        SecondDeviceAuthBroker::AttestationErrorType::kPermanentError);
     return;
   }
 
   if (!attestation_features->IsAttestationAvailable()) {
     QS_LOG(ERROR) << "Attestation is not available";
-    std::move(certificate_callback)
-        .Run(base::unexpected(
-            SecondDeviceAuthBroker::AttestationErrorType::kPermanentError));
+    HandleAttestationNotAvailableError(metrics_,
+                                       std::move(certificate_callback));
     return;
   }
 
   if (!attestation_features->IsEccSupported() &&
       !attestation_features->IsRsaSupported()) {
     QS_LOG(ERROR) << "Could not find any supported attestation key type";
-    std::move(certificate_callback)
-        .Run(base::unexpected(
-            SecondDeviceAuthBroker::AttestationErrorType::kPermanentError));
+    HandleAttestationNotAvailableError(metrics_,
+                                       std::move(certificate_callback));
     return;
   }
 
@@ -716,11 +707,49 @@ void SecondDeviceAuthBroker::FetchAttestationCertificateInternal(
       /*force_new_key=*/true, /*key_crypto_type=*/attestation_key_type,
       /*key_name=*/attestation::kDeviceSetupKey,
       /*profile_specific_data=*/
-      absl::make_optional(attestation::AttestationFlow::CertProfileSpecificData(
+      std::make_optional(attestation::AttestationFlow::CertProfileSpecificData(
           profile_specific_data)),
       /*callback=*/
-      base::BindOnce(&RunAttestationCertificateCallback,
+      base::BindOnce(&SecondDeviceAuthBroker::RunAttestationCertificateCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
                      std::move(certificate_callback)));
+}
+
+void SecondDeviceAuthBroker::RunAttestationCertificateCallback(
+    SecondDeviceAuthBroker::AttestationCertificateCallback callback,
+    attestation::AttestationStatus status,
+    const std::string& pem_certificate_chain) {
+  switch (status) {
+    case attestation::ATTESTATION_SUCCESS:
+      if (pem_certificate_chain.empty()) {
+        QS_LOG(ERROR)
+            << "Got an empty certificate chain with a success response "
+               "from attestation server";
+        HandleAttestationUnknownError(
+            metrics_, std::move(callback),
+            SecondDeviceAuthBroker::AttestationErrorType::kPermanentError);
+        return;
+      }
+      metrics_.RecordAttestationCertificateRequestEnded(
+          /*error_code=*/std::nullopt);
+      std::move(callback).Run(PEMCertChain(pem_certificate_chain));
+      return;
+    case attestation::ATTESTATION_UNSPECIFIED_FAILURE:
+      HandleAttestationUnknownError(
+          metrics_, std::move(callback),
+          SecondDeviceAuthBroker::AttestationErrorType::kTransientError);
+      return;
+    case attestation::ATTESTATION_SERVER_BAD_REQUEST_FAILURE:
+      metrics_.RecordAttestationCertificateRequestEnded(
+          QuickStartMetrics::AttestationCertificateRequestErrorCode::
+              kBadRequest);
+      std::move(callback).Run(base::unexpected(
+          SecondDeviceAuthBroker::AttestationErrorType::kPermanentError));
+      return;
+    case attestation::ATTESTATION_NOT_AVAILABLE:
+      HandleAttestationNotAvailableError(metrics_, std::move(callback));
+      return;
+  }
 }
 
 std::ostream& operator<<(

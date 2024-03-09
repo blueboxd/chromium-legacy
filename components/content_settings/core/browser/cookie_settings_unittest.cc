@@ -61,6 +61,8 @@ constexpr char kAllowedRequestsHistogram[] =
     "API.StorageAccess.AllowedRequests2";
 #endif
 
+// NOTE: Consider modifying services/network/cookie_settings_unittest.cc if
+// applicable.
 enum TestVariables {
   kTopLevelStorageAccessGrantEligible = 0,
   kStorageAccessGrantsEligible,
@@ -181,10 +183,6 @@ class CookieSettingsTest
   }
 
   void SetUp() override {
-#if !BUILDFLAG(IS_IOS)
-    is_privacy_sandbox_v4_enabled_ =
-        base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4);
-#endif
     ContentSettingsRegistry::GetInstance()->ResetForTest();
     CookieSettings::RegisterProfilePrefs(prefs_.registry());
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
@@ -303,7 +301,7 @@ class CookieSettingsTest
   }
 
   // The storage access result would be blocked if not for a
-  // `net::features::kThirdPartyStoragePartitioning` enablement.
+  // `net::features::kTpcdMetadataGrants` enablement.
   net::cookie_util::StorageAccessResult
   BlockedStorageAccessResultWith3pcdMetadataGrantOverride() const {
     if (Is3pcdMetadataGrantEligible()) {
@@ -354,7 +352,6 @@ class CookieSettingsTest
   const net::SiteForCookies kHttpsSiteForCookies;
   const net::SiteForCookies kDevToolsSiteForCookies;
   ContentSettingsPattern kAllHttpsSitesPattern;
-  bool is_privacy_sandbox_v4_enabled_ = false;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -782,37 +779,11 @@ TEST_P(CookieSettingsTest, CookiesExplicitSessionOnly) {
   EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
 
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
-#define MAYBE_ThirdPartyExceptionSessionOnly \
-  DISABLED_ThirdPartyExceptionSessionOnly
-#else
-#define MAYBE_ThirdPartyExceptionSessionOnly ThirdPartyExceptionSessionOnly
-#endif  // BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
-TEST_P(CookieSettingsTest, MAYBE_ThirdPartyExceptionSessionOnly) {
-  cookie_settings_->SetThirdPartyCookieSetting(kBlockedSite,
-                                               CONTENT_SETTING_SESSION_ONLY);
-  EXPECT_EQ(cookie_settings_->IsCookieSessionOnly(kBlockedSite),
-            !is_privacy_sandbox_v4_enabled_);
-}
-
-#if !BUILDFLAG(IS_IOS)
-class CookieSettingsTestSandboxV4Enabled : public CookieSettingsTest {
- public:
-  CookieSettingsTestSandboxV4Enabled() {
-    feature_list_.InitAndEnableFeature(
-        privacy_sandbox::kPrivacySandboxSettings4);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_P(CookieSettingsTestSandboxV4Enabled, ThirdPartyExceptionSessionOnly) {
+TEST_P(CookieSettingsTest, ThirdPartyExceptionSessionOnly) {
   cookie_settings_->SetThirdPartyCookieSetting(kBlockedSite,
                                                CONTENT_SETTING_SESSION_ONLY);
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
-#endif
 
 class CookieSettingsTestUserBypass : public CookieSettingsTest {
  public:
@@ -1057,17 +1028,6 @@ TEST_P(CookieSettingsTest, DeleteSessionOnlyWithThirdPartyBlocking) {
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, false));
 }
 
-#if !BUILDFLAG(IS_IOS)
-TEST_P(CookieSettingsTestSandboxV4Enabled,
-       DeleteSessionOnlyWithThirdPartyBlocking) {
-  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
-  prefs_.SetInteger(prefs::kCookieControlsMode,
-                    static_cast<int>(CookieControlsMode::kBlockThirdParty));
-  EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
-  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, false));
-}
-#endif
-
 TEST_P(CookieSettingsTest, DeletionWithDifferentPorts) {
   // Keep cookies for site with special port.
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
@@ -1123,30 +1083,12 @@ TEST_P(CookieSettingsTest, DeletionWithSubDomains) {
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, true));
 }
 
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
-#define MAYBE_DeleteCookiesWithThirdPartyException \
-  DISABLED_DeleteCookiesWithThirdPartyException
-#else
-#define MAYBE_DeleteCookiesWithThirdPartyException \
-  DeleteCookiesWithThirdPartyException
-#endif  // BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
-TEST_P(CookieSettingsTest, MAYBE_DeleteCookiesWithThirdPartyException) {
-  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
-  cookie_settings_->SetThirdPartyCookieSetting(kHttpsSite,
-                                               CONTENT_SETTING_SESSION_ONLY);
-  EXPECT_EQ(ShouldDeleteCookieOnExit(kDomain, true),
-            !is_privacy_sandbox_v4_enabled_);
-}
-
-#if !BUILDFLAG(IS_IOS)
-TEST_P(CookieSettingsTestSandboxV4Enabled,
-       DeleteCookiesWithThirdPartyException) {
+TEST_P(CookieSettingsTest, DeleteCookiesWithThirdPartyException) {
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
   cookie_settings_->SetThirdPartyCookieSetting(kHttpsSite,
                                                CONTENT_SETTING_SESSION_ONLY);
   EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
 }
-#endif
 
 TEST_P(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {
   cookie_settings_->SetCookieSetting(kAllowedSite, CONTENT_SETTING_ALLOW);
@@ -1936,6 +1878,10 @@ TEST_P(CookieSettingsTest, LegacyCookieAccessAllowDomainWildcardPattern) {
                                test.cookie_domain));
   }
 }
+
+// NOTE: These tests will fail if their FINAL name is of length greater than 256
+// characters. Thus, try to avoid (unnecessary) generalized parameterization
+// when possible.
 std::string CustomTestName(
     const testing::TestParamInfo<CookieSettingsTest::ParamType>& info) {
   std::stringstream custom_test_name;
@@ -1973,18 +1919,6 @@ INSTANTIATE_TEST_SUITE_P(
 #endif
                          ),
     CustomTestName);
-
-#if !BUILDFLAG(IS_IOS)
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    CookieSettingsTestSandboxV4Enabled,
-    testing::Combine(testing::Bool(),
-                     testing::Bool(),
-                     testing::Bool(),
-                     testing::Bool(),
-                     testing::Bool()),
-    CustomTestName);
-#endif
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,

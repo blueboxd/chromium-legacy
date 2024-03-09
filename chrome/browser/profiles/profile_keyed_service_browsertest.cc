@@ -28,7 +28,6 @@
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/features.h"
-#include "ui/base/ui_base_features.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/common/companion/visual_query/features.h"
@@ -177,7 +176,6 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
           net::features::kTpcdSupportSettings,
           features::kPersistentOriginTrials,
           features::kSidePanelPinning,
-          features::kChromeRefresh2023,
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
           omnibox::kOnDeviceTailModel,
           omnibox::kOnDeviceHeadProviderNonIncognito,
@@ -247,6 +245,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #endif
     "HidDeviceManager",
     "HostContentSettingsMap",
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    "KAnonymityServiceFactory",
+#endif
     "MediaRouter",
     "MediaRouterUIService",
     "NotificationDisplayService",
@@ -423,6 +424,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "InstallVerifier",
     "InstanceIDProfileService",
     "InvalidationService",
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    "KAnonymityServiceFactory",
+#endif
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "KidsChromeManagementClient",
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)

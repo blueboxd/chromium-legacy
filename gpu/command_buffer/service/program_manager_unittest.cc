@@ -314,12 +314,6 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
                                         service_id);
   }
 
-  void SetupExpectationsForClearingUniforms(
-      UniformInfo* uniforms, size_t num_uniforms) {
-    TestHelper::SetupExpectationsForClearingUniforms(
-        gl_.get(), uniforms, num_uniforms);
-  }
-
   // Return true if link status matches expected_link_status
   bool LinkAsExpected(Program* program,
                       bool expected_link_status) {

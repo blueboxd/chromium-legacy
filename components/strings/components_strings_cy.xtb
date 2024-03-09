@@ -87,7 +87,6 @@
 <translation id="11635448457105324">Botwm rheoli cyfeiriadau, gweithredwch i ychwanegu a rheoli cyfeiriadau yng ngosodiadau Chrome</translation>
 <translation id="1165039591588034296">Gwall</translation>
 <translation id="1165174597379888365">Ymwelir â'r dudalen</translation>
-<translation id="1165813024716836071">{COUNT,plural, =0{Dim}=1{O 1 wefan (byddwch yn parhau wedi'ch mewngofnodi i'ch Cyfrif Google)}two{O # wefan (byddwch yn parhau wedi'ch mewngofnodi i'ch Cyfrif Google)}few{O # gwefan (byddwch yn parhau wedi'ch mewngofnodi i'ch Cyfrif Google)}many{O # gwefan (byddwch yn parhau wedi'ch mewngofnodi i'ch Cyfrif Google)}other{O # gwefan (byddwch yn parhau wedi'ch mewngofnodi i'ch Cyfrif Google)}}</translation>
 <translation id="1165852471352757509">Rhaglenni teledu dogfen neu ffeithiol</translation>
 <translation id="1174644974616730562">Amlen Chinese #1</translation>
 <translation id="1174723505405632867">Ydych chi am ganiatáu i <ph name="EMBEDDED_URL" /> ddefnyddio cwcis a data gwefan ar <ph name="TOP_LEVEL_URL" />?
@@ -258,7 +257,6 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="1455413310270022028">Dilëwr</translation>
 <translation id="1458140305240870199">Dillad isaf</translation>
 <translation id="1459693405370120464">Tywydd</translation>
-<translation id="1461041542809785877">Perfformiad</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1462951478840426066">Defnyddio'r ffontiau ar eich cyfrifiadur fel y gallwch greu cynnwys â manwl gywirdeb</translation>
 <translation id="1467432559032391204">Wedi gadael</translation>
@@ -829,6 +827,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
             <ph name="LIST_ITEM" />Cwcis a data gwefan
             <ph name="LIST_ITEM" />Gwybodaeth a roddir mewn ffurflenni
           <ph name="END_LIST" /></translation>
+<translation id="2619052155095999743">Mewnosod</translation>
 <translation id="2625385379895617796">Mae eich cloc yn gyflym</translation>
 <translation id="262745152991669301">Yn gallu gofyn am gysylltu â dyfeisiau USB</translation>
 <translation id="2629325967560697240">I gael lefel uchaf diogelwch Chrome, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />trowch well amddiffyniad ymlaen<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -1590,6 +1589,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="4177501066905053472">Pynciau hysbysebion</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">Olrhain prisiau</translation>
+<translation id="4191334393248735295">Hyd</translation>
 <translation id="4195459680867822611">Botwm gweld awgrymiadau Chrome, gweithredwch i ddysgu am nodweddion Chrome</translation>
 <translation id="4195643157523330669">Agor mewn tab newydd</translation>
 <translation id="4196861286325780578">&amp;Ailwneud Symud</translation>
@@ -2606,7 +2606,6 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="6232271601416750929">Harddwch glân</translation>
 <translation id="6234122620015464377">Tocio ar ôl pob dogfen</translation>
 <translation id="6236290670123303279">Rheoli Gosodiadau</translation>
-<translation id="623825323736974198">Rheoli gwefannau a fydd bob amser yn aros yn actif ac na fydd cof yn cael ei ryddhau ohonynt</translation>
 <translation id="6240447795304464094">Logo Google Pay</translation>
 <translation id="6241121617266208201">Cuddio awgrymiadau</translation>
 <translation id="624499991300733384">Gwasanaeth Cysodwr Argraffu</translation>

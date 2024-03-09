@@ -250,7 +250,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kHideTabOnTabSwitcher,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
-    &kInfobarScrollOptimization,
     &kInstanceSwitcher,
     &kInstantStart,
     &kLensCameraAssistedSearch,
@@ -266,7 +265,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
     &kOmahaMinSdkVersionAndroid,
-    &kAvoidRelayoutDuringFocusAnimation,
     &kShortCircuitUnfocusAnimation,
     &kOmniboxCacheSuggestionResources,
     &kOmniboxNoopEditUrlSuggestionClicks,
@@ -276,7 +274,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kQuickDeleteForAndroid,
     &kReachedCodeProfiler,
     &kReadAloud,
-    &kReadAloudPlayback,
     &kReaderModeInCCT,
     &kRecordSuppressionMetrics,
     &kReengagementNotification,
@@ -306,7 +303,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kShowScrollableMVTOnNtpPhoneAndroid,
     &kFeedPositionAndroid,
     &kSearchResumptionModuleAndroid,
-    &kScrollToTLDOptimization,
     &kShareSheetMigrationAndroid,
     &kShareSheetCustomActionsPolish,
     &kSpecialLocaleWrapper,
@@ -382,7 +378,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
     &privacy_sandbox::kPrivacySandboxSettings4,
     &privacy_sandbox::kPrivacySandboxProactiveTopicsBlocking,
-    &privacy_sandbox::kTrackingProtectionNoticeRequestTracking,
     &privacy_sandbox::kTrackingProtectionSettingsPageRollbackNotice,
     &privacy_sandbox::kTrackingProtectionOnboardingSkipSecurePageCheck,
     &query_tiles::features::kQueryTiles,
@@ -459,7 +454,7 @@ BASE_FEATURE(kAdvancedPeripheralsSupport,
 
 BASE_FEATURE(kAdvancedPeripheralsSupportTabStrip,
              "AdvancedPeripheralsSupportTabStrip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAllowNewIncognitoTabIntents,
              "AllowNewIncognitoTabIntents",
@@ -796,13 +791,10 @@ BASE_FEATURE(kIncognitoReauthenticationForAndroid,
              "IncognitoReauthenticationForAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Only affects devices on API version < 33.
 BASE_FEATURE(kIncognitoScreenshot,
              "IncognitoScreenshot",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kInfobarScrollOptimization,
-             "InfobarScrollOptimization",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kInstantStart, "InstantStart", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -864,10 +856,6 @@ BASE_FEATURE(kOmahaMinSdkVersionAndroid,
              "OmahaMinSdkVersionAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAvoidRelayoutDuringFocusAnimation,
-             "AvoidRelayoutDuringFocusAnimation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kShortCircuitUnfocusAnimation,
              "ShortCircuitUnfocusAnimation",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -900,10 +888,6 @@ BASE_FEATURE(kReachedCodeProfiler,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReadAloud, "ReadAloud", base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kReadAloudPlayback,
-             "ReadAloudPlayback",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReaderModeInCCT,
              "ReaderModeInCCT",
@@ -999,10 +983,6 @@ BASE_FEATURE(kRequestDesktopSiteDefaultsLogging,
 
 BASE_FEATURE(kRestoreTabsOnFRE,
              "RestoreTabsOnFRE",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kScrollToTLDOptimization,
-             "ScrollToTLDOptimization",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShowNtpAtStartupAndroid,

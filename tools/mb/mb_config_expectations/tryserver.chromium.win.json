@@ -8,16 +8,6 @@
       "use_remoteexec": true
     }
   },
-  "win-cr23-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 0,
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true
-    }
-  },
   "win-libfuzzer-asan-rel": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -31,47 +21,7 @@
       "pdf_enable_xfa": true,
       "proprietary_codecs": true,
       "symbol_level": 0,
-      "use_dummy_lastchange": true,
       "use_libfuzzer": true,
-      "use_remoteexec": true
-    }
-  },
-  "win-siso-rel": {
-    "gn_args": {
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "enable_dangling_raw_ptr_checks": true,
-      "enable_dangling_raw_ptr_feature_flag": true,
-      "enable_resource_allowlist_generation": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_clang_coverage": true,
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true
-    }
-  },
-  "win10_chromium_x64_rel_ng_exp": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 0,
-      "use_dummy_lastchange": true,
-      "use_goma": true
-    }
-  },
-  "win_chromium_compile_dbg_ng": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "target_cpu": "x86",
-      "use_dummy_lastchange": true,
       "use_remoteexec": true
     }
   },
@@ -84,7 +34,6 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_dummy_lastchange": true,
       "use_remoteexec": true
     }
   },

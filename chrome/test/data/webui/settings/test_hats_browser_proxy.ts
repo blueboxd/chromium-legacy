@@ -7,35 +7,22 @@ import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 export class TestHatsBrowserProxy extends TestBrowserProxy implements
     HatsBrowserProxy {
-  private currentTime: number;
-
   constructor() {
     super([
       'trustSafetyInteractionOccurred',
-      'securityPageHatsRequest',
-      'now',
+      'securityPageInteractionOccurred',
     ]);
-    this.currentTime = 0;
   }
 
   trustSafetyInteractionOccurred(interaction: TrustSafetyInteraction) {
     this.methodCalled('trustSafetyInteractionOccurred', interaction);
   }
 
-  securityPageHatsRequest(
+  securityPageInteractionOccurred(
       securityPageInteraction: SecurityPageInteraction,
-      safeBrowsingSetting: SafeBrowsingSetting, totalTimeOnPage: number) {
+      safeBrowsingSetting: SafeBrowsingSetting) {
     this.methodCalled(
-        'securityPageHatsRequest',
-        [securityPageInteraction, safeBrowsingSetting, totalTimeOnPage]);
-  }
-
-  setNow(now: number) {
-    this.currentTime = now;
-  }
-
-  now() {
-    this.methodCalled('now', this.currentTime);
-    return this.currentTime;
+        'securityPageInteractionOccurred',
+        [securityPageInteraction, safeBrowsingSetting]);
   }
 }

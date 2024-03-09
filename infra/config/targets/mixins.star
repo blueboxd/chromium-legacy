@@ -400,6 +400,12 @@ targets.mixin(
 )
 
 targets.mixin(
+    name = "chromeos-jacuzzi-skylab-chrome-all-tast-tests",
+    # jacuzzi is slow. So that we use more number of shards.
+    shards = 20,
+)
+
+targets.mixin(
     name = "chromeos-octopus",
     swarming = targets.swarming(
         dimensions = {
@@ -419,7 +425,7 @@ targets.mixin(
             "cpu": "x86-64",
             "kvm": "1",
             "gce": "1",
-            "os": "Ubuntu-22.04",
+            "os": "Ubuntu-18.04",
             "pool": "chrome.tests",
         },
         optional_dimensions = {
@@ -436,6 +442,12 @@ targets.mixin(
             ),
         ],
     ),
+)
+
+targets.mixin(
+    name = "chromeos-trogdor-skylab-chrome-all-tast-tests",
+    # jacuzzi is slow. So that we use more number of shards.
+    shards = 20,
 )
 
 targets.mixin(
@@ -1648,12 +1660,12 @@ targets.mixin(
     name = "xcode_15_beta",
     args = [
         "--xcode-build-version",
-        "15c5042i",
+        "15c65",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15c5042i",
+                name = "xcode_ios_15c65",
                 path = "Xcode.app",
             ),
         ],

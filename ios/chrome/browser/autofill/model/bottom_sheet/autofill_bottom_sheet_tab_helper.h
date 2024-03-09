@@ -125,8 +125,7 @@ class AutofillBottomSheetTabHelper
   void AttachListeners(
       const std::vector<autofill::FieldRendererId>& renderer_ids,
       std::set<autofill::FieldRendererId>& registered_renderer_ids,
-      const std::string& frame_id,
-      bool allow_autofocus);
+      const std::string& frame_id);
 
   // Detach listeners, which will deactivate the associated bottom sheet.
   void DetachListenersForFrame(

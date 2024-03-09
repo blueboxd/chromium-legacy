@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_sea_pen_provider_impl.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -26,7 +27,6 @@
 #include "components/manta/features.h"
 #include "components/manta/proto/manta.pb.h"
 #include "content/public/browser/web_ui.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/utility/utility.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -64,6 +64,7 @@ void PersonalizationAppSeaPenProviderImpl::SearchWallpaper(
         "SearchWallpaper exceeded maximum text length");
     return;
   }
+  last_query_ = query.Clone();
   auto* sea_pen_fetcher = GetOrCreateSeaPenFetcher();
   CHECK(sea_pen_fetcher);
   sea_pen_fetcher->FetchThumbnails(
@@ -83,8 +84,11 @@ void PersonalizationAppSeaPenProviderImpl::SelectSeaPenThumbnail(
 
   auto* sea_pen_fetcher = GetOrCreateSeaPenFetcher();
   CHECK(sea_pen_fetcher);
+  // |last_query_| is set when calling SearchWallpaper() to fetch thumbnails. It
+  // should not be null when a thumbnail is selected.
+  CHECK(last_query_);
   sea_pen_fetcher->FetchWallpaper(
-      it->second,
+      it->second, last_query_,
       base::BindOnce(
           &PersonalizationAppSeaPenProviderImpl::OnFetchWallpaperDone,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -139,9 +143,9 @@ PersonalizationAppSeaPenProviderImpl::GetOrCreateSeaPenFetcher() {
 
 void PersonalizationAppSeaPenProviderImpl::OnFetchThumbnailsDone(
     SearchWallpaperCallback callback,
-    absl::optional<std::vector<SeaPenImage>> images) {
+    std::optional<std::vector<SeaPenImage>> images) {
   if (!images) {
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(std::nullopt);
     return;
   }
   sea_pen_images_.clear();
@@ -158,7 +162,7 @@ void PersonalizationAppSeaPenProviderImpl::OnFetchThumbnailsDone(
 
 void PersonalizationAppSeaPenProviderImpl::OnFetchWallpaperDone(
     SelectSeaPenThumbnailCallback callback,
-    absl::optional<SeaPenImage> image) {
+    std::optional<SeaPenImage> image) {
   if (!image) {
     std::move(callback).Run(/*success=*/false);
     return;

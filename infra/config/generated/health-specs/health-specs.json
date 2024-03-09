@@ -13,12 +13,169 @@
         },
         "pending_time": {
           "p50_mins": 20
-        }
+        },
+        "period_days": 7
+      }
+    },
+    {
+      "name": "Low Value",
+      "score": 1,
+      "thresholds": {
+        "fail_rate": {
+          "average": 0.99
+        },
+        "period_days": 90
       }
     }
   ],
   "specs": {
     "ci": {
+      "ASAN Debug": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ASAN Release": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ASAN Release Media": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ASan Debug (32-bit x86 with V8-ARM)": {
+        "contact_team_email": "v8-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ASan Release (32-bit x86 with V8-ARM)": {
+        "contact_team_email": "v8-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ASan Release Media (32-bit x86 with V8-ARM)": {
+        "contact_team_email": "v8-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Android ASAN (dbg)": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
       "Android Release (Nexus 5X)": {
         "contact_team_email": "chrome-gpu-infra@google.com",
         "problem_specs": [
@@ -26,7 +183,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -38,7 +204,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -50,7 +225,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -62,7 +246,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -74,7 +267,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -86,7 +288,37 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Android x64 Builder (dbg)": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -98,7 +330,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -110,7 +351,80 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "CFI Linux CF": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "CFI Linux ToT": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -122,31 +436,412 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Cast Audio Linux": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
       },
       "Cast Linux": {
-        "contact_team_email": "chrome-linux-engprod@google.com",
         "problem_specs": [
           {
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Cast Linux ARM64": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
       },
       "Cast Linux Debug": {
-        "contact_team_email": "chrome-linux-engprod@google.com",
         "problem_specs": [
           {
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Centipede Upload Linux ASan": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ChromiumOS ASAN Release": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "CrWinAsan": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "CrWinAsan(dll)": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Android arm Builder": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Android arm DEPS Builder": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Android arm DEPS Release (Nexus 5X)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Android arm DEPS Release (Pixel 4)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Android arm Release (Nexus 5X)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Android arm Release (Pixel 4)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Android arm64 DEPS Release (Pixel 6)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Android arm64 Release (Pixel 6)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Linux TSAN Release": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Linux x64 Builder": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -158,7 +853,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -170,7 +874,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -182,7 +895,121 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Linux x64 Release (Intel UHD 630)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Linux x64 Release (NVIDIA)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Mac arm64 DEPS Release (Apple M2)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Mac arm64 Release (Apple M2)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Mac x64 Builder": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -194,7 +1021,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -206,7 +1042,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -218,7 +1063,184 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Mac x64 Experimental Release (AMD)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Mac x64 Experimental Release (Intel)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Mac x64 Release (AMD)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Mac x64 Release (Intel)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x64 ASAN Builder": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x64 ASAN Release (Intel)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x64 ASAN Release (NVIDIA)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x64 Builder": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -230,7 +1252,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -242,7 +1273,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -254,7 +1294,100 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x64 Experimental Release (Intel)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x64 Release (Intel)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x64 Release (NVIDIA)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x86 Builder": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -266,7 +1399,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -278,7 +1420,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -290,7 +1441,184 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x86 Experimental Release (Intel)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x86 Release (Intel)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Dawn Win10 x86 Release (NVIDIA)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Deterministic Android": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Deterministic Android (dbg)": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Deterministic Fuchsia (dbg)": {
+        "contact_team_email": "chrome-fuchsia-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Deterministic Linux": {
+        "contact_team_email": "chrome-build-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Deterministic Linux (dbg)": {
+        "contact_team_email": "chrome-build-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -302,7 +1630,37 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "GPU Linux Builder (dbg)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -314,7 +1672,37 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "GPU Mac Builder (dbg)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -326,7 +1714,330 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "GPU Win x64 Builder (dbg)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Leak Detection Linux": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Chrome OS ASan": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Linux ASan": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Linux ASan Debug": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Linux MSan": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Linux UBSan": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Linux V8-ARM64 ASan": {
+        "contact_team_email": "v8-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Linux V8-ARM64 ASan Debug": {
+        "contact_team_email": "v8-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Linux32 ASan": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Linux32 V8-ARM ASan": {
+        "contact_team_email": "v8-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Linux32 V8-ARM ASan Debug": {
+        "contact_team_email": "v8-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Mac ASan": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload Windows ASan": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Libfuzzer Upload iOS Catalyst Debug": {
+        "contact_team_email": "chrome-deet-core@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -338,7 +2049,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -350,7 +2070,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -362,7 +2091,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -374,7 +2112,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -386,7 +2133,184 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Linux CFI": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Linux Chromium OS ASan LSan Builder": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Linux Chromium OS ASan LSan Tests (1)": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Linux ChromiumOS MSan Builder": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Linux ChromiumOS MSan Tests": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Linux Debug (NVIDIA)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Linux MSan Builder": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Linux MSan Tests": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -398,7 +2322,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -410,7 +2343,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -422,7 +2364,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -434,7 +2385,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -446,7 +2406,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -458,7 +2427,150 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "MSAN Release (chained origins)": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "MSAN Release (no origins)": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Mac ASAN Release": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {},
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Mac ASAN Release Media": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Mac ASan 64 Builder": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Mac ASan 64 Tests (1)": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -470,7 +2582,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -482,7 +2603,37 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Mac Debug (Intel)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -494,7 +2645,37 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Mac Retina Debug (AMD)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -506,7 +2687,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -518,7 +2708,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -530,7 +2729,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -542,7 +2750,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -553,7 +2770,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -564,7 +2790,37 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Network Service Linux": {
+        "contact_team_email": "chrome-linux-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -575,7 +2831,1506 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "TSAN Debug": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "TSAN Release": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTAndroid": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTAndroid (dbg)": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTAndroid x64": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTAndroid x86": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTAndroid64": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTAndroidASan": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTAndroidCoverage x86": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTAndroidOfficial": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTChromeOS": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTChromeOS (dbg)": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTFuchsia x64": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTFuchsiaOfficial arm64": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTLinux": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTLinux (dbg)": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTLinuxASan": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTLinuxASanLibfuzzer": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTLinuxCoverage": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTLinuxMSan": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTLinuxPGO": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTLinuxTSan": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTLinuxUBSanVptr": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTMac": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTMac (dbg)": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTMacASan": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTMacArm64": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTMacArm64PGO": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTMacCoverage": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTMacPGO": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWin": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWin(dbg)": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWin(dll)": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWin64": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWin64(dbg)": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWin64(dll)": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWin64PGO": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWinASanLibfuzzer": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWinArm64PGO": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTWindowsCoverage": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTiOS": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ToTiOSDevice": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "UBSan Release": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "UBSan vptr Release": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "WebKit Linux ASAN": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "WebKit Linux Leak": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "WebKit Linux MSAN": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "WebKit Win10": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Win ASan Release": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Win ASan Release Media": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -587,7 +4342,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -599,7 +4363,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -611,7 +4384,37 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Win x64 Builder (dbg)": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -623,7 +4426,58 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Win10 Tests x64 (dbg)": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Win10 x64 Debug (NVIDIA)": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -635,7 +4489,99 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Win11 Tests x64": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "Windows deterministic": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-10-arm64-rel": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-11-x86-rel": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -647,7 +4593,224 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-12l-x64-dbg-tests": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-13-x64-rel": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-angle-chromium-arm64-builder": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-angle-chromium-arm64-nexus5x": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-archive-rel": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-arm64-archive-rel": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-arm64-proguard-rel": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-asan": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-bfcache-rel": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-binary-size-generator": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -659,7 +4822,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -671,7 +4843,163 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-arm64-dbg": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-arm64-rel": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-asan-arm-rel": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-mainline-clang-arm64-dbg": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-mainline-clang-arm64-rel": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-mainline-clang-riscv64-dbg": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-mainline-clang-riscv64-rel": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -683,7 +5011,100 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-mainline-clang-x86-rel": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-marshmallow-arm64-perf-rel": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-riscv64-dbg": {
+        "contact_team_email": "cronet-sheriff@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-riscv64-rel": {
+        "contact_team_email": "cronet-sheriff@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -695,7 +5116,100 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x64-dbg-12-tests": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x64-dbg-13-tests": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x64-dbg-14-tests": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x64-rel": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -707,7 +5221,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -719,7 +5242,163 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x86-dbg-11-tests": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x86-dbg-lollipop-tests": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x86-dbg-marshmallow-tests": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x86-dbg-nougat-tests": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x86-dbg-oreo-tests": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x86-dbg-pie-tests": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-cronet-x86-rel": {
+        "contact_team_email": "cronet-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -731,7 +5410,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -743,7 +5431,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -755,7 +5452,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -767,7 +5473,147 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-pie-x86-rel": {
+        "contact_team_email": "clank-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-webview-10-x86-rel-tests": {
+        "contact_team_email": "woa-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "android-x86-rel": {
+        "contact_team_email": "woa-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "chromeos-amd64-generic-asan-rel": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {
+                "p50_mins": 60
+              },
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "chromeos-amd64-generic-cfi-thin-lto-rel": {
+        "contact_team_email": "chromeos-sw-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {
+                "p50_mins": 100
+              },
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -790,7 +5636,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -813,7 +5670,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -836,7 +5704,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -859,7 +5738,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -882,7 +5772,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -905,7 +5806,52 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "chromeos-arm-generic-dbg": {
+        "contact_team_email": "chromeos-sw-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {
+                "p50_mins": 60
+              },
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -928,7 +5874,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -951,7 +5908,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -973,7 +5941,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -995,7 +5974,39 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "fuchsia-angle-builder": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1007,7 +6018,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1019,7 +6039,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1030,7 +6059,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1042,7 +6080,37 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "fuchsia-x64-dbg": {
+        "contact_team_email": "chrome-fuchsia-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1054,7 +6122,119 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ios-angle-builder": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ios-angle-intel": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ios-asan": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ios-catalyst": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ios-device": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1065,7 +6245,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1076,7 +6265,36 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "ios-simulator-noncq": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1099,7 +6317,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -1122,7 +6351,39 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "lacros-arm-archive-rel": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1145,7 +6406,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -1168,7 +6440,38 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "lacros-arm64-archive-rel": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1190,7 +6493,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -1213,7 +6527,252 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "lacros64-archive-rel": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-angle-chromium-builder": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-angle-chromium-intel": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-angle-chromium-nvidia": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-archive-rel": {
+        "contact_team_email": "chrome-browser-infra-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-arm64-rel-cft": {
+        "contact_team_email": "browser-automation-staff@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-ash-chromium-generator-rel": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {
+                "p50_mins": 60
+              },
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-bfcache-rel": {
+        "contact_team_email": "chrome-linux-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-cfm-rel": {
+        "contact_team_email": "core-devices-eng@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {
+                "p50_mins": 60
+              },
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-chromeos-archive-rel": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1236,7 +6795,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -1259,7 +6829,101 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-extended-tracing-rel": {
+        "contact_team_email": "chrome-linux-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-gcc-rel": {
+        "contact_team_email": "build@chromium.org",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-lacros-archive-rel": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-lacros-asan-lsan-rel": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1282,7 +6946,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -1305,7 +6980,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -1328,7 +7014,18 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
             }
           }
         ]
@@ -1350,7 +7047,364 @@
               },
               "pending_time": {
                 "p50_mins": 20
-              }
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-rel-cft": {
+        "contact_team_email": "browser-automation-staff@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-swangle-chromium-x64": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-swangle-chromium-x64-exp": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-swangle-tot-swiftshader-x64": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-swangle-x64": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-swangle-x64-exp": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-ubsan-vptr": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-v4l2-codec-rel": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "linux-win_cross-rel": {
+        "contact_team_email": "lexan@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "build_time": {},
+              "fail_rate": {
+                "average": 0.2
+              },
+              "infra_fail_rate": {
+                "average": 0.05
+              },
+              "pending_time": {
+                "p50_mins": 20
+              },
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "fail_rate": {
+                "average": 0.99
+              },
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-angle-chromium-amd": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-angle-chromium-builder": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-angle-chromium-intel": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-archive-rel": {
+        "contact_team_email": "bling-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-arm64-archive-rel": {
+        "contact_team_email": "bling-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-arm64-dbg": {
+        "contact_team_email": "bling-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-arm64-on-arm64-rel": {
+        "contact_team_email": "bling-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1362,7 +7416,36 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-intel-on-arm64-rel": {
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1374,7 +7457,58 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-rel-cft": {
+        "contact_team_email": "browser-automation-staff@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "mac-swangle-chromium-x64": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1386,7 +7520,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1398,7 +7541,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1410,7 +7562,100 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-angle-chromium-x64-builder": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-angle-chromium-x86-builder": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-archive-rel": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-asan": {
+        "contact_team_email": "chrome-sanitizer-builder-owners@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1422,7 +7667,205 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-rel-cft": {
+        "contact_team_email": "browser-automation-staff@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-swangle-chromium-x86": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-swangle-tot-swiftshader-x64": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-swangle-tot-swiftshader-x86": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-swangle-x64": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win-swangle-x86": {
+        "contact_team_email": "chrome-gpu-infra@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win10-angle-chromium-x64-intel": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win10-angle-chromium-x64-nvidia": {
+        "contact_team_email": "angle-team@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
+            }
+          }
+        ]
+      },
+      "win32-archive-rel": {
+        "contact_team_email": "chrome-desktop-engprod@google.com",
+        "problem_specs": [
+          {
+            "name": "Unhealthy",
+            "score": 5,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]
@@ -1434,7 +7877,16 @@
             "name": "Unhealthy",
             "score": 5,
             "thresholds": {
-              "_default": "_default"
+              "_default": "_default",
+              "period_days": 7
+            }
+          },
+          {
+            "name": "Low Value",
+            "score": 1,
+            "thresholds": {
+              "_default": "_default",
+              "period_days": 90
             }
           }
         ]

@@ -14,6 +14,7 @@
 
 class ApplicationBreadcrumbsLogger;
 class DiscoverFeedExperimentsTracker;
+class IOSChromeVariationsServiceClient;
 class OptimizationGuideService;
 
 namespace {
@@ -42,6 +43,7 @@ class IOSChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
 
  private:
   friend class IOSChromeMetricsServicesManagerClient;
+  friend class IOSChromeVariationsServiceClient;
 
   friend class ApplicationBreadcrumbsLogger;
   friend class CrashesDOMHandler;
@@ -60,8 +62,8 @@ class IOSChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   // ApplicationContext's MetricsService. See that function's declaration for
   // details.
   static bool RegisterSyntheticFieldTrial(
-      const std::string& trial_name,
-      const std::string& group_name,
+      std::string_view trial_name,
+      std::string_view group_name,
       variations::SyntheticTrialAnnotationMode annotation_mode =
           variations::SyntheticTrialAnnotationMode::kNextLog);
 };

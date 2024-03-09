@@ -14,7 +14,6 @@
 <translation id="1054045277222934172">V razdelku »Nastavitve &gt; Nastavitve vsebine« lahko spremenite privzeti pogled spletnega mesta na pogled za namizni računalnik.</translation>
 <translation id="1054745118061919935">Z nadaljevanjem se strinjate s <ph name="BEGIN_LINK" />pogoji storitve<ph name="END_LINK" />.</translation>
 <translation id="1066060668811609597">Upravljanje sinhronizacije</translation>
-<translation id="1066101356081285416">Chrome zazna številke za sledenje na spletnih mestih, ki jih obiščete, in vam na novem zavihku s povezavami prikaže obvestila o paketu. Številka za sledenje paketu in ime spletnega mesta se pošljeta Googlu zaradi zagotavljanja te funkcije in izboljšanja funkcij nakupovanja v Googlu za vse. To lahko kadar koli posodobite v <ph name="BEGIN_LINK" />nastavitvah sledenja paketu<ph name="END_LINK" />.</translation>
 <translation id="1069154182096085577">Geslo že obstaja</translation>
 <translation id="1076421457278169141">Koda je bila optično prebrana</translation>
 <translation id="1076785341346483463">Sinhronizacija z upravljanim računom</translation>
@@ -33,7 +32,7 @@
 <translation id="1150989369772528668">Koledar</translation>
 <translation id="1154984953698510061">Ogled drugih zavihkov</translation>
 <translation id="1161340988127985692">Poziv za odpiranje povezav iz drugih aplikacij v anonimnem načinu</translation>
-<translation id="1164064664035028907">Uporabi močno geslo:</translation>
+<translation id="1164064664035028907">Uproabi zapleteno geslo:</translation>
 <translation id="1164891049599601209">Vneseno na zavajajočem spletnem mestu</translation>
 <translation id="1165039591588034296">Napaka</translation>
 <translation id="1172898394251786223">Naslednje polje</translation>
@@ -143,7 +142,6 @@
 <translation id="165877110639533037">No Open Tabs</translation>
 <translation id="1674504678466460478">Iz jezika <ph name="SOURCE_LANGUAGE" /> v jezik <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Zahtevaj spletno mesto za mobilno napravo</translation>
-<translation id="168715261339224929">Če želite dostopati do zaznamkov v vseh napravah, vklopite sinhronizacijo.</translation>
 <translation id="1687475363370981210">Označi vse kot prebrano</translation>
 <translation id="1689333818294560261">Vzdevek</translation>
 <translation id="1700629756560807968">Št. izbranih: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -549,7 +547,7 @@ Oglejte si navodila iskalnika za brisanje zgodovine iskanja, če je na voljo.</t
 <translation id="3858860766373142691">Ime</translation>
 <translation id="3861486700625780712">Ne spremljaj več</translation>
 <translation id="3861908220442487587">Ta naslov je shranjen samo v tej napravi. Če ga želite uporabiti v drugih napravah, ga premaknite v račun Google (<ph name="USER_EMAIL" />).</translation>
-<translation id="3863769054730344136">Pošiljanje v vaše naprave</translation>
+<translation id="3863769054730344136">Pošiljanje v naprave</translation>
 <translation id="387280738075653372">Tukaj prenesite Chrome.</translation>
 <translation id="3875783148670536197">Postopek</translation>
 <translation id="3888863481921783344">To bo uporabljeno za prikaz morebitnih povabljencev na vaš dogodek.</translation>
@@ -657,7 +655,7 @@ Oglejte si navodila iskalnika za brisanje zgodovine iskanja, če je na voljo.</t
 <translation id="4502566650163919158">Preveri</translation>
 <translation id="4508750114462689118">Zapri predstavitev prijave</translation>
 <translation id="4509449376545878717">Nikoli ne zaznaj samodejno paketov</translation>
-<translation id="4514889972748124117">Predlagaj močno geslo ...</translation>
+<translation id="4514889972748124117">Predlagaj zapleteno geslo ...</translation>
 <translation id="4520798012560649652">Preberite več o anonimnem načinu</translation>
 <translation id="452503091941773389">{count,plural, =1{{count} zaznamek}one{{count} zaznamek}two{{count} zaznamka}few{{count} zaznamki}other{{count} zaznamkov}}</translation>
 <translation id="452750746583162491">Pregled sinhroniziranih podatkov</translation>
@@ -992,7 +990,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6231782223312638214">Predlagano</translation>
 <translation id="6232329973559504466">Anonimno iskanje</translation>
 <translation id="6236952928980352967">Obnovi opozorilo</translation>
-<translation id="6247557882553405851">Googlov upravitelj gesel</translation>
+<translation id="6247557882553405851">Google Upravitelj gesel</translation>
 <translation id="6254066287920239840">Povezave namesto v brskalniku odpri v aplikaciji.</translation>
 <translation id="6255097610484507482">Urejanje kreditne kartice</translation>
 <translation id="6266039999629596120">Potrebno je ukrepanje</translation>
@@ -1049,7 +1047,6 @@ Spletna mesta ne smejo uporabljati piškotkov za ogled dejavnosti brskanja na ra
 <translation id="6476253015009698798">Spremljanje cen ni na voljo za to spletno mesto.</translation>
 <translation id="6476800141292307438">Prevajanje strani v ta jezik: <ph name="LANGUAGE" />. Možnosti so na voljo blizu dna zaslona.</translation>
 <translation id="648164694371393720">Napaka pri preverjanju pristnosti</translation>
-<translation id="6482629121755362506">Št. izbrisanih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6484712497741564393">Prijavljeni ste kot <ph name="EMAIL" />.
 
 Podatki so šifrirani z vašim geslom. Vnesite ga, če želite podatke iz Chroma uporabljati in shranjevati v računu Google.</translation>
@@ -1136,6 +1133,7 @@ Ko uporabljate anonimni način, spletna mesta ne smejo uporabljati piškotkov za
 <translation id="6869389390665537774">Ogledate si lahko strani, ki ste jih obiskali, ali jih izbrišete iz zgodovine</translation>
 <translation id="687135068089457384">Pokaži nastavitve</translation>
 <translation id="6873263987691478642">Razdeljeni pogled</translation>
+<translation id="687586529977635009">Chrome zazna številke za sledenje na spletnih mestih, ki jih obiščete, in vam na novem zavihku s povezavami prikaže obvestila o paketu. Vaši podatki bodo deljeni z Googlom zaradi zagotavljanja te funkcije in izboljšanja Nakupovanja za vse. To lahko spremenite v <ph name="BEGIN_LINK" />nastavitvah sledenja paketu<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Standardna zaščita proti spletnim mestom, prenosom in razširitvam, za katere vemo, da so nevarni.</translation>
 <translation id="6888009575607455378">Ali ste prepričani, da želite zavreči spremembe?</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
@@ -1416,7 +1414,6 @@ Spletna mesta lahko uporabljajo piškotke za ogled dejavnosti brskanja na razli�
 <translation id="8428634594422941299">Razumem</translation>
 <translation id="8446884382197647889">Več o tem</translation>
 <translation id="8449347986464073209">Brisanje in odjava</translation>
-<translation id="8458397775385147834">1 element izbrisan</translation>
 <translation id="8459333855531264009">Ni varno</translation>
 <translation id="8487667956631253959">Vklop</translation>
 <translation id="8487700953926739672">Na voljo brez povezave</translation>
@@ -1482,7 +1479,6 @@ Podatki so bili šifrirani z geslom dne <ph name="TIME" />. Vnesite ga, če žel
 <translation id="8766790350274092814">Gesli za <ph name="WEBSITE" /> in <ph name="SECOND_WEBSITE" /> bosta izbrisani. Vaši računi ne bodo izbrisani.</translation>
 <translation id="8775144690796719618">Neveljaven URL</translation>
 <translation id="8780076847684176174">{count,plural, =1{Preglejte zavihek …}one{Preglejte vse zavihke …}two{Preglejte vse zavihke …}few{Preglejte vse zavihke …}other{Preglejte vse zavihke …}}</translation>
-<translation id="8782570580170191813">Vedno sledi paketom</translation>
 <translation id="8787968206789828143">Iskanje v spletu</translation>
 <translation id="8792626944327216835">mikrofon</translation>
 <translation id="8803639129939845298">Varno</translation>

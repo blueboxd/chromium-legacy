@@ -491,8 +491,10 @@ bool ChromeShelfController::IsOpen(const ash::ShelfID& id) const {
 void ChromeShelfController::LaunchApp(const ash::ShelfID& id,
                                       ash::ShelfLaunchSource source,
                                       int event_flags,
-                                      int64_t display_id) {
-  shelf_controller_helper_->LaunchApp(id, source, event_flags, display_id);
+                                      int64_t display_id,
+                                      bool new_window) {
+  shelf_controller_helper_->LaunchApp(id, source, event_flags, display_id,
+                                      new_window);
 }
 
 void ChromeShelfController::SetItemImage(const ash::ShelfID& shelf_id,
@@ -1193,7 +1195,7 @@ void ChromeShelfController::OnAppImageUpdated(
     const std::string& app_id,
     const gfx::ImageSkia& image,
     bool is_placeholder_icon,
-    const absl::optional<gfx::ImageSkia>& badge_image) {
+    const std::optional<gfx::ImageSkia>& badge_image) {
   TRACE_EVENT0("ui", "ChromeShelfController::OnAppImageUpdated");
   bool is_standard_icon = true;
   if (!AppServiceAppIconLoader::CanLoadImage(latest_active_profile_, app_id) &&
@@ -1232,7 +1234,7 @@ void ChromeShelfController::OnAppImageUpdated(
 
 void ChromeShelfController::UpdateAppImage(
     const std::string& app_id,
-    const absl::optional<gfx::ImageSkia>& badge_image,
+    const std::optional<gfx::ImageSkia>& badge_image,
     bool is_placeholder_icon,
     const gfx::ImageSkia& image) {
   TRACE_EVENT0("ui", "ChromeShelfController::UpdateAppImage");
